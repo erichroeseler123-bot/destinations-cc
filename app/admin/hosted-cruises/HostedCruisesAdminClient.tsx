@@ -1,0 +1,1262 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import type {
+  HostedCruisesAdminBridgeSnapshot,
+  HostedCruisesBridgeResponse,
+} from "@/lib/dcc/hostedCruisesAdminBridge";
+
+type PostClaimMode =
+  | "open_private_link"
+  | "organizer_approval"
+  | "invitation_code"
+  | "verified_member";
+
+const POST_CLAIM_MODE_OPTIONS: Array<{
+  value: PostClaimMode;
+  label: string;
+  helper: string;
+}> = [
+  {
+    value: "open_private_link",
+    label: "Open Private-Link Join",
+    helper:
+      "Guests who booked with the host can join immediately with a display name and party size.",
+  },
+  {
+    value: "organizer_approval",
+    label: "Organizer Approval Queue",
+    helper:
+      "New guest requests wait in the approval queue below until you or the verified host approves them.",
+  },
+  {
+    value: "invitation_code",
+    label: "Invitation Code Required",
+    helper:
+      "Guests must enter the shared organizer invitation code before opening the private board.",
+  },
+  {
+    value: "verified_member",
+    label: "Verified Member Access Code",
+    helper:
+      "Guests enter the host's verified-member pass code and are counted under Verified Organizer Members.",
+  },
+];
+
+export default function HostedCruisesAdminClient({
+  initialBridge,
+  cpTargetOverride,
+  rcTargetOverride,
+}: {
+  initialBridge: HostedCruisesBridgeResponse;
+  cpTargetOverride?: string | null;
+  rcTargetOverride?: string | null;
+}) {
+  const [bridge, setBridge] =
+    useState<HostedCruisesBridgeResponse>(initialBridge);
+  const [busyKey, setBusyKey] = useState<string | null>(null);
+  const [banner, setBanner] = useState<{
+    tone: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  const snapshot: HostedCruisesAdminBridgeSnapshot | null = bridge.snapshot;
+  const sailings = snapshot?.sailings ?? [];
+  const organizers = snapshot?.organizers ?? [];
+
+  const [selectedSailingSlug, setSelectedSailingSlug] = useState<string>(
+    sailings[0]?.sailingSlug ?? "",
+  );
+
+  useEffect(() => {
+    if (!selectedSailingSlug && sailings[0]?.sailingSlug) {
+      setSelectedSailingSlug(sailings[0].sailingSlug);
+    }
+  }, [sailings, selectedSailingSlug]);
+
+  const activeSailing =
+    sailings.find((s) => s.sailingSlug === selectedSailingSlug) ??
+    sailings[0] ??
+    null;
+  const activeOrganizer =
+    organizers.find(
+      (o) => o.organizerSlug === (activeSailing?.organizerSlug ?? organizers[0]?.organizerSlug),
+    ) ??
+    organizers[0] ??
+    null;
+
+  // Claim review local controls
+  const [claimModeDrafts, setClaimModeDrafts] = useState<
+    Record<string, PostClaimMode>
+  >({});
+  const [claimNotes, setClaimNotes] = useState<Record<string, string>>({});
+
+  // Organizer profile editor state
+  const [orgWebsiteUrl, setOrgWebsiteUrl] = useState(
+    activeOrganizer?.officialWebsiteUrl ?? "",
+  );
+  const [orgSummary, setOrgSummary] = useState(
+    activeOrganizer?.publicSummary ?? "",
+  );
+
+  useEffect(() => {
+    if (activeOrganizer) {
+      setOrgWebsiteUrl(activeOrganizer.officialWebsiteUrl);
+      setOrgSummary(activeOrganizer.publicSummary);
+    }
+  }, [activeOrganizer?.organizerSlug, activeOrganizer?.officialWebsiteUrl, activeOrganizer?.publicSummary]);
+
+  // Per-sailing editor states
+  const [sailingPageUrl, setSailingPageUrl] = useState(
+    activeSailing?.officialSailingPageUrl ?? "",
+  );
+  const [reservationFormUrl, setReservationFormUrl] = useState(
+    activeSailing?.officialReservationFormUrl ?? "",
+  );
+  const [cabinNote, setCabinNote] = useState(
+    activeSailing?.cabinAvailabilityNote ?? "",
+  );
+  const [welcomeNote, setWelcomeNote] = useState(
+    activeSailing?.welcomeNote ?? "",
+  );
+  const [selectedMode, setSelectedMode] = useState<PostClaimMode>(
+    activeSailing &&
+      activeSailing.membershipMode !== "independent_sailing_community"
+      ? activeSailing.membershipMode
+      : "open_private_link",
+  );
+  const [accessCodeDraft, setAccessCodeDraft] = useState("");
+  const [suspendReasonDraft, setSuspendReasonDraft] = useState(
+    activeSailing?.suspendedReason ?? "",
+  );
+
+  useEffect(() => {
+    if (!activeSailing) return;
+    setSailingPageUrl(activeSailing.officialSailingPageUrl);
+    setReservationFormUrl(activeSailing.officialReservationFormUrl);
+    setCabinNote(activeSailing.cabinAvailabilityNote);
+    setWelcomeNote(activeSailing.welcomeNote ?? "");
+    setSelectedMode(
+      activeSailing.membershipMode !== "independent_sailing_community"
+        ? activeSailing.membershipMode
+        : "open_private_link",
+    );
+    setAccessCodeDraft("");
+    setSuspendReasonDraft(activeSailing.suspendedReason ?? "");
+  }, [
+    activeSailing?.sailingSlug,
+    activeSailing?.officialSailingPageUrl,
+    activeSailing?.officialReservationFormUrl,
+    activeSailing?.cabinAvailabilityNote,
+    activeSailing?.welcomeNote,
+    activeSailing?.membershipMode,
+    activeSailing?.suspendedReason,
+  ]);
+
+  async function refreshSnapshot() {
+    setBusyKey("refresh");
+    setBanner(null);
+    try {
+      const qs = new URLSearchParams({ probeResend: "1" });
+      if (cpTargetOverride) qs.set("cpTarget", cpTargetOverride);
+      if (rcTargetOverride) qs.set("rcTarget", rcTargetOverride);
+      const res = await fetch(`/api/admin/hosted-cruises?${qs.toString()}`, {
+        cache: "no-store",
+      });
+      const data = (await res.json()) as HostedCruisesBridgeResponse;
+      setBridge(data);
+      if (data.ok) {
+        setBanner({
+          tone: "success",
+          text: "Refreshed live Cruise Promenade & RollCallUSA status.",
+        });
+      } else {
+        setBanner({
+          tone: "error",
+          text: data.error || "Unable to refresh hosted-cruise status.",
+        });
+      }
+    } catch {
+      setBanner({
+        tone: "error",
+        text: "Network error while refreshing hosted-cruise status.",
+      });
+    } finally {
+      setBusyKey(null);
+    }
+  }
+
+  async function runAction(
+    key: string,
+    payload: Record<string, unknown>,
+    successMessage: string,
+  ) {
+    setBusyKey(key);
+    setBanner(null);
+    try {
+      const res = await fetch("/api/admin/hosted-cruises", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          ...(cpTargetOverride ? { cpTarget: cpTargetOverride } : {}),
+          ...(rcTargetOverride ? { rcTarget: rcTargetOverride } : {}),
+        }),
+      });
+      const data = (await res.json()) as HostedCruisesBridgeResponse;
+      if (!res.ok || !data.ok) {
+        setBanner({
+          tone: "error",
+          text: data.error || "Could not save change.",
+        });
+        return;
+      }
+      if (data.snapshot) {
+        setBridge((prev) => ({
+          ...prev,
+          ok: true,
+          error: undefined,
+          snapshot: data.snapshot,
+        }));
+      }
+      setBanner({ tone: "success", text: successMessage });
+    } catch {
+      setBanner({
+        tone: "error",
+        text: "Network error while saving change.",
+      });
+    } finally {
+      setBusyKey(null);
+    }
+  }
+
+  const pendingClaims = (snapshot?.claims ?? []).filter(
+    (c) => c.status === "pending_verification",
+  );
+  const reviewedClaims = (snapshot?.claims ?? []).filter(
+    (c) => c.status !== "pending_verification",
+  );
+  const opsFailures = snapshot?.opsFailures ?? [];
+  const rcHealth = snapshot?.health.rollCallOps;
+
+  return (
+    <div className="space-y-8">
+      {/* Status Banner */}
+      {banner && (
+        <div
+          data-testid="dcc-hosted-admin-status-banner"
+          className={`rounded-2xl border px-4 py-3 text-sm font-semibold ${
+            banner.tone === "success"
+              ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-100"
+              : "border-rose-400/45 bg-rose-500/15 text-rose-100"
+          }`}
+        >
+          {banner.text}
+        </div>
+      )}
+
+      {!bridge.ok && (
+        <section
+          data-testid="dcc-hosted-admin-connection-warning"
+          className="rounded-2xl border border-rose-400/45 bg-rose-500/10 p-5 space-y-3"
+        >
+          <h2 className="text-lg font-black text-rose-200">
+            Cruise Promenade Connection Needs Attention
+          </h2>
+          <p className="text-sm text-rose-100">
+            {bridge.error ||
+              "Could not connect to Cruise Promenade hosted-cruises service."}
+          </p>
+          <p className="text-xs text-zinc-300">
+            Connected target: <code>{bridge.cpBaseUrl}</code>
+          </p>
+          <button
+            type="button"
+            onClick={refreshSnapshot}
+            disabled={busyKey !== null}
+            className="rounded-xl bg-white px-4 py-2 text-xs font-black text-zinc-950 hover:bg-zinc-200"
+          >
+            {busyKey === "refresh" ? "Checking…" : "Retry Connection"}
+          </button>
+        </section>
+      )}
+
+      {/* 1. System Health & Operational Failures */}
+      <section
+        data-testid="dcc-hosted-admin-health-panel"
+        aria-labelledby="health-heading"
+        className="rounded-2xl border border-white/15 bg-white/[0.03] p-5 space-y-4"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 id="health-heading" className="text-lg font-black text-white">
+              1. System Health &amp; Operational Alerts
+            </h2>
+            <p className="text-xs text-zinc-400">
+              Connected to <code>{bridge.cpBaseUrl}</code>
+              {snapshot?.generatedAt
+                ? ` · Updated ${new Date(snapshot.generatedAt).toLocaleTimeString()}`
+                : ""}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {opsFailures.length > 0 && (
+              <button
+                type="button"
+                data-testid="dcc-hosted-clear-failures-btn"
+                disabled={busyKey !== null}
+                onClick={() =>
+                  runAction(
+                    "clear-failures",
+                    { action: "clear_ops_failures" },
+                    "Cleared resolved operational alerts.",
+                  )
+                }
+                className="rounded-xl border border-amber-400/40 bg-amber-500/15 px-3.5 py-2 text-xs font-bold text-amber-100 hover:bg-amber-500/25"
+              >
+                Clear Resolved Alerts ({opsFailures.length})
+              </button>
+            )}
+            <button
+              type="button"
+              data-testid="dcc-hosted-refresh-btn"
+              disabled={busyKey !== null}
+              onClick={refreshSnapshot}
+              className="rounded-xl border border-teal-400/40 bg-teal-500/15 px-3.5 py-2 text-xs font-bold text-teal-100 hover:bg-teal-500/25"
+            >
+              {busyKey === "refresh" ? "Refreshing…" : "Refresh Live Status"}
+            </button>
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-white/10 bg-black/40 p-3.5">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+              DCC ↔ Cruise Promenade Link
+            </div>
+            <div className="mt-1 flex items-center gap-2">
+              <span
+                className={`inline-block h-2.5 w-2.5 rounded-full ${
+                  bridge.ok ? "bg-emerald-400" : "bg-rose-400"
+                }`}
+              />
+              <span className="text-sm font-black text-white">
+                {bridge.ok ? "Connected & Ready" : "Connection Issue"}
+              </span>
+            </div>
+            <div className="mt-1 text-xs text-zinc-400">
+              Service secret:{" "}
+              {snapshot?.health.dccServiceSecretConfigured ||
+              bridge.dccServiceSecretPresent
+                ? "Configured"
+                : "Missing"}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-black/40 p-3.5">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+              Cruise Promenade ↔ RollCallUSA Bridge
+            </div>
+            <div className="mt-1 flex items-center gap-2">
+              <span
+                className={`inline-block h-2.5 w-2.5 rounded-full ${
+                  rcHealth?.reachable && rcHealth?.bridgeSigningConfigured
+                    ? "bg-emerald-400"
+                    : "bg-amber-400"
+                }`}
+              />
+              <span className="text-sm font-black text-white">
+                {rcHealth?.reachable && rcHealth?.bridgeSigningConfigured
+                  ? "Connected & Signed"
+                  : "Needs Attention"}
+              </span>
+            </div>
+            <div className="mt-1 text-xs text-zinc-400">
+              Database: {rcHealth?.databaseReady ? "Ready" : "Unavailable"} ·
+              HMAC:{" "}
+              {snapshot?.health.rollCallBridgeSecretConfigured
+                ? "Ready"
+                : "Missing"}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-black/40 p-3.5">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+              Closed-App Email Alerts (Resend)
+            </div>
+            <div className="mt-1 flex items-center gap-2">
+              <span
+                className={`inline-block h-2.5 w-2.5 rounded-full ${
+                  rcHealth?.liveEmailDeliveryReady
+                    ? "bg-emerald-400"
+                    : "bg-amber-400"
+                }`}
+              />
+              <span className="text-sm font-black text-white">
+                {rcHealth?.liveEmailDeliveryReady
+                  ? `Live Ready${rcHealth.emailFromDomain ? ` (${rcHealth.emailFromDomain})` : ""}`
+                  : "Disabled or Unconfigured"}
+              </span>
+            </div>
+            <div className="mt-1 text-xs text-zinc-400">
+              {rcHealth?.resendConnectivityOk === false
+                ? "Resend API check reported an error"
+                : "Zero message content ever sent in alert emails"}
+            </div>
+          </div>
+        </div>
+
+        {/* Operational Failures Feed */}
+        <div
+          data-testid="dcc-hosted-ops-failures-box"
+          className="rounded-xl border border-white/10 bg-black/35 p-3.5"
+        >
+          <div className="text-xs font-bold uppercase tracking-wider text-zinc-300">
+            Recent Operational Failures ({opsFailures.length})
+          </div>
+          {opsFailures.length === 0 ? (
+            <p className="mt-1 text-xs text-emerald-200">
+              ✓ No unresolved operational failures recorded across enrollment,
+              RollCall sync, or room moderation.
+            </p>
+          ) : (
+            <ul className="mt-2 space-y-2 text-xs">
+              {opsFailures.slice(0, 12).map((item) => (
+                <li
+                  key={item.id}
+                  className="flex flex-wrap items-baseline justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2"
+                >
+                  <div>
+                    <span
+                      className={`mr-2 rounded px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase ${
+                        item.severity === "error"
+                          ? "bg-rose-500/25 text-rose-200"
+                          : "bg-amber-500/25 text-amber-200"
+                      }`}
+                    >
+                      {item.severity}
+                    </span>
+                    <strong className="text-white">{item.summary}</strong>
+                    {item.sailingSlug ? (
+                      <span className="ml-2 text-zinc-400">
+                        ({item.sailingSlug})
+                      </span>
+                    ) : null}
+                  </div>
+                  <span className="font-mono text-[11px] text-zinc-400">
+                    {new Date(item.createdAt).toLocaleString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+
+      {/* 2. Pending Organizer Claims */}
+      <section
+        data-testid="dcc-hosted-claims-panel"
+        aria-labelledby="claims-heading"
+        className="rounded-2xl border border-purple-400/35 bg-purple-500/[0.06] p-5 space-y-4"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 id="claims-heading" className="text-lg font-black text-white">
+              2. Organizer Claim Requests ({pendingClaims.length} Pending)
+            </h2>
+            <p className="text-xs text-zinc-300">
+              Until you approve an organizer claim, travelers join an{" "}
+              <strong>Independent Cruise Promenade Sailing Community</strong>—never
+              an official or verified organizer roster.
+            </p>
+          </div>
+        </div>
+
+        {pendingClaims.length === 0 ? (
+          <div className="rounded-xl border border-white/10 bg-black/35 px-4 py-3 text-xs text-zinc-300">
+            No pending organizer claims waiting for review right now.
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {pendingClaims.map((claim) => {
+              const modeDraft =
+                claimModeDrafts[claim.claimId] ?? "open_private_link";
+              const noteDraft = claimNotes[claim.claimId] ?? "";
+              return (
+                <article
+                  key={claim.claimId}
+                  data-testid={`dcc-claim-card-${claim.claimId}`}
+                  className="rounded-xl border border-purple-400/40 bg-black/50 p-4 space-y-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <span className="text-sm font-black text-white">
+                        {claim.claimantName}
+                      </span>{" "}
+                      <span className="text-xs text-zinc-300">
+                        ({claim.claimantRole}) · {claim.claimantEmailRedacted}
+                      </span>
+                    </div>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                        claim.domainMatchesOfficial
+                          ? "bg-emerald-500/20 text-emerald-200 border border-emerald-400/40"
+                          : "bg-amber-500/20 text-amber-200 border border-amber-400/40"
+                      }`}
+                    >
+                      {claim.domainMatchesOfficial
+                        ? `✓ Official Domain Match (${claim.claimantEmailDomain})`
+                        : `⚠ Different Email Domain (${claim.claimantEmailDomain}) — Verify Manually`}
+                    </span>
+                  </div>
+
+                  <div className="text-xs text-zinc-300 space-y-1">
+                    <div>
+                      <strong>Scope:</strong> {claim.organizerSlug} ·{" "}
+                      {claim.sailingSlug || "All organizer sailings"}
+                    </div>
+                    {claim.verificationNote && (
+                      <div>
+                        <strong>Organizer Note:</strong> {claim.verificationNote}
+                      </div>
+                    )}
+                    {claim.welcomeNoteDraft && (
+                      <div>
+                        <strong>Proposed Welcome Note:</strong>{" "}
+                        {claim.welcomeNoteDraft}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block space-y-1 text-xs">
+                      <span className="font-bold text-zinc-200">
+                        Membership Mode After Approval
+                      </span>
+                      <select
+                        data-testid={`dcc-claim-mode-select-${claim.claimId}`}
+                        value={modeDraft}
+                        onChange={(e) =>
+                          setClaimModeDrafts((prev) => ({
+                            ...prev,
+                            [claim.claimId]: e.target.value as PostClaimMode,
+                          }))
+                        }
+                        className="w-full rounded-lg border border-white/20 bg-zinc-900 px-3 py-2 text-xs text-white"
+                      >
+                        {POST_CLAIM_MODE_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="block space-y-1 text-xs">
+                      <span className="font-bold text-zinc-200">
+                        Owner Review Note (optional)
+                      </span>
+                      <input
+                        type="text"
+                        value={noteDraft}
+                        onChange={(e) =>
+                          setClaimNotes((prev) => ({
+                            ...prev,
+                            [claim.claimId]: e.target.value,
+                          }))
+                        }
+                        placeholder="e.g. Confirmed by phone with organizer"
+                        className="w-full rounded-lg border border-white/20 bg-zinc-900 px-3 py-2 text-xs text-white"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      data-testid={`dcc-claim-approve-btn-${claim.claimId}`}
+                      disabled={busyKey !== null}
+                      onClick={() =>
+                        runAction(
+                          `approve-${claim.claimId}`,
+                          {
+                            action: "review_claim",
+                            claimId: claim.claimId,
+                            decision: "verified",
+                            initialMembershipMode: modeDraft,
+                            reviewDecisionNote: noteDraft || undefined,
+                          },
+                          `Approved claim for ${claim.claimantName}. Page is now marked Verified Organizer.`,
+                        )
+                      }
+                      className="rounded-xl bg-emerald-400 px-4 py-2 text-xs font-black text-zinc-950 hover:bg-emerald-300"
+                    >
+                      Approve Claim
+                    </button>
+                    <button
+                      type="button"
+                      data-testid={`dcc-claim-reject-btn-${claim.claimId}`}
+                      disabled={busyKey !== null}
+                      onClick={() =>
+                        runAction(
+                          `reject-${claim.claimId}`,
+                          {
+                            action: "review_claim",
+                            claimId: claim.claimId,
+                            decision: "rejected",
+                            reviewDecisionNote: noteDraft || undefined,
+                          },
+                          `Rejected claim ${claim.claimId}. Sailing stays an Independent Community.`,
+                        )
+                      }
+                      className="rounded-xl border border-rose-400/45 bg-rose-500/15 px-4 py-2 text-xs font-bold text-rose-100 hover:bg-rose-500/25"
+                    >
+                      Reject Claim
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        {reviewedClaims.length > 0 && (
+          <details className="rounded-xl border border-white/10 bg-black/30 px-4 py-2.5 text-xs text-zinc-300">
+            <summary className="cursor-pointer font-bold text-zinc-200">
+              Reviewed Claim History ({reviewedClaims.length})
+            </summary>
+            <ul className="mt-2 space-y-1.5">
+              {reviewedClaims.map((c) => (
+                <li
+                  key={c.claimId}
+                  className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-1.5"
+                >
+                  <span>
+                    <strong>{c.claimantName}</strong> ({c.claimantEmailRedacted})
+                    · {c.sailingSlug || "Profile"} —{" "}
+                    <strong
+                      className={
+                        c.status === "verified"
+                          ? "text-emerald-300"
+                          : "text-rose-300"
+                      }
+                    >
+                      {c.status.toUpperCase()}
+                    </strong>
+                  </span>
+                  {c.status === "verified" && (
+                    <button
+                      type="button"
+                      disabled={busyKey !== null}
+                      onClick={() =>
+                        runAction(
+                          `revoke-${c.claimId}`,
+                          {
+                            action: "review_claim",
+                            claimId: c.claimId,
+                            decision: "rejected",
+                            reviewDecisionNote: "Reverted to unclaimed by owner",
+                          },
+                          "Reverted organizer claim back to Unclaimed Independent Community.",
+                        )
+                      }
+                      className="rounded border border-white/20 px-2 py-0.5 text-[11px] text-zinc-200 hover:bg-white/10"
+                    >
+                      Revert to Unclaimed
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+      </section>
+
+      {/* 3. Organizer Profile Controls */}
+      {activeOrganizer && (
+        <section
+          data-testid="dcc-hosted-organizer-editor"
+          aria-labelledby="organizer-profile-heading"
+          className="rounded-2xl border border-white/15 bg-white/[0.03] p-5 space-y-4"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2
+                id="organizer-profile-heading"
+                className="text-lg font-black text-white"
+              >
+                3. Organizer Profile: {activeOrganizer.organizerName}
+              </h2>
+              <p className="text-xs text-zinc-400">
+                Official domains allowed:{" "}
+                <code>{activeOrganizer.officialDomain}</code>
+                {activeOrganizer.reservationPortalDomain
+                  ? `, ${activeOrganizer.reservationPortalDomain}`
+                  : ""}
+              </p>
+            </div>
+            <a
+              href={`${bridge.cpBaseUrl}/hosted-cruises/${activeOrganizer.organizerSlug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-xl border border-teal-400/40 bg-teal-500/15 px-3.5 py-1.5 text-xs font-bold text-teal-100 hover:bg-teal-500/25"
+            >
+              Open Organizer Page ↗
+            </a>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="block space-y-1 text-xs">
+              <span className="font-bold text-zinc-200">
+                Official Organizer Website URL
+              </span>
+              <input
+                type="url"
+                data-testid="dcc-org-website-input"
+                value={orgWebsiteUrl}
+                onChange={(e) => setOrgWebsiteUrl(e.target.value)}
+                className="w-full rounded-lg border border-white/20 bg-zinc-900 px-3 py-2 text-xs text-white"
+              />
+            </label>
+
+            <label className="block space-y-1 text-xs">
+              <span className="font-bold text-zinc-200">
+                Organizer Description (shown on profile hero)
+              </span>
+              <textarea
+                rows={2}
+                data-testid="dcc-org-summary-input"
+                value={orgSummary}
+                onChange={(e) => setOrgSummary(e.target.value)}
+                className="w-full rounded-lg border border-white/20 bg-zinc-900 px-3 py-2 text-xs text-white"
+              />
+            </label>
+          </div>
+
+          <div>
+            <button
+              type="button"
+              data-testid="dcc-org-save-btn"
+              disabled={busyKey !== null}
+              onClick={() =>
+                runAction(
+                  "save-org",
+                  {
+                    action: "update_details",
+                    organizerSlug: activeOrganizer.organizerSlug,
+                    officialWebsiteUrl: orgWebsiteUrl,
+                    publicSummary: orgSummary,
+                  },
+                  `Updated ${activeOrganizer.organizerName} profile copy and official link.`,
+                )
+              }
+              className="rounded-xl bg-teal-400 px-4 py-2 text-xs font-black text-zinc-950 hover:bg-teal-300"
+            >
+              Save Organizer Profile
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* 4. Per-Sailing Controls (Membership Mode, Links, Join Queue, Suspend) */}
+      {activeSailing && (
+        <section
+          data-testid="dcc-hosted-sailing-controls"
+          aria-labelledby="sailing-controls-heading"
+          className="rounded-2xl border border-cyan-400/35 bg-white/[0.03] p-5 space-y-6"
+        >
+          <div className="space-y-3">
+            <h2
+              id="sailing-controls-heading"
+              className="text-lg font-black text-white"
+            >
+              4. Sailing Membership, Official Links &amp; Access Controls
+            </h2>
+
+            {/* Sailing Selector Tabs */}
+            <div className="flex flex-wrap gap-2">
+              {sailings.map((s) => {
+                const isSelected = s.sailingSlug === activeSailing.sailingSlug;
+                return (
+                  <button
+                    key={s.sailingSlug}
+                    type="button"
+                    data-testid={`dcc-select-sailing-${s.sailingSlug}`}
+                    onClick={() => setSelectedSailingSlug(s.sailingSlug)}
+                    className={`rounded-xl border px-3.5 py-2 text-left text-xs transition ${
+                      isSelected
+                        ? "border-cyan-300 bg-cyan-400/20 font-black text-white"
+                        : "border-white/15 bg-black/40 font-semibold text-zinc-300 hover:bg-white/10"
+                    }`}
+                  >
+                    <div>{s.shipName}</div>
+                    <div className="text-[11px] text-cyan-200">
+                      {s.dateRangeLabel} ·{" "}
+                      {s.suspended
+                        ? "PAUSED"
+                        : s.claimedStatus === "verified"
+                          ? "Claimed"
+                          : "Unclaimed"}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Sailing Header & Quick Links */}
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/40 p-4">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-base font-black text-white">
+                  {activeSailing.sailingTitle}
+                </h3>
+                <span
+                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
+                    activeSailing.claimedStatus === "verified"
+                      ? "bg-purple-500/25 text-purple-200"
+                      : "bg-zinc-700/70 text-zinc-200"
+                  }`}
+                >
+                  {activeSailing.membershipDescriptor.publicBadgeLabel}
+                </span>
+                {activeSailing.suspended && (
+                  <span className="rounded-full bg-rose-500/30 px-2.5 py-0.5 text-[11px] font-black text-rose-200">
+                    ACCESS PAUSED
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-zinc-300">
+                {activeSailing.cruiseLine} · {activeSailing.dateRangeLabel} ·{" "}
+                {activeSailing.regionLabel}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2 text-xs">
+              <a
+                href={`${bridge.cpBaseUrl}${activeSailing.hostedSailingPath}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-cyan-400/40 bg-cyan-500/15 px-3 py-1.5 font-bold text-cyan-100 hover:bg-cyan-500/25"
+              >
+                View Sailing Page ↗
+              </a>
+              {activeSailing.boardPath && (
+                <a
+                  href={`${bridge.cpBaseUrl}${activeSailing.boardPath}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 font-bold text-white hover:bg-white/20"
+                >
+                  Open Group Board ↗
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* Honest Membership & Zero Cabin-Booking Conflation Ledger */}
+          <div
+            data-testid="dcc-honest-membership-ledger"
+            className="rounded-xl border border-emerald-400/30 bg-emerald-500/[0.05] p-4 space-y-2.5"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-black uppercase tracking-wider text-emerald-300">
+                Honest Membership Counts (Self-Reported Clicks ≠ Cabin Bookings)
+              </span>
+              <span className="rounded-full border border-emerald-400/40 bg-black/50 px-2.5 py-0.5 font-mono text-[11px] font-bold text-emerald-200">
+                Verified Cabin Bookings:{" "}
+                {activeSailing.membershipLedger.verifiedCabinBookingsCount}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-5">
+              <div className="rounded-lg border border-white/10 bg-black/40 p-2.5">
+                <div className="text-[10px] text-zinc-400">
+                  Independent Community
+                </div>
+                <div className="mt-0.5 font-mono text-base font-black text-white">
+                  {
+                    activeSailing.membershipLedger
+                      .selfReportedIndependentParties
+                  }
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/40 p-2.5">
+                <div className="text-[10px] text-zinc-400">
+                  Open Private Link
+                </div>
+                <div className="mt-0.5 font-mono text-base font-black text-white">
+                  {activeSailing.membershipLedger.selfReportedOpenLinkParties}
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/40 p-2.5">
+                <div className="text-[10px] text-zinc-400">
+                  Organizer Approved
+                </div>
+                <div className="mt-0.5 font-mono text-base font-black text-white">
+                  {activeSailing.membershipLedger.organizerApprovedParties}
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/40 p-2.5">
+                <div className="text-[10px] text-zinc-400">Invitation Code</div>
+                <div className="mt-0.5 font-mono text-base font-black text-white">
+                  {activeSailing.membershipLedger.invitationCodeParties}
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/40 p-2.5">
+                <div className="text-[10px] text-zinc-400">
+                  Verified Members
+                </div>
+                <div className="mt-0.5 font-mono text-base font-black text-purple-200">
+                  {
+                    activeSailing.membershipLedger
+                      .verifiedOrganizerMemberParties
+                  }
+                </div>
+              </div>
+            </div>
+            <p className="text-[11px] text-zinc-300">
+              {activeSailing.membershipDescriptor.nonBookingTruthNote}
+            </p>
+          </div>
+
+          {/* Membership Mode Selector */}
+          <div className="rounded-xl border border-white/15 bg-black/40 p-4 space-y-3">
+            <h4 className="text-sm font-black text-white">
+              Choose Group Membership Mode
+            </h4>
+            {activeSailing.claimedStatus !== "verified" ? (
+              <p className="rounded-lg border border-amber-400/35 bg-amber-500/10 px-3.5 py-2.5 text-xs text-amber-100">
+                This sailing is currently <strong>Unclaimed</strong>. All
+                sign-ups automatically enter an{" "}
+                <strong>Independent Cruise Promenade Sailing Community</strong>.
+                Approve an organizer claim above to enable the four official
+                organizer membership modes.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  {POST_CLAIM_MODE_OPTIONS.map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={`flex cursor-pointer items-start gap-2.5 rounded-xl border p-3 text-xs ${
+                        selectedMode === opt.value
+                          ? "border-cyan-300 bg-cyan-400/15 text-white"
+                          : "border-white/10 bg-white/[0.02] text-zinc-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="sailingMembershipMode"
+                        value={opt.value}
+                        checked={selectedMode === opt.value}
+                        onChange={() => setSelectedMode(opt.value)}
+                        className="mt-0.5"
+                      />
+                      <div>
+                        <div className="font-bold text-white">{opt.label}</div>
+                        <div className="mt-0.5 text-[11px] text-zinc-300">
+                          {opt.helper}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+
+                {(selectedMode === "invitation_code" ||
+                  selectedMode === "verified_member") && (
+                  <label className="block max-w-md space-y-1 text-xs">
+                    <span className="font-bold text-cyan-200">
+                      {selectedMode === "verified_member"
+                        ? `Set Verified Member Code ${activeSailing.hasMemberVerificationCode ? "(already set — enter a new code to rotate)" : "(required)"}`
+                        : `Set Organizer Invitation Code ${activeSailing.hasInvitationCode ? "(already set — enter a new code to rotate)" : "(required)"}`}
+                    </span>
+                    <input
+                      type="text"
+                      data-testid="dcc-membership-code-input"
+                      value={accessCodeDraft}
+                      onChange={(e) => setAccessCodeDraft(e.target.value)}
+                      placeholder="e.g. ARNO-EDGE-2028"
+                      className="w-full rounded-lg border border-white/20 bg-zinc-900 px-3 py-2 text-xs text-white"
+                    />
+                  </label>
+                )}
+
+                <button
+                  type="button"
+                  data-testid="dcc-save-membership-mode-btn"
+                  disabled={busyKey !== null}
+                  onClick={() =>
+                    runAction(
+                      "save-mode",
+                      {
+                        action: "set_membership_mode",
+                        organizerSlug: activeSailing.organizerSlug,
+                        sailingSlug: activeSailing.sailingSlug,
+                        membershipMode: selectedMode,
+                        ...(accessCodeDraft.trim()
+                          ? { accessCode: accessCodeDraft.trim() }
+                          : {}),
+                      },
+                      `Updated membership mode for ${activeSailing.shipName}.`,
+                    )
+                  }
+                  className="rounded-xl bg-cyan-300 px-4 py-2 text-xs font-black text-zinc-950 hover:bg-cyan-200"
+                >
+                  Save Membership Mode
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Pending Guest Join Requests Queue */}
+          {activeSailing.joinRequests.length > 0 && (
+            <div
+              data-testid="dcc-join-requests-queue"
+              className="rounded-xl border border-amber-400/35 bg-amber-500/[0.07] p-4 space-y-3"
+            >
+              <h4 className="text-sm font-black text-amber-100">
+                Guest Join Requests ({activeSailing.joinRequests.length})
+              </h4>
+              <div className="space-y-2">
+                {activeSailing.joinRequests.map((req) => (
+                  <div
+                    key={req.requestId}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs"
+                  >
+                    <div>
+                      <strong className="text-white">{req.displayName}</strong>{" "}
+                      · Party of {req.partySize}
+                      {req.groupLabel ? ` · ${req.groupLabel}` : ""} · Status:{" "}
+                      <span className="font-bold uppercase text-cyan-200">
+                        {req.status}
+                      </span>
+                    </div>
+                    {req.status === "pending" && (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          disabled={busyKey !== null}
+                          onClick={() =>
+                            runAction(
+                              `jreq-approve-${req.requestId}`,
+                              {
+                                action: "review_join_request",
+                                organizerSlug: activeSailing.organizerSlug,
+                                sailingSlug: activeSailing.sailingSlug,
+                                requestId: req.requestId,
+                                decision: "approved",
+                              },
+                              `Approved ${req.displayName} into the group planner and RollCall.`,
+                            )
+                          }
+                          className="rounded-lg bg-emerald-400 px-3 py-1 font-black text-zinc-950"
+                        >
+                          Approve Guest
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busyKey !== null}
+                          onClick={() =>
+                            runAction(
+                              `jreq-reject-${req.requestId}`,
+                              {
+                                action: "review_join_request",
+                                organizerSlug: activeSailing.organizerSlug,
+                                sailingSlug: activeSailing.sailingSlug,
+                                requestId: req.requestId,
+                                decision: "rejected",
+                              },
+                              `Declined join request from ${req.displayName}.`,
+                            )
+                          }
+                          className="rounded-lg border border-rose-400/40 bg-rose-500/15 px-3 py-1 font-bold text-rose-100"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Edit Official Cabin Links & Copy */}
+          <div className="rounded-xl border border-white/15 bg-black/40 p-4 space-y-3">
+            <h4 className="text-sm font-black text-white">
+              Edit Official Cabin Links &amp; Sailing Notes
+            </h4>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="block space-y-1 text-xs">
+                <span className="font-bold text-zinc-200">
+                  Official Organizer Sailing Page URL
+                </span>
+                <input
+                  type="url"
+                  data-testid="dcc-sailing-official-url-input"
+                  value={sailingPageUrl}
+                  onChange={(e) => setSailingPageUrl(e.target.value)}
+                  className="w-full rounded-lg border border-white/20 bg-zinc-900 px-3 py-2 text-xs text-white"
+                />
+              </label>
+
+              <label className="block space-y-1 text-xs">
+                <span className="font-bold text-zinc-200">
+                  Official Cabin Reservation Form URL
+                </span>
+                <input
+                  type="url"
+                  data-testid="dcc-sailing-reservation-url-input"
+                  value={reservationFormUrl}
+                  onChange={(e) => setReservationFormUrl(e.target.value)}
+                  className="w-full rounded-lg border border-white/20 bg-zinc-900 px-3 py-2 text-xs text-white"
+                />
+              </label>
+
+              <label className="block space-y-1 text-xs">
+                <span className="font-bold text-zinc-200">
+                  Cabin Booking Guidance Note
+                </span>
+                <textarea
+                  rows={2}
+                  data-testid="dcc-sailing-cabin-note-input"
+                  value={cabinNote}
+                  onChange={(e) => setCabinNote(e.target.value)}
+                  className="w-full rounded-lg border border-white/20 bg-zinc-900 px-3 py-2 text-xs text-white"
+                />
+              </label>
+
+              <label className="block space-y-1 text-xs">
+                <span className="font-bold text-zinc-200">
+                  Host Welcome Note (displayed on sailing hero &amp; board)
+                </span>
+                <textarea
+                  rows={2}
+                  data-testid="dcc-sailing-welcome-note-input"
+                  value={welcomeNote}
+                  onChange={(e) => setWelcomeNote(e.target.value)}
+                  placeholder="Optional welcome message from the organizer"
+                  className="w-full rounded-lg border border-white/20 bg-zinc-900 px-3 py-2 text-xs text-white"
+                />
+              </label>
+            </div>
+
+            <button
+              type="button"
+              data-testid="dcc-save-sailing-details-btn"
+              disabled={busyKey !== null}
+              onClick={() =>
+                runAction(
+                  "save-sailing-details",
+                  {
+                    action: "update_details",
+                    organizerSlug: activeSailing.organizerSlug,
+                    sailingSlug: activeSailing.sailingSlug,
+                    officialSailingPageUrl: sailingPageUrl,
+                    officialReservationFormUrl: reservationFormUrl,
+                    cabinAvailabilityNote: cabinNote,
+                    welcomeNote,
+                  },
+                  `Saved official links and copy for ${activeSailing.shipName}.`,
+                )
+              }
+              className="rounded-xl bg-white px-4 py-2 text-xs font-black text-zinc-950 hover:bg-zinc-200"
+            >
+              Save Official Links &amp; Notes
+            </button>
+          </div>
+
+          {/* Suspend / Restore Access */}
+          <div className="rounded-xl border border-rose-400/30 bg-rose-500/[0.06] p-4 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h4 className="text-sm font-black text-white">
+                  Pause or Restore Sailing Community Access
+                </h4>
+                <p className="text-xs text-zinc-300">
+                  Pausing immediately blocks new Cruise Promenade planner joins
+                  and suspends the linked RollCallUSA chat room while keeping
+                  official organizer cabin-booking links working.
+                </p>
+              </div>
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-black ${
+                  activeSailing.suspended
+                    ? "bg-rose-500/30 text-rose-100"
+                    : "bg-emerald-500/20 text-emerald-200"
+                }`}
+              >
+                {activeSailing.suspended ? "Currently Paused" : "Access Active"}
+              </span>
+            </div>
+
+            {!activeSailing.suspended && (
+              <label className="block max-w-lg space-y-1 text-xs">
+                <span className="font-bold text-zinc-200">
+                  Pause Reason (shown politely to visitors if paused)
+                </span>
+                <input
+                  type="text"
+                  data-testid="dcc-suspend-reason-input"
+                  value={suspendReasonDraft}
+                  onChange={(e) => setSuspendReasonDraft(e.target.value)}
+                  placeholder="e.g. Temporarily paused at organizer request"
+                  className="w-full rounded-lg border border-white/20 bg-zinc-900 px-3 py-2 text-xs text-white"
+                />
+              </label>
+            )}
+
+            <div>
+              {activeSailing.suspended ? (
+                <button
+                  type="button"
+                  data-testid="dcc-restore-sailing-btn"
+                  disabled={busyKey !== null}
+                  onClick={() =>
+                    runAction(
+                      "restore-sailing",
+                      {
+                        action: "set_suspension",
+                        organizerSlug: activeSailing.organizerSlug,
+                        sailingSlug: activeSailing.sailingSlug,
+                        suspended: false,
+                      },
+                      `Restored planner enrollment and RollCallUSA room for ${activeSailing.shipName}.`,
+                    )
+                  }
+                  className="rounded-xl bg-emerald-400 px-4 py-2 text-xs font-black text-zinc-950 hover:bg-emerald-300"
+                >
+                  Restore Access
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  data-testid="dcc-suspend-sailing-btn"
+                  disabled={busyKey !== null}
+                  onClick={() =>
+                    runAction(
+                      "suspend-sailing",
+                      {
+                        action: "set_suspension",
+                        organizerSlug: activeSailing.organizerSlug,
+                        sailingSlug: activeSailing.sailingSlug,
+                        suspended: true,
+                        reason:
+                          suspendReasonDraft.trim() ||
+                          "Temporarily paused by site administrator",
+                      },
+                      `Paused planner enrollment and RollCallUSA room for ${activeSailing.shipName}.`,
+                    )
+                  }
+                  className="rounded-xl border border-rose-400/50 bg-rose-500/20 px-4 py-2 text-xs font-black text-rose-100 hover:bg-rose-500/30"
+                >
+                  Pause Sailing Community &amp; RollCall
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
