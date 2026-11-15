@@ -342,7 +342,7 @@ export async function sendHostedCruisesAdminActionToCp(
       headers,
       body: JSON.stringify(forwardPayload),
       cache: "no-store",
-      signal: AbortSignal.timeout(9000),
+      signal: AbortSignal.timeout(15000),
     });
     const payload = (await res.json().catch(() => null)) as Record<
       string,

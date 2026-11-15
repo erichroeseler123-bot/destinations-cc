@@ -73,6 +73,7 @@ async function authorizeAdminHostedCruisesCaller(
   const candidate = (
     request.headers.get("x-dcc-admin-key") ||
     request.headers.get("x-dcc-internal-key") ||
+    request.headers.get("x-dcc-internal-secret") ||
     bearerToken ||
     ""
   ).trim();
