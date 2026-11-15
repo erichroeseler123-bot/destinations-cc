@@ -64,25 +64,57 @@ export default function HostedCruisesAdminClient({
   const sailings = snapshot?.sailings ?? [];
   const organizers = snapshot?.organizers ?? [];
 
-  const [selectedSailingSlug, setSelectedSailingSlug] = useState<string>(
-    sailings[0]?.sailingSlug ?? "",
+  const [orgFilterQuery, setOrgFilterQuery] = useState<string>("");
+  const [selectedOrganizerSlug, setSelectedOrganizerSlug] = useState<string>(
+    organizers[0]?.organizerSlug ?? "arnos-bear-cruises",
+  );
+  const [selectedSailingKey, setSelectedSailingKey] = useState<string>(
+    sailings[0] ? `${sailings[0].organizerSlug}::${sailings[0].sailingSlug}` : "",
   );
 
   useEffect(() => {
-    if (!selectedSailingSlug && sailings[0]?.sailingSlug) {
-      setSelectedSailingSlug(sailings[0].sailingSlug);
+    if (!selectedOrganizerSlug && organizers[0]?.organizerSlug) {
+      setSelectedOrganizerSlug(organizers[0].organizerSlug);
     }
-  }, [sailings, selectedSailingSlug]);
+  }, [organizers, selectedOrganizerSlug]);
+
+  const filteredOrganizers = organizers.filter((o) => {
+    const q = orgFilterQuery.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      o.organizerName.toLowerCase().includes(q) ||
+      o.organizerSlug.toLowerCase().includes(q) ||
+      o.officialDomain.toLowerCase().includes(q)
+    );
+  });
+
+  const activeOrganizer =
+    organizers.find((o) => o.organizerSlug === selectedOrganizerSlug) ??
+    filteredOrganizers[0] ??
+    organizers[0] ??
+    null;
+
+  const organizerSailings = activeOrganizer
+    ? sailings.filter((s) => s.organizerSlug === activeOrganizer.organizerSlug)
+    : sailings;
+
+  useEffect(() => {
+    const matching = organizerSailings.find(
+      (s) => `${s.organizerSlug}::${s.sailingSlug}` === selectedSailingKey,
+    );
+    if (!matching && organizerSailings[0]) {
+      setSelectedSailingKey(
+        `${organizerSailings[0].organizerSlug}::${organizerSailings[0].sailingSlug}`,
+      );
+    }
+  }, [activeOrganizer?.organizerSlug, organizerSailings, selectedSailingKey]);
 
   const activeSailing =
-    sailings.find((s) => s.sailingSlug === selectedSailingSlug) ??
-    sailings[0] ??
-    null;
-  const activeOrganizer =
-    organizers.find(
-      (o) => o.organizerSlug === (activeSailing?.organizerSlug ?? organizers[0]?.organizerSlug),
+    sailings.find(
+      (s) => `${s.organizerSlug}::${s.sailingSlug}` === selectedSailingKey,
     ) ??
-    organizers[0] ??
+    organizerSailings[0] ??
+    sailings[0] ??
     null;
 
   // Claim review local controls
@@ -679,6 +711,39 @@ export default function HostedCruisesAdminClient({
           aria-labelledby="organizer-profile-heading"
           className="rounded-2xl border border-white/15 bg-white/[0.03] p-5 space-y-4"
         >
+          <div className="grid gap-3 rounded-xl border border-white/10 bg-black/40 p-3.5 sm:grid-cols-2">
+            <label className="block space-y-1 text-xs">
+              <span className="font-bold text-zinc-200">
+                Search Hosted Organizers ({organizers.length} total)
+              </span>
+              <input
+                type="search"
+                data-testid="dcc-org-search-input"
+                value={orgFilterQuery}
+                onChange={(e) => setOrgFilterQuery(e.target.value)}
+                placeholder="Filter by organizer name or domain…"
+                className="w-full rounded-lg border border-white/20 bg-zinc-900 px-3 py-2 text-xs text-white"
+              />
+            </label>
+            <label className="block space-y-1 text-xs">
+              <span className="font-bold text-zinc-200">
+                Select Organizer ({filteredOrganizers.length} shown)
+              </span>
+              <select
+                data-testid="dcc-org-selector"
+                value={activeOrganizer.organizerSlug}
+                onChange={(e) => setSelectedOrganizerSlug(e.target.value)}
+                className="w-full rounded-lg border border-white/20 bg-zinc-900 px-3 py-2 text-xs text-white"
+              >
+                {filteredOrganizers.map((o) => (
+                  <option key={o.organizerSlug} value={o.organizerSlug}>
+                    {o.organizerName} ({o.claimedStatus === "verified" ? "Claimed" : "Independent"})
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2
@@ -773,16 +838,19 @@ export default function HostedCruisesAdminClient({
               4. Sailing Membership, Official Links &amp; Access Controls
             </h2>
 
-            {/* Sailing Selector Tabs */}
+            {/* Sailing Selector Tabs (Scoped to Active Organizer) */}
             <div className="flex flex-wrap gap-2">
-              {sailings.map((s) => {
-                const isSelected = s.sailingSlug === activeSailing.sailingSlug;
+              {organizerSailings.map((s) => {
+                const key = `${s.organizerSlug}::${s.sailingSlug}`;
+                const isSelected =
+                  key ===
+                  `${activeSailing.organizerSlug}::${activeSailing.sailingSlug}`;
                 return (
                   <button
-                    key={s.sailingSlug}
+                    key={key}
                     type="button"
                     data-testid={`dcc-select-sailing-${s.sailingSlug}`}
-                    onClick={() => setSelectedSailingSlug(s.sailingSlug)}
+                    onClick={() => setSelectedSailingKey(key)}
                     className={`rounded-xl border px-3.5 py-2 text-left text-xs transition ${
                       isSelected
                         ? "border-cyan-300 bg-cyan-400/20 font-black text-white"
@@ -1257,6 +1325,227 @@ export default function HostedCruisesAdminClient({
           </div>
         </section>
       )}
+
+      {/* 5. Entity-Scoped Reviews, Public Q&A & Private Safety Reports Moderation */}
+      <section
+        data-testid="dcc-hosted-moderation-panel"
+        aria-labelledby="moderation-heading"
+        className="rounded-2xl border border-amber-400/35 bg-amber-500/[0.04] p-5 space-y-5"
+      >
+        <div>
+          <h2 id="moderation-heading" className="text-lg font-black text-white">
+            5. Traveler Reviews, Public Q&amp;A &amp; Safety Reports Moderation
+          </h2>
+          <p className="text-xs text-zinc-300">
+            Entity-scoped reviews and traveler questions stay out of public search
+            indexes until approved here. Claimed organizers can post official
+            responses but can never suppress or rewrite independent reviews.
+          </p>
+        </div>
+
+        {/* Pending Reviews */}
+        <div className="space-y-2.5">
+          <h3 className="text-sm font-black text-amber-100">
+            Pending Reviews ({snapshot?.moderationQueue?.pendingReviews.length ?? 0} pending ·{" "}
+            {snapshot?.moderationQueue?.approvedReviewsCount ?? 0} published)
+          </h3>
+          {(snapshot?.moderationQueue?.pendingReviews.length ?? 0) === 0 ? (
+            <p className="rounded-xl border border-white/10 bg-black/35 px-4 py-2.5 text-xs text-zinc-300">
+              No pending reviews waiting for moderation.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {snapshot?.moderationQueue?.pendingReviews.map((rev) => (
+                <article
+                  key={rev.reviewId}
+                  data-testid={`dcc-pending-review-${rev.reviewId}`}
+                  className="rounded-xl border border-white/15 bg-black/50 p-4 space-y-2 text-xs"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <span className="rounded bg-cyan-500/20 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-cyan-200">
+                        {rev.primarySubjectType}
+                      </span>{" "}
+                      <strong className="text-white">{rev.headline}</strong> ·{" "}
+                      <span className="font-bold text-amber-300">
+                        {"★".repeat(rev.overallRating)} ({rev.overallRating}/5)
+                      </span>
+                    </div>
+                    <span className="text-zinc-400">
+                      {rev.authorDisplayName} ({rev.authorEmailRedacted}) ·{" "}
+                      {rev.verificationBadge === "verified_sailing_member"
+                        ? "Verified Sailing Member"
+                        : "Verified Email"}
+                    </span>
+                  </div>
+                  <p className="text-zinc-200">{rev.writtenExperience}</p>
+                  <div className="text-[11px] text-zinc-400">
+                    Entity ID: <code>{rev.primarySubjectId}</code>
+                  </div>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <button
+                      type="button"
+                      disabled={busyKey !== null}
+                      onClick={() =>
+                        runAction(
+                          `approve-rev-${rev.reviewId}`,
+                          {
+                            action: "moderate_review",
+                            reviewId: rev.reviewId,
+                            decision: "approved",
+                          },
+                          `Approved review "${rev.headline}".`,
+                        )
+                      }
+                      className="rounded-lg bg-emerald-400 px-3 py-1.5 font-black text-zinc-950 hover:bg-emerald-300"
+                    >
+                      Approve &amp; Publish
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busyKey !== null}
+                      onClick={() =>
+                        runAction(
+                          `reject-rev-${rev.reviewId}`,
+                          {
+                            action: "moderate_review",
+                            reviewId: rev.reviewId,
+                            decision: "rejected",
+                          },
+                          `Rejected review "${rev.headline}".`,
+                        )
+                      }
+                      className="rounded-lg border border-rose-400/40 bg-rose-500/15 px-3 py-1.5 font-bold text-rose-100 hover:bg-rose-500/25"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Pending Public Q&A */}
+        <div className="space-y-2.5">
+          <h3 className="text-sm font-black text-cyan-100">
+            Pending Traveler Questions ({snapshot?.moderationQueue?.pendingQuestions.length ?? 0})
+          </h3>
+          {(snapshot?.moderationQueue?.pendingQuestions.length ?? 0) === 0 ? (
+            <p className="rounded-xl border border-white/10 bg-black/35 px-4 py-2.5 text-xs text-zinc-300">
+              No pending traveler questions waiting for moderation.
+            </p>
+          ) : (
+            <div className="space-y-2.5">
+              {snapshot?.moderationQueue?.pendingQuestions.map((q) => (
+                <article
+                  key={q.questionId}
+                  data-testid={`dcc-pending-question-${q.questionId}`}
+                  className="rounded-xl border border-white/15 bg-black/50 p-3.5 space-y-2 text-xs"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <strong className="text-white">{q.questionText}</strong>
+                    <span className="text-zinc-400">
+                      {q.authorDisplayName} ({q.authorEmailRedacted}) · {q.organizerSlug}
+                      {q.sailingSlug ? ` / ${q.sailingSlug}` : ""}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={busyKey !== null}
+                      onClick={() =>
+                        runAction(
+                          `approve-q-${q.questionId}`,
+                          {
+                            action: "moderate_question",
+                            questionId: q.questionId,
+                            decision: "approved",
+                          },
+                          "Published traveler question.",
+                        )
+                      }
+                      className="rounded-lg bg-emerald-400 px-3 py-1 font-black text-zinc-950"
+                    >
+                      Approve Question
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busyKey !== null}
+                      onClick={() =>
+                        runAction(
+                          `reject-q-${q.questionId}`,
+                          {
+                            action: "moderate_question",
+                            questionId: q.questionId,
+                            decision: "rejected",
+                          },
+                          "Rejected traveler question.",
+                        )
+                      }
+                      className="rounded-lg border border-rose-400/40 bg-rose-500/15 px-3 py-1 font-bold text-rose-100"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Private Safety Reports (Never Public) */}
+        <div className="space-y-2.5">
+          <h3 className="text-sm font-black text-rose-200">
+            Private Safety Reports ({snapshot?.moderationQueue?.safetyReports.filter((r) => r.status === "open").length ?? 0} Open)
+          </h3>
+          {(snapshot?.moderationQueue?.safetyReports.length ?? 0) === 0 ? (
+            <p className="rounded-xl border border-white/10 bg-black/35 px-4 py-2.5 text-xs text-zinc-300">
+              No private safety reports submitted.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {snapshot?.moderationQueue?.safetyReports.map((rep) => (
+                <article
+                  key={rep.reportId}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-rose-400/30 bg-black/50 p-3.5 text-xs"
+                >
+                  <div>
+                    <span className="mr-2 rounded bg-rose-500/25 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-rose-200">
+                      {rep.category}
+                    </span>
+                    <strong className="text-white">{rep.summary}</strong>
+                    <div className="mt-0.5 text-[11px] text-zinc-400">
+                      {rep.organizerSlug}
+                      {rep.sailingSlug ? ` / ${rep.sailingSlug}` : ""} · Reporter:{" "}
+                      {rep.reporterEmailRedacted} · Status: {rep.status.toUpperCase()}
+                    </div>
+                  </div>
+                  {rep.status === "open" && (
+                    <button
+                      type="button"
+                      disabled={busyKey !== null}
+                      onClick={() =>
+                        runAction(
+                          `resolve-safety-${rep.reportId}`,
+                          {
+                            action: "resolve_safety_report",
+                            reportId: rep.reportId,
+                          },
+                          "Marked private safety report as reviewed.",
+                        )
+                      }
+                      className="rounded-lg border border-white/20 bg-white/10 px-3 py-1 font-bold text-white hover:bg-white/20"
+                    >
+                      Mark Reviewed
+                    </button>
+                  )}
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

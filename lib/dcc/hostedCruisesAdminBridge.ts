@@ -120,6 +120,44 @@ export interface HostedCruisesAdminBridgeSnapshot {
     sailingSlug?: string;
     summary: string;
   }>;
+  moderationQueue?: {
+    pendingReviews: Array<{
+      reviewId: string;
+      primarySubjectType: "organizer" | "hosted_sailing" | "ship" | "cruise_line" | "tour";
+      primarySubjectId: string;
+      organizerSlug?: string;
+      sailingSlug?: string;
+      authorDisplayName: string;
+      authorEmailRedacted: string;
+      verificationBadge: "verified_sailing_member" | "verified_email_traveler";
+      overallRating: number;
+      headline: string;
+      writtenExperience: string;
+      createdAt: string;
+    }>;
+    approvedReviewsCount: number;
+    pendingQuestions: Array<{
+      questionId: string;
+      targetType: "organizer" | "hosted_sailing";
+      organizerSlug: string;
+      sailingSlug?: string;
+      authorDisplayName: string;
+      authorEmailRedacted: string;
+      questionText: string;
+      createdAt: string;
+    }>;
+    safetyReports: Array<{
+      reportId: string;
+      organizerSlug: string;
+      sailingSlug?: string;
+      reporterEmailRedacted: string;
+      category: string;
+      summary: string;
+      status: "open" | "reviewed";
+      createdAt: string;
+      reviewedAt?: string;
+    }>;
+  };
 }
 
 export interface HostedCruisesBridgeResponse {
@@ -132,7 +170,7 @@ export interface HostedCruisesBridgeResponse {
 }
 
 const DEFAULT_PREVIEW_CP_BASE_URL =
-  "https://cruisepromenade-git-feat-9ecaaa-erichroeseler123-bots-projects.vercel.app";
+  "https://cruisepromenade-53xym7oo3-erichroeseler123-bots-projects.vercel.app";
 const DEFAULT_PREVIEW_RC_BASE_URL =
   "https://roll-call-usa-git-feat-ar-cf87e0-erichroeseler123-bots-projects.vercel.app";
 
