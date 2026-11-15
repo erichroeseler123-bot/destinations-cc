@@ -1023,7 +1023,7 @@ export function reconcileRezgoItemsAcrossSurfaces(params: {
       summary:
         "Viator product d941-466119P3 (Mendenhall Glacier Waterfall and Whale Watching Tour) is supplied by Dolphin Jet Boat Tours, NOT Juneau Tours & Whale Watch. Juneau Tours & Whale Watch operates Viator prefix 5857 (5857P22, 5857P23, 5857SHUTTLE, 5857P31).",
       safeFallbackBehavior:
-        "466119P3 remains attributed strictly to Dolphin Jet Boat Tours via Viator affiliate checkout; Rezgo inventory from Juneau Tours & Whale Watch is isolated to prefix-5857 / juneau-tours-whale-watch records with direct Rezgo checkout disabled.",
+        "466119P3 remains attributed strictly to Dolphin Jet Boat Tours via Viator affiliate checkout; Rezgo inventory from Juneau Tours & Whale Watch is isolated to prefix-5857 / juneau-tours-whale-watch records using Juneau Tours direct Rezgo checkout when verified.",
     },
   ];
 
@@ -1574,6 +1574,19 @@ export function formatRemainingBufferHms(totalSeconds: number): string {
   return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+export function formatHumanRemainingBuffer(totalSeconds: number): string {
+  const safeMinutes = Math.max(0, Math.floor(totalSeconds / 60));
+  const hours = Math.floor(safeMinutes / 60);
+  const minutes = safeMinutes % 60;
+  if (hours > 0 && minutes > 0) {
+    return `${hours} hr ${minutes} min`;
+  }
+  if (hours > 0) {
+    return `${hours} hr`;
+  }
+  return `${minutes} min`;
+}
+
 /**
  * Evaluates a Rezgo departure option against an optional ship arrival / all-aboard window.
  *
@@ -1711,6 +1724,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
       }
 
       const exactHms = formatRemainingBufferHms(shipBufferSec);
+      const humanBuffer = formatHumanRemainingBuffer(shipBufferSec);
       if (Math.floor(shipBufferSec / 60) < 120) {
         return {
           departureTime: params.departureTime,
@@ -1727,7 +1741,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
           upperBoundRemainingBufferHmsLabel: exactHms,
           status: "reduced_buffer_not_recommended",
           blockedForSailingWindow: false,
-          displayLabel: `${exactHms} buffer · Not recommended`,
+          displayLabel: `${humanBuffer} buffer · Not recommended`,
         };
       }
 
@@ -1773,6 +1787,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
       }
 
       const exactHms = formatRemainingBufferHms(unconfirmedRemainingSec);
+      const humanUnconfirmedBuffer = formatHumanRemainingBuffer(unconfirmedRemainingSec);
       if (Math.floor(unconfirmedRemainingSec / 60) < 120) {
         return {
           departureTime: params.departureTime,
@@ -1789,7 +1804,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
           upperBoundRemainingBufferHmsLabel: exactHms,
           status: "reduced_buffer_not_recommended",
           blockedForSailingWindow: false,
-          displayLabel: `${exactHms} buffer · Not recommended`,
+          displayLabel: `${humanUnconfirmedBuffer} buffer · Not recommended`,
         };
       }
     }
@@ -1843,6 +1858,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
     }
 
     const exactConfirmedHms = formatRemainingBufferHms(remainingAfterTransferSec);
+    const humanConfirmedBuffer = formatHumanRemainingBuffer(remainingAfterTransferSec);
     if (Math.floor(remainingAfterTransferSec / 60) < 120) {
       return {
         departureTime: params.departureTime,
@@ -1859,7 +1875,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
         upperBoundRemainingBufferHmsLabel: exactConfirmedHms,
         status: "reduced_buffer_not_recommended",
         blockedForSailingWindow: false,
-        displayLabel: `Reduced buffer (${exactConfirmedHms} remaining) — not recommended`,
+        displayLabel: `Reduced buffer (${humanConfirmedBuffer} remaining) — not recommended`,
       };
     }
 
@@ -1905,6 +1921,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
     }
 
     const exactHms = formatRemainingBufferHms(remainingSec);
+    const humanRemaining = formatHumanRemainingBuffer(remainingSec);
     if (Math.floor(remainingSec / 60) < 120) {
       return {
         departureTime: params.departureTime,
@@ -1921,7 +1938,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
         upperBoundRemainingBufferHmsLabel: exactHms,
         status: "reduced_buffer_not_recommended",
         blockedForSailingWindow: false,
-        displayLabel: `Reduced buffer (${exactHms} remaining before ${normAllAboard} all-aboard, excluding unconfirmed pier return transfer) — not recommended · Needs verification (Cruise-safe timing unverified)`,
+        displayLabel: `Reduced buffer (${humanRemaining} remaining before ${normAllAboard} all-aboard, excluding unconfirmed pier return transfer) — not recommended · Needs verification (Cruise-safe timing unverified)`,
       };
     }
 
@@ -1940,7 +1957,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
       upperBoundRemainingBufferHmsLabel: exactHms,
       status: "unverified_cruise_timing_pending_transfer_and_pickup",
       blockedForSailingWindow: false,
-      displayLabel: `Needs verification — live operator availability (${exactHms} max clock margin before ${normAllAboard} all-aboard; missing confirmed meeting-point & return-transfer evidence; never treated as cruise-safe) · Cruise-safe timing unverified`,
+      displayLabel: `Needs verification — live operator availability (${humanRemaining} max clock margin before ${normAllAboard} all-aboard; missing confirmed meeting-point & return-transfer evidence; never treated as cruise-safe) · Cruise-safe timing unverified`,
     };
   }
 
@@ -2322,8 +2339,8 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
           tourDirectEnabled
             ? "Checkout is hosted and paid directly through Juneau Tours' Rezgo account. Juneau Tours remains merchant of record; DCC/CP invoices only the agreed commission on completed, non-refunded attributed bookings."
             : approvedSpec && matchedCode
-              ? `Checkout uses approved Viator/DCC partner fallback (#${matchedCode}) — direct Rezgo checkout is not yet enabled.`
-            : "Read-only availability preview — direct Rezgo checkout disabled pending mapping verification.",
+              ? `Checkout uses approved Viator/DCC partner fallback (#${matchedCode}) when direct Rezgo checkout is unavailable.`
+            : "Availability preview pending product mapping verification.",
       };
 
       const minAdult =
@@ -2582,6 +2599,7 @@ export interface PublicJuneauTourCardModel {
 export interface PublicJuneauLiveAvailabilityView {
   ok: boolean;
   operatorName: string;
+  checkedAt: string | null;
   serviceDate: string | null;
   enteredPartySize: number | null;
   partySizePrompt: "How many people are going?";
@@ -2828,9 +2846,10 @@ export function buildPublicJuneauLiveAvailabilityView(
       } else if (assessment.status === "reduced_buffer_not_recommended") {
         timingBucket = "other_available_times";
         reducedBufferHmsLabel = assessment.upperBoundRemainingBufferHmsLabel || null;
-        timingStatusLabel = reducedBufferHmsLabel
-          ? `${reducedBufferHmsLabel} buffer · Not recommended`
-          : "Reduced buffer · Not recommended";
+        timingStatusLabel =
+          assessment.upperBoundRemainingSecondsBeforeTransfer !== null
+            ? `${formatHumanRemainingBuffer(assessment.upperBoundRemainingSecondsBeforeTransfer)} buffer · Not recommended`
+            : "Reduced buffer · Not recommended";
         requiresReducedBufferConfirmation = true;
       } else {
         timingBucket = "confirm_return_timing";
@@ -2968,6 +2987,7 @@ export function buildPublicJuneauLiveAvailabilityView(
   return {
     ok: feed.ok,
     operatorName: operatorDisplayName,
+    checkedAt: feed.checkedAt ?? null,
     serviceDate: feed.dateChecked ?? null,
     enteredPartySize,
     partySizePrompt: "How many people are going?",
@@ -3131,8 +3151,8 @@ export async function revalidatePublicJuneauDepartureBeforeCheckout(params: {
 
   const isReduced = assessment.status === "reduced_buffer_not_recommended";
   const reducedLabel =
-    isReduced && assessment.upperBoundRemainingBufferHmsLabel
-      ? `${assessment.upperBoundRemainingBufferHmsLabel} buffer · Not recommended`
+    isReduced && assessment.upperBoundRemainingSecondsBeforeTransfer !== null
+      ? `${formatHumanRemainingBuffer(assessment.upperBoundRemainingSecondsBeforeTransfer)} buffer · Not recommended`
       : isReduced
         ? "Reduced buffer · Not recommended"
         : null;

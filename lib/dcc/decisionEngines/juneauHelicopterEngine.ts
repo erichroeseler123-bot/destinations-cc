@@ -1086,7 +1086,7 @@ export const JUNEAU_HELICOPTER_CANDIDATE_OPTIONS: CandidateOption[] = [
         "Delivers both aerial icefield landing and classic ground-level Mendenhall viewpoints in one coordinated transfer",
       ],
       limitations: [
-        "Requires at least 6.5 hours in port to preserve a 60-minute return buffer",
+        "Requires at least 7.5 hours in port to preserve DCC's 2-hour (120-minute) return buffer",
       ],
     },
     claimIds: [

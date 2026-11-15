@@ -884,6 +884,10 @@ export function assessLfseJuneauDepartureAgainstShipWindow(params: {
     }
 
     const hms = formatLfseRemainingBufferHms(remainingSec);
+    const safeMins = Math.max(0, Math.floor(remainingSec / 60));
+    const hrs = Math.floor(safeMins / 60);
+    const mins = safeMins % 60;
+    const humanBuffer = hrs > 0 && mins > 0 ? `${hrs} hr ${mins} min` : hrs > 0 ? `${hrs} hr` : `${mins} min`;
     if (Math.floor(remainingSec / 60) < 120) {
       return {
         departureTime: params.departureTime,
@@ -900,7 +904,7 @@ export function assessLfseJuneauDepartureAgainstShipWindow(params: {
         upperBoundRemainingBufferHmsLabel: hms,
         status: "reduced_buffer_not_recommended",
         blockedForSailingWindow: false,
-        displayLabel: `${hms} buffer · Not recommended`,
+        displayLabel: `${humanBuffer} buffer · Not recommended`,
       };
     }
 
@@ -1127,8 +1131,18 @@ export function buildLfsePublicJuneauAvailabilityView(
       } else if (assessment?.status === "reduced_buffer_not_recommended") {
         timingBucket = "other_available_times";
         reducedBufferHmsLabel = assessment.upperBoundRemainingBufferHmsLabel || null;
-        timingStatusLabel = reducedBufferHmsLabel
-          ? `${reducedBufferHmsLabel} buffer · Not recommended`
+        const remSec = assessment.upperBoundRemainingSecondsBeforeTransfer;
+        const remMins = typeof remSec === "number" ? Math.max(0, Math.floor(remSec / 60)) : null;
+        const remLabel =
+          remMins !== null
+            ? Math.floor(remMins / 60) > 0 && remMins % 60 > 0
+              ? `${Math.floor(remMins / 60)} hr ${remMins % 60} min`
+              : Math.floor(remMins / 60) > 0
+                ? `${Math.floor(remMins / 60)} hr`
+                : `${remMins % 60} min`
+            : null;
+        timingStatusLabel = remLabel
+          ? `${remLabel} buffer · Not recommended`
           : "Reduced buffer · Not recommended";
         requiresReducedBufferConfirmation = true;
       }

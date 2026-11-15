@@ -145,7 +145,7 @@ async function runTests() {
     arrivalTime: "08:00",
     allAboardTime: "16:30",
     berth: "franklin_dock",
-    returnBufferMinutes: 60,
+    returnBufferMinutes: 120,
     partySize: 2,
     operatorConfirmedTideLimitFt: null,
   });
@@ -169,7 +169,7 @@ async function runTests() {
         arrivalTime: "08:00",
         allAboardTime: "16:30",
         berth: "franklin_dock",
-        returnBufferMinutes: 60,
+        returnBufferMinutes: 120,
         partySize: 2,
         operatorConfirmedTideLimitFt: null,
       },
@@ -214,7 +214,7 @@ async function runTests() {
     arrivalTime: "14:00",
     allAboardTime: "18:30",
     berth: "aj_dock",
-    returnBufferMinutes: 90,
+    returnBufferMinutes: 120,
     partySize: 2,
   });
   const apiReqShortened = new Request("https://destinationcommandcenter.com/api/v1/v03/evaluate", {
@@ -227,7 +227,7 @@ async function runTests() {
         arrivalTime: "14:00",
         allAboardTime: "18:30",
         berth: "aj_dock",
-        returnBufferMinutes: 90,
+        returnBufferMinutes: 120,
         partySize: 2,
       },
     }),
@@ -250,7 +250,7 @@ async function runTests() {
     arrivalTime: "08:00",
     allAboardTime: "16:30",
     berth: "franklin_dock",
-    returnBufferMinutes: 60,
+    returnBufferMinutes: 120,
     partySize: 2,
     simulateNoaaTimeout: true,
   });
@@ -271,7 +271,7 @@ async function runTests() {
     arrivalTime: "08:00",
     allAboardTime: "16:30",
     berth: "franklin_dock",
-    returnBufferMinutes: 60,
+    returnBufferMinutes: 120,
     partySize: 2,
     operatorConfirmedTideLimitFt: 2.5, // Predicted low tide is +1.4 ft MLLW at 10:36 on 2027-07-15
   });

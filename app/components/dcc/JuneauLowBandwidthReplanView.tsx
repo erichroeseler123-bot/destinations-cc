@@ -157,12 +157,12 @@ export default function JuneauLowBandwidthReplanView({
             defaultValue={input.berth}
             className="mt-1 w-full rounded border border-white/20 bg-zinc-900 px-2 py-1.5 text-white"
           >
-            <option value="CT">CT (Cruise Terminal Walk-Off · 60m buffer)</option>
-            <option value="FKL">FKL (South Franklin Walk-Off · 60m buffer)</option>
-            <option value="AS">AS (Alaska Steamship Walk-Off · 60m buffer)</option>
-            <option value="AJ">AJ Dock (1.2 mi Shuttle · 90m buffer)</option>
-            <option value="ACT">ACT Dock (Shuttle · 90m buffer)</option>
-            <option value="TENDER">TENDER (Anchored Tender · 90m buffer)</option>
+            <option value="CT">CT (Cruise Terminal Walk-Off · 2h / 120m buffer)</option>
+            <option value="FKL">FKL (South Franklin Walk-Off · 2h / 120m buffer)</option>
+            <option value="AS">AS (Alaska Steamship Walk-Off · 2h / 120m buffer)</option>
+            <option value="AJ">AJ Dock (1.2 mi Shuttle · 2h / 120m buffer)</option>
+            <option value="ACT">ACT Dock (Shuttle · 2h / 120m buffer)</option>
+            <option value="TENDER">TENDER (Anchored Tender · 2h / 120m buffer)</option>
             <option value="UNKNOWN">UNKNOWN (Confirm Ship Timing)</option>
           </select>
         </label>

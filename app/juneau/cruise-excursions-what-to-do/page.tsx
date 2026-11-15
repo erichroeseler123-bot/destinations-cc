@@ -69,7 +69,7 @@ export default async function JuneauShortPortCallGuidePage({
               name: "Which Juneau Tours Fit a Short Port Call? | DCC Authority",
               description:
                 "Verify which Juneau excursions fit a short 5.5–6.5 hour CLAA port call with DCC's 2-hour (120-minute) recommended gangway return buffer before confirmed all-aboard.",
-              dateModified: "2026-11-07",
+              dateModified: "2026-11-15",
               isPartOfPath: "/juneau",
             }),
             buildBreadcrumbJsonLd([
@@ -129,12 +129,12 @@ export default async function JuneauShortPortCallGuidePage({
               Book 3.5h Small-Group Whale Watch (331813P1) on Alaska Storefront ↗
             </a>
             <a
-              href={`https://juneauflightdeck.com/juneau-whale-watching-tours?src=dcc-juneau-short-port-call${partnerSuffix}`}
+              href={`https://juneauflightdeck.com/juneau-whale-watching-tours?flight_canceled=1&src=dcc-juneau-short-port-call${partnerSuffix}`}
               data-testid="dcc-short-port-to-jfd-whale-deck"
               data-dcc-next-step="juneauflightdeck"
               className="rounded-full border border-cyan-400/40 bg-cyan-500/15 px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 hover:bg-cyan-500/25 transition"
             >
-              Open Juneau Flight Deck · Whale Deck ↗
+              Flight-Canceled Whale Deck (Juneau Flight Deck) ↗
             </a>
             <Link
               href="/juneau/what-to-do-if-helicopter-tour-canceled"

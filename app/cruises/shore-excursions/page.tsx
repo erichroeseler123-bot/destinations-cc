@@ -134,7 +134,7 @@ export default function CruiseShoreExcursionsPage() {
                 <tr>
                   <td className="px-4 py-3 font-semibold text-white">Juneau · Auke Bay Whale Watching</td>
                   <td className="px-4 py-3 text-emerald-300">210–240 min total</td>
-                  <td className="px-4 py-3">25–30m transfer to Auke Bay each way + 90m ship buffer</td>
+                  <td className="px-4 py-3">25–30m transfer to Auke Bay each way + 2-hour (120m) ship buffer</td>
                   <td className="px-4 py-3">Safe on 7h+ port call; tight on tender calls</td>
                 </tr>
                 <tr>

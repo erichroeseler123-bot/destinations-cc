@@ -568,7 +568,10 @@ export class V03OperatorDirectCheckoutEngine {
       providerSeatCount: departure.remainingSeats,
     });
 
-    if (timingEval.status === "OUTSIDE_CRUISE_WINDOW") {
+    if (
+      timingEval.status === "OUTSIDE_CRUISE_WINDOW" ||
+      timingEval.status === "REDUCED_BUFFER_NOT_RECOMMENDED"
+    ) {
       const qs = new URLSearchParams();
       qs.set("date", tripContext.serviceDate);
       qs.set("party_size", String(tripContext.partySize));

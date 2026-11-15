@@ -602,7 +602,7 @@ describe("87 — DCC Portfolio Network Registry, .well-known/dcc-site Manifests,
   });
 
   it("enforces authoritative DCC minimum buffers and only permits additive preference buffers", async () => {
-    // Juneau authoritative minimum buffer is 90m; client adds 30m preference -> 120m total
+    // Juneau authoritative minimum buffer is 120m; client adds 30m preference -> 150m total
     const additiveIssued = await issueContext({
       sourceSite: "cruisepromenade.com",
       destination: "juneau",
@@ -621,8 +621,8 @@ describe("87 — DCC Portfolio Network Registry, .well-known/dcc-site Manifests,
     );
     assert.equal(redeemedAdditive.success, true);
     if (redeemedAdditive.success) {
-      assert.equal(redeemedAdditive.data.safetyConstraint.bufferMinutes, 120);
-      assert.equal(redeemedAdditive.data.safetyConstraint.latestSafeReturnTime, "16:00");
+      assert.equal(redeemedAdditive.data.safetyConstraint.bufferMinutes, 150);
+      assert.equal(redeemedAdditive.data.safetyConstraint.latestSafeReturnTime, "15:30");
     }
   });
 

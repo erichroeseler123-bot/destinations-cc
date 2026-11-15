@@ -380,7 +380,9 @@ export function evaluateLowBandwidthJuneauReplan(
         reason: uOpt.timeFit.reasonSummary,
         seatCountDisplay:
           uOpt.seatAvailability.confirmedSeatsCount !== null
-            ? `${uOpt.seatAvailability.confirmedSeatsCount} seats confirmed by provider`
+            ? uOpt.seatAvailability.confirmedSeatsCount >= input.partySize
+              ? `Available for your group of ${input.partySize}`
+              : `No departure currently has enough availability for ${input.partySize} people`
             : null,
       };
 

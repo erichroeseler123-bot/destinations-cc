@@ -52,7 +52,7 @@ export type JuneauPortDayScenarioInput = {
   overnightPortCall?: boolean; // true only when ship remains in port past midnight into next day
   partySize?: number; // default 2
   mobilityLevel?: JuneauMobilityLevel; // default "unspecified"
-  returnBufferMinutes?: number; // default 90 for cruise, 0 for independent
+  returnBufferMinutes?: number; // default 120 for cruise, 0 for independent
   weatherCondition?: JuneauWeatherInputState;
   budgetMaxPerPersonUsd?: number | null;
 };
@@ -1683,7 +1683,7 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
     baseUncertainties: [
       "Standard helicopter operator shuttles run loop routes between downtown docks and JNU Airport — confirm in advance whether the operator or a pre-booked valley taxi will drop you at Mendenhall Visitor Center after your flight.",
       "Helicopter duration (3.0–4.25 hr standalone), fare ($399–$699+), check-in cutoff (30–45 min), and cancellation window (24h–7+ days) vary across TEMSCO, Coastal, and NorthStar.",
-      "If low ceilings delay your helicopter departure slot by 45–60 minutes, drop the Mendenhall Visitor Center leg immediately to protect your 90-minute ship return buffer.",
+      "If low ceilings delay your helicopter departure slot by 45–60 minutes, drop the Mendenhall Visitor Center leg immediately to protect your 2-hour (120-minute) ship return buffer.",
     ],
     bookingTransparency: {
       actualOperators: [
@@ -2260,7 +2260,7 @@ export const DEFAULT_JUNEAU_SCENARIO_INPUT: JuneauPortDayScenarioInput = {
   overnightPortCall: false,
   partySize: 2,
   mobilityLevel: "unspecified",
-  returnBufferMinutes: 90,
+  returnBufferMinutes: 120,
   weatherCondition: "unknown_or_forecast_only",
   budgetMaxPerPersonUsd: null,
 };
@@ -2411,7 +2411,7 @@ export function parseJuneauScenarioFromQuery(
       ? bufferNum
       : arrivalDock === "independent_air_ferry"
         ? 0
-        : 90;
+        : 120;
 
   const budgetRaw = getVal("budget");
   const budgetNum =
@@ -2478,7 +2478,7 @@ export function evaluateJuneauPortDayScenario(
   const arrivalDock: JuneauArrivalDock = rawDock
     ? normalizeDockInput(rawDock)
     : "downtown_walkoff";
-  const defaultBuffer = arrivalDock === "independent_air_ferry" ? 0 : 90;
+  const defaultBuffer = arrivalDock === "independent_air_ferry" ? 0 : 120;
 
   let resolvedTravelDate: string | null =
     input.travelDate !== undefined && input.travelDate !== null
@@ -3823,7 +3823,7 @@ export function evaluateJuneauOperatorProductFacts(
     missingConstraintTypes,
     fitsPortDayEstablished: false,
     qualificationNote: verifiedDurationFact
-      ? `Verified total duration (${verifiedDurationFact.value} ${verifiedDurationFact.unit}, fact ${verifiedDurationFact.fact_id}, rev ${verifiedDurationFact.revision}) applies strictly to ${mapping.productName}. A verified duration alone does not establish port-day fit without confirmed ship arrival/all-aboard times, 90-minute return buffer clearance, pickup logistics, age/seat rules, and mobility/weight eligibility.`
+      ? `Verified total duration (${verifiedDurationFact.value} ${verifiedDurationFact.unit}, fact ${verifiedDurationFact.fact_id}, rev ${verifiedDurationFact.revision}) applies strictly to ${mapping.productName}. A verified duration alone does not establish port-day fit without confirmed ship arrival/all-aboard times, 2-hour (120-minute) return buffer clearance, pickup logistics, age/seat rules, and mobility/weight eligibility.`
       : `No current human-confirmed duration fact is active for ${mapping.productName}; all unconfirmed constraints remain unknown.`,
   };
 }

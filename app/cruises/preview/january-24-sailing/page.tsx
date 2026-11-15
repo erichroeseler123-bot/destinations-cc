@@ -144,7 +144,7 @@ export default async function January24SailingPreviewPage({
           </div>
           <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-zinc-200">
             Ship Window: {nassau.evaluatedInput.shipArrivalTime}–
-            {nassau.evaluatedInput.allAboardTime} EST (60m Return Buffer)
+            {nassau.evaluatedInput.allAboardTime} EST (2-Hour / 120m Return Buffer)
           </span>
         </div>
 

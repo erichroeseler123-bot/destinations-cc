@@ -1136,7 +1136,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         },
       ],
       keyDecisionTakeaway:
-        "If you are in Juneau on a cruise port call (typically 5 to 8 hours ashore), treat transport and excursion selection as a single decision: pick one primary corridor (Auke Bay whale watching, Airport helicopter icefield landing, or Mendenhall Valley) with round-trip dock transport included, and maintain a strict 90-minute buffer before ship departure.",
+        "If you are in Juneau on a cruise port call (typically 5 to 8 hours ashore), treat transport and excursion selection as a single decision: pick one primary corridor (Auke Bay whale watching, Airport helicopter icefield landing, or Mendenhall Valley) with round-trip dock transport included, and maintain a 2-hour (120-minute) return buffer before confirmed all-aboard.",
     },
     beforeYouGo: {
       sectionTitle: "Before You Go: Entry Rules, Safety Advisories, Health & Emergency Context",
@@ -1325,7 +1325,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           factualBasis:
             "Up to 5 large cruise vessels can berth/anchor in Juneau simultaneously, placing 12,000–16,000 passengers ashore along South Franklin Street and Egan Drive.",
           dccInterpretation:
-            "DCC enforces a standard 90-minute pre-departure return buffer for Juneau port planning (60 minutes for downtown floatplane bases). Never schedule back-to-back independent tours that require crossing between Auke Bay and Downtown with less than 45 minutes of transition slack.",
+            "DCC applies a standard 2-hour (120-minute) pre-departure return buffer before confirmed all-aboard for Juneau cruise port planning. Never schedule back-to-back independent tours that require crossing between Auke Bay and Downtown with less than 45 minutes of transition slack.",
           citationIds: ["jun-cbj-harbors"],
         },
         {

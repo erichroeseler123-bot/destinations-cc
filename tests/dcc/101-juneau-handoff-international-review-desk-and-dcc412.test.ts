@@ -78,7 +78,7 @@ test("101.1 — Juneau Replay (2027-07-15, 08:00 arrival at AJ Dock): Auke Bay W
   assert.equal(whaleWatch1330.legacyReplanId, "whale-watching-auke-bay");
   assert.equal(whaleWatch1330.timeFit.fitsTimeWindow, false);
   assert.equal(whaleWatch1330.fitsOverallForSelection, false);
-  assert.equal(whaleWatch1330.timeFit.remainingMinutesAfterBuffer, -35);
+  assert.equal(whaleWatch1330.timeFit.remainingMinutesAfterBuffer, -65);
   assert.equal(whaleWatch1330.flightDeckHandoffAllowed, false);
   assert.equal(whaleWatch1330.allowedNextStepType, "view_options_that_fit");
   assert.equal(whaleWatch1330.allowedNextStepLabel, "View options that fit");
@@ -163,7 +163,7 @@ test("101.1 — Juneau Replay (2027-07-15, 08:00 arrival at AJ Dock): Auke Bay W
   );
   assert.ok(apiWhaleWatch);
   assert.equal(apiWhaleWatch.timeFit.fitsTimeWindow, false);
-  assert.equal(apiWhaleWatch.timeFit.remainingMinutesAfterBuffer, -35);
+  assert.equal(apiWhaleWatch.timeFit.remainingMinutesAfterBuffer, -65);
   assert.equal(apiWhaleWatch.allowedNextStepLabel, "View options that fit");
   assert.equal(
     apiWhaleWatch.allowedNextStepHref,
@@ -171,7 +171,7 @@ test("101.1 — Juneau Replay (2027-07-15, 08:00 arrival at AJ Dock): Auke Bay W
   );
 });
 
-test("101.2 — Juneau Replay (2027-07-15, 08:00 arrival at AJ Dock): Auke Bay Whale Watch fits at 15:30 all-aboard (+85m) and allows Continue to Juneau Flight Deck", async () => {
+test("101.2 — Juneau Replay (2027-07-15, 08:00 arrival at AJ Dock): Auke Bay Whale Watch fits at 15:30 all-aboard (+55m after 120m buffer) and allows Continue to Juneau Flight Deck", async () => {
   const unified1530 = await evaluateUnifiedJuneauTripRecheck({
     ship: "Royal Princess",
     date: "2027-07-15",
@@ -189,7 +189,7 @@ test("101.2 — Juneau Replay (2027-07-15, 08:00 arrival at AJ Dock): Auke Bay W
   assert.ok(whaleWatch1530);
   assert.equal(whaleWatch1530.timeFit.fitsTimeWindow, true);
   assert.equal(whaleWatch1530.fitsOverallForSelection, true);
-  assert.equal(whaleWatch1530.timeFit.remainingMinutesAfterBuffer, 85);
+  assert.equal(whaleWatch1530.timeFit.remainingMinutesAfterBuffer, 55);
   assert.equal(whaleWatch1530.flightDeckHandoffAllowed, true);
   assert.equal(
     whaleWatch1530.allowedNextStepType,
@@ -220,7 +220,7 @@ test("101.2 — Juneau Replay (2027-07-15, 08:00 arrival at AJ Dock): Auke Bay W
   );
   assert.ok(lowBwWhale);
   assert.equal(lowBwWhale.fitsNow, true);
-  assert.equal(lowBwWhale.remainingMinutesAfterBuffer, 85);
+  assert.equal(lowBwWhale.remainingMinutesAfterBuffer, 55);
   assert.equal(
     lowBwWhale.allowedNextStepLabel,
     "Continue to Juneau Flight Deck →",

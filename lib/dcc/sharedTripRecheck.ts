@@ -241,28 +241,28 @@ export function mapBerthCodeToEngineDock(berthCode: JuneauBerthCode | JuneauArri
     return {
       berthCode: upper === "CT" ? "CT" : "AS",
       engineDock: "downtown_walkoff",
-      defaultReturnBufferMinutes: 60,
+      defaultReturnBufferMinutes: 120,
     };
   }
   if (upper === "FKL" || upper === "FRANKLIN_DOCK") {
     return {
       berthCode: "FKL",
       engineDock: "franklin_dock",
-      defaultReturnBufferMinutes: 60,
+      defaultReturnBufferMinutes: 120,
     };
   }
   if (upper === "AJ" || upper === "ACT" || upper === "AJ_DOCK") {
     return {
       berthCode: upper === "ACT" ? "ACT" : "AJ",
       engineDock: "aj_dock",
-      defaultReturnBufferMinutes: 90,
+      defaultReturnBufferMinutes: 120,
     };
   }
   if (upper === "TENDER" || upper === "TENDER_ANCHOR") {
     return {
       berthCode: "TENDER",
       engineDock: "tender_anchor",
-      defaultReturnBufferMinutes: 90,
+      defaultReturnBufferMinutes: 120,
     };
   }
   if (upper === "INDEPENDENT_AIR_FERRY") {
@@ -275,7 +275,7 @@ export function mapBerthCodeToEngineDock(berthCode: JuneauBerthCode | JuneauArri
   return {
     berthCode: "UNKNOWN",
     engineDock: "unknown_dock",
-    defaultReturnBufferMinutes: 90,
+    defaultReturnBufferMinutes: 120,
   };
 }
 
@@ -776,22 +776,28 @@ export function evaluateUnifiedJuneauTripRecheckSync(
 
       const seatAvailability: UnifiedJuneauOptionRecheck["seatAvailability"] =
         typeof confirmedSeats === "number"
-          ? confirmedSeats > 0
+          ? confirmedSeats >= partySize
             ? {
                 status: "provider_confirmed_seats",
                 confirmedSeatsCount: confirmedSeats,
-                summary: `${confirmedSeats} seats confirmed by provider`,
+                summary: `Available for your group of ${partySize}`,
               }
-            : {
-                status: "provider_sold_out",
-                confirmedSeatsCount: 0,
-                summary: "Sold out (0 seats confirmed by provider)",
-              }
+            : confirmedSeats > 0
+              ? {
+                  status: "provider_sold_out",
+                  confirmedSeatsCount: confirmedSeats,
+                  summary: `No departure currently has enough availability for ${partySize} people`,
+                }
+              : {
+                  status: "provider_sold_out",
+                  confirmedSeatsCount: 0,
+                  summary: "Sold out for this departure",
+                }
           : {
               status: "unconfirmed_until_operator_check",
               confirmedSeatsCount: null,
               summary:
-                "Seat count hidden until provider confirms live departure inventory",
+                "Available departure times shown; enter your group size to confirm capacity",
             };
 
       const tideBlockingThisOption =
@@ -930,12 +936,12 @@ export function evaluateUnifiedJuneauTripRecheckSync(
               seatAvailability.status === "provider_confirmed_seats"
                 ? {
                     ...offer.seatAvailability,
-                    summary: `Seats: ${seatAvailability.confirmedSeatsCount} confirmed by provider`,
+                    summary: `Group Availability: Available for your group of ${partySize}`,
                   }
                 : seatAvailability.status === "provider_sold_out"
                   ? {
                       ...offer.seatAvailability,
-                      summary: "Seats: Sold out (0 seats confirmed by provider)",
+                      summary: `Group Availability: ${seatAvailability.summary}`,
                     }
                   : offer.seatAvailability,
             withheldReason: checkoutAllowed
@@ -950,7 +956,7 @@ export function evaluateUnifiedJuneauTripRecheckSync(
           : pausedByFlightCancel
             ? "Verify surface transfer pickup time at your pier after helicopter weather cancellation."
             : seatAvailability.status === "provider_sold_out"
-              ? "Provider reported 0 seats remaining; check standby release or select the verified fitting alternative."
+              ? "Selected departure cannot accommodate your group size; check another departure time or select the verified fitting alternative."
               : tideBlockingThisOption
                 ? `Verify Auke Bay ramp tide clearance (${tides.tideSummaryText}) with operator dispatch.`
                 : engOpt.tripVerdictBeforeCheckout.whenNoOfferFitsFallback
@@ -976,9 +982,9 @@ export function evaluateUnifiedJuneauTripRecheckSync(
           ...engOpt.tripVerdictBeforeCheckout.seatAvailabilityBadge,
           label:
             seatAvailability.status === "provider_confirmed_seats"
-              ? `Seat Availability: ${seatAvailability.confirmedSeatsCount} confirmed by provider`
+              ? `Group Availability: Available for your group of ${partySize}`
               : seatAvailability.status === "provider_sold_out"
-                ? "Seat Availability: Sold out (0 confirmed)"
+                ? `Group Availability: ${seatAvailability.summary}`
                 : engOpt.tripVerdictBeforeCheckout.seatAvailabilityBadge.label,
         },
         commercialOffersEnabled: fitsOverallForSelection,

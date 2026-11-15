@@ -687,7 +687,7 @@ test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 2-hour return buffe
     assert.equal(reducedBuffer.upperBoundRemainingBufferHmsLabel, "1:30:00");
     assert.equal(reducedBuffer.status, "reduced_buffer_not_recommended");
     assert.equal(reducedBuffer.blockedForSailingWindow, false);
-    assert.match(reducedBuffer.displayLabel, /1:30:00 remaining/);
+    assert.match(reducedBuffer.displayLabel, /1 hr 30 min remaining/);
 
     // Outside sailing window (14:00 departure + 180m = 17:00 end vs 16:30 all-aboard) -> blocked
     const outsideLate = assessRezgoDepartureAgainstShipWindow({
@@ -1060,7 +1060,7 @@ test("Juneau Tours dock-to-dock timing correction: Celebrity Edge May 24 (13:30�
     assert.equal(edge1500Combo.upperBoundRemainingBufferHmsLabel, "1:30:00");
     assert.equal(edge1500Combo.status, "reduced_buffer_not_recommended");
     assert.equal(edge1500Combo.blockedForSailingWindow, false);
-    assert.equal(edge1500Combo.displayLabel, "1:30:00 buffer · Not recommended");
+    assert.equal(edge1500Combo.displayLabel, "1 hr 30 min buffer · Not recommended");
 
     // - 15:30 5-hour (300m) combo -> returns 20:30 -> 1:00:00 remaining -> Not recommended
     const edge1530Combo = assessRezgoDepartureAgainstShipWindow({
@@ -1075,7 +1075,7 @@ test("Juneau Tours dock-to-dock timing correction: Celebrity Edge May 24 (13:30�
     assert.equal(edge1530Combo.upperBoundRemainingSecondsBeforeTransfer, 3600);
     assert.equal(edge1530Combo.upperBoundRemainingBufferHmsLabel, "1:00:00");
     assert.equal(edge1530Combo.status, "reduced_buffer_not_recommended");
-    assert.equal(edge1530Combo.displayLabel, "1:00:00 buffer · Not recommended");
+    assert.equal(edge1530Combo.displayLabel, "1 hr buffer · Not recommended");
 
     // 3. Exact 120 complete minutes (7200s) vs 119 minutes (7140s) dock-to-dock boundary & documented berth adjustment
     const boundary120m = assessRezgoDepartureAgainstShipWindow({
@@ -1212,8 +1212,8 @@ test("Juneau Tours dock-to-dock timing correction: Celebrity Edge May 24 (13:30�
     assert.deepEqual(
       comboCard.otherAvailableTimes.map((d) => `${d.departureTime24}:${d.timingStatusLabel}`),
       [
-        "15:00:1:30:00 buffer · Not recommended",
-        "15:30:1:00:00 buffer · Not recommended",
+        "15:00:1 hr 30 min buffer · Not recommended",
+        "15:30:1 hr buffer · Not recommended",
       ],
     );
 
@@ -1227,9 +1227,11 @@ test("Juneau Tours dock-to-dock timing correction: Celebrity Edge May 24 (13:30�
       }),
     );
     assert.match(dccEdgeHtml, /Estimated back 2\+ hours before all aboard/);
-    assert.match(dccEdgeHtml, /1:30:00 buffer · Not recommended/);
-    assert.match(dccEdgeHtml, /1:00:00 buffer · Not recommended/);
+    assert.match(dccEdgeHtml, /1 hr 30 min buffer · Not recommended/);
+    assert.match(dccEdgeHtml, /1 hr buffer · Not recommended/);
+    assert.match(dccEdgeHtml, /dcc-juneau-rezgo-checked-at/);
     assert.doesNotMatch(dccEdgeHtml, /Confirm return timing/);
+    assert.doesNotMatch(dccEdgeHtml, /1:30:00|1:00:00|1:59:59/);
 
     // Verify Last Frontier evaluator + SSR card view matches identically
     const lfseEdgeCheck = assessLfseJuneauDepartureAgainstShipWindow({
@@ -1272,9 +1274,10 @@ test("Juneau Tours dock-to-dock timing correction: Celebrity Edge May 24 (13:30�
       }),
     );
     assert.match(lfseEdgeHtml, /Fits your ship schedule/);
-    assert.match(lfseEdgeHtml, /1:30:00 buffer · Not recommended/);
-    assert.match(lfseEdgeHtml, /1:00:00 buffer · Not recommended/);
+    assert.match(lfseEdgeHtml, /1 hr 30 min buffer · Not recommended/);
+    assert.match(lfseEdgeHtml, /1 hr buffer · Not recommended/);
     assert.doesNotMatch(lfseEdgeHtml, /Confirm return timing/);
+    assert.doesNotMatch(lfseEdgeHtml, /1:30:00|1:00:00|1:59:59/);
   } finally {
     clearRezgoReadOnlyCacheForTesting();
     clearLfseJuneauSupplierFeedCacheForTesting();
@@ -1389,7 +1392,7 @@ test("Simplified public Juneau live-availability interface hides seat counts, so
     assert.match(dccUnselectedHtml, /1:00 PM/);
     assert.match(dccUnselectedHtml, /Recommended times/);
     assert.match(dccUnselectedHtml, /Other available times/);
-    assert.match(dccUnselectedHtml, /1:30:00 buffer · Not recommended/);
+    assert.match(dccUnselectedHtml, /1 hr 30 min buffer · Not recommended/);
     assert.match(dccUnselectedHtml, /Estimated back 2\+ hours before all aboard/);
     assert.doesNotMatch(dccUnselectedHtml, /Confirm return timing/);
     assert.match(dccUnselectedHtml, /Doesn’t fit this ship day/);

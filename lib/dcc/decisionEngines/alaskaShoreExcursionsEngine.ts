@@ -553,7 +553,7 @@ export const ALASKA_SHORE_EXCURSIONS_HARD_CONSTRAINT_RULES: HardConstraintRule<A
         ) {
           return {
             passed: false,
-            eliminationReason: `A ${input.portWindowHours}-hour port window is too short to safely complete a 3.5–4.5 hour off-dock excursion plus dock transfers and a 60-minute all-aboard buffer.`,
+            eliminationReason: `A ${input.portWindowHours}-hour port window is too short to safely complete a 3.5–4.5 hour off-dock excursion plus dock transfers and a 2-hour (120-minute) all-aboard buffer.`,
             whatInputChangeWouldAlterResult:
               "Increase port window to 5+ hours, or use the Walkable Port Town Backup for short port calls.",
           };

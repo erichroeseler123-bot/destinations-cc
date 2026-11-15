@@ -81,7 +81,11 @@ export default function PortableTripNetworkBar({
             Keep your group size and pickup details as you compare options
           </h2>
           <p className="mt-0.5 text-xs text-slate-300">
-            Carry your selected date, party size, and {template.dccAuthority.safetyBufferFloorMinutes}-minute return buffer into the storefront when you are ready.
+            Carry your selected date, party size, and{" "}
+            {template.dccAuthority.safetyBufferFloorMinutes === 120
+              ? "2-hour (120-minute)"
+              : `${template.dccAuthority.safetyBufferFloorMinutes}-minute`}{" "}
+            return buffer into the storefront when you are ready.
           </p>
         </div>
 
@@ -136,7 +140,9 @@ export default function PortableTripNetworkBar({
         )}
         <span className="rounded-lg border border-cyan-500/25 bg-cyan-500/10 px-2.5 py-1 text-cyan-200">
           <strong className="text-cyan-300">Return Buffer:</strong>{" "}
-          {template.dccAuthority.safetyBufferFloorMinutes}m minimum
+          {template.dccAuthority.safetyBufferFloorMinutes === 120
+            ? "2 hours (120m) minimum"
+            : `${template.dccAuthority.safetyBufferFloorMinutes}m minimum`}
         </span>
       </div>
 

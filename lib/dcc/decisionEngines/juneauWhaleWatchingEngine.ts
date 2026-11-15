@@ -461,7 +461,7 @@ export const JUNEAU_WHALE_CANDIDATE_OPTIONS: CandidateOption[] = [
     },
     tradeoffs: {
       strengths: [
-        "Fits 5.5+ hour cruise port calls where the 315-minute Glacier Combo would violate the 60-minute all-aboard buffer",
+        "Fits 6+ hour cruise port calls where the 315-minute Glacier Combo would violate DCC's 2-hour (120-minute) all-aboard buffer",
         "150 minutes of dedicated on-water time in Auke Bay / Stephens Passage with a whale sighting guarantee and heated cabin",
       ],
       limitations: [
@@ -578,7 +578,7 @@ export const JUNEAU_WHALE_CANDIDATE_OPTIONS: CandidateOption[] = [
         "Unaffected by low cloud ceilings that cancel helicopter glacier landings",
       ],
       limitations: [
-        "Requires 315 minutes (5 hr 15 min) baseline plus dock transfer and 60-minute ship buffer—unsafe for short 5–6 hour port calls or tender delays",
+        "Requires 315 minutes (5 hr 15 min) baseline plus dock transfer and 2-hour (120-minute) ship buffer—unsafe for short 5–6.5 hour port calls or tender delays",
         "~85-minute Mendenhall stop is tight if you want to hike the full 2-mile round-trip Nugget Falls trail at a leisurely pace",
       ],
     },
@@ -831,7 +831,7 @@ export function computeJuneauWhaleTiming(
     transferEachWay * 2 + interActivityTransfer;
   const checkInLeadMinutes = option.durationMinutes.checkInLead;
   const activityMinutes = option.durationMinutes.activity;
-  const returnBufferMinutes = isDowntownWalkable ? 60 : 120;
+  const returnBufferMinutes = 120;
   const requiredTotalMinutes =
     checkInLeadMinutes +
     transferMinutesRoundTrip +
@@ -992,13 +992,13 @@ export const JUNEAU_WHALE_PREFERENCE_RULES: PreferenceRule<JuneauWhaleAnswerInpu
         if (timing.netSlackMinutes !== null && timing.netSlackMinutes >= 90) {
           return {
             points: 30,
-            reason: `Comfortable +${timing.netSlackMinutes} minutes of slack beyond the 60-minute all-aboard buffer.`,
+            reason: `Comfortable +${timing.netSlackMinutes} minutes of slack beyond the 2-hour (120-minute) all-aboard buffer.`,
           };
         }
         if (timing.netSlackMinutes !== null && timing.netSlackMinutes >= 30) {
           return {
             points: 20,
-            reason: `Provides +${timing.netSlackMinutes} minutes of net slack beyond the 60-minute all-aboard buffer.`,
+            reason: `Provides +${timing.netSlackMinutes} minutes of net slack beyond the 2-hour (120-minute) all-aboard buffer.`,
           };
         }
         return { points: 10, reason: null };
@@ -1148,7 +1148,7 @@ export const JUNEAU_WHALE_DECISION_ENGINE: DecisionEngineDefinition<JuneauWhaleA
       ],
       methodologySteps: [
         "Filter by verified seasonal operating months (months 4–10 for Direct Auke Bay Whale; months 5–9 for Mendenhall Glacier Combo and USFS Shuttle).",
-        "Compute exact berth-adjusted dock-to-dock timing using JUNEAU_DOCK_TRANSFER_TABLE plus a mandatory 60-minute all-aboard ship buffer.",
+        "Compute exact berth-adjusted dock-to-dock timing using JUNEAU_DOCK_TRANSFER_TABLE plus DCC's 2-hour (120-minute) recommended all-aboard ship buffer.",
         "Apply motion-sensitivity and NOAA Station 9452210 minus-tide Statter Harbor ramp slope checks.",
         "Rank viable candidates by standalone vs. glacier-combo preference with zero commercial bias (commissionInfluenceOnRanking: 0).",
       ],

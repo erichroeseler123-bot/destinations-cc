@@ -9,12 +9,12 @@ import {
 export const dynamic = "force-dynamic";
 
 const BERTH_OPTIONS: Array<{ value: LowBandwidthJuneauBerth; label: string }> = [
-  { value: "CT", label: "CT — Cruise Ship Terminal (Downtown, 60m buffer)" },
-  { value: "FKL", label: "FKL — South Franklin Dock (60m buffer)" },
-  { value: "AS", label: "AS — Alaska Steamship Dock (Downtown, 60m buffer)" },
-  { value: "ACT", label: "ACT — Alaska Cruise Terminal (90m shuttle buffer)" },
-  { value: "AJ", label: "AJ — AJ Dock (90m shuttle buffer)" },
-  { value: "TENDER", label: "TENDER — Anchor / Tender (90m tender buffer)" },
+  { value: "CT", label: "CT — Cruise Ship Terminal (Downtown, 2-hour / 120m buffer)" },
+  { value: "FKL", label: "FKL — South Franklin Dock (2-hour / 120m buffer)" },
+  { value: "AS", label: "AS — Alaska Steamship Dock (Downtown, 2-hour / 120m buffer)" },
+  { value: "ACT", label: "ACT — Alaska Cruise Terminal (Shuttle, 2-hour / 120m buffer)" },
+  { value: "AJ", label: "AJ — AJ Dock (Shuttle, 2-hour / 120m buffer)" },
+  { value: "TENDER", label: "TENDER — Anchor / Tender (2-hour / 120m buffer)" },
   { value: "UNKNOWN", label: "UNKNOWN — Unconfirmed Berth (Confirm ship timing)" },
 ];
 

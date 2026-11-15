@@ -19,6 +19,21 @@ interface JuneauLiveAvailabilitySectionProps {
 
 const PARTY_SIZE_CHOICES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12];
 
+function formatLiveCheckedAt(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+    timeZoneName: "short",
+  });
+}
+
 export function JuneauLiveAvailabilitySection({
   initialView,
   initialDate,
@@ -195,9 +210,17 @@ export function JuneauLiveAvailabilitySection({
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75">
             Select your port date and group size to check live departure times for{" "}
-            <strong className="text-white">{view.operatorName}</strong>.
+            <strong className="text-white">{view.operatorName}</strong>. Available departure times are shown first, and seat capacity is verified once you select your group size.
           </p>
         </div>
+        {formatLiveCheckedAt(view.checkedAt) ? (
+          <span
+            data-testid="dcc-juneau-rezgo-checked-at"
+            className="rounded-full border border-emerald-400/35 bg-emerald-500/10 px-3.5 py-1 text-xs font-semibold text-emerald-200"
+          >
+            Live Rezgo feed checked {formatLiveCheckedAt(view.checkedAt)}
+          </span>
+        ) : null}
       </div>
 
       <form

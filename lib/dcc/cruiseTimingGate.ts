@@ -302,6 +302,11 @@ export function evaluateCruiseTimingWindow(
   }
 
   const exactRemainingBufferHms = formatMinutesAsHms(marginBeforeAllAboardMinutes);
+  const safeMins = Math.max(0, Math.floor(marginBeforeAllAboardMinutes));
+  const hrs = Math.floor(safeMins / 60);
+  const mins = safeMins % 60;
+  const humanRemainingLabel =
+    hrs > 0 && mins > 0 ? `${hrs} hr ${mins} min` : hrs > 0 ? `${hrs} hr` : `${mins} min`;
 
   if (estimatedGangwayReturnMins > latestSafeGangwayReturnMins) {
     return {
@@ -314,7 +319,7 @@ export function evaluateCruiseTimingWindow(
       confirmedAllAboardLocal: formatHhMm(confirmedAllAboardMins),
       marginBeforeAllAboardMinutes,
       exactRemainingBufferHms,
-      reason: `Reduced buffer (${exactRemainingBufferHms} remaining before ${formatHhMm(confirmedAllAboardMins)} all-aboard) — not recommended under DCC's ${dccBufferMinutes}-minute (2-hour return buffer) policy.`,
+      reason: `Reduced buffer (${humanRemainingLabel} remaining before ${formatHhMm(confirmedAllAboardMins)} all-aboard) — not recommended under DCC's ${dccBufferMinutes}-minute (2-hour return buffer) policy.`,
       seatCountDisplay,
     };
   }
@@ -329,7 +334,7 @@ export function evaluateCruiseTimingWindow(
     confirmedAllAboardLocal: formatHhMm(confirmedAllAboardMins),
     marginBeforeAllAboardMinutes,
     exactRemainingBufferHms,
-    reason: `Recommended — cleared with ${exactRemainingBufferHms} (${marginBeforeAllAboardMinutes}m) margin before confirmed all-aboard (${formatHhMm(confirmedAllAboardMins)}), meeting DCC's ${dccBufferMinutes}-minute (2-hour return buffer) policy.`,
+    reason: `Recommended — cleared with ${humanRemainingLabel} (${marginBeforeAllAboardMinutes}m) margin before confirmed all-aboard (${formatHhMm(confirmedAllAboardMins)}), meeting DCC's ${dccBufferMinutes}-minute (2-hour return buffer) policy.`,
     seatCountDisplay,
   };
 }

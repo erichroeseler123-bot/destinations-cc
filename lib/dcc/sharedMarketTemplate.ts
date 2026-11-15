@@ -294,7 +294,7 @@ export const SHARED_MARKET_TEMPLATES: Record<
       safetyProfileKey: "juneau",
       safetyBufferFloorMinutes: DCC_SAFETY_PROFILES.juneau.defaultBufferMinutes,
       safetyBufferSummary:
-        "60–90 minute DCC gangway return buffer enforced against CLAA schedule and ship-confirmed all-aboard time.",
+        "2-hour (120-minute) DCC gangway return buffer enforced against CLAA schedule and ship-confirmed all-aboard time.",
     },
     partnerAndRecovery: {
       partnerShareLinkIds: PARTNER_SHARE_LINKS.filter(
@@ -348,11 +348,11 @@ export const SHARED_MARKET_TEMPLATES: Record<
         "Confirm ship timing",
         "Outside safe buffer",
         "Booking requested",
-        "provider-confirmed seats remaining",
+        "Available for your group size",
       ],
       optionNarrowingAxes: [
         "Cruise berth transfer math (CT, AS, FKL, AJD)",
-        "Confirmed all-aboard cutoff + 60–90m safety buffer",
+        "Confirmed all-aboard cutoff + 2-hour (120m) return buffer",
         "Same-day PAJN weather backup eligibility (surface catamaran vs. VFR helicopter)",
       ],
     },
@@ -411,7 +411,7 @@ export const SHARED_MARKET_TEMPLATES: Record<
         targetSiteId: "lastfrontiershoreexcursions",
         targetDomain: "www.lastfrontiershoreexcursions.com",
         baseUrl:
-          "https://www.lastfrontiershoreexcursions.com/juneau-whale-watching-tours",
+          "https://www.lastfrontiershoreexcursions.com/juneau/whale-watching",
         whyItFitsNext:
           "Carries your cruise ship and party size across the Alaska storefront for companion port days.",
         reusedTripFields: [

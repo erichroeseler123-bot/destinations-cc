@@ -452,7 +452,7 @@ export default function CategoryDecisionEngineExperience({
                     travelMonth: 2,
                     startingPoint: "cruise_ship_pier",
                     availableWindowMinutes: 240,
-                    cruiseReturnBufferMinutes: 60,
+                    cruiseReturnBufferMinutes: 120,
                   });
                 }}
                 className="rounded-lg border border-cyan-500/30 bg-cyan-950/40 px-2.5 py-1 text-xs text-cyan-200 hover:bg-cyan-900/50"

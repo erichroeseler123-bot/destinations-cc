@@ -21,11 +21,11 @@ describe("Priority 1: Low-Bandwidth Juneau Replanning View & Handoff", () => {
   it("enforces a 50 KB compressed first-load target and evaluates updated arrival / all-aboard times", () => {
     assert.equal(LOW_BANDWIDTH_JUNEAU_COMPRESSED_TARGET_BYTES, 50 * 1024);
 
-    // Tight port call (e.g. delayed arrival at 14:30, all-aboard at 19:30 on AJ Dock — 300 min total, 90-min AJ buffer + 20m transfer + 20m checkin = 130m overhead -> 180m Mendenhall needs 310m or on CT dock 60m buffer + 10m walk + 20m checkin = 90m overhead + 180m = 270m fits!)
+    // Tight port call (arrival at 13:00, all-aboard at 18:45 on CT Dock — 345 min total; 120m canonical buffer + 10m walk + 20m checkin = 150m overhead + 180m Mendenhall = 330m fits!)
     const tightPlan = evaluateLowBandwidthJuneauReplan({
       ship: "Discovery Princess",
       date: "2026-07-15",
-      arrivalTime: "14:00",
+      arrivalTime: "13:00",
       allAboardTime: "18:45",
       berth: "CT",
       partySize: 4,
@@ -35,7 +35,7 @@ describe("Priority 1: Low-Bandwidth Juneau Replanning View & Handoff", () => {
     });
 
     assert.equal(tightPlan.input.ship, "Discovery Princess");
-    assert.equal(tightPlan.input.arrivalTime, "14:00");
+    assert.equal(tightPlan.input.arrivalTime, "13:00");
     assert.equal(tightPlan.input.allAboardTime, "18:45");
     assert.equal(tightPlan.input.berth, "CT");
     assert.equal(tightPlan.input.partySize, 4);
@@ -47,7 +47,7 @@ describe("Priority 1: Low-Bandwidth Juneau Replanning View & Handoff", () => {
       ),
     );
 
-    // With 4h 45m (285 min) on CT dock: Mendenhall shuttle (180m + 90m overhead = 270m) fits; Whale Watch (210m + 90m = 300m) does not fit
+    // With 5h 45m (345 min) on CT dock: Mendenhall shuttle (180m + 150m overhead = 330m) fits; Whale Watch (210m + 150m = 360m) does not fit
     const mendenhall = tightPlan.options.find(
       (o) => o.optionId === "mendenhall-glacier-shuttle",
     );

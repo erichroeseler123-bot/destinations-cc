@@ -63,8 +63,7 @@ const APPROVED_WHALE_OFFERS = [
   {
     code: "466119P3",
     title: "Mendenhall Glacier Waterfall and Whale Watching Tour",
-    operator:
-      "Dolphin Jet Boat Tours (Verified Viator Supplier — Direct Referral Credit Pending Match Confirmation)",
+    operator: "Dolphin Jet Boat Tours (Verified Viator Supplier)",
     durationMinutes: 330,
     durationLabel: "5.5 hours dock-to-dock",
     priceLabel: "From $199–$225 / adult",
@@ -78,8 +77,7 @@ const APPROVED_WHALE_OFFERS = [
   {
     code: "5857SHUTTLE",
     title: "Mendenhall Glacier Express Shuttle & Visitor Center",
-    operator:
-      "Juneau Tours & Whale Watch (Viator #5857SHUTTLE — Direct Referral Credit Pending Confirmation)",
+    operator: "Juneau Tours & Whale Watch (Viator #5857SHUTTLE · Approved Partner Checkout)",
     durationMinutes: 180,
     durationLabel: "3.0 hours dock-to-dock",
     priceLabel: "From $79–$80 / adult",
@@ -92,19 +90,19 @@ const APPROVED_WHALE_OFFERS = [
   },
 ];
 
-function JsonLdGraph() {
+function JsonLdGraph({ dateModified }: { dateModified: string }) {
   const optionItems = [
-    {
-      name: "Juneau Flight Deck — Whale Deck Experience",
-      description:
-        "Juneau Whale Deck with CLAA cruise port timing, PAJN METAR weather context, and flight-cancellation backup flow.",
-      url: "https://juneauflightdeck.com/juneau-whale-watching-tours",
-    },
     {
       name: "Last Frontier Shore Excursions — Juneau Whale Watching",
       description:
-        "Alaska storefront with approved whale-watching checkout links and cruise-window filtering.",
+        "Primary Alaska shore-excursion storefront with live Juneau Tours operator availability and 2-hour cruise return buffer filtering.",
       url: "https://www.lastfrontiershoreexcursions.com/juneau/whale-watching",
+    },
+    {
+      name: "Juneau Flight Deck — Helicopter Cancellation Whale Deck Recovery",
+      description:
+        "Same-day Juneau Flight Deck recovery flow (?flight_canceled=1) with CLAA cruise port timing and PAJN METAR weather context when helicopter tours hold.",
+      url: "https://juneauflightdeck.com/juneau-whale-watching-tours?flight_canceled=1",
     },
     {
       name: "Whale watching vs. glacier tour decision lane",
@@ -124,7 +122,7 @@ function JsonLdGraph() {
             name: "Juneau Whale Watching Tours & Whale Deck Authority",
             description:
               "DCC public authority for Juneau whale-watching, live Juneau Tours operator availability, CLAA port-call timing, 2-hour minimum recommended gangway return buffers, and flight-cancellation backup routing.",
-            dateModified: "2026-11-12",
+            dateModified,
             isPartOfPath: "/juneau",
           }),
           buildBreadcrumbJsonLd([
@@ -242,19 +240,18 @@ export default async function JuneauWhaleWatchingToursPage({
     JUNEAU_WHALE_DECISION_ENGINE.defaultExampleInput,
   ) as unknown as DecisionResult<Record<string, unknown>>;
 
-  const whaleDeckUrl = backupContext.backupFlowOpen
-    ? `https://juneauflightdeck.com/juneau-whale-watching-tours?flight_canceled=1${cancelRefParam ? `&cancel_ref=${encodeURIComponent(cancelRefParam)}` : ""}&src=dcc-juneau-whale-authority`
-    : "https://juneauflightdeck.com/juneau-whale-watching-tours?src=dcc-juneau-whale-authority";
+  const whaleDeckUrl = `https://juneauflightdeck.com/juneau-whale-watching-tours?flight_canceled=1${cancelRefParam ? `&cancel_ref=${encodeURIComponent(cancelRefParam)}` : ""}&src=dcc-juneau-whale-authority`;
   const primarySpecialistUrl =
     "https://www.lastfrontiershoreexcursions.com/juneau/whale-watching?src=dcc-juneau-whale-authority";
   const comboDecisionUrl =
     "https://www.lastfrontiershoreexcursions.com/decision/whale-watching-vs-glacier-tour?src=dcc-juneau-whale-authority";
   const portWindowUrl =
     "https://www.lastfrontiershoreexcursions.com/juneau/excursions-by-cruise-ship-time?src=dcc-juneau-whale-authority";
+  const liveFeedDateIso = (juneauLiveFeed.checkedAt || new Date().toISOString()).slice(0, 10);
 
   return (
     <main className="min-h-screen bg-[#05070b] px-6 py-10 text-white md:py-14">
-      <JsonLdGraph />
+      <JsonLdGraph dateModified={liveFeedDateIso} />
       <div className="mx-auto max-w-5xl space-y-6">
         <header className="overflow-hidden rounded-[2.2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(245,179,75,0.12),transparent_28%),linear-gradient(180deg,#0d1118_0%,#06080d_100%)]">
           <img
@@ -283,24 +280,24 @@ export default async function JuneauWhaleWatchingToursPage({
             whale route first.
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-8 text-white/75 md:text-lg">
-            DCC checks whether you can get from your Juneau cruise berth to Auke Bay check-in, complete the tour, and return to the gangway with DCC&apos;s <strong>2-hour (120-minute) minimum recommended return buffer</strong> before your ship&apos;s confirmed all-aboard cutoff — then surfaces live read-only operator departures and routes you to <strong>Juneau Flight Deck (Whale Deck)</strong> or <strong>Last Frontier Shore Excursions</strong> to book.
+            DCC checks whether you can get from your Juneau cruise berth to Auke Bay check-in, complete the tour, and return to the gangway with DCC&apos;s <strong>2-hour (120-minute) minimum recommended return buffer</strong> before your ship&apos;s confirmed all-aboard cutoff — then surfaces live <strong>Juneau Tours &amp; Whale Watch</strong> direct Rezgo departures alongside <strong>Last Frontier Shore Excursions</strong> and <strong>Juneau Flight Deck</strong> recovery paths.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <a
-              href={whaleDeckUrl}
-              data-testid="dcc-to-jfd-whale-deck"
-              data-dcc-next-step="juneauflightdeck"
-              className="rounded-full bg-[#f5b34b] px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#07111d] transition hover:bg-[#f7bf6a]"
-            >
-              Open Juneau Flight Deck · Whale Deck ↗
-            </a>
             <a
               href={primarySpecialistUrl}
               data-testid="dcc-to-lfse-whale"
               data-dcc-next-step="lastfrontiershoreexcursions"
-              className="rounded-full border border-emerald-400/40 bg-emerald-500/15 px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-emerald-200 transition hover:bg-emerald-500/25"
+              className="rounded-full bg-[#f5b34b] px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#07111d] transition hover:bg-[#f7bf6a]"
             >
               Open Alaska Storefront (Last Frontier) ↗
+            </a>
+            <a
+              href={whaleDeckUrl}
+              data-testid="dcc-to-jfd-whale-deck"
+              data-dcc-next-step="juneauflightdeck"
+              className="rounded-full border border-emerald-400/40 bg-emerald-500/15 px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-emerald-200 transition hover:bg-emerald-500/25"
+            >
+              Flight-Canceled Whale Deck (Juneau Flight Deck) ↗
             </a>
             <a
               href="/juneau/whale-watching-tours?flight_canceled=1"
@@ -412,7 +409,7 @@ export default async function JuneauWhaleWatchingToursPage({
               </h2>
             </div>
             <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-white/80">
-              Seat counts shown only when provider-confirmed
+              2-hour (120-minute) gangway return standard
             </span>
           </div>
 
@@ -503,7 +500,7 @@ export default async function JuneauWhaleWatchingToursPage({
                   <p className="text-xs text-white/70">{offer.operator}</p>
                   <p className="text-sm font-bold text-[#f5b34b]">{offer.priceLabel}</p>
                   <p className="text-[11px] text-white/60">
-                    Timing status: <strong>{timingEval.statusBadgeLabel}</strong> · Seat count shown only when provider-confirmed.
+                    Timing status: <strong>{timingEval.statusBadgeLabel}</strong> · Select your group size at checkout to verify capacity.
                   </p>
                 </div>
                 <div className="space-y-2 pt-2">
@@ -529,21 +526,21 @@ export default async function JuneauWhaleWatchingToursPage({
             ))}
           </div>
 
-          {/* Pending Direct Checkout Path: Juneau Tours & Whale Watch (10% Direct Deal + 466119P3 Supplier Reconciliation) */}
+          {/* Direct Rezgo Checkout Live: Juneau Tours & Whale Watch + 466119P3 Supplier Separation */}
           <div
             data-testid="dcc-juneau-tours-pending-direct"
-            className="rounded-2xl border border-amber-400/35 bg-amber-500/10 p-5 space-y-2"
+            className="rounded-2xl border border-emerald-400/35 bg-emerald-500/10 p-5 space-y-2"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-black uppercase tracking-wider text-amber-200">
-                Supplier Reconciliation &amp; Direct Rollout · Juneau Tours &amp; Whale Watch vs. Dolphin Jet Boat Tours (466119P3)
+              <span className="text-xs font-black uppercase tracking-wider text-emerald-200">
+                Verified Operator Attribution · Juneau Tours &amp; Whale Watch vs. Dolphin Jet Boat Tours (466119P3)
               </span>
-              <span className="rounded-full border border-amber-300/40 bg-black/40 px-3 py-0.5 text-[11px] font-bold text-amber-200">
-                Direct Referral Credit Pending Match Confirmation
+              <span className="rounded-full border border-emerald-300/40 bg-black/40 px-3 py-0.5 text-[11px] font-bold text-emerald-200">
+                Direct Rezgo Checkout Live
               </span>
             </div>
             <p className="text-xs text-white/85 leading-6">
-              <strong>Supplier Record Reconciliation:</strong> Viator product <code>466119P3</code> (<em>Mendenhall Glacier Waterfall and Whale Watching Tour</em>) lists <strong>Dolphin Jet Boat Tours</strong> as the verified supplier, whereas <strong>Juneau Tours &amp; Whale Watch</strong> operates Viator supplier prefix <code>5857</code> (<code>5857P22</code> <em>Mendenhall Glacier Park and Ultimate Whale Watch Combo</em>, <code>5857P23</code> <em>Ultimate Juneau Whale Watch</em>, and <code>5857SHUTTLE</code> <em>Mendenhall Glacier Express</em>). Direct 10% Rezgo / seat-block referral credit for <strong>Juneau Tours &amp; Whale Watch</strong> remains <strong>pending until the operator match is confirmed</strong>; <code>466119P3</code> checkouts route via Viator affiliate attribution for Dolphin Jet Boat Tours.
+              <strong>Operator Fulfillment Separation:</strong> Direct Rezgo checkout with <strong>Juneau Tours &amp; Whale Watch</strong> is live in the availability section above — select your port date, group size, and departure time to book directly with Juneau Tours. Separately, Viator product <code>466119P3</code> (<em>Mendenhall Glacier Waterfall and Whale Watching Tour</em>) is operated by <strong>Dolphin Jet Boat Tours</strong> and books via approved Viator partner checkout.
             </p>
           </div>
         </section>
@@ -574,26 +571,26 @@ export default async function JuneauWhaleWatchingToursPage({
               Compare Juneau whale watching on Juneau Flight Deck or Last Frontier Shore Excursions
             </h2>
             <p className="mt-3 text-sm leading-7 text-white/68">
-              Once you have confirmed your ship&apos;s usable shore window (typically 3.5 to 4.5 hours door-to-door for single-activity Auke Bay whale watching, or 5.25+ hours for a whale + Mendenhall Glacier combination), use the owned specialist deep links below.
+              Once you have confirmed your ship&apos;s usable shore window (typically 3.5 to 4.5 hours door-to-door for single-activity Auke Bay whale watching, or 5.25+ hours for a whale + Mendenhall Glacier combination, plus DCC&apos;s 2-hour gangway return buffer), use the owned specialist links below. Standard whale-watching shopping routes directly to <strong>Last Frontier Shore Excursions</strong>; <strong>Juneau Flight Deck</strong> focuses on aviation flightseeing and automatically redirects non-recovery whale-watching visits to Last Frontier unless <code>?flight_canceled=1</code> is active.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-3">
             <a
-              href={whaleDeckUrl}
+              href={primarySpecialistUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full bg-[#f5b34b] px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-[#07111d] transition hover:bg-[#f7bf6a]"
             >
-              Juneau Flight Deck · Whale Deck ↗
+              Juneau Whale Watching (Last Frontier Shore Excursions) ↗
             </a>
             <a
-              href={primarySpecialistUrl}
+              href={whaleDeckUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full border border-white/12 bg-white/[0.03] px-5 py-3 text-sm font-semibold text-white/84 transition hover:bg-white/[0.06]"
             >
-              Juneau Whale Watching (Last Frontier Shore Excursions) ↗
+              Flight-Canceled Whale Deck (Juneau Flight Deck) ↗
             </a>
             <a
               href={comboDecisionUrl}

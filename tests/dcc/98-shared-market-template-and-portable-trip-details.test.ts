@@ -58,7 +58,7 @@ describe("Shared Market Template & Portable Trip Details Across New Orleans, Jun
     assert.equal(SHARED_MARKET_TEMPLATES["new-orleans"].dccAuthority.safetyBufferFloorMinutes, 45);
     assert.equal(SHARED_MARKET_TEMPLATES["new-orleans"].checkoutAndLedger.monetizationModel, "partner_commission");
 
-    assert.equal(SHARED_MARKET_TEMPLATES.juneau.dccAuthority.safetyBufferFloorMinutes, 90);
+    assert.equal(SHARED_MARKET_TEMPLATES.juneau.dccAuthority.safetyBufferFloorMinutes, 120);
     assert.equal(SHARED_MARKET_TEMPLATES.juneau.checkoutAndLedger.monetizationModel, "partner_commission");
 
     assert.equal(SHARED_MARKET_TEMPLATES["red-rocks"].dccAuthority.safetyBufferFloorMinutes, 60);

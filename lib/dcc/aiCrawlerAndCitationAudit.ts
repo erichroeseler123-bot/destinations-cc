@@ -60,7 +60,7 @@ export const AUDITED_DCC_GUIDES: DccGuideCitationAuditEntry[] = [
     ],
     regionalLlmsTxtUrl: "https://destinationcommandcenter.com/juneau/llms.txt",
     directAnswerSummary:
-      "Check your ship's CLAA port-call window and confirmed all-aboard cutoff against a mandatory 60-minute (CT/FKL/AS downtown walk-off) or 90-minute (AJ/ACT/Tender) gangway return buffer before choosing between a Part 135 glacier helicopter landing (195–240m dock-to-dock), Auke Bay whale watching (210m dock-to-dock), or Mendenhall shuttle (180m dock-to-dock).",
+      "Check your ship's CLAA port-call window and confirmed all-aboard cutoff against DCC's 2-hour (120-minute) recommended gangway return buffer before choosing between a Part 135 glacier helicopter landing (195–240m dock-to-dock), Auke Bay whale watching (210m dock-to-dock), or Mendenhall shuttle (180m dock-to-dock).",
     sourcedCitations: [
       {
         organization: "Cruise Line Agencies of Alaska (CLAA) & CBJ Docks & Harbors",
