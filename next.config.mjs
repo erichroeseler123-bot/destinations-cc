@@ -560,6 +560,10 @@ const buildProvenanceEnv = resolveBuildProvenanceEnv();
 const nextConfig = {
   env: buildProvenanceEnv,
   serverExternalPackages: ["ws"],
+  experimental: {
+    cpus: 2,
+    staticGenerationMaxConcurrency: 4,
+  },
   turbopack: {
     root: process.env.DCC_TURBOPACK_ROOT?.trim() || __dirname,
   },
