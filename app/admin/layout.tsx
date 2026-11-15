@@ -80,6 +80,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               Organizer Outreach
             </Link>
             <Link
+              href="/admin/hosted-cruises"
+              className="rounded-lg border border-teal-400/40 bg-teal-500/15 px-2.5 py-1 font-semibold text-teal-200 hover:bg-teal-500/25 hover:text-white"
+            >
+              Hosted Cruises
+            </Link>
+            <Link
               href="/admin/portfolio"
               className="rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 font-semibold text-cyan-200 hover:bg-cyan-500/20 hover:text-white"
             >

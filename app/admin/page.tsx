@@ -584,6 +584,12 @@ export default async function OwnerControlCenterPage() {
                   >
                     Organizer Leads ({q6.organizerOutreachQueue.phoneLeadsCount} Phone) →
                   </Link>
+                  <Link
+                    href="/admin/hosted-cruises"
+                    className="rounded-lg border border-teal-400/45 bg-teal-500/20 px-2.5 py-1 font-bold text-teal-100 hover:bg-teal-500/30"
+                  >
+                    Hosted Claims &amp; Controls →
+                  </Link>
                   <a
                     href={q6.cruisePromenadeLaunch.groupsLaunchpadUrl}
                     target="_blank"
