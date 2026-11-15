@@ -1,3 +1,8 @@
+import {
+  getOrganizerActivationCohort,
+  type OrganizerActivationPackage,
+} from "./cruise/organizerActivationCohort";
+
 export interface HostedCruisesAdminBridgeSnapshot {
   generatedAt: string;
   environment: string;
@@ -191,6 +196,7 @@ export interface HostedCruisesBridgeResponse {
   cpBaseUrl: string;
   dccServiceSecretPresent: boolean;
   snapshot: HostedCruisesAdminBridgeSnapshot | null;
+  activationCohort?: OrganizerActivationPackage[];
   error?: string;
   actionResult?: Record<string, unknown>;
 }
@@ -312,12 +318,15 @@ export async function fetchHostedCruisesAdminSnapshotFromCp(options: {
     resolveCruisePromenadeAdminTarget(options);
   const { headers, dccServiceSecretPresent } = buildBridgeHeaders();
 
+  const activationCohort = await getOrganizerActivationCohort();
+
   if (!headers["x-dcc-cp-service-secret"]) {
     return {
       ok: false,
       cpBaseUrl,
       dccServiceSecretPresent,
       snapshot: null,
+      activationCohort,
       error:
         "DCC_CP_SERVICE_SECRET is not configured in this environment. Set DCC_CP_SERVICE_SECRET on both DCC and Cruise Promenade.",
     };
@@ -346,6 +355,7 @@ export async function fetchHostedCruisesAdminSnapshotFromCp(options: {
         cpBaseUrl,
         dccServiceSecretPresent,
         snapshot: null,
+        activationCohort,
         error:
           (typeof payload?.error === "string" && payload.error) ||
           `Cruise Promenade returned HTTP ${res.status}`,
@@ -357,6 +367,7 @@ export async function fetchHostedCruisesAdminSnapshotFromCp(options: {
       cpBaseUrl,
       dccServiceSecretPresent,
       snapshot: payload.snapshot as HostedCruisesAdminBridgeSnapshot,
+      activationCohort,
     };
   } catch (err) {
     return {
@@ -364,6 +375,7 @@ export async function fetchHostedCruisesAdminSnapshotFromCp(options: {
       cpBaseUrl,
       dccServiceSecretPresent,
       snapshot: null,
+      activationCohort,
       error:
         err instanceof Error
           ? err.message

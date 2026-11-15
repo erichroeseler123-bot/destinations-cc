@@ -9,8 +9,8 @@ import {
   type HostedCruiseThemeSlug,
 } from "./canonicalHostedCruiseContract";
 
-export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-15T12:00:00Z" as const;
-export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-15.v1" as const;
+export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-15T17:30:00Z" as const;
+export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-15.v2" as const;
 
 export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrganizerFactRecord> = [
   {
@@ -33,29 +33,43 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "designedForAudience": "Bears, cubs, admirers, LGBTQ+ travelers, couples, solo travelers, and welcoming friends.",
     "typicalHostedProgramming": "Group activities and time together aboard mainstream ocean voyages (specific onboard group schedule shared directly with registered group guests).",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
+    "soloSupportSummary": "Official reservation forms on bearcruiseusa.com provide a dedicated solo roommate-request option ('I am single and want to share a cabin. Please contact Arno about availability and procedure'), alongside community connection in Arno's official Facebook group and single-occupancy cabin quotes.",
     "soloFriendly": true,
-    "familyPolicy": "not_verified",
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "Bear community",
       "Couples",
       "Solo-friendly group",
       "Destination variety"
     ],
-    "heroVisualKey": "port-san-juan",
+    "heroVisualKey": "port-santorini-oia",
     "officialWebsiteUrl": "https://www.arnoscruises.com/",
     "officialDomain": "arnoscruises.com",
     "reservationPortalDomain": "bearcruiseusa.com",
-    "publicContactPageUrl": "https://www.arnoscruises.com/",
+    "publicContactPageUrl": "https://www.arnoscruises.com/contact-us/",
     "nonAffiliationNotice": "Cruise Promenade is an independent group-planning and shore-coordination tool. Unless claimed and verified by the organizer, this page is an independent itinerary companion and is not affiliated with or endorsed by Arno’s Bear Cruises, Royal Caribbean International, or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Book your stateroom directly through Arno’s Bear Cruises so your reservation is inside the official hosted group block. Cruise Promenade never sells cabins or competes for your cruise fare.",
-    "verifiedSourceCheckedAt": "2026-11-14T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "atlantis-events",
       "vacaya",
       "pied-piper-travel",
       "aquafest-cruises"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:arnos-bear-cruises",
+    "knownBrandAliases": [
+      "Arno's Cruises",
+      "BearCruiseUSA"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/arnoscruises/",
+      "facebookUrl": "https://www.facebook.com/groups/172920616104253"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Hosted group cruise organizer (Arno's Bear Cruises via bearcruiseusa.com reservation forms), selling per-person double-occupancy group cabin allotments and private group access aboard mainstream Royal Caribbean, Celebrity Cruises, and river cruise vessels.",
+    "officialReservationPathSummary": "Travelers browse upcoming hosted bear group sailings on arnoscruises.com and click 'Register for Cruise' to submit a sailing-specific online reservation form hosted on bearcruiseusa.com (e.g., ArnosCruiseReservationForm.asp?CruiseID=96), or contact Arno directly by phone or email.",
+    "cancellationAndParticipationPolicy": "Per Arno's official sailing reservation forms on bearcruiseusa.com, standard group deposits are refundable until the final payment cutoff unless a non-refundable deposit fare is chosen, after which tiered per-guest cancellation penalties apply (89–75 days: 25%, 74–61 days: 50%, 60–31 days: 75%, 30–0 days: 100%). Private Arno's Bear Cruises onboard events require booking within Arno's hosted group.",
+    "officialPolicyUrl": "https://bearcruiseusa.com/ArnosCruiseReservationForm.asp?CruiseID=96"
   },
   {
     "organizerId": "hosted-organizer:atlantis-events",
@@ -74,7 +88,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "designedForAudience": "Primarily gay men, welcoming LGBTQ+ adults (18+) and allies.",
     "typicalHostedProgramming": "Full-ship custom concerts, cabaret, comedy, DJs, themed deck events, and hosted solo-traveler social gatherings.",
     "typicalCharterModel": "full_ship_charter",
-    "soloSupportSummary": "Official complimentary Roommate Share program on select double-occupancy categories plus hosted solo-traveler mixers and dinners.",
+    "soloSupportSummary": "Atlantis offers a complimentary Room Share Program in eligible stateroom categories (matching solo guests by smoking preference), hosted singles parties and mixers, open-seating dining with no assigned tables, or private single occupancy at a 100% cruise fare surcharge.",
     "soloFriendly": true,
     "familyPolicy": "adults_only",
     "goodForTags": [
@@ -83,20 +97,37 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
       "18+ adults only",
       "High-energy & cabaret"
     ],
-    "heroVisualKey": "sail-away-deck-meetup",
+    "heroVisualKey": "port-rhodes-lindos",
     "officialWebsiteUrl": "https://atlantisevents.com/",
     "officialDomain": "atlantisevents.com",
     "reservationPortalDomain": "res.atlantisevents.com",
-    "publicContactPageUrl": "https://atlantisevents.com/contact/",
+    "publicContactPageUrl": "https://atlantisevents.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning platform and is not affiliated with or endorsed by Atlantis Events, Virgin Voyages, or Royal Caribbean International.",
     "cabinBookingPolicyNote": "All Atlantis ocean voyages are private full-ship charters. Reserve your cabin directly through Atlantis Events.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "vacaya",
       "olivia-travel",
       "arnos-bear-cruises",
       "pied-piper-travel"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:atlantis-events",
+    "knownBrandAliases": [
+      "Atlantis",
+      "Atlantis Events, Inc.",
+      "Club Atlantis"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/atlantisevents/",
+      "facebookUrl": "https://www.facebook.com/AtlantisEvents",
+      "youtubeUrl": "https://www.youtube.com/user/atlantiseventsinc",
+      "xUrl": "https://x.com/AtlantisEvents"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Full-ship LGBTQ+ charter operator (Atlantis Events, Inc., acting as charterer of the entire cruise vessel and processing cabin reservations, payment plans, and room-share assignments directly via res.atlantisevents.com).",
+    "officialReservationPathSummary": "Travelers book directly online 24/7 through Atlantis's RezMagic booking portal (res.atlantisevents.com/Booking/), by calling Atlantis Guest Services at official phone line, or through an authorized travel agent.",
+    "cancellationAndParticipationPolicy": "Minimum guest age is 18, and guests aged 18–21 must share a stateroom with a companion over age 25. Atlantis offers Standard, Monthly Payment Plan , and Pay-in-Full options; tiered cruise cancellation penalties start at published rate–published rate more than 180 days prior to departure and scale to 100% within 60 days of sailing .",
+    "officialPolicyUrl": "https://atlantisevents.com/terms-and-conditions"
   },
   {
     "organizerId": "hosted-organizer:vacaya",
@@ -115,7 +146,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "designedForAudience": "Adults (18+) across the entire LGBTQIA+ community and allies.",
     "typicalHostedProgramming": "Custom concerts, comedy, cabaret, social mixers, group dining tables, and community activities.",
     "typicalCharterModel": "full_ship_charter",
-    "soloSupportSummary": "Hosted onboard Solo Travelers mixers, group dining tables, single-occupancy My Own Room options, and pre-cruise Solo Travelers Playground self-matching community.",
+    "soloSupportSummary": "VACAYA does not perform blind roommate matching; instead, solo guests connect and vet roommates themselves in VACAYA's official 'Solo Travelers Playground' Facebook group (https://www.facebook.com/groups/417325869744004) and trip-specific Facebook groups, or book 'My Own Room' single occupancy (200% of double cruise rate plus one port charge), supported onboard by hosted Solo Traveler Cocktail Hours and dinners.",
     "soloFriendly": true,
     "familyPolicy": "adults_only",
     "goodForTags": [
@@ -124,20 +155,37 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
       "Solo travelers",
       "First-timers"
     ],
-    "heroVisualKey": "port-curacao",
+    "heroVisualKey": "port-san-juan",
     "officialWebsiteUrl": "https://www.myvacaya.com/",
     "officialDomain": "myvacaya.com",
     "reservationPortalDomain": "myvacaya.rezmagic.com",
     "publicContactPageUrl": "https://www.myvacaya.com/contact/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning platform and is not affiliated with or endorsed by VACAYA or Celebrity Cruises.",
     "cabinBookingPolicyNote": "All VACAYA voyages are private full-ship charters. Reserve your stateroom directly through VACAYA.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "atlantis-events",
       "olivia-travel",
       "arnos-bear-cruises",
       "pied-piper-travel"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:vacaya",
+    "knownBrandAliases": [
+      "VACAYA, LLC",
+      "myVACAYA",
+      "The V Team"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/myvacaya",
+      "facebookUrl": "https://www.facebook.com/myvacaya",
+      "youtubeUrl": "https://www.youtube.com/channel/UCTMhOkIDdThzifl_-ly2PAQ",
+      "tiktokUrl": "https://www.tiktok.com/@myvacaya?lang=en"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Full-ship and full-resort LGBT+ charter operator (VACAYA, LLC, contracting entire ships/resorts and selling reservations and interest-free monthly payment plans directly through myvacaya.rezmagic.com).",
+    "officialReservationPathSummary": "Travelers book online 24/7 via VACAYA's RezMagic booking portal (myvacaya.rezmagic.com/Booking/), by phone/SMS chat with V Team Vacation Planners at official phone line (Mon–Fri 10am–4pm ET), or through registered Travel Pros.",
+    "cancellationAndParticipationPolicy": "Per VACAYA's FAQs, the minimum guest age is 18, and guests aged 18–20 must share a room with a companion over 25 (Terms also prohibit unaccompanied minors under 18). All cancellation fees apply to total fare plus port charges and gratuities on a tiered schedule: 10% at 300+ days, 20% (299–240 days), 40% (239–180 days), 60%–75% (at/under 180–120 days per trip schedule), 80% (119–90 days), and 100% within 89 days of departure .",
+    "officialPolicyUrl": "https://www.myvacaya.com/guest-resources/guest-terms-conditions/"
   },
   {
     "organizerId": "hosted-organizer:olivia-travel",
@@ -156,29 +204,47 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "designedForAudience": "Lesbian, bisexual, queer, trans, and LGBTQ+ women (21+) and supportive friends.",
     "typicalHostedProgramming": "Live women’s music concerts, comedy showcases, community socials, and Solos Coordinator welcome events.",
     "typicalCharterModel": "full_ship_charter",
-    "soloSupportSummary": "Dedicated onboard Solos Coordinators, welcome receptions, shared dining and show seating, plus Olivia’s Room Share compatibility matching program.",
+    "soloSupportSummary": "Nearly one-third of Olivia guests travel solo; Olivia provides dedicated onboard Solos Coordinators, Olivia Solos necklaces, hosted Solos mixers/dances/open dining tables, a private Facebook community, and a phone-booked courtesy Room Share Program on select trips and categories (guaranteed match by smoking/non-smoking preference).",
     "soloFriendly": true,
-    "familyPolicy": "adults_only",
+    "familyPolicy": "not_verified",
     "goodForTags": [
       "LGBTQ+ women",
       "Solo travelers",
       "Full-ship charter",
       "Live music & comedy"
     ],
-    "heroVisualKey": "port-barbados",
+    "heroVisualKey": "port-fort-lauderdale-las-olas",
     "officialWebsiteUrl": "https://www.olivia.com/",
     "officialDomain": "olivia.com",
     "reservationPortalDomain": "olivia.rezmagic.com",
-    "publicContactPageUrl": "https://www.olivia.com/travel/contact-us",
+    "publicContactPageUrl": "https://www.olivia.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning platform and is not affiliated with or endorsed by Olivia Travel or Holland America Line.",
     "cabinBookingPolicyNote": "All Olivia ocean cruises are private full-ship charters. Reserve your stateroom directly through Olivia Travel.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "vacaya",
       "lesbians-aboard",
       "atlantis-events",
       "pied-piper-travel"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:olivia-travel",
+    "knownBrandAliases": [
+      "Olivia",
+      "The Olivia Companies, LLC",
+      "Olivia Cruises & Resorts",
+      "Olivia Cruises and Resorts"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/oliviatravels",
+      "facebookUrl": "https://www.facebook.com/OliviaCompanies",
+      "youtubeUrl": "https://www.youtube.com/user/OliviaTravel",
+      "tiktokUrl": "https://www.tiktok.com/@oliviatravelofficial"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Full-ship, luxury yacht, and riverboat charter operator for lesbians and LGBTQ+ women (The Olivia Companies, LLC, contracting vessels directly and managing bookings, no-interest payment plans, and room-share matching in-house).",
+    "officialReservationPathSummary": "Travelers book online via Olivia's RezMagic portal (olivia.rezmagic.com, using trip-specific Reservation/Start?tripID=... links) or call an Olivia Travel Consultant at official phone line / official phone line (phone booking is required for Room Share Program reservations and Flex Pay).",
+    "cancellationAndParticipationPolicy": "Deposits and service fees are non-refundable, and travelers must return a signed Terms & Conditions agreement within 72 hours of booking. Olivia's published cancellation penalty schedule is 50% of trip cost at 365 or more days before departure and 100% of trip cost (no refund) at 0–364 days before departure (published rate name-change fee where permitted; trip cancellation insurance strongly recommended).",
+    "officialPolicyUrl": "https://www.olivia.com/terms-and-conditions"
   },
   {
     "organizerId": "hosted-organizer:bond-and-beyond-network",
@@ -191,11 +257,11 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Conference, Networking & CE Cruises",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "tagline": "Northeast Florida entrepreneurs & small-business owners (final payment Dec 17, 2026)",
+    "tagline": "Relationship-driven business networking retreats and community getaways at sea.",
     "independentSummary": "Inaugural hosted networking cruise for Northeast Florida entrepreneurs and small-business owners sailing 3 nights roundtrip from Port Canaveral aboard Norwegian Escape (Apr 16–19, 2027), calling at Nassau and Great Stirrup Cay.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Northeast Florida entrepreneurs & small-business owners (final payment Dec 17, 2026)",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Entrepreneurs, small-business owners, and referral-focused professionals in the Bond & Beyond Network community, along with their guests.",
+    "typicalHostedProgramming": "Informal relationship-building, business networking, and group social time aboard Norwegian Escape paired with Norwegian's More at Sea beverage, specialty dining, Wi-Fi, and shore excursion perks (a formal session schedule is not publicly posted).",
     "typicalCharterModel": "hosted_group_block",
     "soloSupportSummary": null,
     "soloFriendly": null,
@@ -204,19 +270,34 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
       "business and networking",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-san-juan",
-    "officialWebsiteUrl": "https://bondandbeyondnetwork.com/connect/",
+    "heroVisualKey": "port-cocoa-beach-pier",
+    "officialWebsiteUrl": "https://bondandbeyondnetwork.com/",
     "officialDomain": "bondandbeyondnetwork.com",
     "publicContactPageUrl": "https://bondandbeyondnetwork.com/connect/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Bond & Beyond Network or Norwegian Cruise Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Bond & Beyond Network so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "hr-conference-cruise",
       "national-reia",
       "sea-day-cle",
       "financial-connextion-cruise"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:bond-and-beyond-network",
+    "reservationPortalDomain": "traveljoy.com",
+    "knownBrandAliases": [
+      "Bond and Beyond Network",
+      "B&B Network"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/bond_beyond_network/",
+      "facebookUrl": "https://www.facebook.com/profile.php?id=61568314679852"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "TravelJoy group booking portal managed by travel advisor Karen at Why Not Now Travels for Norwegian Cruise Line's Norwegian Escape",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Bond & Beyond Network so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "A a published per-person deposit secures a cabin at the locked-in group rate , with final cruise payment due December 17, 2026; cruise-specific cancellation penalty tiers are not published on the event page (general network membership fees are non-refundable per the FAQ).",
+    "officialPolicyUrl": "https://bondandbeyondnetwork.com/faq/"
   },
   {
     "organizerId": "hosted-organizer:hr-conference-cruise",
@@ -227,32 +308,56 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Conference, Networking & CE Cruises",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "tagline": "HR executives & SHRM/HRCI attendees (AL, IN, MI & WI SHRM State Councils; Aspect runs 3 HR cruises in 2027)",
+    "tagline": "SHRM-partnered human resources conferences at sea pairing recertification credits with Caribbean and Alaska cruising.",
     "independentSummary": "HR executives and SHRM/HRCI continuing-education attendees partnering with the AL, IN, MI, and WI SHRM State Councils (produced by Aspect Marketing & Communications, which operates three 2027 HR cruises), with sea-day SHRM sessions and open port days in Cozumel and Perfect Day at CocoCay.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "HR executives & SHRM/HRCI attendees (AL, IN, MI & WI SHRM State Councils; Aspect runs 3 HR cruises in 2027)",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Human resources executives, employee benefits leaders, corporate HR practitioners, and their traveling companions.",
+    "typicalHostedProgramming": "Submitted for 16.75 SHRM and HRCI recertification credits in partnership with the Alabama, Indiana, Michigan, and Wisconsin SHRM State Councils, featuring sea-day educational sessions, keynote workshops, sponsor networking, and group receptions.",
     "typicalCharterModel": "hosted_group_block",
     "soloSupportSummary": null,
     "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "business and networking",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-san-juan",
-    "officialWebsiteUrl": "https://hrcruise.com/2027/cruise2/schedule.cfm",
+    "heroVisualKey": "ship-oasis-of-the-seas-port-canaveral",
+    "officialWebsiteUrl": "https://hrcruise.com/",
     "officialDomain": "hrcruise.com",
     "publicContactPageUrl": "https://aspect-marketing.com/contact.htm",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by HR Conference Cruise (Aspect Marketing & Communications) or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through HR Conference Cruise (Aspect Marketing & Communications) so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "national-reia",
       "sea-day-cle",
       "financial-connextion-cruise"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:hr-conference-cruise",
+    "reservationPortalDomain": "aspect-marketing.mightevent.com",
+    "knownBrandAliases": [
+      "HR Conference Cruise®",
+      "Aspect Marketing and Communications, Inc.",
+      "Aspect Marketing"
+    ],
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/AspectMarketingComm/",
+      "linkedinUrl": "https://www.linkedin.com/company/25029730/",
+      "xUrl": "https://twitter.com/mgmedoro"
+    },
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "HR Conference Cruise Google Reviews",
+        "url": "https://g.page/r/Cb-72Ake-yAJEBM/review",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "cabinSellerIdentity": "Aspect Marketing and Communications, Inc. (Mike Medoro, official organizer contact / official phone line) via its MightEvent conference and stateroom portal and direct invoicing",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through HR Conference Cruise (Aspect Marketing & Communications) so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Conference registration (published rate–published rate tiered, separate from stateroom fare) and staterooms each require a published rate per-person non-refundable deposit, with balance due by December 15, 2026 / January 15, 2027. For the April 23–28, 2027 sailing, cancellations before January 15, 2027 receive a 100% refund less the non-refundable deposit, transfers are free through March 5, 2027, and no cancellations are permitted after January 15, 2027.",
+    "officialPolicyUrl": "https://hrcruise.com/cancellations.cfm"
   },
   {
     "organizerId": "hosted-organizer:national-reia",
@@ -265,32 +370,48 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Conference, Networking & CE Cruises",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "tagline": "Real estate investors, chapter leaders & guests across National REIA chapters nationwide",
+    "tagline": "Annual real estate investing conference at sea uniting property investors, landlords, and industry educators.",
     "independentSummary": "Real estate investors, chapter leaders, and guests from National REIA chapters nationwide sailing 7 nights roundtrip from Miami on Icon of the Seas, featuring 9:00 AM–4:00 PM conference sessions on both sea days and open port calls in Costa Maya, Roatan, Cozumel, and CocoCay.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Real estate investors, chapter leaders & guests across National REIA chapters nationwide",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Real estate investors, landlords, property entrepreneurs, local REIA chapter members, non-members, and their spouses or cabin guests.",
+    "typicalHostedProgramming": "Two full sea days of real estate education, six evenings of peer-led breakout and roundtable sessions, welcome networking events, and conference materials aboard Icon of the Seas.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Solo cruisers can opt on the registration form to be matched with another group roommate or book a single-occupancy cabin at the two-person cabin rate minus one set of port taxes.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "business and networking",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-san-juan",
-    "officialWebsiteUrl": "https://nationalreiacruise.com/schedule/",
+    "heroVisualKey": "port-costa-maya",
+    "officialWebsiteUrl": "https://nationalreiacruise.com/",
     "officialDomain": "nationalreiacruise.com",
     "publicContactPageUrl": "https://nationalreiacruise.com/faq/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by National REIA or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through National REIA so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
       "sea-day-cle",
       "financial-connextion-cruise"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:national-reia",
+    "reservationPortalDomain": "api.leadconnectorhq.com",
+    "knownBrandAliases": [
+      "NREIA",
+      "National REIA Real Estate Cruise"
+    ],
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/NationalREIA",
+      "youtubeUrl": "https://www.youtube.com/c/NationalREIA",
+      "xUrl": "https://twitter.com/nationalreia"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "National REIA group cabin block aboard Royal Caribbean's Icon of the Seas via National REIA's official registration portal official phone line)",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through National REIA so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Open to the public (REIA membership is not required). Booking requires a published rate per-cabin deposit with final payment processed in November 2026, plus a conference fee of published rate per person or published rate per couple for guests attending educational sessions; specific cancellation penalty tiers are not published on the website.",
+    "officialPolicyUrl": "https://nationalreiacruise.com/faq/"
   },
   {
     "organizerId": "hosted-organizer:sea-day-cle",
@@ -303,32 +424,43 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Conference, Networking & CE Cruises",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "tagline": "Attorneys & spouses/families earning 10 hours of sea-day CLE on a 7N Alaska southbound voyage",
+    "tagline": "Continuing legal education cruises organized by lawyers for lawyers with courses scheduled exclusively during days at sea.",
     "independentSummary": "Attorneys and their spouses/families earning 10 hours of Continuing Legal Education (CLE) organized by Kirton McConkie Law Firm during Hubbard Glacier and Inside Passage cruising days on a 7-night southbound Alaska voyage from Seward to Vancouver.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Attorneys & spouses/families earning 10 hours of sea-day CLE on a 7N Alaska southbound voyage",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Practicing attorneys and legal professionals earning state bar CLE credits alongside spouses, families, and travel companions.",
+    "typicalHostedProgramming": "10 hours of accredited Continuing Legal Education (including up to 1 hour of ethics credit) sponsored by law firm Kirton McConkie and scheduled during sea days and downtime so port days stay open, plus an optional pre-cruise Denali land tour.",
     "typicalCharterModel": "hosted_group_block",
     "soloSupportSummary": null,
     "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "business and networking",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-san-juan",
-    "officialWebsiteUrl": "https://clecruise.com/cruises/summer-2027",
+    "heroVisualKey": "port-vancouver",
+    "officialWebsiteUrl": "https://clecruise.com/",
     "officialDomain": "clecruise.com",
     "publicContactPageUrl": "https://clecruise.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Sea Day CLE (Kirton McConkie) or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Sea Day CLE (Kirton McConkie) so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
       "national-reia",
       "financial-connextion-cruise"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:sea-day-cle",
+    "knownBrandAliases": [
+      "Sea Days CLE",
+      "Kirton McConkie (CLE Sponsor)"
+    ],
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Sheila Lambie at Adventures in Traveland (official organizer contact / official phone line), exclusive group travel agency for Sea Day CLE, coordinated with CLE Coordinator Christopher S. Hill at Kirton McConkie (official organizer contact / official phone line)",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Sea Day CLE (Kirton McConkie) so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Participants cannot book online with Celebrity Cruises and must book through group travel agent Sheila Lambie to join Sea Day CLE (which includes a published rate administrative fee for CLE materials and accreditation, with no additional tuition charge). Booking requires a published rate per-cabin deposit , final payment due April 1, 2027, and mandatory travel insurance.",
+    "officialPolicyUrl": "https://clecruise.com/faqs",
+    "officialSocialLinks": {}
   },
   {
     "organizerId": "hosted-organizer:debusk-travels",
@@ -341,30 +473,59 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Advisor-Hosted Friends & Family Cruises",
     "primaryTheme": "family-reunions",
     "secondaryThemes": [],
-    "tagline": "Hosted friends, family & repeat agency clients (16+ cabins reserved out of Miami)",
+    "tagline": "Advisor-hosted friends, family, and group cruise vacations with locked-in group perks and personal onboard hosts.",
     "independentSummary": "Advisor-hosted friends, family, and repeat DeBusk Travels (Cruise Planners) clients with 16+ cabins reserved on a 7-night Eastern Caribbean sailing roundtrip from Miami aboard MSC World America.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Hosted friends, family & repeat agency clients (16+ cabins reserved out of Miami)",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Families, couples, friend groups, solo cruisers, and multi-generational travelers seeking a hosted group vacation.",
+    "typicalHostedProgramming": "Advisor-hosted group gatherings, private onboard meetups, coordinated group amenities , and optional group shore excursions.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Single-occupancy staterooms are available at 200% of the cruise fare plus one set of taxes and fees , and DeBusk Travels helps connect solo travelers seeking a roommate to share a double-occupancy group cabin.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
     "goodForTags": [
       "family reunions",
       "Hosted group block"
     ],
-    "heroVisualKey": "region-northern-europe",
-    "officialWebsiteUrl": "https://www.debusktravels.com/GroupRegistrations/view/142382",
+    "heroVisualKey": "port-miami-biscayne-skyline",
+    "officialWebsiteUrl": "https://www.debusktravels.com/",
     "officialDomain": "debusktravels.com",
     "publicContactPageUrl": "https://www.debusktravels.com/ContactUs",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by DeBusk Travels or MSC Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through DeBusk Travels so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "travel-partners-in-dublin",
       "krouse-travel"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:debusk-travels",
+    "knownBrandAliases": [
+      "Cruise Planners - DeBusk Travels",
+      "Terry & Denise DeBusk - Cruise Planners"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/cruiseplannersdebusktravels",
+      "facebookUrl": "https://www.facebook.com/debusktravels/",
+      "youtubeUrl": "https://www.youtube.com/@CruisePlanners-debusktravels",
+      "linkedinUrl": "https://www.linkedin.com/company/107732048/"
+    },
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "DeBusk Travels Client Testimonials",
+        "url": "https://www.debusktravels.com/ClientTestimonials/",
+        "authorizationBasis": "official_site_linked"
+      },
+      {
+        "platform": "official_testimonials",
+        "label": "DeBusk Travels Google Business Profile",
+        "url": "https://g.co/kgs/r7cbz4o",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "cabinSellerIdentity": "DeBusk Travels (Terry & Denise DeBusk, Clermont, FL), an independently owned and operated Cruise Planners franchise (FL ST# 39068, official phone line)",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through DeBusk Travels so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Special group amenities and hosted onboard events are reserved exclusively for guests booked through Cruise Planners / DeBusk Travels. Requires a a published per-person deposit , refundable through April 11, 2027, followed by non-refundable deposit penalties April 12–May 10, 2027, 50% of cruise fare May 11–May 25, 2027, 75% May 26–June 24, 2027, and 100% June 25–July 10, 2027.",
+    "officialPolicyUrl": "https://www.debusktravels.com/GroupRegistrations/view/142382"
   },
   {
     "organizerId": "hosted-organizer:pied-piper-travel",
@@ -383,27 +544,41 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "designedForAudience": "Hosted LGBTQ+ & friends group sailing 9 nights to Alaska roundtrip from Seattle",
     "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": "Welcoming hosted group structure for solo travelers and friends (confirm roommate or solo cabin options with organizer).",
+    "soloSupportSummary": "Pied Piper's reservation forms include a built-in roommate matching request ('Arrange Share: Yes/No' with smoker/non-smoker preference) alongside solo-occupancy stateroom categories, hosted group cocktail parties, and coordinated group dining tables.",
     "soloFriendly": true,
-    "familyPolicy": "adults_only",
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "lgbtq cruises",
       "Hosted group block",
       "18+ ship policy"
     ],
-    "heroVisualKey": "juneau-whale-watch-crew",
-    "officialWebsiteUrl": "https://www.piedpipertravel.com/gaygroupcruises/cruise-info.php?id=820",
+    "heroVisualKey": "port-sitka",
+    "officialWebsiteUrl": "https://www.piedpipertravel.com/gaygroupcruises/",
     "officialDomain": "piedpipertravel.com",
     "publicContactPageUrl": "https://www.piedpipertravel.com/gaygroupcruises/contact-us.php",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Pied Piper Travel or Virgin Voyages.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Pied Piper Travel so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "arnos-bear-cruises",
       "atlantis-events",
       "vacaya",
       "olivia-travel"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:pied-piper-travel",
+    "knownBrandAliases": [
+      "Pied Piper Gay Group Cruises",
+      "Pied Piper Cruises",
+      "Pied Piper Cruises, Inc."
+    ],
+    "officialSocialLinks": {
+      "xUrl": "https://twitter.com/PiedPiperTravel"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Hosted LGBTQ+ group travel agency (Pied Piper Cruises, Inc., acting as agent for passengers and managing hosted group blocks of 15 to 900+ guests on mainstream luxury and premium cruise lines; non-Pied-Piper bookings cannot attend private group events).",
+    "officialReservationPathSummary": "Travelers select a sailing from Pied Piper's Gay Group Cruises calendar (piedpipertravel.com/gaygroupcruises/calendar.php) and submit the sailing-specific secure reservation form (reservations.php?cruise_id=...), call official phone line / official phone line, or book/transfer through a certified travel agent prior to final payment.",
+    "cancellationAndParticipationPolicy": "Pied Piper acts as travel agent for passengers, and exact deposit/cancellation penalty schedules follow the designated cruise line's contract as itemized on each sailing's reservation form (for example, 25% immediate deposit on the 2027 Brilliant Lady Alaska group). Per cruise line policy, only passengers booked through Pied Piper (or transferred into the group before final payment via a travel agent) may participate in Pied Piper's onboard private parties, dining groups, and hosted excursions, and Pied Piper reserves the right to cancel hosted tour components if minimum group space is not met.",
+    "officialPolicyUrl": "https://www.piedpipertravel.com/gaygroupcruises/terms-conditions.php"
   },
   {
     "organizerId": "hosted-organizer:financial-connextion-cruise",
@@ -416,32 +591,46 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Conference, Networking & CE Cruises",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "tagline": "Financial planners, NAIFA competition university students, faculty & spouses",
+    "tagline": "Annual financial services cruise conference connecting practitioners, university faculty, and rising finance students.",
     "independentSummary": "13th annual educational cruise for financial planners, NAIFA competition university students, faculty, and spouses sailing 7 nights roundtrip from New Orleans on Mariner of the Seas, with educational sessions and NAIFA competition events held on sea days.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Financial planners, NAIFA competition university students, faculty & spouses",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Financial planners, CPAs, insurance and risk advisors, estate attorneys, university finance/accounting faculty and students, and their families or guests.",
+    "typicalHostedProgramming": "Technical and practice-management educational sessions, nightly group networking dinners, optional spouse/guest activities, the NAIFA-hosted national student Career Exploration Competition, and the student Job Pitch Competition.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Single-occupancy stateroom pricing is published across categories .",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
     "goodForTags": [
       "business and networking",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-san-juan",
-    "officialWebsiteUrl": "https://www.financialconnextioncruise.com/educational-sessions",
+    "heroVisualKey": "port-new-orleans",
+    "officialWebsiteUrl": "https://www.financialconnextioncruise.com/",
     "officialDomain": "financialconnextioncruise.com",
     "publicContactPageUrl": "https://www.financialconnextioncruise.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Financial ConNEXTion Cruise or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Financial ConNEXTion Cruise so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
       "national-reia",
       "sea-day-cle"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:financial-connextion-cruise",
+    "knownBrandAliases": [
+      "Financial ConNEXTion Cruise Conference"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/financialconnextion/",
+      "facebookUrl": "https://www.facebook.com/financialconnextion",
+      "linkedinUrl": "https://www.linkedin.com/company/financial-connextion-educational-cruise/"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Continuing Education at Seas / Worldwide Adventure Travel official phone line, official organizer contact), exclusive booking agency for the Financial ConNEXTion Cruise Conference",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Financial ConNEXTion Cruise so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Attendees must book their cabin through Continuing Education at Seas official phone line) rather than Royal Caribbean or outside travel agents; anyone booking outside the official group block is barred from attending conference sessions. Reservations and group rate lock are due by November 12, 2026, with a sliding-scale cruise cancellation policy that generally provides a full refund when canceled more than 75 days prior to departure.",
+    "officialPolicyUrl": "https://www.financialconnextioncruise.com/supporting-chapters"
   },
   {
     "organizerId": "hosted-organizer:dance-fun",
@@ -454,29 +643,46 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Social Dance Cruises",
     "primaryTheme": "dance-cruises",
     "secondaryThemes": [],
-    "tagline": "West Coast Swing & Country social dancers on a 10-night roundtrip San Francisco Alaska cruise",
+    "tagline": "Instructor-hosted West Coast Swing, Country, Ballroom, and Latin social dance vacations at sea.",
     "independentSummary": "West Coast Swing and Country social dancers sailing 10 nights roundtrip from San Francisco to Alaska aboard Ruby Princess with sea-day dance workshops.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "West Coast Swing & Country social dancers on a 10-night roundtrip San Francisco Alaska cruise",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Social dancers from high-beginner through seasoned levels—especially West Coast Swing and Country dancers—along with couples, solo dancers, and families.",
+    "typicalHostedProgramming": "Sea-day morning dance workshops (9–11 AM in Club Fusion), nightly hosted social dances (West Coast Swing, Two-Step, Cha-Cha, Nightclub, Waltz, and East Coast Swing), Piazza live-music pop-up dances, welcome party, theme nights, optional private lessons, and nightly group dining.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Singles and solo dancers are explicitly welcomed (~60% women / 40% men with staff dancers rotating in), and DanceFun links solo travelers to its Dance Cruise Roommate Finder Facebook group (https://www.facebook.com/groups/183496482590225) to avoid the cruise line's ~200% single supplement.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
     "goodForTags": [
       "dance cruises",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-cabo-san-lucas",
-    "officialWebsiteUrl": "https://dancefun.com/west-coast-swing-dance-cruise-alaska-2020/",
+    "heroVisualKey": "port-san-francisco-golden-gate",
+    "officialWebsiteUrl": "https://dancefun.com/",
     "officialDomain": "dancefun.com",
     "publicContactPageUrl": "https://dancefun.com/contact-us-2/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Dance Fun Cruises or Princess Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Dance Fun Cruises so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "quick-quick-slow-travel"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:dance-fun",
+    "reservationPortalDomain": "app.tern.travel",
+    "knownBrandAliases": [
+      "DanceFun",
+      "Dance Fun Cruises Inc.",
+      "West Coast Swing Online"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/westcoastswingonline",
+      "facebookUrl": "https://www.facebook.com/dancefun",
+      "youtubeUrl": "https://www.youtube.com/westcoastswingonline"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Dance Fun Cruises in partnership with travel advisor Jennifer Cameron at Practically Perfect Vacations, Inc. (official organizer contact, FL ST41677 / CA T187216) via Tern booking request portal",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Dance Fun Cruises so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "All participants must book their cabin through DanceFun with no exceptions—guests who book outside the group block cannot purchase a dance pass or attend nightly dances, workshops, parties, shore excursions, or group dining. The Alaska 2027 Dance Fun package fee is published rate per person in addition to cruise fare; standard DanceFun cruise deposits range from published rate–published rate per person with final payment due roughly 90 days prior to sailing and written cancellation required.",
+    "officialPolicyUrl": "https://dancefun.com/dance-cruise-faqs/"
   },
   {
     "organizerId": "hosted-organizer:wine-masters-cruises",
@@ -489,11 +695,11 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Winery & Culinary Cruises",
     "primaryTheme": "food-and-wine",
     "secondaryThemes": [],
-    "tagline": "Tipsy Canyon Winery wine-club members & couples hosted by Winemaker Mark Garvin",
+    "tagline": "Winemaker-hosted ocean and river cruises pairing Pacific Northwest wineries with curated global itineraries.",
     "independentSummary": "Tipsy Canyon Winery wine-club members and couples hosted by Winemaker Mark Garvin (coordinated by Wine Masters Cruises) on an 11-night Ultimate Southern Caribbean voyage aboard Celebrity Ascent with sea-day wine events and wine dinners.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Tipsy Canyon Winery wine-club members & couples hosted by Winemaker Mark Garvin",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Wine enthusiasts, winery club members, couples, and culinary-focused travelers.",
+    "typicalHostedProgramming": "Hosted by Tipsy Canyon Winery owner/winemaker Mark Garvin, featuring private onboard wine tastings, an exclusive winemaker food-and-wine pairing dinner, welcome reception, bundled Classic Beverage Package and Wi-Fi perks, and optional winery-hosted shore excursions.",
     "typicalCharterModel": "hosted_group_block",
     "soloSupportSummary": null,
     "soloFriendly": null,
@@ -502,14 +708,25 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
       "food and wine",
       "Hosted group block"
     ],
-    "heroVisualKey": "region-mediterranean",
-    "officialWebsiteUrl": "https://www.winemasterscruises.com/2027-01-tipsy-ascent",
+    "heroVisualKey": "port-aruba",
+    "officialWebsiteUrl": "https://www.winemasterscruises.com/",
     "officialDomain": "winemasterscruises.com",
     "publicContactPageUrl": "https://www.winemasterscruises.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Wine Masters Cruises or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Wine Masters Cruises so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
-    "comparableOrganizerSlugs": []
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "comparableOrganizerSlugs": [],
+    "reputationEntityId": "rep:hosted-organizer:wine-masters-cruises",
+    "knownBrandAliases": [
+      "Wine Masters Cruises™",
+      "Expedia Cruises of South Lake Washington"
+    ],
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Wine Masters Cruises™ / Expedia Cruises® of South Lake Washington (Renton, WA; WA Seller of Travel Reg. No. 604617137; advisors official organizer contact and official organizer contact, official phone line / official phone line)",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Wine Masters Cruises so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Group event participation requires booking inside Wine Masters Cruises’s official block or charter inventory; cancellation schedules follow published organizer and cruise-line terms.",
+    "officialPolicyUrl": null,
+    "officialSocialLinks": {}
   },
   {
     "organizerId": "hosted-organizer:stitchin-heaven",
@@ -522,32 +739,56 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Crafting & Hobby Cruises",
     "primaryTheme": "crafting-and-hobbies",
     "secondaryThemes": [],
-    "tagline": "Quilters & companions sailing with national Riley Blake educators (Stitchin' Heaven runs 6+ quilting cruises in 2027)",
+    "tagline": "Educator-led quilting cruises with onboard sewing machines provided, dedicated sewing rooms, and exclusive designer quilt projects.",
     "independentSummary": "Quilters and companions sailing 7 nights roundtrip from Miami aboard Independence of the Seas with national Riley Blake educators and sea-day sewing classes (part of Stitchin' Heaven's 6+ quilting cruises in 2027).",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Quilters & companions sailing with national Riley Blake educators (Stitchin' Heaven runs 6+ quilting cruises in 2027)",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Confident-beginner through experienced quilters and sewists, along with non-quilting spouses, friends, and cabin companions.",
+    "typicalHostedProgramming": "Two instructor-led quilting classes (Aurelia with Kellie Rushing and Party Favors with Jennifer McClanahan), onboard use of premium sewing machines (typically BERNINA or Janome), an exclusive group sewing room with open-sewing hours on sea and port days, and optional Sail & Sew fabric kits.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Single-occupancy cabins are available by contacting Stitchin' Heaven for pricing, and non-sewing cabin companions receive a published rate per-person discount off double-occupancy rates.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "crafting and hobbies",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-ketchikan",
-    "officialWebsiteUrl": "https://stitchinheaven.com/products/2027-riley-blake-quilting-cruise",
+    "heroVisualKey": "port-puerto-plata",
+    "officialWebsiteUrl": "https://stitchinheaven.com/collections/quilting-cruises",
     "officialDomain": "stitchinheaven.com",
     "publicContactPageUrl": "https://stitchinheaven.com/pages/contact-us",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Stitchin' Heaven or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Stitchin' Heaven so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "pickleball-at-sea",
       "cruise-and-crop",
       "alice-travel-bridge-cruises",
       "craft-cruises"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:stitchin-heaven",
+    "knownBrandAliases": [
+      "Stitchin' Heaven Travel",
+      "Stitchin' Heaven Quilting Cruises"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/stitchinheaven/",
+      "facebookUrl": "https://www.facebook.com/stitchinheavenquiltshop",
+      "youtubeUrl": "https://www.youtube.com/@StitchinHeaven",
+      "tiktokUrl": "https://www.tiktok.com/@stitchinheaven",
+      "xUrl": "https://x.com/stitchinheaven"
+    },
+    "publicReviewProfileLinks": [
+      {
+        "platform": "trustpilot",
+        "label": "Stitchin' Heaven on Trustpilot",
+        "url": "https://www.trustpilot.com/review/stitchinheaven.com",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "cabinSellerIdentity": "Stitchin' Heaven Travel in-house cruise desk (Quitman, TX; official phone line, official organizer contact)",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Stitchin' Heaven so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Requires a a published per-person deposit at registration , with final payment due January 1, 2027. Cancellations incur 50% of total trip cost from final payment to 60 days prior to departure, 75% from 59–30 days prior, and 100% within 29 days of departure; sewing package and optional Sail & Sew fabric kit fees are non-refundable.",
+    "officialPolicyUrl": "https://cdn.shopify.com/s/files/1/0014/9458/1366/files/Travel_Terms_Conditions_1c2070a4-b5f5-418d-8395-88ee120f1d46.pdf?v=1752595663"
   },
   {
     "organizerId": "hosted-organizer:cmmc-at-sea",
@@ -558,32 +799,45 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Conference, Networking & CE Cruises",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "tagline": "Cybersecurity & Defense Industrial Base conference ($295 pass; room block closed Oct 28, 2026 so attendees book cabins independently)",
-    "independentSummary": "Cybersecurity and Defense Industrial Base conference hosted with Edwards Performance Solutions and DRP International on a 7-night Celebrity Beyond sailing from Fort Lauderdale, featuring 3 programmed conference sea days and open port days in Nassau, Cozumel, and Grand Cayman ($295 conference pass; attendees book cabins independently after Oct 28, 2026 room-block close).",
+    "tagline": "Cybersecurity & Defense Industrial Base conference (separate conference pass; room block closed Oct 28, 2026 so attendees book cabins independently)",
+    "independentSummary": "Cybersecurity and Defense Industrial Base conference hosted with Edwards Performance Solutions and DRP International on a 7-night Celebrity Beyond sailing from Fort Lauderdale, featuring 3 programmed conference sea days and open port days in Nassau, Cozumel, and Grand Cayman (published rate conference pass; attendees book cabins independently after Oct 28, 2026 room-block close).",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Cybersecurity & Defense Industrial Base conference ($295 pass; room block closed Oct 28, 2026 so attendees book cabins independently)",
+    "designedForAudience": "Cybersecurity & Defense Industrial Base conference (separate conference pass; room block closed Oct 28, 2026 so attendees book cabins independently)",
     "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Solo defense contractors can book a single-occupancy stateroom directly with Celebrity Cruises or share a Celebrity cabin with a coworker (each conference participant purchases their own published rate Conference Pass), with structured daily networking receptions, workshops, and dining connections onboard.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
     "goodForTags": [
       "business and networking",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-san-juan",
-    "officialWebsiteUrl": "https://cmmcatsea.com/registration/",
+    "heroVisualKey": "port-grand-cayman-seven-mile",
+    "officialWebsiteUrl": "https://cmmcatsea.com/",
     "officialDomain": "cmmcatsea.com",
-    "publicContactPageUrl": "https://cmmcatsea.com/registration/",
+    "publicContactPageUrl": "https://cmmcatsea.com/cmmc-at-sea-101/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by CMMC at Sea or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through CMMC at Sea so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
       "national-reia",
       "sea-day-cle"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:cmmc-at-sea",
+    "knownBrandAliases": [
+      "CMMC at Sea 2027",
+      "Defense Contractor Conference at Sea"
+    ],
+    "officialSocialLinks": {
+      "linkedinUrl": "https://www.linkedin.com/showcase/cmmc-at-sea"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Independent split model: Celebrity Cruises legally sells and operates the cruise cabin reservation directly to the traveler, while Edwards Performance Solutions (edwps.com) separately sells the published rate Conference Pass and optional published rate CCP certification course.",
+    "officialReservationPathSummary": "Two-step unbundled booking model (since the initial DRP Intl bundled room block closed October 28, 2026): (1) purchase the published rate Defense Contractor Conference Pass (and optional published rate 4-day CCP at Sea training) from Edwards Performance Solutions at edwps.com/product/defense-contractor-conference-pass/, (2) book a cruise cabin directly with Celebrity Cruises on the Jan 17–24, 2027 Celebrity Beyond sailing, and (3) email the Celebrity booking confirmation to official organizer contact.",
+    "cancellationAndParticipationPolicy": "Per cmmcatsea.com/cmmc-at-sea-101/#policies, all published rate Conference Passes and published rate CCP at Sea training registrations sold by Edwards Performance Solutions are non-refundable, while cruise cabin deposits, changes, and cancellations are governed solely by Celebrity Cruises' guest ticket terms. Every conference session attendee must hold a paid Conference Pass and email their Celebrity confirmation to official organizer contact, whereas accompanying family members sharing the cabin do not need a Conference Pass unless attending conference sessions.",
+    "officialPolicyUrl": "https://cmmcatsea.com/cmmc-at-sea-101/#policies"
   },
   {
     "organizerId": "hosted-organizer:vet-tech-life",
@@ -596,32 +850,47 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Conference, Networking & CE Cruises",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "tagline": "Veterinary technicians & vet pros earning 14 hours RACE-approved CE at sea (also hosts Jun 6 Alaska CE cruise)",
+    "tagline": "Veterinary technician continuing education cruises combining sea-day specialist lectures with affordable coastal getaways.",
     "independentSummary": "Veterinary technicians and veterinary professionals earning 14 hours of RACE-approved continuing education on sea days aboard a 5-night roundtrip Los Angeles sailing on Voyager of the Seas calling at Catalina Island and Ensenada (Vet Tech Life also hosts a Jun 6 Alaska CE cruise).",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Veterinary technicians & vet pros earning 14 hours RACE-approved CE at sea (also hosts Jun 6 Alaska CE cruise)",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Veterinary technicians, veterinary assistants, vet tech students, practice managers, animal care professionals, and their friends and family.",
+    "typicalHostedProgramming": "14 hours of RACE-pending veterinary continuing education (selected from 28 total hours across dual lecture tracks) led by VTS specialist speakers during sea days, plus group meet-and-greets, evening dinners, and group photo events.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Single-occupancy cabins can be booked directly on the TravelJoy group portal at the double-occupancy cabin price minus the second guest's port taxes and fees (by entering 'SOLO' for the second traveler).",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
     "goodForTags": [
       "business and networking",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-san-juan",
-    "officialWebsiteUrl": "https://vettechlife.com/ce-on-the-sea-mexico-2027",
+    "heroVisualKey": "port-catalina-avalon-bright",
+    "officialWebsiteUrl": "https://vettechlife.com/",
     "officialDomain": "vettechlife.com",
     "publicContactPageUrl": "https://vettechlife.com/reach-us%2Fsubmit-anything",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Vet Tech Life or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Vet Tech Life so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
       "national-reia",
       "sea-day-cle"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:vet-tech-life",
+    "reservationPortalDomain": "traveljoy.com",
+    "knownBrandAliases": [
+      "VetTechLife CE on the Sea"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/vettechlife_ceonthesea/",
+      "facebookUrl": "https://www.facebook.com/VetTechLife",
+      "linkedinUrl": "https://www.linkedin.com/company/vettechlife/"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Julia Stewart at McKee Travel (official organizer contact / official phone line) via TravelJoy group booking portal for staterooms, with separate CE registration administered via Success Strategies on Podia",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Vet Tech Life so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Cruise cabin and CE conference registration are purchased separately: attendees must book their cabin through group travel advisor Julia Stewart at McKee Travel (TravelJoy) to be linked to the group block and purchase CE tuition separately on Podia. Group cabin categories on TravelJoy carry non-refundable deposits and follow Royal Caribbean's cancellation schedule (25% penalty 89–75 days prior, 50% 74–61 days, 75% 60–31 days, 100% within 30 days).",
+    "officialPolicyUrl": "https://traveljoy.com/bookings/nv4Xq7XAq12wDqQpeLLECbq5"
   },
   {
     "organizerId": "hosted-organizer:michigan-wisconsin-dental-associations",
@@ -634,32 +903,53 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Conference, Networking & CE Cruises",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "tagline": "Dentists, hygienists & families from the Michigan & Wisconsin Dental Associations",
+    "tagline": "Co-hosted state dental association continuing education cruise pairing morning sea-day clinical lectures with a Caribbean vacation.",
     "independentSummary": "Dentists, dental hygienists, and families from the Michigan and Wisconsin Dental Associations earning 12 continuing-education credits across three sea days on a 7-night Eastern Caribbean voyage from Port Canaveral aboard Harmony of the Seas.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Dentists, hygienists & families from the Michigan & Wisconsin Dental Associations",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Dentists (MDA, WDA, out-of-state ADA members, and non-members), hygienists, dental assistants, practice staff, spouses, and families.",
+    "typicalHostedProgramming": "Up to 9 CE credits taught during morning-only sea-day lectures by Dr. Melissa Seibert (covering caries management, operative dentistry, and dental implants), keeping afternoons and port days open for family and colleagues.",
     "typicalCharterModel": "hosted_group_block",
     "soloSupportSummary": null,
     "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "familyPolicy": "family_friendly",
     "goodForTags": [
       "business and networking",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-san-juan",
-    "officialWebsiteUrl": "https://www.michigandental.org/events/2027-sun-sand-and-ce-cruise/",
-    "officialDomain": "michigandental.org",
-    "publicContactPageUrl": "https://www.michigandental.org/contact/",
+    "heroVisualKey": "ship-harmony-of-the-seas",
+    "officialWebsiteUrl": "https://www.dentalcruiseadventure.com/",
+    "officialDomain": "dentalcruiseadventure.com",
+    "publicContactPageUrl": "https://www.wda.org/contact-us",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Michigan & Wisconsin Dental Associations or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Michigan & Wisconsin Dental Associations so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
       "national-reia",
       "sea-day-cle"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:michigan-wisconsin-dental-associations",
+    "reservationPortalDomain": "memberportal.michigandental.org",
+    "knownBrandAliases": [
+      "Michigan Dental Association (MDA)",
+      "Wisconsin Dental Association (WDA)",
+      "Sun, Sand & CE Cruise",
+      "A Dental Cruise Adventure",
+      "Michigan Dental Association",
+      "Wisconsin Dental Association"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/wisconsindental/",
+      "facebookUrl": "https://www.facebook.com/widentalassociation/",
+      "youtubeUrl": "https://www.youtube.com/user/WisconsinDentalAssoc",
+      "linkedinUrl": "https://www.linkedin.com/company/wisconsin-dental-association/"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Michigan Dental Association stateroom booking assistance (Annie McIntosh, official organizer contact) at prevailing cruise rates, or direct cabin booking with Royal Caribbean (with confirmation number emailed to MDA)",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Michigan & Wisconsin Dental Associations so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "CE course registration is billed separately from the cruise cabin (published rate MDA, WDA, or out-of-state ADA member dentist; published rate non-member dentist; published rate dental team member). Attendees may request stateroom booking assistance through MDA during registration or book directly with Royal Caribbean and submit their confirmation number to MDA; full CE registration refunds were available for cancellations through October 15, 2026.",
+    "officialPolicyUrl": null
   },
   {
     "organizerId": "hosted-organizer:cu-conferences",
@@ -672,32 +962,55 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Conference, Networking & CE Cruises",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "tagline": "Credit union executives, board directors & spouses attending governance conferences at sea",
+    "tagline": "CPE-eligible governance, strategy, and leadership conferences designed exclusively for credit union executives, directors, and volunteers.",
     "independentSummary": "Credit union executives, board directors, and spouses attending sea-day governance conference sessions on a 7-night roundtrip Seattle Alaska sailing aboard Celebrity Edge.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Credit union executives, board directors & spouses attending governance conferences at sea",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Credit union CEOs, presidents, board members, supervisory committee volunteers, senior executives, and their spouses or guests.",
+    "typicalHostedProgramming": "Sea-day credit union educational sessions led by Shawn Temple and Tim Quinn (covering governance, industry trends, fraud, succession planning, and growth strategy), CPE credit eligibility, conference materials, and a welcome cocktail networking reception.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Published package rates are based on double occupancy; single-occupancy cabins are subject to availability by contacting Jill Donati at Altair Travel official phone line).",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "business and networking",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-san-juan",
-    "officialWebsiteUrl": "https://www.cuconferences.com/alaskan-cruise",
+    "heroVisualKey": "port-victoria-bc",
+    "officialWebsiteUrl": "https://www.cuconferences.com/",
     "officialDomain": "cuconferences.com",
-    "publicContactPageUrl": "https://www.cuconferences.com/cruise-conferences",
+    "publicContactPageUrl": "https://www.cuconferences.com/about-us/faqs",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by CU Conferences or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through CU Conferences so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
       "national-reia",
       "sea-day-cle"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:cu-conferences",
+    "reservationPortalDomain": "register.cuconferences.com",
+    "knownBrandAliases": [
+      "Credit Union Conferences",
+      "The Ones in Red"
+    ],
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/CuConferences/",
+      "linkedinUrl": "https://www.linkedin.com/company/2641999",
+      "xUrl": "https://x.com/cuconferences"
+    },
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "CU Conferences Attendee Testimonials",
+        "url": "https://www.cuconferences.com/about-us/testimonials",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "cabinSellerIdentity": "Jill Donati at Altair Travel and Cruises (official organizer contact / official phone line), official cruise travel agency for CU Conferences, paired with CU Conferences online conference registration",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through CU Conferences so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Bundled double-occupancy package rates (published rate–published rate per conference participant; published rate–published rate per spouse/guest, plus published rate per person taxes and fees) include the stateroom, conference tuition, Classic Beverage Package, and basic Wi-Fi. Holding a cabin requires a a published per-person deposit (which includes travel insurance), and cruise conferences follow a dedicated cancellation schedule managed through Jill Donati at Altair Travel.",
+    "officialPolicyUrl": "https://www.cuconferences.com/about-us/faqs"
   },
   {
     "organizerId": "hosted-organizer:travel-partners-in-dublin",
@@ -712,32 +1025,61 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "secondaryThemes": [
       "family-reunions"
     ],
-    "tagline": "Hosted Ohio community & alumni group sailing 7N southbound Alaska (plus optional Denali land tour)",
+    "tagline": "Full-service Ohio travel agency hosting specialty group cruises, custom tours, and Buckeye community getaways.",
     "independentSummary": "Hosted Ohio community and alumni group organized by Travel Partners in Dublin sailing 7 nights southbound from Seward to Vancouver aboard Celebrity Solstice, with an optional Denali land tour.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Hosted Ohio community & alumni group sailing 7N southbound Alaska (plus optional Denali land tour)",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Group cruise travelers, Buckeye Cruise for Cancer supporters, couples, friends, and multi-generational families.",
+    "typicalHostedProgramming": "Agency-hosted group voyage with friends from the Buckeye Cruise for Cancer and Travel Partners Specialty Tours, bundled Celebrity Classic Beverage Package and Classic Wi-Fi Package perks, and planned optional group shore excursions and pre/post-cruise hotel packages.",
     "typicalCharterModel": "hosted_group_block",
     "soloSupportSummary": null,
     "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "familyPolicy": "family_friendly",
     "goodForTags": [
       "weddings and celebrations",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-bermuda",
-    "officialWebsiteUrl": "https://www.travelpartnersindublin.com/travel-with-us/alaskan-wonders/",
+    "heroVisualKey": "port-seward-resurrection-bay",
+    "officialWebsiteUrl": "https://www.travelpartnersindublin.com/",
     "officialDomain": "travelpartnersindublin.com",
-    "publicContactPageUrl": "https://www.travelpartnersindublin.com/contact/",
+    "publicContactPageUrl": "https://www.travelpartnersindublin.com/about/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Travel Partners in Dublin or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Travel Partners in Dublin so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "singlescruise",
       "krouse-travel",
       "welcome-home-rgv",
       "travel-with-donna"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:travel-partners-in-dublin",
+    "knownBrandAliases": [
+      "Travel Partners Specialty Tours",
+      "Travel Partners in Dublin, OH"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/travelpartnersindublin/",
+      "facebookUrl": "https://www.facebook.com/TravelPartnersInDublin/",
+      "linkedinUrl": "https://www.linkedin.com/company/24792281/",
+      "xUrl": "https://twitter.com/DublinTravelP"
+    },
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "Travel Partners in Dublin Google Reviews",
+        "url": "https://goo.gl/maps/9VGHrJQ7uju2dxhT7",
+        "authorizationBasis": "official_site_linked"
+      },
+      {
+        "platform": "official_testimonials",
+        "label": "Travel Partners in Dublin on Yelp",
+        "url": "https://www.yelp.com/biz/travel-partners-in-dublin-dublin",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "cabinSellerIdentity": "Travel Partners in Dublin / Travel Partners Specialty Tours (Dublin, OH; IATAN, ARC, and Travel Leaders Network affiliate, official phone line)",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Travel Partners in Dublin so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Reservations are submitted through Travel Partners Specialty Tours' online group booking form (published rate–published rate+ per person double occupancy including taxes, fees, Classic Beverage Package, and Classic Wi-Fi Package), with a deposit collected once a consultant confirms cabin availability; specific deposit amounts and cancellation penalty tiers are not published on the website.",
+    "officialPolicyUrl": null
   },
   {
     "organizerId": "hosted-organizer:singlescruise",
@@ -756,26 +1098,42 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "designedForAudience": "Hosted solo travelers & singles sailing roundtrip from New Orleans with onboard cruise directors",
     "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": "Welcoming hosted group structure for solo travelers and friends (confirm roommate or solo cabin options with organizer).",
+    "soloSupportSummary": "SinglesCruise offers a complimentary non-smoker Roommate Matching Service in standard double-occupancy categories (matched by passport gender marker and closest available age range, selectable directly during online MyAgentMate registration) as well as solo-occupancy cabins, hosted icebreakers, hosted singles socials, theme nights, speed meeting, group dining tables, and private booked-guest Facebook groups.",
     "soloFriendly": true,
-    "familyPolicy": "not_verified",
+    "familyPolicy": "adults_only",
     "goodForTags": [
       "weddings and celebrations",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-bermuda",
-    "officialWebsiteUrl": "https://www.singlescruise.com/cruises/caribbean-valentines-day/",
+    "heroVisualKey": "port-new-orleans-jackson-square",
+    "officialWebsiteUrl": "https://www.singlescruise.com/",
     "officialDomain": "singlescruise.com",
-    "publicContactPageUrl": "https://www.singlescruise.com/your-experience/",
+    "publicContactPageUrl": "https://www.singlescruise.com/all-cruises/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by SinglesCruise.com or Norwegian Cruise Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through SinglesCruise.com so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "travel-partners-in-dublin",
       "krouse-travel",
       "welcome-home-rgv",
       "travel-with-donna"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:singlescruise",
+    "knownBrandAliases": [
+      "SinglesCruise",
+      "SinglesCruise by The Vacation Group",
+      "Singles Cruise"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/singlescruise/",
+      "facebookUrl": "https://www.facebook.com/singlescruise",
+      "tiktokUrl": "https://www.tiktok.com/@singlescruise"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Hosted singles group travel agency (Travel Leaders Leisure Group, LLC / The Vacation Group operating SinglesCruise.com, selling hosted group cabin allotments and bundled private singles event access; travelers must book through SinglesCruise to attend private onboard singles events).",
+    "officialReservationPathSummary": "Travelers browse hosted singles sailings on singlescruise.com/all-cruises/ and click 'BOOK ONLINE' to register directly in SinglesCruise's MyAgentMate group booking portal (e.g., app.myagentmate.com/Public/Groups/GrpRegistration.aspx?g=MTUyMzM0&s=MTk2MjY%3d), submit a 'REQUEST QUOTE' form (singlescruise.com/quote/?sailing=...), or call official phone line / official phone line. All cabin deposits and final payments are processed through SinglesCruise rather than directly with the cruise line.",
+    "cancellationAndParticipationPolicy": "Per singlescruise.com/your-experience/ FAQs, all SinglesCruise group participants must be 21 years of age or older and must book their cabin directly through SinglesCruise (typically with final payment due 90 days before sailing) to receive credentials for private singles parties, speed meeting, and group dining; optional SinglesCruise shore excursions are non-refundable, and SinglesCruise reserves the right to sail un-hosted if minimum group counts are not met. Note: SinglesCruise's dedicated /terms/ page currently returns HTTP 404 during site maintenance, so exact cruise cabin cancellation fee tiers are not currently published on singlescruise.com.",
+    "officialPolicyUrl": "https://www.singlescruise.com/your-experience/"
   },
   {
     "organizerId": "hosted-organizer:pickleball-at-sea",
@@ -788,27 +1146,48 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "secondaryThemes": [
       "crafting-and-hobbies"
     ],
-    "tagline": "Recreational pickleball players & spouses with PPR-certified pro clinics on sea days",
+    "tagline": "Small-group hosted pickleball cruise vacations pairing pro-led onboard coaching with private destination court play ashore.",
     "independentSummary": "Recreational pickleball players and spouses coordinated by Escape Group Cruises sailing 6 nights roundtrip from Fort Lauderdale aboard Adventure of the Seas, featuring PPR-certified pro pickleball clinics on sea days.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Recreational pickleball players & spouses with PPR-certified pro clinics on sea days",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Pickleball players of all skill levels (first-time beginners through advanced players), solo travelers, couples, clubs, and non-playing travel companions.",
+    "typicalHostedProgramming": "Intentionally capped small-group format (~32 guests) with a dedicated Trip Leader and sailing Pickleball Pro, featuring skill-grouped clinics, drills, strategy seminars, reserved onboard court play, exclusive destination pickleball outings ashore with private round-trip transport, nightly group dinners, 70s/80s dance party, trivia, and scavenger hunt.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "All-inclusive solo stateroom pricing (published rate–published rate on the Feb 21–27, 2027 sailing) is published on every sailing page, and a dedicated Trip Leader organizes court rotations and nightly group dinners so solo travelers never need a partner.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "wellness",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-barbados",
-    "officialWebsiteUrl": "https://www.pickleballatseagroupcruise.com/pages/february-21st-27th-2027",
+    "heroVisualKey": "ship-adventure-of-the-seas-profile",
+    "officialWebsiteUrl": "https://www.pickleballatseagroupcruise.com/",
     "officialDomain": "pickleballatseagroupcruise.com",
     "publicContactPageUrl": "https://www.pickleballatseagroupcruise.com/pages/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Pickleball At Sea (Escape Group Cruises) or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Pickleball At Sea (Escape Group Cruises) so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
-    "comparableOrganizerSlugs": []
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "comparableOrganizerSlugs": [],
+    "reputationEntityId": "rep:hosted-organizer:pickleball-at-sea",
+    "knownBrandAliases": [
+      "Pickleball At Sea",
+      "Escape Group Cruises (Travel Partner)"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/pickleballatsea/",
+      "facebookUrl": "https://www.facebook.com/pickleballatsea/"
+    },
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "Pickleball At Sea Past Guest Testimonials",
+        "url": "https://www.pickleballatseagroupcruise.com/pages/past-guest-testimonials",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "cabinSellerIdentity": "Pickleball At Sea Group Cruise (published rate/person Experience Deposit) in partnership with Escape Group Cruises (FL Seller of Travel ST15578 / CST 2090937-50, official phone line, official organizer contact), which processes stateroom reservations and cruise final payments",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Pickleball At Sea (Escape Group Cruises) so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Booking requires a non-refundable, non-cancellable published rate per-person Experience Deposit paid to Pickleball At Sea Group Cruise (transferable once to another sailing up to 7 days prior to departure), followed by a Reservation Intake Form and stateroom deposit/balance paid through Escape Group Cruises. Final cruise payment is due at least 90 days prior to departure and is subject to Royal Caribbean's standard cancellation schedule.",
+    "officialPolicyUrl": "https://www.pickleballatseagroupcruise.com/policies/refund-policy"
   },
   {
     "organizerId": "hosted-organizer:cruise-and-crop",
@@ -821,32 +1200,48 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Crafting & Hobby Cruises",
     "primaryTheme": "crafting-and-hobbies",
     "secondaryThemes": [],
-    "tagline": "Paper crafters, cardmakers, scrapbookers & spouses sailing 7 nights from Fort Lauderdale",
+    "tagline": "Advisor-hosted papercrafting, stamping, cardmaking, and scrapbooking retreats at sea.",
     "independentSummary": "Paper crafters, cardmakers, scrapbookers, and spouses sailing 7 nights roundtrip from Fort Lauderdale aboard Holland America's Nieuw Statendam with dedicated sea-day crop room sessions.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Paper crafters, cardmakers, scrapbookers & spouses sailing 7 nights from Fort Lauderdale",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Stampers, cardmakers, scrapbookers, and papercrafters, along with non-crafting roommates, spouses, and friends.",
+    "typicalHostedProgramming": "Stampin' at Sea 2027 hosted with instructors Laura Milligan and Janice Weightman in dedicated Main Deck crop space aboard Nieuw Statendam, featuring stamping and cardmaking classes, make-and-takes, open cropping hours, prizes, giveaways, goodie bags, and optional Holland America Have It All perks.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Single-occupancy cabin rates (published rate–published rate including taxes and port charges) are published on the sailing page, non-crafting roommates are exempt from the published rate Participant Fee, and solo crafters can connect via the official Cruise & Crop Roommate Match-up Facebook group (https://www.facebook.com/groups/roommatematchup/).",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "crafting and hobbies",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-ketchikan",
-    "officialWebsiteUrl": "https://www.cruiseandcrop.com/StampinAtSea2027.html",
+    "heroVisualKey": "port-barbados",
+    "officialWebsiteUrl": "https://www.cruiseandcrop.com/",
     "officialDomain": "cruiseandcrop.com",
     "publicContactPageUrl": "https://www.cruiseandcrop.com/AboutUs.html",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Cruise & Crop or Holland America Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Cruise & Crop so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "stitchin-heaven",
       "pickleball-at-sea",
       "alice-travel-bridge-cruises",
       "craft-cruises"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:cruise-and-crop",
+    "knownBrandAliases": [
+      "Cruise And Crop",
+      "Dream Vacations - Cheri Thomas & Gail Pastor"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/cruiseandcrop",
+      "facebookUrl": "https://www.facebook.com/cruiseandcrop",
+      "youtubeUrl": "https://www.youtube.com/user/CruiseAndCrop",
+      "xUrl": "https://twitter.com/CruiseAndCrop"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Cruise & Crop / Dream Vacations franchise owned by Cheri Thomas & Gail Pastor (official organizer contact / official organizer contact)",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Cruise & Crop so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Attendees MUST book their cabin through Cruise & Crop—anyone booking directly with Holland America or another travel agent cannot participate in the conference. Requires a published rate per-person cruise deposit plus a published rate per-crafter Participant Fee (published rate non-refundable deposit at booking; published rate balance due with final payment on November 6, 2026 and non-refundable thereafter; non-crafting roommates are exempt), and cancellations after deposit incur a published rate per-person Cruise & Crop administrative fee plus cruise line penalties.",
+    "officialPolicyUrl": "https://www.cruiseandcrop.com/StampinAtSea2027.html"
   },
   {
     "organizerId": "hosted-organizer:krouse-travel",
@@ -861,32 +1256,47 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "secondaryThemes": [
       "family-reunions"
     ],
-    "tagline": "Milestone retirement celebration group (friends, extended family & colleagues from Pennsylvania)",
+    "tagline": "Escorted group cruises and custom leisure travel backed by more than 70 years of Central Pennsylvania agency service.",
     "independentSummary": "Milestone retirement celebration group of friends, extended family, and colleagues from Pennsylvania coordinated by Krouse Travel on a 7-night roundtrip New York to Bermuda cruise aboard Norwegian Luna (docked 3 days at Royal Naval Dockyard).",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Milestone retirement celebration group (friends, extended family & colleagues from Pennsylvania)",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Leisure cruisers, couples, solo travelers, friend groups, and multigenerational guests joining celebratory and agency-escorted cruise departures.",
+    "typicalHostedProgramming": "Agency-escorted group travel (escorted when minimum group participation is met on Tammy's Bermuda Retirement Cruise), bundled Norwegian Cruise Line group amenity packages (beverage or soda packages, specialty dining, excursion credits, and Wi-Fi), and coordinated pre-trip and onboard logistics.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Solo-occupancy cabins are explicitly supported on the official sailing brochure with a published a published solo-cabin deposit and solo pricing available on request; no roommate-matching program is advertised.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "weddings and celebrations",
       "Hosted group block"
     ],
     "heroVisualKey": "port-bermuda",
-    "officialWebsiteUrl": "https://krousetravel.com/groups/view/?groupid=190",
+    "officialWebsiteUrl": "https://krousetravel.com/",
     "officialDomain": "krousetravel.com",
     "publicContactPageUrl": "https://krousetravel.com/contact/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Krouse Travel or Norwegian Cruise Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Krouse Travel so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "travel-partners-in-dublin",
       "singlescruise",
       "welcome-home-rgv",
       "travel-with-donna"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:krouse-travel",
+    "knownBrandAliases": [
+      "Krouse Travel, Inc.",
+      "Star-Light Travel"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/krousetravel/",
+      "facebookUrl": "https://www.facebook.com/krousetravel",
+      "xUrl": "https://twitter.com/trave1lady"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Krouse Travel, Inc. (full-service travel agency in York and Lancaster, PA; independent affiliate of Travel Planners International, CST #2063964-50 / FL #DT-27389 / WA UBI #602-232-785, and Signature Travel Network member), booking into its Norwegian Cruise Line group block",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Krouse Travel so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Reservations for Tammy's 7-Night Bermuda Retirement Cruise require a a published per-person deposit with final payment due January 22, 2027, and a Krouse Travel escort accompanies the group when minimum group participation is met. Per Krouse Travel's published Terms & Conditions, bookings are subject to supplier cancellation penalties and optional agency re-booking fees.",
+    "officialPolicyUrl": "https://krousetravel.com/downloads/files/krouse-travel-terms-and-conditions-2025.pdf"
   },
   {
     "organizerId": "hosted-organizer:bribeck-travel",
@@ -899,31 +1309,51 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Faith & Study Cruises",
     "primaryTheme": "faith-communities",
     "secondaryThemes": [],
-    "tagline": "SOWERS RV ministry fellowship members & spouses gathering from across the US in Galveston",
+    "tagline": "Advisor-hosted group cruises and faith-community sailings with hands-on planning and onboard group coordination.",
     "independentSummary": "SOWERS RV ministry fellowship members and spouses from across the United States coordinated by BriBeck Travel sailing 7 nights roundtrip from Galveston aboard Symphony of the Seas.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "SOWERS RV ministry fellowship members & spouses gathering from across the US in Galveston",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Members and friends of the SOWERS (Servants On Wheels Ever Ready) Christian RV ministry, along with solo travelers, couples, families, and travelers with disabilities seeking hosted group cruises.",
+    "typicalHostedProgramming": "Onboard advisor hosting by Becki Bozart, group fellowship and shared dining coordination for the SOWERS 2027 group, and exclusive hosted-sailing gatherings and group amenities reserved for group-booked guests.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Advisor Becki Bozart explicitly specializes in solo travelers and supports single-guest stateroom registrations on the SOWERS 2027 online registration portal ; no roommate-matching program is advertised.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "faith communities",
       "Hosted group block"
     ],
-    "heroVisualKey": "juneau-whale-watch-crew",
-    "officialWebsiteUrl": "https://www.bribecktravel.com/GroupRegistrations/view/139004",
+    "heroVisualKey": "port-galveston-pleasure-pier",
+    "officialWebsiteUrl": "https://www.bribecktravel.com/",
     "officialDomain": "bribecktravel.com",
     "publicContactPageUrl": "https://www.bribecktravel.com/ContactUs",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by BriBeck Travel or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through BriBeck Travel so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "moody-radio",
       "templeton-tours",
       "living-passages"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:bribeck-travel",
+    "knownBrandAliases": [
+      "Cruise Planners - Becki Bozart",
+      "St. Helens Sails!"
+    ],
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/BriBeckTravel"
+    },
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "Client Reviews — Cruise Planners - Becki Bozart",
+        "url": "https://www.bribecktravel.com/ClientTestimonials/",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "cabinSellerIdentity": "Cruise Planners - Becki Bozart / BriBeck Travel (independently owned and operated Cruise Planners franchise in St. Helens, OR; FL ST #39068, CA CST #2034468-50, WA UBI #603-399-504), processing cabin bookings and deposits directly with Royal Caribbean International",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through BriBeck Travel so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Special group amenities and events on SOWERS 2027 are strictly exclusive to guests booked through Cruise Planners (Becki Bozart). Registrations require a a published per-person deposit for 1–2 passengers (processed directly with the cruise line within 7 days of registration), and Royal Caribbean's tiered cancellation penalties apply up to 100% within 7 days of sailing.",
+    "officialPolicyUrl": "https://www.bribecktravel.com/GroupRegistrations/view/139004"
   },
   {
     "organizerId": "hosted-organizer:welcome-home-rgv",
@@ -936,32 +1366,49 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Social & Milestone Group Cruises",
     "primaryTheme": "weddings-and-celebrations",
     "secondaryThemes": [],
-    "tagline": "Rio Grande Valley Winter Texan & retiree community escorted motorcoach-to-ship group",
+    "tagline": "Escorted group cruises from Texas's Rio Grande Valley bundling motorcoach transfers, pre-cruise hotel, gratuities, and cruise insurance.",
     "independentSummary": "Rio Grande Valley Winter Texan and retiree community escorted motorcoach-to-ship group hosted by Welcome Home Rio Grande Valley on a 7-night Western Caribbean sailing roundtrip from Galveston aboard Symphony of the Seas.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Rio Grande Valley Winter Texan & retiree community escorted motorcoach-to-ship group",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Rio Grande Valley locals, Winter Texans (55+ seasonal retirees), and active travelers of all ages looking for stress-free, locally escorted group cruises from Galveston.",
+    "typicalHostedProgramming": "End-to-end escorted group travel hosted by Kristi Collier and Travel Manager Kristy Meyer, featuring round-trip motorcoach transportation from the Rio Grande Valley, a hosted pre-cruise hotel stay in Sugar Land with breakfast, and onboard group camaraderie.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Published package rates are quoted per person based on double occupancy; solo travelers may request single-occupancy availability and pricing through the Tours & Travel desk, with no roommate-matching program advertised.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "weddings and celebrations",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-bermuda",
-    "officialWebsiteUrl": "https://welcomehomergv.com/tours-travel/cruise-vacations/cruisewithkristi/",
+    "heroVisualKey": "port-roatan-west-bay",
+    "officialWebsiteUrl": "https://welcomehomergv.com/tours-travel/",
     "officialDomain": "welcomehomergv.com",
     "publicContactPageUrl": "https://welcomehomergv.com/contact-travel-tours/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Welcome Home Travel & Tours or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Welcome Home Travel & Tours so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "travel-partners-in-dublin",
       "singlescruise",
       "krouse-travel",
       "travel-with-donna"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:welcome-home-rgv",
+    "knownBrandAliases": [
+      "Welcome Home RGV",
+      "Welcome Home RGV LLC",
+      "Welcome Home Tours & Travel",
+      "Travel by Welcome Home"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/welcomehomergv/",
+      "facebookUrl": "https://www.facebook.com/whrgv",
+      "linkedinUrl": "https://www.linkedin.com/company/welcome-home-rgv/"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Welcome Home Travel & Tours (in-house Tours & Travel Department of Welcome Home RGV LLC in McAllen, TX, led by Travel Manager Kristy Meyer; affiliated with Travel Leaders Network, CLIA, and ASTA)",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Welcome Home Travel & Tours so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Reservations for Cruise with Kristi require a non-refundable and non-transferable a published per-person deposit, with final payment due October 15, 2026. Published package rates include round-trip motorcoach transfers from the Rio Grande Valley, a pre-cruise hotel night with breakfast, port charges, taxes, prepaid gratuities, and cruise insurance.",
+    "officialPolicyUrl": "https://welcomehomergv.com/tours-travel/cruise-vacations/cruisewithkristi/"
   },
   {
     "organizerId": "hosted-organizer:quick-quick-slow-travel",
@@ -974,29 +1421,45 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Social Dance Cruises",
     "primaryTheme": "dance-cruises",
     "secondaryThemes": [],
-    "tagline": "Ballroom, Latin & swing dancers from Chicago's largest dance studio sailing 7N Barcelona to Rome",
+    "tagline": "Hosted social dance cruises pairing Mediterranean and global itineraries with daily partner-dance workshops and private onboard dance parties.",
     "independentSummary": "Ballroom, Latin, and swing dancers hosted by May I Have This Dance / Quick Quick Slow Travel (Chicago) sailing 7 nights from Barcelona to Civitavecchia/Rome aboard Norwegian Epic.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Ballroom, Latin & swing dancers from Chicago's largest dance studio sailing 7N Barcelona to Rome",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Social and partner dancers of all skill levels—spanning West Coast Swing, Ballroom, Salsa, Latin, and Hustle—along with non-dancing spouses, friends, and family companions.",
+    "typicalHostedProgramming": "Daily multi-style partner dance workshops (West Coast Swing, Ballroom, Hustle, Salsa, Latin, and more), private onboard dance parties, coordinated group dinner seating and dinner dancing, onboard dance hosts, and evening group outings to ship lounges and nightclubs.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Offers dedicated Studio Single (published rate) and Solo Balcony cabins strictly for single occupancy, provides onboard dance hosts, and balances leader/follower ratios (waitlisting solo followers until balanced with leaders; double-cabin guests arrange their own roommates).",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "dance cruises",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-cabo-san-lucas",
-    "officialWebsiteUrl": "https://www.quickquickslowtravel.com/dancecruises",
+    "heroVisualKey": "region-mediterranean",
+    "officialWebsiteUrl": "https://www.quickquickslowtravel.com/",
     "officialDomain": "quickquickslowtravel.com",
     "publicContactPageUrl": "https://www.quickquickslowtravel.com/aboutus",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Quick Quick Slow Travel or Norwegian Cruise Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Quick Quick Slow Travel so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "dance-fun"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:quick-quick-slow-travel",
+    "knownBrandAliases": [
+      "Quick Quick Slow Travel & Events",
+      "Quick Quick Slow Travel, Inc.",
+      "QQST"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/quickquickslowtravel/",
+      "facebookUrl": "https://www.facebook.com/QuickQuickSlowTravel",
+      "youtubeUrl": "https://www.youtube.com/@QQST"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Two-step booking: Quick Quick Slow Travel, Inc. collects the registration packet and mandatory Full Dancer Package event fee, then assigns cabins into its Norwegian Cruise Line Groups Department block (Group ID #3020592), where guests pay cabin deposits and balances directly to NCL",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Quick Quick Slow Travel so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Participants must book within Quick Quick Slow Travel's NCL group block and pay a mandatory, non-refundable published rate per person Full Dancer Package event fee prior to paying NCL (transferable only with prior approval and a published rate transfer fee; rare outside-booking exceptions cost published rate). A published rate per cabin deposit is due to NCL within 5 business days of NCL's payment email, and final cruise payment is due June 1, 2027 (non-refundable thereafter).",
+    "officialPolicyUrl": "https://www.quickquickslowtravel.com/terms-of-service"
   },
   {
     "organizerId": "hosted-organizer:alice-travel-bridge-cruises",
@@ -1009,32 +1472,44 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Crafting & Hobby Cruises",
     "primaryTheme": "crafting-and-hobbies",
     "secondaryThemes": [],
-    "tagline": "Duplicate bridge players & spouses earning ACBL Gold/Red Masterpoints on a 7N Galveston cruise",
+    "tagline": "ACBL-sanctioned Regional at Sea duplicate bridge cruises combining Gold Masterpoint tournaments and expert instruction with full-service cruise travel.",
     "independentSummary": "Duplicate bridge players and spouses hosted by Robert Todd and Larry Cohen via Alice Travel Bridge Cruises, earning ACBL Gold/Red Masterpoints during sea-day tournament sessions on a 7-night roundtrip Galveston cruise aboard Symphony of the Seas.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Duplicate bridge players & spouses earning ACBL Gold/Red Masterpoints on a 7N Galveston cruise",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Duplicate and tournament bridge players—from Intermediate/Newcomer and Gold Rush players to Open Life Masters—along with non-playing spouses, family members, and travel companions.",
+    "typicalHostedProgramming": "ACBL-sanctioned Regional at Sea tournament bridge awarding Gold Masterpoints (Sanction #2704115 with instructor Robert Todd on the April 2027 Galveston sailing), daily 9:00 AM bridge lectures, morning and afternoon Strati-Flighted Open and Gold Rush Pair games and Swiss Teams, 4:45 PM Strategy Q&A sessions, evening Side Games and Knockouts, pre-duplicated boards with Bridgemates scoring, and a farewell awards party.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Explicitly welcomes solo travelers with published single-occupancy stateroom rates (published rate+ on the April 2027 Galveston flyer), dedicated staff partner matching, and capable staff fill-in players so solo guests never sit out a session.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "crafting and hobbies",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-ketchikan",
-    "officialWebsiteUrl": "https://alicetravelbridgecruises.com/bridge-cruises/cruise-the-caribbean-from-texas-play-bridge-all-week",
+    "heroVisualKey": "port-roatan",
+    "officialWebsiteUrl": "https://alicetravelbridgecruises.com/",
     "officialDomain": "alicetravelbridgecruises.com",
     "publicContactPageUrl": "https://alicetravelbridgecruises.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Alice Travel Bridge Cruises or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Alice Travel Bridge Cruises so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "stitchin-heaven",
       "pickleball-at-sea",
       "cruise-and-crop",
       "craft-cruises"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:alice-travel-bridge-cruises",
+    "knownBrandAliases": [
+      "Alice Travel",
+      "Larry Cohen's Regional at Sea",
+      "Bridge with Larry Cohen"
+    ],
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Alice Travel (Fairfield, NJ; dedicated Bridge Cruise Desk at official phone line and Signature Travel Network member), exclusive booking agency and organizer for Larry Cohen's Regional at Sea bridge cruises",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Alice Travel Bridge Cruises so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "All bridge tournament fees, shipboard gratuities, and a Group Travel Protection Plan (for guests with a U.S. address) are bundled into Alice Travel's group cruise fare, requiring participants to book through the Alice Travel Bridge Desk. Applicable cruise cancellation penalties apply, and lecturer or instructor substitutions do not entitle guests to refunds.",
+    "officialPolicyUrl": "https://alicetravelbridgecruises.com/faq",
+    "officialSocialLinks": {}
   },
   {
     "organizerId": "hosted-organizer:travel-with-donna",
@@ -1047,32 +1522,64 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Social & Milestone Group Cruises",
     "primaryTheme": "weddings-and-celebrations",
     "secondaryThemes": [],
-    "tagline": "Advisor-escorted luxury & upper-premium repeat clients sailing 13 nights roundtrip from Southampton",
+    "tagline": "Advisor-escorted small-group cruises offering personalized planning, exclusive group perks, and an onboard host throughout the voyage.",
     "independentSummary": "Advisor-escorted group of luxury and upper-premium repeat clients hosted by Travel with Donna LLC on a 13-night Best of Scandinavia voyage roundtrip from Southampton aboard Celebrity Apex.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Advisor-escorted luxury & upper-premium repeat clients sailing 13 nights roundtrip from Southampton",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Solo cruisers, couples, friend groups, and families who want personalized vacation planning and the comfort of sailing alongside a Certified Travel Advisor.",
+    "typicalHostedProgramming": "Personal onboard hosting by Donna Peterson from embarkation to disembarkation, pre- and post-cruise flight and hotel coordination, optional group shore excursions, and informal onboard social connection.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Explicitly invites solo cruisers ('travel with friends — even if you arrive solo'), providing an onboard advisor host and welcoming group environment; no formal roommate-matching program is advertised.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
     "goodForTags": [
       "weddings and celebrations",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-bermuda",
-    "officialWebsiteUrl": "https://www.travelwithdonna.vip/hosted-cruises",
+    "heroVisualKey": "region-northern-europe",
+    "officialWebsiteUrl": "https://www.travelwithdonna.vip/",
     "officialDomain": "travelwithdonna.vip",
     "publicContactPageUrl": "https://www.travelwithdonna.vip/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Travel with Donna LLC or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Travel with Donna LLC so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "travel-partners-in-dublin",
       "singlescruise",
       "krouse-travel",
       "welcome-home-rgv"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:travel-with-donna",
+    "knownBrandAliases": [
+      "Donna Peterson, CTA"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/travelwithdonnallc/",
+      "facebookUrl": "https://www.facebook.com/groups/2083907878617112"
+    },
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "Client Testimonials — Travel with Donna LLC",
+        "url": "https://www.travelwithdonna.vip/testimonials",
+        "authorizationBasis": "official_site_linked"
+      },
+      {
+        "platform": "bbb",
+        "label": "Better Business Bureau Profile — Travel with Donna LLC",
+        "url": "https://www.bbb.org/us/nj/ventnor-city/profile/travel-agency/travel-with-donna-llc-0221-90237228/#sealclick",
+        "authorizationBasis": "official_site_linked"
+      },
+      {
+        "platform": "official_testimonials",
+        "label": "ASTA Verified Travel Advisor Profile — Donna Peterson",
+        "url": "https://my.asta.org/asta/ASTA/Contacts/ContactLayouts/Profile.aspx?ID=900375104",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "cabinSellerIdentity": "Travel with Donna LLC (Donna Peterson, Certified Travel Advisor in Ventnor City, NJ, operating as an independent affiliate of Nexion Travel Group)",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Travel with Donna LLC so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Group event participation requires booking inside Travel with Donna LLC’s official block or charter inventory; cancellation schedules follow published organizer and cruise-line terms.",
+    "officialPolicyUrl": null
   },
   {
     "organizerId": "hosted-organizer:moody-radio",
@@ -1087,31 +1594,46 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "secondaryThemes": [
       "weddings-and-celebrations"
     ],
-    "tagline": "Moody Radio listeners, ministry supporters & families celebrating Moody Radio's 100th anniversary",
+    "tagline": "Christ-centered fellowship cruises bringing Moody Radio hosts, Bible teachers, and Christian worship artists together at sea.",
     "independentSummary": "Moody Radio listeners, ministry supporters, and families celebrating Moody Radio's 100th anniversary with sea-day teaching and worship on a 7-night Glacier Bay Alaska voyage roundtrip from Seattle aboard Holland America's Eurodam.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Moody Radio listeners, ministry supporters & families celebrating Moody Radio's 100th anniversary",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Moody Radio listeners, evangelical Christians, couples, solo believers, and families seeking biblical teaching, worship concerts, and Christian community on an Alaska cruise.",
+    "typicalHostedProgramming": "Daily Bible teaching and Q&A sessions with Moody Radio hosts Pastor Karl Clauson (Karl and Crew) and Dr. Michael Rydelnik (Open Line), worship concerts with Christian recording artist Micah Tyler, host meet-and-greets, and shared Christian fellowship meals marking Moody Radio's 100th anniversary.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Single-occupancy cabins are available through Inspiration Travel (with Ocean View staterooms highlighted for solo travelers or couples, and single-occupancy rate adjustments if a roommate cancels); no roommate-matching program is advertised on the event page.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
     "goodForTags": [
       "faith communities",
       "Hosted group block"
     ],
-    "heroVisualKey": "juneau-whale-watch-crew",
-    "officialWebsiteUrl": "https://www.moodyradio.org/landing-pages/cruise/",
+    "heroVisualKey": "port-glacier-bay-margerie",
+    "officialWebsiteUrl": "https://www.moodyradio.org/",
     "officialDomain": "moodyradio.org",
-    "publicContactPageUrl": "https://www.moodyradio.org/landing-pages/cruise/",
+    "publicContactPageUrl": "https://www.moodyradio.org/contact/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Moody Radio or Holland America Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Moody Radio so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "bribeck-travel",
       "templeton-tours",
       "living-passages"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:moody-radio",
+    "reservationPortalDomain": "inspirationtravel.com",
+    "knownBrandAliases": [
+      "Moody Global Media",
+      "Moody Bible Institute"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/moodyradio/",
+      "facebookUrl": "https://www.facebook.com/moodyradio/"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Inspiration Cruises & Tours / Inspiration Travel (CST #2008327-40, Fresno, CA; official phone line), official Christian cruise management and cabin reservation partner for Moody Radio",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Moody Radio so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "All onboard Bible teaching, concerts, and group events (including a published rate conference cost built into package rates) are exclusive to guests who book through Inspiration Travel. Reservations require a published rate per passenger deposit with final payment due February 15, 2027; written cancellations incur a published rate fee through March 2, 2027 and escalate to 100% (non-refundable) on or after April 16, 2027.",
+    "officialPolicyUrl": "https://www.inspirationtravel.com/event/moody-radio-alaska-cruise-2027#faqs"
   },
   {
     "organizerId": "hosted-organizer:templeton-tours",
@@ -1126,31 +1648,43 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "secondaryThemes": [
       "music-cruises"
     ],
-    "tagline": "Southern Gospel church groups, choirs & families on the 53rd annual Singing at Sea charter/group",
+    "tagline": "Full-ship Southern Gospel music charters featuring more than 100 Christian concerts and preaching sessions in an alcohol-free, casino-closed setting.",
     "independentSummary": "Southern Gospel church groups, choirs, and families on Templeton Tours' 53rd annual Singing at Sea voyage aboard Carnival Glory (5 nights roundtrip from Port Canaveral) with sea-day Gospel concerts.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Southern Gospel church groups, choirs & families on the 53rd annual Singing at Sea charter/group",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Southern Gospel music fans, church groups, Christian seniors, couples, and families seeking a wholesome, alcohol-free and casino-free full-ship Christian cruise.",
+    "typicalHostedProgramming": "Full-ship Southern Gospel music festival featuring more than 25 Gospel quartets, soloists, preachers, and Christian comedians across over 100 concerts, worship services, and preaching sessions—with all shipboard bars and the casino closed throughout the voyage.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Single occupancy is available at 200% of the published brochure rate per the official charter conditions; no roommate-matching service is advertised.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
     "goodForTags": [
       "faith communities",
       "Hosted group block"
     ],
-    "heroVisualKey": "juneau-whale-watch-crew",
-    "officialWebsiteUrl": "https://templetontours.com/singingatsea/",
+    "heroVisualKey": "port-nassau",
+    "officialWebsiteUrl": "https://templetontours.com/",
     "officialDomain": "templetontours.com",
-    "publicContactPageUrl": "https://templetontours.com/aboutus.shtml",
+    "publicContactPageUrl": "https://templetontours.com/contactus.shtml",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Templeton Tours or Carnival Cruise Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Templeton Tours so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "bribeck-travel",
       "moody-radio",
       "living-passages"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:templeton-tours",
+    "knownBrandAliases": [
+      "Templeton Tours, Inc.",
+      "Singing at Sea",
+      "TTI"
+    ],
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Templeton Tours, Inc. (Boone, NC; official phone line), full-ship charter operator and exclusive reservation desk for the Singing at Sea Carnival Glory charter",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Templeton Tours so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Because Singing at Sea is a full-ship Christian charter of Carnival Glory (with onboard bars and casino closed), all staterooms must be booked directly through Templeton Tours. Reservations require a a published per-person deposit, a published rate second payment by July 29, 2026, and final payment 60 days prior to sailing (November 25, 2026); written cancellations incur published rate/person (>60 days), 25% (60–30 days), 50% (29–15 days), and 100% within 14 days of sailing.",
+    "officialPolicyUrl": "https://templetontours.com/singingatsea/conditions.shtml",
+    "officialSocialLinks": {}
   },
   {
     "organizerId": "hosted-organizer:craft-cruises",
@@ -1169,26 +1703,40 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "designedForAudience": "Knitters, fiber-arts travelers & spouses on an instructor-led 14-night Circle Japan voyage",
     "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Craft Cruises offers a formal Single Share Program for a published rate non-refundable application fee (per terms_and_conditions.php, if a matched roommate cancels for a non-covered reason without a replacement, the cancelling traveler is responsible for the single supplement), as well as solo-occupancy quotes and communal sea-day knitting/craft lounges.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
     "goodForTags": [
       "crafting and hobbies",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-ketchikan",
-    "officialWebsiteUrl": "https://www.craftcruises.com/cruise.php?brand=Knitting%20Cruises&cruise_name=Circle%20Japan&cruise_line=Holland%20America%20Line&cruise_ship=ms%20Westerdam&dep_date=2027-04-11&cruise=231",
+    "heroVisualKey": "port-yokohama-minato-mirai",
+    "officialWebsiteUrl": "https://www.craftcruises.com/",
     "officialDomain": "craftcruises.com",
     "publicContactPageUrl": "https://www.craftcruises.com/contact_us.php",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Craft Cruises or Holland America Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Craft Cruises so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "stitchin-heaven",
       "pickleball-at-sea",
       "cruise-and-crop",
       "alice-travel-bridge-cruises"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:craft-cruises",
+    "knownBrandAliases": [
+      "Craft Cruises®",
+      "Craft Cruises, Inc.",
+      "Knitting Cruises",
+      "Crocheting Cruises",
+      "Craft Cruises for Kids™"
+    ],
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Specialty group cruise travel agency (Craft Cruises, Inc., founded by Melissa Gower, quoting and selling group cruise cabins, port taxes, mandatory/optional onboard craft class program packages, and private fiber/yarn shore excursions; travelers must book through Craft Cruises to participate in onboard classes and private tours).",
+    "officialReservationPathSummary": "Travelers browse specialty fiber/craft sailings on craftcruises.com/featured_cruises.php and request a custom cabin + class package quote or register by calling Craft Cruises Reservations at official phone line (877-97-CRAFT) or submitting the inquiry form at craftcruises.com/contact_us.php.",
+    "cancellationAndParticipationPolicy": "Per craftcruises.com/terms_and_conditions.php, all Craft Cruises class program fees, private group shore excursions, and planning fees are 100% non-refundable once paid. For cruise cabin cancellations, Craft Cruises charges a published rate per-person administrative cancellation fee (and up to published rate per change/rebooking plus a published rate late final-payment fee) on top of the underlying cruise line's cancellation penalties.",
+    "officialPolicyUrl": "https://www.craftcruises.com/terms_and_conditions.php",
+    "officialSocialLinks": {}
   },
   {
     "organizerId": "hosted-organizer:aquafest-cruises",
@@ -1209,26 +1757,40 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "designedForAudience": "Flagship annual hosted LGBTQ+ & friends Halloween group sailing Rome to Tampa",
     "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": "Welcoming hosted group structure for solo travelers and friends (confirm roommate or solo cabin options with organizer).",
+    "soloSupportSummary": "Aquafest's FAQ states 'We will try to match you up with another single traveler. Please contact us' for roommate matching requests, while private single-occupancy cabins are priced at 200% of advertised double-occupancy cruise rates; onboard programming includes hosted socials, group dining, and a daily Aquafest hospitality desk.",
     "soloFriendly": true,
-    "familyPolicy": "not_verified",
+    "familyPolicy": "mixed_group",
     "goodForTags": [
       "lgbtq cruises",
       "Hosted group block"
     ],
-    "heroVisualKey": "region-mediterranean",
-    "officialWebsiteUrl": "https://aquafestcruises.com/cruise/52/17-nights-halloween-constellation-transatlantic-cruise-",
+    "heroVisualKey": "port-rome-st-peters",
+    "officialWebsiteUrl": "https://aquafestcruises.com/",
     "officialDomain": "aquafestcruises.com",
     "publicContactPageUrl": "https://aquafestcruises.com/contact/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Aquafest Cruises or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Aquafest Cruises so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "arnos-bear-cruises",
       "atlantis-events",
       "vacaya",
       "olivia-travel"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:aquafest-cruises",
+    "knownBrandAliases": [
+      "Aquafest",
+      "Aquafest LGBT+ Events",
+      "Aquafest Cruise & Tour Events"
+    ],
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/home.php#!/aquafestcruiseandtourevents"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Hosted LGBT+ group cruise agency (Aquafest Cruises, a division of CruiseCenter / Atlas Partners LLC, acting as retail cruise travel agency for hosted groups of 50 to 500+ passengers; private onboard events are restricted exclusively to guests booked through Aquafest).",
+    "officialReservationPathSummary": "Travelers review per-sailing pricing on aquafestcruises.com and book by calling an Aquafest Cruise Consultant at official phone line or submitting a web inquiry on aquafestcruises.com/contact/ (Aquafest explicitly states on its pricing/terms pages that it does not accept electronic transmission of credit cards online). A published rate non-refundable booking processing fee and a published rate per-person Aquafest Private Group Fee (at final payment) apply.",
+    "cancellationAndParticipationPolicy": "Cruise-line cancellation penalties begin approximately 120–75 days prior to departure and increase up to 100%, in addition to Aquafest's published rate non-refundable booking processing fee and a published rate per-cabin Aquafest cancellation fee . Only guests who book their cabin directly through Aquafest are admitted to Aquafest's private parties, entertainment, hospitality desk, and group dining, and hosted programming requires a minimum of 50 group guests.",
+    "officialPolicyUrl": "https://aquafestcruises.com/terms/"
   },
   {
     "organizerId": "hosted-organizer:living-passages",
@@ -1241,31 +1803,55 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Faith & Study Cruises",
     "primaryTheme": "faith-communities",
     "secondaryThemes": [],
-    "tagline": "Bible study travelers & couples sailing 10 nights Barcelona to Rome with custom biblical shore tours",
+    "tagline": "Pastor- and scholar-led biblical study cruises with private Christian shore excursions to ancient Mediterranean Scripture sites.",
     "independentSummary": "Christian Bible study travelers and couples hosted by Pastor Shane Holden and Joel Richardson with Living Passages on a 10-night Barcelona-to-Rome voyage aboard Celebrity Equinox featuring custom biblical shore tours across Malta, Greece, and Turkey.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Bible study travelers & couples sailing 10 nights Barcelona to Rome with custom biblical shore tours",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Evangelical Christians, Bible students, church groups, Christian singles, couples, seniors, and families seeking in-depth Scripture teaching on location.",
+    "typicalHostedProgramming": "Private onboard and on-site biblical lectures and teachings (led on the October 2027 cruise by Pastor Shane Holden and author Joel Richardson), private Christian shore excursions to Mars Hill, Ancient Corinth, Ephesus, Ancient Olympia, Malta, and Rome's Mamertine Prison, group worship and fellowship, and an accompanying Living Passages liaison.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Dedicated Christian Singles Travel program offering complimentary roommate matching by same gender and similar age (with matched roommates introduced via email ~2 weeks prior to departure, subject to availability), explicit single-room booking options, and private pre-trip Facebook and WhatsApp groups ~1 month before departure.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
     "goodForTags": [
       "faith communities",
       "Hosted group block"
     ],
-    "heroVisualKey": "juneau-whale-watch-crew",
-    "officialWebsiteUrl": "https://livingpassages.com/cruise/malta-greece-turkey-italy-footsteps-of-paul-cruise/",
+    "heroVisualKey": "port-valletta-panorama",
+    "officialWebsiteUrl": "https://livingpassages.com/",
     "officialDomain": "livingpassages.com",
-    "publicContactPageUrl": "https://livingpassages.com/contact/",
+    "publicContactPageUrl": "https://livingpassages.com/contact-us/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Living Passages or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Living Passages so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "bribeck-travel",
       "moody-radio",
       "templeton-tours"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:living-passages",
+    "reservationPortalDomain": "creatorapp.zohopublic.com",
+    "knownBrandAliases": [
+      "Living Passages Christian Travel"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/livingpassages/",
+      "facebookUrl": "https://www.facebook.com/livingpassages",
+      "youtubeUrl": "https://www.youtube.com/c/LivingPassagesTravel",
+      "linkedinUrl": "https://www.linkedin.com/company/living-passages-christian-travel/",
+      "xUrl": "https://twitter.com/LivingPassages"
+    },
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "Christian Travel Testimonials — Living Passages",
+        "url": "https://livingpassages.com/testimonials/",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "cabinSellerIdentity": "Living Passages (Coeur d'Alene, ID; official phone line; IATA- and Virtuoso-affiliated biblical tour and cruise operator, processing tour and cabin registrations via its Travel Management Inc. Zoho registration portal)",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Living Passages so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Cruise and tour packages are custom-bundled by Living Passages (including private biblical shore excursions, teachings, accommodations, and selected gratuities), with cash/check discounts and major credit cards accepted. Per the official FAQ, refund eligibility and cancellation penalties vary per tour based on cancellation timing and final payment deadlines as specified in each trip's brochure terms and conditions, with optional trip insurance available upon booking.",
+    "officialPolicyUrl": "https://livingpassages.com/faqs/"
   },
   {
     "organizerId": "hosted-organizer:lesbians-aboard",
@@ -1284,7 +1870,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "designedForAudience": "Hosted LGBTQ+ women's community group on Virgin Voyages' 4-ship meetup sailing",
     "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": "Welcoming hosted group structure for solo travelers and friends (confirm roommate or solo cabin options with organizer).",
+    "soloSupportSummary": "Solo sailors are warmly welcomed into hosted group meetups, sail-away gatherings, and group dinners so solo travelers have an instant onboard community; per the official FAQ, travelers book their own Virgin Voyages cabin (including Solo Insider/Sea View categories) and Lesbians Aboard does not perform random roommate matching.",
     "soloFriendly": true,
     "familyPolicy": "adults_only",
     "goodForTags": [
@@ -1292,19 +1878,43 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
       "Hosted group block",
       "18+ ship policy"
     ],
-    "heroVisualKey": "sail-away-deck-meetup",
-    "officialWebsiteUrl": "https://lesbiansaboard.com/sisters-at-sea-2027",
+    "heroVisualKey": "port-bimini-alice-town",
+    "officialWebsiteUrl": "https://lesbiansaboard.com/",
     "officialDomain": "lesbiansaboard.com",
     "publicContactPageUrl": "https://lesbiansaboard.com/contact-us",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Lesbians Aboard or Virgin Voyages.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Lesbians Aboard so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "arnos-bear-cruises",
       "atlantis-events",
       "vacaya",
       "olivia-travel"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:lesbians-aboard",
+    "reservationPortalDomain": "virginvoyages.com",
+    "knownBrandAliases": [
+      "Lesbians Aboard Virgin Voyages Group",
+      "Lesbians Aboard Sisters at Sea"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/lesbiansaboard",
+      "facebookUrl": "https://www.facebook.com/lesbiansaboardvirginvoyages",
+      "youtubeUrl": "https://www.youtube.com/lesbiansaboard",
+      "tiktokUrl": "https://www.tiktok.com/@lesbiansaboard"
+    },
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "Lesbians Aboard Official Testimonials",
+        "url": "https://lesbiansaboard.com/testimonials",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "cabinSellerIdentity": "Cruise-line direct sale via dedicated First Mate travel advisor: Virgin Voyages legally sells and operates the cabin reservation, while co-host Natasha DeJesus (independent Virgin Voyages Top 100 First Mate, agencyId=477, agentId=140537) serves as advisor of record and hosts the Lesbians Aboard group at no extra membership or event fee.",
+    "officialReservationPathSummary": "Travelers click 'Check Prices & Availability' on a Lesbians Aboard sailing page to book directly inside Virgin Voyages' official checkout portal via Natasha DeJesus's First Mate referral link (virginvoyages.com/book/voyage-planner/... with agencyId=477 & agentId=140537) at published rate extra group fee, or submit a booking inquiry on lesbiansaboard.com/contact-us / call official phone line so Natasha attaches the cabin to the hosted group.",
+    "cancellationAndParticipationPolicy": "There is no separate Lesbians Aboard group fee when booked through co-host Natasha DeJesus's Virgin Voyages advisor link, and all onboard group meetups and dinners are optional. All cabin fares, deposits, cancellations, Sailor conduct rules, and onboard operations are governed directly by Virgin Voyages' standard Sailor contract and ship security policies.",
+    "officialPolicyUrl": "https://lesbiansaboard.com/faq"
   },
   {
     "organizerId": "hosted-organizer:fintalks",
@@ -1315,32 +1925,48 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Conference, Networking & CE Cruises",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "tagline": "Creator & personal finance community group sailing out of Miami",
+    "tagline": "Financial Independence (FI) community cruises combining casual money conversations and shared group dining with a family-friendly Caribbean getaway.",
     "independentSummary": "Creator and personal finance community group hosted by Amberly Grant / FinTalks sailing 7 nights roundtrip from Miami aboard Icon of the Seas to St. Maarten, St. Thomas, and Perfect Day at CocoCay.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Creator & personal finance community group sailing out of Miami",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Personal finance enthusiasts, Financial Independence / Retire Early (FIRE) community members, FinTalks members, solo cruisers, couples, and families.",
+    "typicalHostedProgramming": "Casual onboard Financial Independence (FI) community meetups and money discussions, coordinated group main-dining-room seating (5:00 PM early or 7:30 PM late), pre-cruise hotel meetup in Fort Lauderdale, and private Discord group coordination.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Registration explicitly supports both private solo cabins ('SOLO') and organizer-facilitated roommate matching ('HELP') based on traveler questionnaire preferences and personality.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
     "goodForTags": [
       "business and networking",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-san-juan",
-    "officialWebsiteUrl": "https://www.amberlygrant.com/caribbean-cruise-icon",
+    "heroVisualKey": "ship-icon-of-the-seas-miami",
+    "officialWebsiteUrl": "https://www.amberlygrant.com/",
     "officialDomain": "amberlygrant.com",
-    "publicContactPageUrl": "https://www.amberlygrant.com/caribbean-cruise-icon",
+    "publicContactPageUrl": "https://www.amberlygrant.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by FinTalks (Amberly Grant) or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through FinTalks (Amberly Grant) so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
       "national-reia",
       "sea-day-cle"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:fintalks",
+    "reservationPortalDomain": "forms.gle",
+    "knownBrandAliases": [
+      "Amberly Grant",
+      "Amberly Grant - Finance",
+      "FinTalks Travel"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/amberlygrant/",
+      "facebookUrl": "https://www.facebook.com/AmberlyGrantFinance"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Amberly Grant acting directly as the group's travel agent , booking staterooms and processing deposits and final payments via credit card authorization form within the FinTalks Royal Caribbean group block",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through FinTalks (Amberly Grant) so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "All attendees must book their stateroom directly through Amberly Grant's FinTalks group block; outside bookings do not receive group rates and are strictly excluded from all FinTalks onboard activities. Participation requires a non-refundable published rate per person event fee (waived for paid FinTalks members and guests under 18), a cruise deposit via credit card authorization form to confirm the cabin, and final cruise payment 90 days before sailing.",
+    "officialPolicyUrl": "https://www.amberlygrant.com/caribbean-cruise-icon"
   },
   {
     "organizerId": "hosted-organizer:acquisition-lab",
@@ -1353,33 +1979,58 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Conference, Networking & CE Cruises",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "tagline": "Main Street M&A / Entrepreneurship-Through-Acquisition searchers, operators & spouses",
+    "tagline": "An acquisition-entrepreneurship summit at sea uniting SMB buyers, active searchers, and post-close CEOs aboard Virgin Voyages.",
     "independentSummary": "Acquire It Summit produced by Acquisition Lab for Main Street M&A and Entrepreneurship-Through-Acquisition searchers, operators, and spouses on a 4-night roundtrip Miami sailing aboard Virgin Voyages' Brilliant Lady calling at Key West and Bimini.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "Main Street M&A / Entrepreneurship-Through-Acquisition searchers, operators & spouses",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Acquisition Lab members, active searchers acquiring small and midsize businesses, post-acquisition operator CEOs, M&A/SBA deal advisors, and their adult spouses or business partners.",
+    "typicalHostedProgramming": "More than 20 curated sessions across 4 days—including Walker Deibel's keynote, an Acquisition Lab docuseries premiere, Deal Autopsy panel (legal, QoE, and SBA lenders), live 'Shark Tank' deal pitches, LP Coffee Hour, searcher and post-close operator breakouts, 'The Household Decision' spouse/partner panel, deal-team office hours, cocktail receptions, and nightly small-group Supper Club dinners.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
+    "soloSupportSummary": "Cabins are priced per stateroom covering up to 2 guests at the same flat rate; solo attendees can occupy a private cabin with no single supplement beyond the cabin price or split the cabin cost with a fellow Lab member, business partner, or spouse.",
+    "soloFriendly": true,
     "familyPolicy": "adults_only",
     "goodForTags": [
       "business and networking",
       "Hosted group block",
       "18+ ship policy"
     ],
-    "heroVisualKey": "port-san-juan",
-    "officialWebsiteUrl": "https://acquireit.com",
-    "officialDomain": "acquireit.com",
-    "publicContactPageUrl": "https://acquireit.com",
+    "heroVisualKey": "port-key-west-harbor",
+    "officialWebsiteUrl": "https://acquisitionlab.com/",
+    "officialDomain": "acquisitionlab.com",
+    "publicContactPageUrl": "https://acquisitionlab.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Acquisition Lab or Virgin Voyages.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Acquisition Lab so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
       "national-reia",
       "sea-day-cle"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:acquisition-lab",
+    "reservationPortalDomain": "register.acquireit.com",
+    "knownBrandAliases": [
+      "Acquire It Summit",
+      "Acquisition Lab Ops LLC",
+      "Buy Then Build"
+    ],
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/acquisition_lab",
+      "youtubeUrl": "https://www.youtube.com/@AcquisitionLab",
+      "linkedinUrl": "https://www.linkedin.com/company/btb-acquisition-lab/",
+      "xUrl": "https://x.com/Acquisition_Lab"
+    },
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "Member Success Stories — Acquisition Lab",
+        "url": "https://acquisitionlab.com/the-lab/success-stories",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "cabinSellerIdentity": "Acquisition Lab (Acquisition Lab Ops LLC) via its dedicated summit registration portal (register.acquireit.com), selling all-inclusive Virgin Voyages Summit cabin packages directly on a per-cabin basis",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Acquisition Lab so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "Attendees must book their cabin directly through Acquisition Lab at register.acquireit.com; cabins booked directly with Virgin Voyages or third parties are ineligible for Summit sessions, receptions, or group dinners. Cabins are priced per stateroom (for 1 or 2 guests) on a 3-installment schedule (20% deposit at booking, 40% due October 31, 2026, and 40% due November 30, 2026) and may be transferred to another Lab member at no cost until a few weeks before sailing.",
+    "officialPolicyUrl": "https://acquisitionlab.com/events/annual-summit-2027"
   },
   {
     "organizerId": "hosted-organizer:marketers-cruise",
@@ -1390,32 +2041,46 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "categoryLabel": "Hosted Conference, Networking & CE Cruises",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "tagline": "20th annual digital marketing mastermind cruise out of Port Canaveral",
+    "tagline": "An annual '30% work, 70% play' Caribbean mastermind and networking cruise connecting hundreds of digital marketers and online entrepreneurs.",
     "independentSummary": "20th annual digital marketing mastermind cruise produced by Captain Lou Edwards and Mike Filsaime (Special Events at Sea) sailing 7 nights roundtrip from Port Canaveral aboard Carnival Venezia calling at Celebration Key, Cozumel, and Roatan.",
     "organizerProvidedDescription": null,
-    "designedForAudience": "20th annual digital marketing mastermind cruise out of Port Canaveral",
-    "typicalHostedProgramming": "Group activities and time together (confirm exact session or event schedule directly with the official organizer).",
+    "designedForAudience": "Digital marketers, e-commerce and SaaS founders, copywriters, affiliate and media buyers, agency owners, online entrepreneurs, and their accompanying spouses, friends, and families.",
+    "typicalHostedProgramming": "Sea-day morning peer-to-peer mastermind roundtables, the Group Leaders Showcase, 7 nights of rotating open-seating networking group dinners, two private cocktail receptions, annual Costume Karaoke theme night, an island networking beach party, optional private group excursions, and inclusion in The Million-Dollar Directory.",
     "typicalCharterModel": "hosted_group_block",
-    "soloSupportSummary": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupportSummary": "Checkout explicitly provides both private solo-occupancy cabins ('Just Me — pay as if two') and a split-payment cabin-share option ('I Can Share — 1 of 2 Guests Sharing Stateroom, Each Paying Separately'), plus roommate networking via the Marketers Cruise Friends Facebook group.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
     "goodForTags": [
       "business and networking",
       "Hosted group block"
     ],
-    "heroVisualKey": "port-san-juan",
-    "officialWebsiteUrl": "https://marketerscruise.com",
+    "heroVisualKey": "ship-carnival-venezia-ny",
+    "officialWebsiteUrl": "https://marketerscruise.com/",
     "officialDomain": "marketerscruise.com",
-    "publicContactPageUrl": "https://marketerscruise.com",
+    "publicContactPageUrl": "https://marketerscruise.com/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Marketers Cruise (Special Events at Sea) or Carnival Cruise Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Marketers Cruise (Special Events at Sea) so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T12:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
       "national-reia",
       "sea-day-cle"
-    ]
+    ],
+    "reputationEntityId": "rep:hosted-organizer:marketers-cruise",
+    "knownBrandAliases": [
+      "Special Events At Sea",
+      "Little Shop Of Cruises - Special Events At Sea"
+    ],
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/groups/marketerscruisefriends",
+      "xUrl": "https://twitter.com/MarketersCruise/"
+    },
+    "publicReviewProfileLinks": [],
+    "cabinSellerIdentity": "Little Shop Of Cruises - Special Events At Sea (SpecialEventsAtSea.com, led by co-founder Captain Lou Edwards), exclusive group cruise agency and reservation desk for the Marketers Cruise",
+    "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Marketers Cruise (Special Events at Sea) so your reservation stays inside the official group.",
+    "cancellationAndParticipationPolicy": "All participants must book through the official Marketers Cruise group package at marketerscruise.com/checkout (name badge and VIP wristband required); guests booking directly with Carnival or third-party sites are strictly excluded from all mastermind sessions, group dinners, parties, excursions, directory listings, and the private Facebook group. Deposits carry free change protection until final payment is due on September 15, 2026, with a 2-payment plan available.",
+    "officialPolicyUrl": "https://marketerscruise.com/"
   }
 ];
 
@@ -1436,7 +2101,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "secondaryThemes": [
       "lgbtq-cruises"
     ],
-    "visualKey": "port-costa-maya",
+    "visualKey": "ship-symphony-of-the-seas",
     "regionLabel": "Western Caribbean",
     "officialSailingPageUrl": "https://www.arnoscruises.com/test-page/symphony/",
     "officialReservationFormUrl": "https://bearcruiseusa.com/ArnosCruiseReservationForm.asp?CruiseID=96",
@@ -1462,7 +2127,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Couples & friends"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-14T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:arnos-bear-cruises:symphony-of-the-seas-2027-01-31"
   },
   {
     "hostedSailingId": "hosted-sailing:arnos-bear-cruises:rccl:rhapsody-of-the-seas:2027-09-03",
@@ -1480,7 +2146,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "secondaryThemes": [
       "lgbtq-cruises"
     ],
-    "visualKey": "region-mediterranean",
+    "visualKey": "ship-rhapsody-of-the-seas-rhodes",
     "regionLabel": "Eastern Mediterranean, Cyprus & Egypt",
     "officialSailingPageUrl": "https://www.arnoscruises.com/egypt/",
     "officialReservationFormUrl": "https://bearcruiseusa.com/ArnosCruiseReservationForm.asp?CruiseID=97",
@@ -1506,7 +2172,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Bucket-list ports"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-14T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:arnos-bear-cruises:rhapsody-of-the-seas-2027-09-03"
   },
   {
     "hostedSailingId": "hosted-sailing:arnos-bear-cruises:rccl:navigator-of-the-seas:2028-01-28",
@@ -1524,7 +2191,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "secondaryThemes": [
       "lgbtq-cruises"
     ],
-    "visualKey": "port-cabo-san-lucas",
+    "visualKey": "ship-navigator-of-the-seas-los-angeles",
     "regionLabel": "Mexican Riviera",
     "officialSailingPageUrl": "https://www.arnoscruises.com/test-page/celebrity/",
     "officialReservationFormUrl": "https://bearcruiseusa.com/ArnosCruiseReservationForm.asp?CruiseID=98",
@@ -1550,7 +2217,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Puerto Vallarta & Cabo"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-14T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:arnos-bear-cruises:navigator-of-the-seas-2028-01-28"
   },
   {
     "hostedSailingId": "hosted-sailing:arnos-bear-cruises:cel:celebrity-edge:2028-10-17",
@@ -1568,7 +2236,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "secondaryThemes": [
       "lgbtq-cruises"
     ],
-    "visualKey": "region-asia-pacific",
+    "visualKey": "ship-celebrity-edge-port-everglades",
     "regionLabel": "Japan, Hong Kong, Vietnam & Thailand",
     "officialSailingPageUrl": "https://www.arnoscruises.com/edge/",
     "officialReservationFormUrl": "https://bearcruiseusa.com/ArnosCruiseReservationForm.asp?CruiseID=100",
@@ -1594,7 +2262,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Celebrity Edge"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-14T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:arnos-bear-cruises:celebrity-edge-2028-10-17"
   },
   {
     "hostedSailingId": "hosted-sailing:atlantis-events:vv:valiant-lady:2027-03-27",
@@ -1610,9 +2279,9 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Sail out of Old San Juan for late-evening calls in Aruba, Curaçao, Antigua, and St. Maarten aboard an adults-only full-ship LGBTQ+ charter.",
     "primaryTheme": "lgbtq-cruises",
     "secondaryThemes": [],
-    "visualKey": "port-aruba",
+    "visualKey": "ship-valiant-lady",
     "regionLabel": "Southern Caribbean",
-    "officialSailingPageUrl": "https://atlantisevents.com/southern-caribbean-cruise-2027",
+    "officialSailingPageUrl": "https://atlantisevents.com/vacation/exotic-southern-caribbean-2027",
     "officialReservationFormUrl": "https://res.atlantisevents.com/Booking/",
     "cabinSellerLabel": "Atlantis Events",
     "cabinBookingCtaLabel": "Book with Atlantis Events ↗",
@@ -1624,7 +2293,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "fullShipCharter": true,
     "typicalAudience": "LGBTQ+ adults (18+), solo travelers, couples, and friend groups.",
     "announcedHostedProgramming": "Full-ship custom entertainment, comedy, cabaret, pool deck socials, and solo traveler meetups.",
-    "programmingSourceUrl": "https://atlantisevents.com/southern-caribbean-cruise-2027",
+    "programmingSourceUrl": "https://atlantisevents.com/vacation/exotic-southern-caribbean-2027",
     "soloSupport": "Roommate Share program on eligible staterooms plus hosted solo mixers.",
     "soloFriendly": true,
     "familyPolicy": "adults_only",
@@ -1635,7 +2304,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Southern Caribbean"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:atlantis-events:valiant-lady-2027-03-27"
   },
   {
     "hostedSailingId": "hosted-sailing:atlantis-events:rccl:allure-of-the-seas:2027-03-07",
@@ -1651,10 +2321,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Seven nights from Miami calling at Nassau, Cozumel, and Roatán aboard a full-ship Oasis-class LGBTQ+ charter.",
     "primaryTheme": "lgbtq-cruises",
     "secondaryThemes": [],
-    "visualKey": "port-costa-maya",
+    "visualKey": "ship-allure-of-the-seas-nassau",
     "regionLabel": "Western Caribbean & Bahamas",
-    "officialSailingPageUrl": "https://atlantisevents.com/vacation/epic-allure-caribbean-cruise/",
-    "officialReservationFormUrl": "https://res.atlantisevents.com/Booking/",
+    "officialSailingPageUrl": "https://atlantisevents.com/vacation/epic-allure-caribbean-cruise",
+    "officialReservationFormUrl": "https://res.atlantisevents.com/Booking/Reservation/Start?tripID=5416",
     "cabinSellerLabel": "Atlantis Events",
     "cabinBookingCtaLabel": "Book with Atlantis Events ↗",
     "cabinAvailabilityStatus": "available",
@@ -1665,7 +2335,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "fullShipCharter": true,
     "typicalAudience": "LGBTQ+ adults (18+), solo travelers, couples, and friend groups.",
     "announcedHostedProgramming": "Full-ship custom concerts, comedy, cabaret, DJs, and hosted solo-traveler gatherings.",
-    "programmingSourceUrl": "https://atlantisevents.com/vacation/epic-allure-caribbean-cruise/",
+    "programmingSourceUrl": "https://atlantisevents.com/vacation/epic-allure-caribbean-cruise",
     "soloSupport": "Roommate Share program on eligible staterooms plus hosted solo mixers.",
     "soloFriendly": true,
     "familyPolicy": "adults_only",
@@ -1676,8 +2346,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Oasis-class ship"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z",
-    "scheduleHoldReason": "Port arrival and departure clock hours not yet published on official charter schedule; held noindex until port times are confirmed."
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:atlantis-events:allure-of-the-seas-2027-03-07"
   },
   {
     "hostedSailingId": "hosted-sailing:atlantis-events:vv:resilient-lady:2027-08-08",
@@ -1693,10 +2363,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Overnight in Ibiza plus Cannes, Cinque Terre, Malta, Sicily, and the Amalfi Coast on a 9-night Mediterranean full-ship charter.",
     "primaryTheme": "lgbtq-cruises",
     "secondaryThemes": [],
-    "visualKey": "region-mediterranean",
+    "visualKey": "ship-resilient-lady-san-juan",
     "regionLabel": "Western Mediterranean",
-    "officialSailingPageUrl": "https://atlantisevents.com/barcelona-to-rome-cruise",
-    "officialReservationFormUrl": "https://res.atlantisevents.com/Booking/",
+    "officialSailingPageUrl": "https://atlantisevents.com/vacation/2027-bcntorom-cruise",
+    "officialReservationFormUrl": "https://res.atlantisevents.com/Booking/Reservation/Start?tripID=5454",
     "cabinSellerLabel": "Atlantis Events",
     "cabinBookingCtaLabel": "Book with Atlantis Events ↗",
     "cabinAvailabilityStatus": "available",
@@ -1707,7 +2377,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "fullShipCharter": true,
     "typicalAudience": "LGBTQ+ adults (18+), solo travelers, couples, and friend groups.",
     "announcedHostedProgramming": "Full-ship custom entertainment, comedy, cabaret, and social events.",
-    "programmingSourceUrl": "https://atlantisevents.com/barcelona-to-rome-cruise",
+    "programmingSourceUrl": "https://atlantisevents.com/vacation/2027-bcntorom-cruise",
     "soloSupport": "Roommate Share program on eligible staterooms plus hosted solo mixers.",
     "soloFriendly": true,
     "familyPolicy": "adults_only",
@@ -1718,8 +2388,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Mediterranean"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z",
-    "scheduleHoldReason": "Port arrival and departure clock hours not yet published on official charter schedule; held noindex until port times are confirmed."
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:atlantis-events:resilient-lady-2027-08-08"
   },
   {
     "hostedSailingId": "hosted-sailing:atlantis-events:vv:scarlet-lady:2027-08-22",
@@ -1735,10 +2405,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Round-trip from Athens to Rhodes, Cyprus, Mykonos, Santorini, and Crete aboard Virgin Voyages Scarlet Lady.",
     "primaryTheme": "lgbtq-cruises",
     "secondaryThemes": [],
-    "visualKey": "region-mediterranean",
+    "visualKey": "port-mykonos-little-venice",
     "regionLabel": "Greek Isles & Eastern Mediterranean",
-    "officialSailingPageUrl": "https://atlantisevents.com/legendary-greek-isles-cruise",
-    "officialReservationFormUrl": "https://res.atlantisevents.com/Booking/",
+    "officialSailingPageUrl": "https://atlantisevents.com/vacation/2027-greekisles",
+    "officialReservationFormUrl": "https://res.atlantisevents.com/Booking/Reservation/Start?tripID=5466",
     "cabinSellerLabel": "Atlantis Events",
     "cabinBookingCtaLabel": "Book with Atlantis Events ↗",
     "cabinAvailabilityStatus": "available",
@@ -1749,7 +2419,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "fullShipCharter": true,
     "typicalAudience": "LGBTQ+ adults (18+), solo travelers, couples, and friend groups.",
     "announcedHostedProgramming": "Full-ship custom entertainment, comedy, cabaret, and social events.",
-    "programmingSourceUrl": "https://atlantisevents.com/legendary-greek-isles-cruise",
+    "programmingSourceUrl": "https://atlantisevents.com/vacation/2027-greekisles",
     "soloSupport": "Roommate Share program on eligible staterooms plus hosted solo mixers.",
     "soloFriendly": true,
     "familyPolicy": "adults_only",
@@ -1760,8 +2430,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Solo travelers"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z",
-    "scheduleHoldReason": "Port arrival and departure clock hours not yet published on official charter schedule; held noindex until port times are confirmed."
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:atlantis-events:scarlet-lady-2027-08-22"
   },
   {
     "hostedSailingId": "hosted-sailing:vacaya:cel:celebrity-beyond:2027-02-14",
@@ -1777,7 +2447,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Celebrate Valentine’s week sailing from Fort Lauderdale to Puerto Plata, Old San Juan, and St. Maarten aboard Celebrity Beyond with the entire LGBTQIA+ community.",
     "primaryTheme": "lgbtq-cruises",
     "secondaryThemes": [],
-    "visualKey": "port-san-juan",
+    "visualKey": "ship-celebrity-beyond",
     "regionLabel": "Eastern Caribbean",
     "officialSailingPageUrl": "https://www.myvacaya.com/trip/caribbean-cruise-2027/",
     "officialReservationFormUrl": "https://myvacaya.rezmagic.com/",
@@ -1803,7 +2473,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "First-timers"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:vacaya:celebrity-beyond-2027-02-14"
   },
   {
     "hostedSailingId": "hosted-sailing:olivia-travel:hal:eurodam:2027-02-13",
@@ -1819,9 +2490,9 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Sail from Fort Lauderdale to Half Moon Cay, St. Croix, Old San Juan, and Grand Turk with live music, comedy, and welcoming community for LGBTQ+ women.",
     "primaryTheme": "lgbtq-cruises",
     "secondaryThemes": [],
-    "visualKey": "port-barbados",
+    "visualKey": "ship-eurodam-half-moon-cay",
     "regionLabel": "Eastern Caribbean & Bahamas",
-    "officialSailingPageUrl": "https://www.olivia.com/travel/trip/2027-xoxo-caribbean-cruise",
+    "officialSailingPageUrl": "https://www.olivia.com/explore-trips/2027-xoxo-caribbean-cruise",
     "officialReservationFormUrl": "https://olivia.rezmagic.com/",
     "cabinSellerLabel": "Olivia Travel",
     "cabinBookingCtaLabel": "Book with Olivia Travel ↗",
@@ -1833,7 +2504,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "fullShipCharter": true,
     "typicalAudience": "Lesbian, queer, bisexual, and trans women (21+), couples, and solo travelers.",
     "announcedHostedProgramming": "Live music, comedy performances, Solos Coordinator receptions, and community programming.",
-    "programmingSourceUrl": "https://www.olivia.com/travel/trip/2027-xoxo-caribbean-cruise",
+    "programmingSourceUrl": "https://www.olivia.com/explore-trips/2027-xoxo-caribbean-cruise",
     "soloSupport": "Dedicated Solos Coordinators plus Olivia Room Share matching.",
     "soloFriendly": true,
     "familyPolicy": "adults_only",
@@ -1844,7 +2515,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Full-ship charter"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:olivia-travel:eurodam-2027-02-13"
   },
   {
     "hostedSailingId": "hosted-sailing:olivia-travel:hal:eurodam:2028-01-29",
@@ -1860,10 +2532,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Celebrate Olivia’s 55th anniversary sailing round-trip from Fort Lauderdale aboard Holland America Eurodam.",
     "primaryTheme": "lgbtq-cruises",
     "secondaryThemes": [],
-    "visualKey": "port-bermuda",
+    "visualKey": "ship-eurodam-curacao",
     "regionLabel": "Caribbean",
-    "officialSailingPageUrl": "https://www.olivia.com/travel/trip/2028-olivia-vol-55-the-anniversary-cruise",
-    "officialReservationFormUrl": "https://olivia.rezmagic.com/Booking/Trips/37766",
+    "officialSailingPageUrl": "https://www.olivia.com/explore-trips/2028-olivia-vol-55-anniversary-cruise",
+    "officialReservationFormUrl": "https://olivia.rezmagic.com/Booking/Reservation/Start?tripID=37766",
     "cabinSellerLabel": "Olivia Travel",
     "cabinBookingCtaLabel": "Book with Olivia Travel ↗",
     "cabinAvailabilityStatus": "available",
@@ -1874,7 +2546,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "fullShipCharter": true,
     "typicalAudience": "Lesbian, queer, bisexual, and trans women (21+), couples, and solo travelers.",
     "announcedHostedProgramming": "55th Anniversary concerts, comedy, and Solos Coordinator gatherings.",
-    "programmingSourceUrl": "https://www.olivia.com/travel/trip/2028-olivia-vol-55-the-anniversary-cruise",
+    "programmingSourceUrl": "https://www.olivia.com/explore-trips/2028-olivia-vol-55-anniversary-cruise",
     "soloSupport": "Dedicated Solos Coordinators plus Olivia Room Share matching.",
     "soloFriendly": true,
     "familyPolicy": "adults_only",
@@ -1885,8 +2557,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Solo travelers"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z",
-    "scheduleHoldReason": "Intermediate port call dates and clock hours not yet publicly published on official trip schedule; held noindex until verified."
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:olivia-travel:eurodam-2028-01-29"
   },
   {
     "hostedSailingId": "hosted-sailing:bond-and-beyond-network:ncl:norwegian-escape:2027-04-16",
@@ -1902,10 +2574,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Inaugural hosted networking cruise for Northeast Florida entrepreneurs and small-business owners sailing 3 nights roundtrip from Port Canaveral aboard Norwegian Escape (Apr 16–19, 2027), calling at Nassau and Great Stirrup Cay.",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "visualKey": "port-san-juan",
+    "visualKey": "ship-norwegian-escape-port-canaveral",
     "regionLabel": "Caribbean & Bahamas",
     "officialSailingPageUrl": "https://bondandbeyondnetwork.com/events/",
-    "officialReservationFormUrl": "https://bondandbeyondnetwork.com/events/",
+    "officialReservationFormUrl": "https://traveljoy.com/bookings/dWU815VWf4HiNDKmARaUiZRx",
     "cabinSellerLabel": "Bond & Beyond Network",
     "cabinBookingCtaLabel": "Book with Bond & Beyond Network ↗",
     "cabinAvailabilityStatus": "available",
@@ -1926,7 +2598,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:bond-and-beyond-network:norwegian-escape-2027-04-16"
   },
   {
     "hostedSailingId": "hosted-sailing:hr-conference-cruise:rccl:oasis-of-the-seas:2027-04-23",
@@ -1942,10 +2615,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "HR executives and SHRM/HRCI continuing-education attendees partnering with the AL, IN, MI, and WI SHRM State Councils (produced by Aspect Marketing & Communications, which operates three 2027 HR cruises), with sea-day SHRM sessions and open port days in Cozumel and Perfect Day at CocoCay.",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "visualKey": "port-san-juan",
+    "visualKey": "ship-oasis-of-the-seas-ft-lauderdale",
     "regionLabel": "Caribbean & Bahamas",
-    "officialSailingPageUrl": "https://hrcruise.com/2027/cruise2/schedule.cfm",
-    "officialReservationFormUrl": "https://hrcruise.com/2027/cruise2/schedule.cfm",
+    "officialSailingPageUrl": "https://hrcruise.com/2027/cruise2/index.cfm",
+    "officialReservationFormUrl": "https://aspect-marketing.mightevent.com/events/event-details.cfm?eventKey=8463",
     "cabinSellerLabel": "HR Conference Cruise (Aspect Marketing & Communications)",
     "cabinBookingCtaLabel": "Book with HR Conference Cruise ↗",
     "cabinAvailabilityStatus": "available",
@@ -1956,7 +2629,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "fullShipCharter": false,
     "typicalAudience": "HR executives & SHRM/HRCI attendees (AL, IN, MI & WI SHRM State Councils; Aspect runs 3 HR cruises in 2027)",
     "announcedHostedProgramming": "Group activities and time together",
-    "programmingSourceUrl": "https://hrcruise.com/2027/cruise2/schedule.cfm",
+    "programmingSourceUrl": "https://hrcruise.com/2027/cruise2/index.cfm",
     "soloSupport": null,
     "soloFriendly": null,
     "familyPolicy": "not_verified",
@@ -1966,7 +2639,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:hr-conference-cruise:oasis-of-the-seas-2027-04-23"
   },
   {
     "hostedSailingId": "hosted-sailing:national-reia:rccl:icon-of-the-seas:2027-02-20",
@@ -1982,10 +2656,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Real estate investors, chapter leaders, and guests from National REIA chapters nationwide sailing 7 nights roundtrip from Miami on Icon of the Seas, featuring 9:00 AM–4:00 PM conference sessions on both sea days and open port calls in Costa Maya, Roatan, Cozumel, and CocoCay.",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "visualKey": "port-san-juan",
+    "visualKey": "ship-icon-of-the-seas-cozumel",
     "regionLabel": "Caribbean & Bahamas",
-    "officialSailingPageUrl": "https://nationalreiacruise.com/schedule/",
-    "officialReservationFormUrl": "https://nationalreiacruise.com/schedule/",
+    "officialSailingPageUrl": "https://nationalreiacruise.com/itinerary/",
+    "officialReservationFormUrl": "https://api.leadconnectorhq.com/widget/form/JkBISjps3wSRAtuacejK",
     "cabinSellerLabel": "National REIA",
     "cabinBookingCtaLabel": "Book with National REIA ↗",
     "cabinAvailabilityStatus": "available",
@@ -1996,7 +2670,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "fullShipCharter": false,
     "typicalAudience": "Real estate investors, chapter leaders & guests across National REIA chapters nationwide",
     "announcedHostedProgramming": "Group activities and time together",
-    "programmingSourceUrl": "https://nationalreiacruise.com/schedule/",
+    "programmingSourceUrl": "https://nationalreiacruise.com/itinerary/",
     "soloSupport": null,
     "soloFriendly": null,
     "familyPolicy": "not_verified",
@@ -2006,7 +2680,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:national-reia:icon-of-the-seas-2027-02-20"
   },
   {
     "hostedSailingId": "hosted-sailing:sea-day-cle:cel:celebrity-solstice:2027-07-23",
@@ -2022,10 +2697,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Attorneys and their spouses/families earning 10 hours of Continuing Legal Education (CLE) organized by Kirton McConkie Law Firm during Hubbard Glacier and Inside Passage cruising days on a 7-night southbound Alaska voyage from Seward to Vancouver.",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "visualKey": "port-san-juan",
+    "visualKey": "port-hubbard-glacier",
     "regionLabel": "Alaska & Inside Passage",
     "officialSailingPageUrl": "https://clecruise.com/cruises/summer-2027",
-    "officialReservationFormUrl": "https://clecruise.com/cruises/summer-2027",
+    "officialReservationFormUrl": "https://clecruise.com/contact",
     "cabinSellerLabel": "Sea Day CLE (Kirton McConkie)",
     "cabinBookingCtaLabel": "Book with Sea Day CLE ↗",
     "cabinAvailabilityStatus": "available",
@@ -2046,7 +2721,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Alaska & Inside Passage"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:sea-day-cle:celebrity-solstice-2027-07-23"
   },
   {
     "hostedSailingId": "hosted-sailing:debusk-travels:msc:msc-world-america:2027-07-10",
@@ -2062,10 +2738,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Advisor-hosted friends, family, and repeat DeBusk Travels (Cruise Planners) clients with 16+ cabins reserved on a 7-night Eastern Caribbean sailing roundtrip from Miami aboard MSC World America.",
     "primaryTheme": "family-reunions",
     "secondaryThemes": [],
-    "visualKey": "region-northern-europe",
+    "visualKey": "ship-msc-world-america",
     "regionLabel": "Caribbean & Bahamas",
     "officialSailingPageUrl": "https://www.debusktravels.com/GroupRegistrations/view/142382",
-    "officialReservationFormUrl": "https://www.debusktravels.com/GroupRegistrations/view/142382",
+    "officialReservationFormUrl": "https://www.debusktravels.com/GroupRegistrations/passengers/142382",
     "cabinSellerLabel": "DeBusk Travels",
     "cabinBookingCtaLabel": "Book with DeBusk Travels ↗",
     "cabinAvailabilityStatus": "available",
@@ -2086,7 +2762,9 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:debusk-travels:msc-world-america-2027-07-10",
+    "scheduleHoldReason": "MSC Cruises first-party itinerary portal (msccruisesusa.com) blocks automated schedule verification and official July 2027 port-authority berth clock hours are not yet published for Miami, Puerto Plata, San Juan, and Ocean Cay."
   },
   {
     "hostedSailingId": "hosted-sailing:pied-piper-travel:vv:brilliant-lady:2027-08-24",
@@ -2102,10 +2780,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Hosted LGBTQ+ and friends group organized by Pied Piper Travel sailing 9 nights roundtrip from Seattle to Alaska aboard Virgin Voyages' Brilliant Lady.",
     "primaryTheme": "lgbtq-cruises",
     "secondaryThemes": [],
-    "visualKey": "juneau-whale-watch-crew",
+    "visualKey": "ship-brilliant-lady-prince-rupert",
     "regionLabel": "Alaska & Inside Passage",
-    "officialSailingPageUrl": "https://www.piedpipertravel.com/gay-group-cruises/2027-Alaska-Cruise",
-    "officialReservationFormUrl": "https://www.piedpipertravel.com/gay-group-cruises/2027-Alaska-Cruise",
+    "officialSailingPageUrl": "https://www.piedpipertravel.com/gaygroupcruises/cruise-info.php?id=820",
+    "officialReservationFormUrl": "https://www.piedpipertravel.com/gaygroupcruises/reservations.php?cruise_id=820",
     "cabinSellerLabel": "Pied Piper Travel",
     "cabinBookingCtaLabel": "Book with Pied Piper Travel ↗",
     "cabinAvailabilityStatus": "available",
@@ -2116,7 +2794,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "fullShipCharter": false,
     "typicalAudience": "Hosted LGBTQ+ & friends group sailing 9 nights to Alaska roundtrip from Seattle",
     "announcedHostedProgramming": "Group activities and time together",
-    "programmingSourceUrl": "https://www.piedpipertravel.com/gay-group-cruises/2027-Alaska-Cruise",
+    "programmingSourceUrl": "https://www.piedpipertravel.com/gaygroupcruises/cruise-info.php?id=820",
     "soloSupport": "Hosted social group structure welcoming solo travelers (confirm cabin options directly with organizer).",
     "soloFriendly": true,
     "familyPolicy": "adults_only",
@@ -2126,7 +2804,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Alaska & Inside Passage"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:pied-piper-travel:brilliant-lady-2027-08-24"
   },
   {
     "hostedSailingId": "hosted-sailing:financial-connextion-cruise:rccl:mariner-of-the-seas:2027-02-13",
@@ -2142,10 +2821,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "13th annual educational cruise for financial planners, NAIFA competition university students, faculty, and spouses sailing 7 nights roundtrip from New Orleans on Mariner of the Seas, with educational sessions and NAIFA competition events held on sea days.",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "visualKey": "port-san-juan",
+    "visualKey": "ship-mariner-of-the-seas",
     "regionLabel": "Caribbean & Bahamas",
-    "officialSailingPageUrl": "https://www.financialconnextioncruise.com/educational-sessions",
-    "officialReservationFormUrl": "https://www.financialconnextioncruise.com/educational-sessions",
+    "officialSailingPageUrl": "https://www.financialconnextioncruise.com/cruise",
+    "officialReservationFormUrl": "https://www.financialconnextioncruise.com/sign-up",
     "cabinSellerLabel": "Financial ConNEXTion Cruise",
     "cabinBookingCtaLabel": "Book with Financial ConNEXTion Cruise ↗",
     "cabinAvailabilityStatus": "available",
@@ -2156,7 +2835,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "fullShipCharter": false,
     "typicalAudience": "Financial planners, NAIFA competition university students, faculty & spouses",
     "announcedHostedProgramming": "Group activities and time together",
-    "programmingSourceUrl": "https://www.financialconnextioncruise.com/educational-sessions",
+    "programmingSourceUrl": "https://www.financialconnextioncruise.com/cruise",
     "soloSupport": null,
     "soloFriendly": null,
     "familyPolicy": "not_verified",
@@ -2166,7 +2845,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:financial-connextion-cruise:mariner-of-the-seas-2027-02-13"
   },
   {
     "hostedSailingId": "hosted-sailing:dance-fun:pcl:ruby-princess:2027-05-21",
@@ -2182,10 +2862,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "West Coast Swing and Country social dancers sailing 10 nights roundtrip from San Francisco to Alaska aboard Ruby Princess with sea-day dance workshops.",
     "primaryTheme": "dance-cruises",
     "secondaryThemes": [],
-    "visualKey": "port-cabo-san-lucas",
+    "visualKey": "ship-ruby-princess",
     "regionLabel": "Alaska & Inside Passage",
     "officialSailingPageUrl": "https://dancefun.com/west-coast-swing-dance-cruise-alaska-2020/",
-    "officialReservationFormUrl": "https://dancefun.com/west-coast-swing-dance-cruise-alaska-2020/",
+    "officialReservationFormUrl": "https://app.tern.travel/public/forms/PClz7tZug-O7T-EmtUo2Eg/responses/new",
     "cabinSellerLabel": "Dance Fun Cruises",
     "cabinBookingCtaLabel": "Book with Dance Fun Cruises ↗",
     "cabinAvailabilityStatus": "available",
@@ -2206,7 +2886,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Alaska & Inside Passage"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:dance-fun:ruby-princess-2027-05-21"
   },
   {
     "hostedSailingId": "hosted-sailing:wine-masters-cruises:cel:celebrity-ascent:2027-01-25",
@@ -2222,10 +2903,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Tipsy Canyon Winery wine-club members and couples hosted by Winemaker Mark Garvin (coordinated by Wine Masters Cruises) on an 11-night Ultimate Southern Caribbean voyage aboard Celebrity Ascent with sea-day wine events and wine dinners.",
     "primaryTheme": "food-and-wine",
     "secondaryThemes": [],
-    "visualKey": "region-mediterranean",
+    "visualKey": "ship-celebrity-ascent-antigua",
     "regionLabel": "Caribbean & Bahamas",
     "officialSailingPageUrl": "https://www.winemasterscruises.com/2027-01-tipsy-ascent",
-    "officialReservationFormUrl": "https://www.winemasterscruises.com/2027-01-tipsy-ascent",
+    "officialReservationFormUrl": "https://www.winemasterscruises.com/contact",
     "cabinSellerLabel": "Wine Masters Cruises",
     "cabinBookingCtaLabel": "Book with Wine Masters Cruises ↗",
     "cabinAvailabilityStatus": "available",
@@ -2246,7 +2927,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:wine-masters-cruises:celebrity-ascent-2027-01-25"
   },
   {
     "hostedSailingId": "hosted-sailing:stitchin-heaven:rccl:independence-of-the-seas:2027-04-11",
@@ -2262,10 +2944,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Quilters and companions sailing 7 nights roundtrip from Miami aboard Independence of the Seas with national Riley Blake educators and sea-day sewing classes (part of Stitchin' Heaven's 6+ quilting cruises in 2027).",
     "primaryTheme": "crafting-and-hobbies",
     "secondaryThemes": [],
-    "visualKey": "port-ketchikan",
+    "visualKey": "ship-independence-of-the-seas-miami",
     "regionLabel": "Caribbean & Bahamas",
     "officialSailingPageUrl": "https://stitchinheaven.com/products/2027-riley-blake-quilting-cruise",
-    "officialReservationFormUrl": "https://stitchinheaven.com/products/2027-riley-blake-quilting-cruise",
+    "officialReservationFormUrl": "https://stitchinheaven.com/pages/2027-riley-blake-quilting-cruise-registration",
     "cabinSellerLabel": "Stitchin' Heaven",
     "cabinBookingCtaLabel": "Book with Stitchin' Heaven ↗",
     "cabinAvailabilityStatus": "available",
@@ -2286,7 +2968,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:stitchin-heaven:independence-of-the-seas-2027-04-11"
   },
   {
     "hostedSailingId": "hosted-sailing:cmmc-at-sea:cel:celebrity-beyond:2027-01-17",
@@ -2299,10 +2982,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "sailingTitle": "CMMC at Sea",
     "shortHeadline": "CMMC at Sea",
     "editionSubtitle": "Celebrity Beyond · Jan 17–24, 2027 (7N RT Fort Lauderdale)",
-    "anticipationHook": "Cybersecurity and Defense Industrial Base conference hosted with Edwards Performance Solutions and DRP International on a 7-night Celebrity Beyond sailing from Fort Lauderdale, featuring 3 programmed conference sea days and open port days in Nassau, Cozumel, and Grand Cayman ($295 conference pass; attendees book cabins independently after Oct 28, 2026 room-block close).",
+    "anticipationHook": "Cybersecurity and Defense Industrial Base conference hosted with Edwards Performance Solutions and DRP International on a 7-night Celebrity Beyond sailing from Fort Lauderdale, featuring 3 programmed conference sea days and open port days in Nassau, Cozumel, and Grand Cayman (published rate conference pass; attendees book cabins independently after Oct 28, 2026 room-block close).",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "visualKey": "port-san-juan",
+    "visualKey": "port-cozumel",
     "regionLabel": "Caribbean & Bahamas",
     "officialSailingPageUrl": "https://cmmcatsea.com/registration/",
     "officialReservationFormUrl": "https://cmmcatsea.com/registration/",
@@ -2311,22 +2994,23 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "cabinAvailabilityStatus": "independent_cabins",
     "cabinAvailabilityNote": "Conference pass registered through CMMC at Sea; room block closed Oct 28, 2026 so attendees book staterooms independently.",
     "verifiedStartingPriceUsd": null,
-    "verifiedPriceNote": "$295 conference pass (stateroom booked separately)",
+    "verifiedPriceNote": null,
     "approximateGroupSizeLabel": null,
     "fullShipCharter": false,
-    "typicalAudience": "Cybersecurity & Defense Industrial Base conference ($295 pass; room block closed Oct 28, 2026 so attendees book cabins independently)",
+    "typicalAudience": "Cybersecurity & Defense Industrial Base conference (separate conference pass; room block closed Oct 28, 2026 so attendees book cabins independently)",
     "announcedHostedProgramming": "Group activities and time together",
     "programmingSourceUrl": "https://cmmcatsea.com/registration/",
     "soloSupport": null,
     "soloFriendly": null,
     "familyPolicy": "not_verified",
-    "communityAtmosphereSummary": "Cybersecurity & Defense Industrial Base conference ($295 pass; room block closed Oct 28, 2026 so attendees book cabins independently)",
+    "communityAtmosphereSummary": "Cybersecurity & Defense Industrial Base conference (separate conference pass; room block closed Oct 28, 2026 so attendees book cabins independently)",
     "goodForTags": [
       "Celebrity Beyond",
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:cmmc-at-sea:celebrity-beyond-2027-01-17"
   },
   {
     "hostedSailingId": "hosted-sailing:vet-tech-life:rccl:voyager-of-the-seas:2027-01-29",
@@ -2342,10 +3026,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Veterinary technicians and veterinary professionals earning 14 hours of RACE-approved continuing education on sea days aboard a 5-night roundtrip Los Angeles sailing on Voyager of the Seas calling at Catalina Island and Ensenada (Vet Tech Life also hosts a Jun 6 Alaska CE cruise).",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "visualKey": "port-san-juan",
+    "visualKey": "ship-voyager-of-the-seas",
     "regionLabel": "Mexican Riviera & Baja",
     "officialSailingPageUrl": "https://vettechlife.com/ce-on-the-sea-mexico-2027",
-    "officialReservationFormUrl": "https://vettechlife.com/ce-on-the-sea-mexico-2027",
+    "officialReservationFormUrl": "https://traveljoy.com/bookings/nv4Xq7XAq12wDqQpeLLECbq5",
     "cabinSellerLabel": "Vet Tech Life",
     "cabinBookingCtaLabel": "Book with Vet Tech Life ↗",
     "cabinAvailabilityStatus": "available",
@@ -2366,7 +3050,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Mexican Riviera & Baja"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:vet-tech-life:voyager-of-the-seas-2027-01-29"
   },
   {
     "hostedSailingId": "hosted-sailing:michigan-wisconsin-dental-associations:rccl:harmony-of-the-seas:2027-01-16",
@@ -2382,10 +3067,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Dentists, dental hygienists, and families from the Michigan and Wisconsin Dental Associations earning 12 continuing-education credits across three sea days on a 7-night Eastern Caribbean voyage from Port Canaveral aboard Harmony of the Seas.",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "visualKey": "port-san-juan",
+    "visualKey": "port-st-maarten",
     "regionLabel": "Caribbean & Bahamas",
-    "officialSailingPageUrl": "https://www.michigandental.org/events/2027-sun-sand-and-ce-cruise/",
-    "officialReservationFormUrl": "https://www.michigandental.org/events/2027-sun-sand-and-ce-cruise/",
+    "officialSailingPageUrl": "https://www.dentalcruiseadventure.com/",
+    "officialReservationFormUrl": "https://memberportal.michigandental.org/events/2027-sun-sand-and-ce-cruise",
     "cabinSellerLabel": "Michigan & Wisconsin Dental Associations",
     "cabinBookingCtaLabel": "Book with Michigan & Wisconsin Dental Associations ↗",
     "cabinAvailabilityStatus": "available",
@@ -2396,7 +3081,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "fullShipCharter": false,
     "typicalAudience": "Dentists, hygienists & families from the Michigan & Wisconsin Dental Associations",
     "announcedHostedProgramming": "Group activities and time together",
-    "programmingSourceUrl": "https://www.michigandental.org/events/2027-sun-sand-and-ce-cruise/",
+    "programmingSourceUrl": "https://www.dentalcruiseadventure.com/",
     "soloSupport": null,
     "soloFriendly": null,
     "familyPolicy": "not_verified",
@@ -2406,7 +3091,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:michigan-wisconsin-dental-associations:harmony-of-the-seas-2027-01-16"
   },
   {
     "hostedSailingId": "hosted-sailing:cu-conferences:cel:celebrity-edge:2027-06-11",
@@ -2422,10 +3108,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Credit union executives, board directors, and spouses attending sea-day governance conference sessions on a 7-night roundtrip Seattle Alaska sailing aboard Celebrity Edge.",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "visualKey": "port-san-juan",
+    "visualKey": "ship-celebrity-edge-juneau",
     "regionLabel": "Alaska & Inside Passage",
     "officialSailingPageUrl": "https://www.cuconferences.com/alaskan-cruise",
-    "officialReservationFormUrl": "https://www.cuconferences.com/alaskan-cruise",
+    "officialReservationFormUrl": "https://register.cuconferences.com/conference/a0DPD00000oSHnZ/registration/new",
     "cabinSellerLabel": "CU Conferences",
     "cabinBookingCtaLabel": "Book with CU Conferences ↗",
     "cabinAvailabilityStatus": "available",
@@ -2446,7 +3132,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Alaska & Inside Passage"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:cu-conferences:celebrity-edge-2027-06-11"
   },
   {
     "hostedSailingId": "hosted-sailing:travel-partners-in-dublin:cel:celebrity-solstice:2027-08-06",
@@ -2464,10 +3151,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "secondaryThemes": [
       "family-reunions"
     ],
-    "visualKey": "port-bermuda",
+    "visualKey": "ship-celebrity-solstice-melbourne",
     "regionLabel": "Alaska & Inside Passage",
     "officialSailingPageUrl": "https://www.travelpartnersindublin.com/travel-with-us/alaskan-wonders/",
-    "officialReservationFormUrl": "https://www.travelpartnersindublin.com/travel-with-us/alaskan-wonders/",
+    "officialReservationFormUrl": "https://www.travelpartnersindublin.com/travel-with-us/alaskan-wonders/#registration-form-wrap",
     "cabinSellerLabel": "Travel Partners in Dublin",
     "cabinBookingCtaLabel": "Book with Travel Partners in Dublin ↗",
     "cabinAvailabilityStatus": "available",
@@ -2488,7 +3175,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Alaska & Inside Passage"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:travel-partners-in-dublin:celebrity-solstice-2027-08-06"
   },
   {
     "hostedSailingId": "hosted-sailing:singlescruise:ncl:norwegian-breakaway:2027-02-14",
@@ -2504,7 +3192,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Hosted solo travelers and singles sailing 7 nights roundtrip from New Orleans on Norwegian Breakaway for Valentine's Day and the Big Game with dedicated SinglesCruise.com onboard cruise directors.",
     "primaryTheme": "weddings-and-celebrations",
     "secondaryThemes": [],
-    "visualKey": "port-bermuda",
+    "visualKey": "ship-norwegian-breakaway",
     "regionLabel": "Caribbean & Bahamas",
     "officialSailingPageUrl": "https://www.singlescruise.com/cruises/caribbean-valentines-day/",
     "officialReservationFormUrl": "https://www.singlescruise.com/cruises/caribbean-valentines-day/",
@@ -2528,7 +3216,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:singlescruise:norwegian-breakaway-2027-02-14"
   },
   {
     "hostedSailingId": "hosted-sailing:pickleball-at-sea:rccl:adventure-of-the-seas:2027-02-21",
@@ -2546,14 +3235,14 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "secondaryThemes": [
       "crafting-and-hobbies"
     ],
-    "visualKey": "port-barbados",
+    "visualKey": "ship-adventure-of-the-seas-st-croix",
     "regionLabel": "Caribbean & Bahamas",
     "officialSailingPageUrl": "https://www.pickleballatseagroupcruise.com/pages/february-21st-27th-2027",
-    "officialReservationFormUrl": "https://www.pickleballatseagroupcruise.com/pages/february-21st-27th-2027",
+    "officialReservationFormUrl": "https://www.pickleballatseagroupcruise.com/products/february-21st-27th-2027",
     "cabinSellerLabel": "Pickleball At Sea (Escape Group Cruises)",
     "cabinBookingCtaLabel": "Book with Pickleball At Sea ↗",
-    "cabinAvailabilityStatus": "available",
-    "cabinAvailabilityNote": "Reserve directly through Pickleball At Sea (Escape Group Cruises) to ensure inclusion in the hosted group.",
+    "cabinAvailabilityStatus": "sold_out",
+    "cabinAvailabilityNote": "Published as sold out on Pickleball at Sea’s official page; check the official waitlist or contact Pickleball at Sea directly for cancellations.",
     "verifiedStartingPriceUsd": null,
     "verifiedPriceNote": null,
     "approximateGroupSizeLabel": null,
@@ -2570,7 +3259,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:pickleball-at-sea:adventure-of-the-seas-2027-02-21"
   },
   {
     "hostedSailingId": "hosted-sailing:cruise-and-crop:hal:nieuw-statendam:2027-02-14",
@@ -2586,7 +3276,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Paper crafters, cardmakers, scrapbookers, and spouses sailing 7 nights roundtrip from Fort Lauderdale aboard Holland America's Nieuw Statendam with dedicated sea-day crop room sessions.",
     "primaryTheme": "crafting-and-hobbies",
     "secondaryThemes": [],
-    "visualKey": "port-ketchikan",
+    "visualKey": "ship-nieuw-statendam",
     "regionLabel": "Caribbean & Bahamas",
     "officialSailingPageUrl": "https://www.cruiseandcrop.com/StampinAtSea2027.html",
     "officialReservationFormUrl": "https://www.cruiseandcrop.com/StampinAtSea2027.html",
@@ -2610,7 +3300,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:cruise-and-crop:nieuw-statendam-2027-02-14"
   },
   {
     "hostedSailingId": "hosted-sailing:krouse-travel:ncl:norwegian-luna:2027-06-05",
@@ -2628,10 +3319,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "secondaryThemes": [
       "family-reunions"
     ],
-    "visualKey": "port-bermuda",
+    "visualKey": "ship-norwegian-luna-miami",
     "regionLabel": "Bermuda",
     "officialSailingPageUrl": "https://krousetravel.com/groups/view/?groupid=190",
-    "officialReservationFormUrl": "https://krousetravel.com/groups/view/?groupid=190",
+    "officialReservationFormUrl": "https://krousetravel.com/downloads/files/2027TammysRetirementCruise2.pdf",
     "cabinSellerLabel": "Krouse Travel",
     "cabinBookingCtaLabel": "Book with Krouse Travel ↗",
     "cabinAvailabilityStatus": "available",
@@ -2652,7 +3343,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Bermuda"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:krouse-travel:norwegian-luna-2027-06-05"
   },
   {
     "hostedSailingId": "hosted-sailing:bribeck-travel:rccl:symphony-of-the-seas:2027-03-28",
@@ -2668,10 +3360,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "SOWERS RV ministry fellowship members and spouses from across the United States coordinated by BriBeck Travel sailing 7 nights roundtrip from Galveston aboard Symphony of the Seas.",
     "primaryTheme": "faith-communities",
     "secondaryThemes": [],
-    "visualKey": "juneau-whale-watch-crew",
+    "visualKey": "ship-symphony-of-the-seas-nassau",
     "regionLabel": "Caribbean & Bahamas",
     "officialSailingPageUrl": "https://www.bribecktravel.com/GroupRegistrations/view/139004",
-    "officialReservationFormUrl": "https://www.bribecktravel.com/GroupRegistrations/view/139004",
+    "officialReservationFormUrl": "https://www.bribecktravel.com/GroupRegistrations/passengers/139004",
     "cabinSellerLabel": "BriBeck Travel",
     "cabinBookingCtaLabel": "Book with BriBeck Travel ↗",
     "cabinAvailabilityStatus": "available",
@@ -2692,7 +3384,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:bribeck-travel:symphony-of-the-seas-2027-03-28"
   },
   {
     "hostedSailingId": "hosted-sailing:welcome-home-rgv:rccl:symphony-of-the-seas:2027-01-31",
@@ -2708,7 +3401,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Rio Grande Valley Winter Texan and retiree community escorted motorcoach-to-ship group hosted by Welcome Home Rio Grande Valley on a 7-night Western Caribbean sailing roundtrip from Galveston aboard Symphony of the Seas.",
     "primaryTheme": "weddings-and-celebrations",
     "secondaryThemes": [],
-    "visualKey": "port-bermuda",
+    "visualKey": "port-galveston-pleasure-pier",
     "regionLabel": "Caribbean & Bahamas",
     "officialSailingPageUrl": "https://welcomehomergv.com/tours-travel/cruise-vacations/cruisewithkristi/",
     "officialReservationFormUrl": "https://welcomehomergv.com/tours-travel/cruise-vacations/cruisewithkristi/",
@@ -2732,7 +3425,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:welcome-home-rgv:symphony-of-the-seas-2027-01-31"
   },
   {
     "hostedSailingId": "hosted-sailing:quick-quick-slow-travel:ncl:norwegian-epic:2027-10-17",
@@ -2748,10 +3442,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Ballroom, Latin, and swing dancers hosted by May I Have This Dance / Quick Quick Slow Travel (Chicago) sailing 7 nights from Barcelona to Civitavecchia/Rome aboard Norwegian Epic.",
     "primaryTheme": "dance-cruises",
     "secondaryThemes": [],
-    "visualKey": "port-cabo-san-lucas",
+    "visualKey": "ship-norwegian-epic-cannes",
     "regionLabel": "Mediterranean & Aegean",
     "officialSailingPageUrl": "https://www.quickquickslowtravel.com/dancecruises",
-    "officialReservationFormUrl": "https://www.quickquickslowtravel.com/dancecruises",
+    "officialReservationFormUrl": "https://www.quickquickslowtravel.com/s/Registration-Full-Packet-v3-for-Web.pdf",
     "cabinSellerLabel": "Quick Quick Slow Travel",
     "cabinBookingCtaLabel": "Book with Quick Quick Slow Travel ↗",
     "cabinAvailabilityStatus": "available",
@@ -2772,7 +3466,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Mediterranean & Aegean"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:quick-quick-slow-travel:norwegian-epic-2027-10-17"
   },
   {
     "hostedSailingId": "hosted-sailing:alice-travel-bridge-cruises:rccl:symphony-of-the-seas:2027-04-11",
@@ -2788,10 +3483,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Duplicate bridge players and spouses hosted by Robert Todd and Larry Cohen via Alice Travel Bridge Cruises, earning ACBL Gold/Red Masterpoints during sea-day tournament sessions on a 7-night roundtrip Galveston cruise aboard Symphony of the Seas.",
     "primaryTheme": "crafting-and-hobbies",
     "secondaryThemes": [],
-    "visualKey": "port-ketchikan",
+    "visualKey": "port-costa-maya",
     "regionLabel": "Caribbean & Bahamas",
     "officialSailingPageUrl": "https://alicetravelbridgecruises.com/bridge-cruises/cruise-the-caribbean-from-texas-play-bridge-all-week",
-    "officialReservationFormUrl": "https://alicetravelbridgecruises.com/bridge-cruises/cruise-the-caribbean-from-texas-play-bridge-all-week",
+    "officialReservationFormUrl": "https://alicetravelbridgecruises.com/contact",
     "cabinSellerLabel": "Alice Travel Bridge Cruises",
     "cabinBookingCtaLabel": "Book with Alice Travel Bridge Cruises ↗",
     "cabinAvailabilityStatus": "available",
@@ -2812,7 +3507,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:alice-travel-bridge-cruises:symphony-of-the-seas-2027-04-11"
   },
   {
     "hostedSailingId": "hosted-sailing:travel-with-donna:cel:celebrity-apex:2027-05-15",
@@ -2828,10 +3524,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Advisor-escorted group of luxury and upper-premium repeat clients hosted by Travel with Donna LLC on a 13-night Best of Scandinavia voyage roundtrip from Southampton aboard Celebrity Apex.",
     "primaryTheme": "weddings-and-celebrations",
     "secondaryThemes": [],
-    "visualKey": "port-bermuda",
+    "visualKey": "ship-celebrity-apex-stockholm",
     "regionLabel": "Northern Europe & Baltic",
     "officialSailingPageUrl": "https://www.travelwithdonna.vip/hosted-cruises",
-    "officialReservationFormUrl": "https://www.travelwithdonna.vip/hosted-cruises",
+    "officialReservationFormUrl": "https://www.travelwithdonna.vip/contact",
     "cabinSellerLabel": "Travel with Donna LLC",
     "cabinBookingCtaLabel": "Book with Travel with Donna LLC ↗",
     "cabinAvailabilityStatus": "available",
@@ -2852,7 +3548,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Northern Europe & Baltic"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:travel-with-donna:celebrity-apex-2027-05-15"
   },
   {
     "hostedSailingId": "hosted-sailing:moody-radio:hal:eurodam:2027-06-05",
@@ -2870,10 +3567,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "secondaryThemes": [
       "weddings-and-celebrations"
     ],
-    "visualKey": "juneau-whale-watch-crew",
+    "visualKey": "ship-eurodam-glacier-bay",
     "regionLabel": "Alaska & Inside Passage",
     "officialSailingPageUrl": "https://www.moodyradio.org/landing-pages/cruise/",
-    "officialReservationFormUrl": "https://www.moodyradio.org/landing-pages/cruise/",
+    "officialReservationFormUrl": "https://www.inspirationtravel.com/event/moody-radio-alaska-cruise-2027",
     "cabinSellerLabel": "Moody Radio",
     "cabinBookingCtaLabel": "Book with Moody Radio ↗",
     "cabinAvailabilityStatus": "available",
@@ -2894,7 +3591,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Alaska & Inside Passage"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:moody-radio:eurodam-2027-06-05"
   },
   {
     "hostedSailingId": "hosted-sailing:templeton-tours:ccl:carnival-glory:2027-01-25",
@@ -2912,10 +3610,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "secondaryThemes": [
       "music-cruises"
     ],
-    "visualKey": "juneau-whale-watch-crew",
+    "visualKey": "fleet-hero",
     "regionLabel": "Caribbean & Bahamas",
     "officialSailingPageUrl": "https://templetontours.com/singingatsea/",
-    "officialReservationFormUrl": "https://templetontours.com/singingatsea/",
+    "officialReservationFormUrl": "https://templetontours.com/singingatsea/register.shtml",
     "cabinSellerLabel": "Templeton Tours",
     "cabinBookingCtaLabel": "Book with Templeton Tours ↗",
     "cabinAvailabilityStatus": "available",
@@ -2923,7 +3621,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "verifiedStartingPriceUsd": null,
     "verifiedPriceNote": null,
     "approximateGroupSizeLabel": null,
-    "fullShipCharter": false,
+    "fullShipCharter": true,
     "typicalAudience": "Southern Gospel church groups, choirs & families on the 53rd annual Singing at Sea charter/group",
     "announcedHostedProgramming": "Group activities and time together",
     "programmingSourceUrl": "https://templetontours.com/singingatsea/",
@@ -2936,7 +3634,9 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:templeton-tours:carnival-glory-2027-01-25",
+    "scheduleHoldReason": "Private full-ship charter omitted from Carnival retail schedule; Port Canaveral confirms turnaround hours, while organizer pages list conflicting Day 3 Bahamas port calls (Princess Cays vs. Half Moon Cay) pending official confirmation."
   },
   {
     "hostedSailingId": "hosted-sailing:craft-cruises:hal:westerdam:2027-04-11",
@@ -2952,7 +3652,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Knitters, fiber-arts travelers, and spouses on an instructor-led 14-night Circle Japan voyage roundtrip from Yokohama (Tokyo) aboard Holland America's Westerdam with sea-day knitting workshops.",
     "primaryTheme": "crafting-and-hobbies",
     "secondaryThemes": [],
-    "visualKey": "port-ketchikan",
+    "visualKey": "ship-westerdam",
     "regionLabel": "Asia & Pacific",
     "officialSailingPageUrl": "https://www.craftcruises.com/cruise.php?brand=Knitting%20Cruises&cruise_name=Circle%20Japan&cruise_line=Holland%20America%20Line&cruise_ship=ms%20Westerdam&dep_date=2027-04-11&cruise=231",
     "officialReservationFormUrl": "https://www.craftcruises.com/cruise.php?brand=Knitting%20Cruises&cruise_name=Circle%20Japan&cruise_line=Holland%20America%20Line&cruise_ship=ms%20Westerdam&dep_date=2027-04-11&cruise=231",
@@ -2976,7 +3676,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Asia & Pacific"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:craft-cruises:westerdam-2027-04-11"
   },
   {
     "hostedSailingId": "hosted-sailing:aquafest-cruises:cel:celebrity-constellation:2027-10-29",
@@ -2994,7 +3695,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "secondaryThemes": [
       "weddings-and-celebrations"
     ],
-    "visualKey": "region-mediterranean",
+    "visualKey": "ship-celebrity-constellation-palma",
     "regionLabel": "Transatlantic (Mediterranean & Morocco to Florida)",
     "officialSailingPageUrl": "https://aquafestcruises.com/cruise/52/17-nights-halloween-constellation-transatlantic-cruise-",
     "officialReservationFormUrl": "https://aquafestcruises.com/cruise/52/17-nights-halloween-constellation-transatlantic-cruise-",
@@ -3018,7 +3719,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Transatlantic (Mediterranean & Morocco to Florida)"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:aquafest-cruises:celebrity-constellation-2027-10-29"
   },
   {
     "hostedSailingId": "hosted-sailing:living-passages:cel:celebrity-equinox:2027-10-16",
@@ -3034,10 +3736,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Christian Bible study travelers and couples hosted by Pastor Shane Holden and Joel Richardson with Living Passages on a 10-night Barcelona-to-Rome voyage aboard Celebrity Equinox featuring custom biblical shore tours across Malta, Greece, and Turkey.",
     "primaryTheme": "faith-communities",
     "secondaryThemes": [],
-    "visualKey": "juneau-whale-watch-crew",
+    "visualKey": "ship-celebrity-equinox",
     "regionLabel": "Mediterranean & Aegean",
     "officialSailingPageUrl": "https://livingpassages.com/cruise/malta-greece-turkey-italy-footsteps-of-paul-cruise/",
-    "officialReservationFormUrl": "https://livingpassages.com/cruise/malta-greece-turkey-italy-footsteps-of-paul-cruise/",
+    "officialReservationFormUrl": "https://creatorapp.zohopublic.com/travelmanagementinc/order-management/form-perma/Registration_Form/p12ZnKU0CRg6xymEzmuGxE5W70PZqQP3BMduEEemxGNXCeQu5C33WCvfH2Esg8bJFB8HFE95PBw39UM5nq4CJTGpHkNQY95dxSbn?Tour1=3520937000001420009",
     "cabinSellerLabel": "Living Passages",
     "cabinBookingCtaLabel": "Book with Living Passages ↗",
     "cabinAvailabilityStatus": "available",
@@ -3058,7 +3760,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Mediterranean & Aegean"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:living-passages:celebrity-equinox-2027-10-16"
   },
   {
     "hostedSailingId": "hosted-sailing:lesbians-aboard:vv:scarlet-lady:2027-02-15",
@@ -3074,10 +3777,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Hosted LGBTQ+ women's community group organized by Lesbians Aboard on Virgin Voyages' 5-night Feb 15–20, 2027 Scarlet Lady sailing from Miami (held because CP's vendor feed lacks the special 4-Ship Fleet Rendezvous and Grand Bahama Island call).",
     "primaryTheme": "lgbtq-cruises",
     "secondaryThemes": [],
-    "visualKey": "sail-away-deck-meetup",
+    "visualKey": "ship-scarlet-lady",
     "regionLabel": "Caribbean & Bahamas",
     "officialSailingPageUrl": "https://lesbiansaboard.com/sisters-at-sea-2027",
-    "officialReservationFormUrl": "https://lesbiansaboard.com/sisters-at-sea-2027",
+    "officialReservationFormUrl": "https://www.virginvoyages.com/book/voyage-planner/pre-checkout?agencyId=477&agentId=140537&bookingChannel=FMLINK&cabins=1&currencyCode=USD&dateFrom=2027-02-01&dateTo=2027-02-28&packageCode=5NMRV&priceType=perCabin&voyageId=SC2702155NMRV",
     "cabinSellerLabel": "Lesbians Aboard",
     "cabinBookingCtaLabel": "Book with Lesbians Aboard ↗",
     "cabinAvailabilityStatus": "available",
@@ -3098,8 +3801,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z",
-    "scheduleHoldReason": "HELD (sailingPageUrl withheld): Itinerary mismatch on Feb 15, 2027 Scarlet Lady — lesbiansaboard.com/sisters-at-sea-2027 reflects Virgin's special 4-Ship Fleet Rendezvous & Grand Bahama Island call, whereas Cruise Promenade's catalog currently shows 3 sea days + Bimini."
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:lesbians-aboard:scarlet-lady-2027-02-15"
   },
   {
     "hostedSailingId": "hosted-sailing:fintalks:rccl:icon-of-the-seas:2027-01-16",
@@ -3115,10 +3818,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Creator and personal finance community group hosted by Amberly Grant / FinTalks sailing 7 nights roundtrip from Miami aboard Icon of the Seas to St. Maarten, St. Thomas, and Perfect Day at CocoCay.",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "visualKey": "port-san-juan",
+    "visualKey": "ship-icon-of-the-seas-caribbean",
     "regionLabel": "Caribbean & Bahamas",
     "officialSailingPageUrl": "https://www.amberlygrant.com/caribbean-cruise-icon",
-    "officialReservationFormUrl": "https://www.amberlygrant.com/caribbean-cruise-icon",
+    "officialReservationFormUrl": "https://forms.gle/JLkXG5RZxEZEBp8r9",
     "cabinSellerLabel": "FinTalks (Amberly Grant)",
     "cabinBookingCtaLabel": "Book with FinTalks ↗",
     "cabinAvailabilityStatus": "available",
@@ -3139,7 +3842,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:fintalks:icon-of-the-seas-2027-01-16"
   },
   {
     "hostedSailingId": "hosted-sailing:acquisition-lab:vv:brilliant-lady:2027-01-21",
@@ -3155,10 +3859,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "Acquire It Summit produced by Acquisition Lab for Main Street M&A and Entrepreneurship-Through-Acquisition searchers, operators, and spouses on a 4-night roundtrip Miami sailing aboard Virgin Voyages' Brilliant Lady calling at Key West and Bimini.",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "visualKey": "port-san-juan",
+    "visualKey": "ship-brilliant-lady-alt",
     "regionLabel": "Caribbean & Bahamas",
-    "officialSailingPageUrl": "https://acquireit.com",
-    "officialReservationFormUrl": "https://acquireit.com",
+    "officialSailingPageUrl": "https://acquisitionlab.com/events/annual-summit-2027",
+    "officialReservationFormUrl": "https://register.acquireit.com/",
     "cabinSellerLabel": "Acquisition Lab",
     "cabinBookingCtaLabel": "Book with Acquisition Lab ↗",
     "cabinAvailabilityStatus": "available",
@@ -3169,7 +3873,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "fullShipCharter": false,
     "typicalAudience": "Main Street M&A / Entrepreneurship-Through-Acquisition searchers, operators & spouses",
     "announcedHostedProgramming": "Group activities and time together",
-    "programmingSourceUrl": "https://acquireit.com",
+    "programmingSourceUrl": "https://acquisitionlab.com/events/annual-summit-2027",
     "soloSupport": null,
     "soloFriendly": null,
     "familyPolicy": "adults_only",
@@ -3179,7 +3883,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:acquisition-lab:brilliant-lady-2027-01-21"
   },
   {
     "hostedSailingId": "hosted-sailing:marketers-cruise:ccl:carnival-venezia:2027-01-31",
@@ -3195,10 +3900,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "anticipationHook": "20th annual digital marketing mastermind cruise produced by Captain Lou Edwards and Mike Filsaime (Special Events at Sea) sailing 7 nights roundtrip from Port Canaveral aboard Carnival Venezia calling at Celebration Key, Cozumel, and Roatan.",
     "primaryTheme": "business-and-networking",
     "secondaryThemes": [],
-    "visualKey": "port-san-juan",
+    "visualKey": "ship-carnival-venezia-wide",
     "regionLabel": "Caribbean & Bahamas",
-    "officialSailingPageUrl": "https://facebook.com/groups/marketerscruisefriends",
-    "officialReservationFormUrl": "https://facebook.com/groups/marketerscruisefriends",
+    "officialSailingPageUrl": "https://marketerscruise.com/",
+    "officialReservationFormUrl": "https://marketerscruise.com/checkout",
     "cabinSellerLabel": "Marketers Cruise (Special Events at Sea)",
     "cabinBookingCtaLabel": "Book with Marketers Cruise ↗",
     "cabinAvailabilityStatus": "available",
@@ -3209,7 +3914,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "fullShipCharter": false,
     "typicalAudience": "20th annual digital marketing mastermind cruise out of Port Canaveral",
     "announcedHostedProgramming": "Group activities and time together",
-    "programmingSourceUrl": "https://facebook.com/groups/marketerscruisefriends",
+    "programmingSourceUrl": "https://marketerscruise.com/",
     "soloSupport": null,
     "soloFriendly": null,
     "familyPolicy": "not_verified",
@@ -3219,7 +3924,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T12:00:00Z"
+    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:marketers-cruise:carnival-venezia-2027-01-31"
   }
 ];
 
@@ -3238,6 +3944,22 @@ export const DCC_RECENT_CATALOG_CHANGE_EVENTS: ReadonlyArray<CanonicalHostedCata
     "entityType": "hosted_sailing",
     "entityId": "hosted-sailing:aquafest-cruises:cel:celebrity-constellation:2027-10-29",
     "summary": "Verified 16-night Celebrity Constellation CN16T128 transatlantic port windows from Rome (Civitavecchia) to Tampa without duplicating itinerary arrays.",
+    "preservesCommunityIdentity": true
+  },
+  {
+    "eventId": "dcc-hc-evt-2026-11-15-003",
+    "occurredAt": "2026-11-15T17:30:00Z",
+    "entityType": "hosted_sailing",
+    "entityId": "hosted-sailing:lesbians-aboard:vv:scarlet-lady:2027-02-15",
+    "summary": "Unlocked all 5 previously held LGBTQ+ charter and group departures after verifying official day-by-day port arrival and departure clock hours on primary sources.",
+    "preservesCommunityIdentity": true
+  },
+  {
+    "eventId": "dcc-hc-evt-2026-11-15-004",
+    "occurredAt": "2026-11-15T17:30:00Z",
+    "entityType": "hosted_organizer",
+    "entityId": "hosted-organizer:arnos-bear-cruises",
+    "summary": "Completed portfolio-wide visual relevance upgrade, Reputation Graph entity ID assignment, and primary-source verification across all 37 organizers and 44 hosted sailings (42 indexable, 2 held noindex).",
     "preservesCommunityIdentity": true
   }
 ];

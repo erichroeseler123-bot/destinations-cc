@@ -13,6 +13,7 @@ import {
   DCC_RECENT_CATALOG_CHANGE_EVENTS,
   getDccCanonicalHostedCatalogSnapshot,
 } from "@/lib/dcc/cruise/hostedCatalogRegistry";
+import { getOrganizerActivationCohort } from "@/lib/dcc/cruise/organizerActivationCohort";
 import {
   assertHostedFieldMutationPermitted,
   buildHostedCatalogFieldProvenance,
@@ -73,6 +74,7 @@ describe("Phase 1 + Phase 2 DCC Provenance, Signing & Zero-Fee Organizer Contrac
       "cabinBlockModelNote",
       "inclusionsSummary",
       "pinnedHighlights",
+      "pinnedSailingSlugs",
       "membershipMode",
     ];
 
@@ -86,6 +88,8 @@ describe("Phase 1 + Phase 2 DCC Provenance, Signing & Zero-Fee Organizer Contrac
       "hostedSailingId",
       "physicalSailingId",
       "communityId",
+      "reputationEntityId",
+      "reputationSailingEntityId",
       "organizerSlug",
       "aliases",
       "canonicalShipSlug",
@@ -278,7 +282,31 @@ describe("Phase 1 + Phase 2 DCC Provenance, Signing & Zero-Fee Organizer Contrac
     const snapshot = getDccCanonicalHostedCatalogSnapshot();
     const provenance = buildHostedCatalogFieldProvenance(snapshot);
     assert.ok(provenance.summary.verifiedFieldCount > 500);
-    assert.equal(provenance.summary.heldUnverifiedFieldCount, 20);
+    assert.equal(provenance.summary.heldUnverifiedFieldCount, 8);
+
+    // Verify Reputation Graph IDs & 42/2 schedule verification count
+    assert.equal(snapshot.organizers.length, 37);
+    assert.equal(snapshot.hostedSailings.length, 44);
+    assert.equal(snapshot.hostedSailings.filter((s) => !s.scheduleHoldReason).length, 42);
+    assert.equal(snapshot.hostedSailings.filter((s) => Boolean(s.scheduleHoldReason)).length, 2);
+    for (const org of snapshot.organizers) {
+      assert.match(org.reputationEntityId || "", /^rep:hosted-organizer:/);
+    }
+    for (const sailing of snapshot.hostedSailings) {
+      assert.match(sailing.reputationSailingEntityId || "", /^rep:hosted-sailing:/);
+    }
+
+    // Verify Priority 10 Organizer Activation Cohort packages & zero-outreach default
+    const activationCohort = await getOrganizerActivationCohort();
+    assert.equal(activationCohort.length, 10);
+    for (const pkg of activationCohort) {
+      assert.equal(pkg.trackingState, "not_contacted");
+      assert.equal(pkg.outreachSent, false);
+      assert.ok(pkg.publicProfileUrl.startsWith("https://cruisepromenade.com/hosted-cruises/"));
+      assert.ok(pkg.freeClaimUrl.startsWith("https://cruisepromenade.com/organizer/hosted/"));
+      assert.ok(pkg.telephoneScript.length > 40);
+      assert.ok(pkg.emailDraft.body.length > 80);
+    }
 
     const env1 = await getSignedHostedCatalogSnapshotEnvelope(snapshot, "dcc-hc-cur-2");
     const env2 = await getSignedHostedCatalogSnapshotEnvelope(snapshot, "dcc-hc-cur-2");

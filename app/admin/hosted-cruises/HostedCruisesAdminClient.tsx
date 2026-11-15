@@ -68,8 +68,24 @@ export default function HostedCruisesAdminClient({
   } | null>(null);
 
   const snapshot: HostedCruisesAdminBridgeSnapshot | null = bridge.snapshot;
+  const activationCohort = bridge.activationCohort ?? [];
   const sailings = snapshot?.sailings ?? [];
   const organizers = snapshot?.organizers ?? [];
+
+  const [selectedCohortSlug, setSelectedCohortSlug] = useState<string>(
+    activationCohort[0]?.organizerSlug ?? "arnos-bear-cruises",
+  );
+  const [cohortStateDrafts, setCohortStateDrafts] = useState<
+    Record<string, string>
+  >({});
+  const [cohortNotesDrafts, setCohortNotesDrafts] = useState<
+    Record<string, string>
+  >({});
+
+  const activeCohortItem =
+    activationCohort.find((item) => item.organizerSlug === selectedCohortSlug) ??
+    activationCohort[0] ??
+    null;
 
   const [orgFilterQuery, setOrgFilterQuery] = useState<string>("");
   const [selectedOrganizerSlug, setSelectedOrganizerSlug] = useState<string>(
@@ -256,6 +272,12 @@ export default function HostedCruisesAdminClient({
           ok: true,
           error: undefined,
           snapshot: data.snapshot,
+          ...(data.activationCohort ? { activationCohort: data.activationCohort } : {}),
+        }));
+      } else if (data.activationCohort) {
+        setBridge((prev) => ({
+          ...prev,
+          activationCohort: data.activationCohort,
         }));
       }
       if (
@@ -1810,6 +1832,223 @@ export default function HostedCruisesAdminClient({
             </div>
           )}
         </div>
+      </section>
+
+      {/* Priority 10 Organizer Activation Cohort */}
+      <section
+        data-testid="dcc-activation-cohort-section"
+        className="space-y-4 rounded-2xl border border-emerald-400/25 bg-emerald-950/20 p-5"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-300">
+              First-Cohort Outreach Readiness · Zero Automated Sending
+            </div>
+            <h2 className="mt-1 text-lg font-black text-white">
+              Priority 10 Organizer Activation Packages ({activationCohort.length})
+            </h2>
+            <p className="mt-1 text-xs text-zinc-300">
+              Prepared outreach materials, verified official contacts, $0 claim links, and manual tracking states. No emails, calls, or forms are ever sent automatically.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {activationCohort.map((item) => (
+              <button
+                key={item.organizerSlug}
+                type="button"
+                data-testid={`dcc-cohort-tab-${item.organizerSlug}`}
+                onClick={() => setSelectedCohortSlug(item.organizerSlug)}
+                className={`rounded-lg border px-2.5 py-1.5 text-xs font-bold transition ${
+                  activeCohortItem?.organizerSlug === item.organizerSlug
+                    ? "border-emerald-300 bg-emerald-500/30 text-white"
+                    : "border-white/15 bg-black/40 text-zinc-300 hover:bg-white/10"
+                }`}
+              >
+                #{item.cohortRank} {item.organizerName} ({item.trackingState})
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {activeCohortItem && (
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="space-y-3 rounded-xl border border-white/15 bg-black/45 p-4 text-xs">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-base font-black text-white">
+                    {activeCohortItem.organizerName}
+                  </h3>
+                  <div className="text-[11px] text-zinc-400">
+                    {activeCohortItem.categoryLabel} · Status:{" "}
+                    <code className="text-emerald-300">{activeCohortItem.trackingState}</code>
+                  </div>
+                </div>
+                <a
+                  href={activeCohortItem.publicProfileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-lg border border-emerald-400/40 bg-emerald-500/20 px-3 py-1.5 font-bold text-emerald-100 hover:bg-emerald-500/30"
+                >
+                  Open Public Profile ↗
+                </a>
+              </div>
+
+              <div className="space-y-1.5 rounded-lg border border-white/10 bg-black/40 p-3">
+                <div className="font-bold text-emerald-200">Verified Official Contact</div>
+                <div className="text-zinc-200">
+                  <strong>Contact:</strong>{" "}
+                  {activeCohortItem.officialContact.contactPersonName || "Official Reservations & Group Desk"}{" "}
+                  ({activeCohortItem.officialContact.contactPersonRole})
+                </div>
+                <div className="text-zinc-200">
+                  <strong>Email:</strong>{" "}
+                  <code>{activeCohortItem.officialContact.officialEmail || "Web contact form only"}</code>{" "}
+                  · <strong>Phone:</strong>{" "}
+                  <code>{activeCohortItem.officialContact.officialPhone || "Not published"}</code>
+                </div>
+                <div className="text-zinc-400">
+                  Source:{" "}
+                  <a
+                    href={activeCohortItem.officialContact.contactSourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline text-cyan-200"
+                  >
+                    {activeCohortItem.officialContact.contactSourceUrl}
+                  </a>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 rounded-lg border border-white/10 bg-black/40 p-3">
+                <div className="font-bold text-emerald-200">
+                  Free Claim URL & Verified Sailings ({activeCohortItem.verifiedSailingUrls.length})
+                </div>
+                <div className="text-zinc-200">
+                  <strong>Free Claim URL:</strong>{" "}
+                  <code>{activeCohortItem.freeClaimUrl}</code>
+                </div>
+                <p className="text-zinc-300">{activeCohortItem.freeClaimInstructions}</p>
+                <ul className="list-disc space-y-1 pl-4 text-zinc-300">
+                  {activeCohortItem.verifiedSailingUrls.map((s) => (
+                    <li key={s.hostedSailingId}>
+                      <a
+                        href={s.cruisePromenadeUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline text-cyan-200"
+                      >
+                        {s.sailDate} · {s.sailingTitle}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="space-y-1.5 rounded-lg border border-white/10 bg-black/40 p-3">
+                <div className="font-bold text-emerald-200">Value Proposition ($0 Organizer Hub)</div>
+                <p className="text-zinc-300">{activeCohortItem.valueExplanation}</p>
+                <div className="mt-2 font-bold text-amber-200">Missing Info to Request on Claim</div>
+                <ul className="list-disc space-y-1 pl-4 text-zinc-300">
+                  {activeCohortItem.missingInfoToRequestOnClaim.map((m, idx) => (
+                    <li key={idx}>{m}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="space-y-2 rounded-lg border border-emerald-400/25 bg-emerald-950/30 p-3">
+                <div className="font-bold text-emerald-200">Manual Outreach Tracking State</div>
+                <div className="flex flex-wrap gap-2">
+                  <select
+                    aria-label="Outreach tracking state"
+                    value={
+                      cohortStateDrafts[activeCohortItem.organizerSlug] ??
+                      activeCohortItem.trackingState
+                    }
+                    onChange={(e) =>
+                      setCohortStateDrafts((prev) => ({
+                        ...prev,
+                        [activeCohortItem.organizerSlug]: e.target.value,
+                      }))
+                    }
+                    className="rounded-lg border border-white/20 bg-zinc-900 px-3 py-1.5 text-xs text-white"
+                  >
+                    {[
+                      "not_contacted",
+                      "contacted",
+                      "replied",
+                      "claim_submitted",
+                      "verified",
+                      "workspace_activated",
+                      "page_shared",
+                    ].map((st) => (
+                      <option key={st} value={st}>
+                        {st}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    placeholder="Optional owner outreach note..."
+                    value={
+                      cohortNotesDrafts[activeCohortItem.organizerSlug] ??
+                      activeCohortItem.ownerNotes ??
+                      ""
+                    }
+                    onChange={(e) =>
+                      setCohortNotesDrafts((prev) => ({
+                        ...prev,
+                        [activeCohortItem.organizerSlug]: e.target.value,
+                      }))
+                    }
+                    className="min-w-[200px] flex-1 rounded-lg border border-white/20 bg-zinc-900 px-3 py-1.5 text-xs text-white"
+                  />
+                  <button
+                    type="button"
+                    disabled={busyKey !== null}
+                    onClick={() =>
+                      runAction(
+                        `cohort-${activeCohortItem.organizerSlug}`,
+                        {
+                          action: "update_activation_tracking_state",
+                          organizerSlug: activeCohortItem.organizerSlug,
+                          trackingState:
+                            cohortStateDrafts[activeCohortItem.organizerSlug] ??
+                            activeCohortItem.trackingState,
+                          ownerNotes:
+                            cohortNotesDrafts[activeCohortItem.organizerSlug] ??
+                            activeCohortItem.ownerNotes ??
+                            "",
+                        },
+                        `Updated ${activeCohortItem.organizerName} tracking state.`,
+                      )
+                    }
+                    className="rounded-lg bg-emerald-500 px-3 py-1.5 font-bold text-black hover:bg-emerald-400"
+                  >
+                    Save State
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3 rounded-xl border border-white/15 bg-black/45 p-4 text-xs">
+              <div>
+                <div className="font-bold text-emerald-200">Concise Telephone Script</div>
+                <pre className="mt-1.5 whitespace-pre-wrap rounded-lg border border-white/10 bg-black/60 p-3 font-sans text-xs leading-relaxed text-zinc-200">
+                  {activeCohortItem.telephoneScript}
+                </pre>
+              </div>
+              <div>
+                <div className="font-bold text-emerald-200">
+                  Personalized Email Draft — Subject:{" "}
+                  <span className="text-white">{activeCohortItem.emailDraft.subject}</span>
+                </div>
+                <pre className="mt-1.5 whitespace-pre-wrap rounded-lg border border-white/10 bg-black/60 p-3 font-sans text-xs leading-relaxed text-zinc-200">
+                  {activeCohortItem.emailDraft.body}
+                </pre>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

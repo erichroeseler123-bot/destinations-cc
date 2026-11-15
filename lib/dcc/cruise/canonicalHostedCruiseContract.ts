@@ -133,6 +133,28 @@ export function buildPrivateCommunityId(
   return `community:${scope}:${cleanShip}:${cleanDate}`;
 }
 
+export function buildReputationOrganizerEntityId(organizerSlug: string): string {
+  const clean = organizerSlug.trim().toLowerCase();
+  if (!clean || !/^[a-z0-9-]+$/.test(clean)) {
+    throw new Error(`Invalid canonical organizerSlug for reputation entity: "${organizerSlug}"`);
+  }
+  return `rep:hosted-organizer:${clean}`;
+}
+
+export function buildReputationHostedSailingEntityId(
+  organizerSlug: string,
+  sailingSlug: string,
+): string {
+  const cleanOrg = organizerSlug.trim().toLowerCase();
+  const cleanSailing = sailingSlug.trim().toLowerCase();
+  if (!cleanOrg || !cleanSailing) {
+    throw new Error(
+      `Invalid hosted sailing reputation components: org="${organizerSlug}", sailing="${sailingSlug}"`,
+    );
+  }
+  return `rep:hosted-sailing:${cleanOrg}:${cleanSailing}`;
+}
+
 export interface CanonicalTravelerPlanReference {
   sailingId: string;
   hostedSailingId?: string;
@@ -177,6 +199,97 @@ export const HOSTED_CRUISE_THEME_SLUGS = [
 
 export type HostedCruiseThemeSlug = (typeof HOSTED_CRUISE_THEME_SLUGS)[number];
 
+export const HOSTED_VISUAL_KEYS = [
+  "sail-away-deck-meetup",
+  "juneau-whale-watch-crew",
+  "fleet-hero",
+  "port-costa-maya",
+  "port-san-juan",
+  "port-cabo-san-lucas",
+  "port-bermuda",
+  "port-curacao",
+  "port-barbados",
+  "port-aruba",
+  "port-ketchikan",
+  "port-sitka",
+  "port-vancouver",
+  "port-new-orleans",
+  "port-puerto-plata",
+  "port-victoria-bc",
+  "port-st-maarten",
+  "port-miami",
+  "port-nassau",
+  "port-cozumel",
+  "port-roatan",
+  "region-mediterranean",
+  "region-northern-europe",
+  "region-asia-pacific",
+  "port-bimini-alice-town",
+  "port-catalina-avalon-bright",
+  "port-cocoa-beach-pier",
+  "port-fort-lauderdale-las-olas",
+  "port-galveston-pleasure-pier",
+  "port-glacier-bay-margerie",
+  "port-grand-cayman-seven-mile",
+  "port-hubbard-glacier",
+  "port-key-west-harbor",
+  "port-miami-biscayne-skyline",
+  "port-mykonos-little-venice",
+  "port-new-orleans-jackson-square",
+  "port-rhodes-lindos",
+  "port-roatan-west-bay",
+  "port-rome-st-peters",
+  "port-san-francisco-golden-gate",
+  "port-santorini-oia",
+  "port-seward-resurrection-bay",
+  "port-valletta-panorama",
+  "port-yokohama-minato-mirai",
+  "ship-adventure-of-the-seas-profile",
+  "ship-adventure-of-the-seas-st-croix",
+  "ship-allure-of-the-seas-nassau",
+  "ship-brilliant-lady-alt",
+  "ship-brilliant-lady-prince-rupert",
+  "ship-carnival-venezia-ny",
+  "ship-carnival-venezia-wide",
+  "ship-celebrity-apex-stockholm",
+  "ship-celebrity-ascent-antigua",
+  "ship-celebrity-beyond",
+  "ship-celebrity-constellation-palma",
+  "ship-celebrity-edge-juneau",
+  "ship-celebrity-edge-port-everglades",
+  "ship-celebrity-equinox",
+  "ship-celebrity-solstice-melbourne",
+  "ship-eurodam-curacao",
+  "ship-eurodam-glacier-bay",
+  "ship-eurodam-half-moon-cay",
+  "ship-harmony-of-the-seas",
+  "ship-icon-of-the-seas-caribbean",
+  "ship-icon-of-the-seas-cozumel",
+  "ship-icon-of-the-seas-miami",
+  "ship-independence-of-the-seas-miami",
+  "ship-mariner-of-the-seas",
+  "ship-msc-world-america",
+  "ship-navigator-of-the-seas-los-angeles",
+  "ship-nieuw-statendam",
+  "ship-norwegian-breakaway",
+  "ship-norwegian-epic-cannes",
+  "ship-norwegian-escape-port-canaveral",
+  "ship-norwegian-luna-miami",
+  "ship-oasis-of-the-seas-ft-lauderdale",
+  "ship-oasis-of-the-seas-port-canaveral",
+  "ship-resilient-lady-san-juan",
+  "ship-rhapsody-of-the-seas-rhodes",
+  "ship-ruby-princess",
+  "ship-scarlet-lady",
+  "ship-symphony-of-the-seas",
+  "ship-symphony-of-the-seas-nassau",
+  "ship-valiant-lady",
+  "ship-voyager-of-the-seas",
+  "ship-westerdam",
+] as const;
+
+export type HostedVisualKey = (typeof HOSTED_VISUAL_KEYS)[number];
+
 export interface HostedCruiseThemeDefinition {
   themeSlug: HostedCruiseThemeSlug;
   label: string;
@@ -184,22 +297,7 @@ export interface HostedCruiseThemeDefinition {
   heroHeadline: string;
   description: string;
   searchIntentExamples: string[];
-  visualKey:
-    | "sail-away-deck-meetup"
-    | "juneau-whale-watch-crew"
-    | "fleet-hero"
-    | "port-costa-maya"
-    | "port-san-juan"
-    | "port-cabo-san-lucas"
-    | "port-bermuda"
-    | "port-curacao"
-    | "port-barbados"
-    | "port-aruba"
-    | "port-ketchikan"
-    | "port-sitka"
-    | "region-mediterranean"
-    | "region-northern-europe"
-    | "region-asia-pacific";
+  visualKey: HostedVisualKey;
 }
 
 export const HOSTED_CRUISE_THEMES: ReadonlyArray<HostedCruiseThemeDefinition> = [
@@ -347,10 +445,28 @@ export type HostedCabinAvailabilityStatus =
 
 export type HostedSailingLifecycleStatus = "upcoming" | "completed" | "cancelled";
 
+export interface HostedOfficialSocialLinks {
+  instagramUrl?: string;
+  facebookUrl?: string;
+  youtubeUrl?: string;
+  tiktokUrl?: string;
+  linkedinUrl?: string;
+  xUrl?: string;
+}
+
+export interface HostedAuthorizedReviewProfileLink {
+  platform: string;
+  label: string;
+  url: string;
+  authorizationBasis: "official_site_linked" | "organizer_workspace_supplied";
+}
+
 export interface CanonicalHostedOrganizerFactRecord {
   organizerId: string; // hosted-organizer:<organizerSlug>
+  reputationEntityId: string; // rep:hosted-organizer:<organizerSlug>
   organizerSlug: string;
   aliases: string[]; // previous/alternate slugs resolving to this single identity
+  knownBrandAliases: string[]; // verified display/brand/event names associated with this organizer
   organizerName: string;
   shortName: string;
   categoryLabel: string;
@@ -366,11 +482,18 @@ export interface CanonicalHostedOrganizerFactRecord {
   soloFriendly: boolean | null;
   familyPolicy: HostedFamilyPolicy;
   goodForTags: string[];
-  heroVisualKey: HostedCruiseThemeDefinition["visualKey"];
+  heroVisualKey: HostedVisualKey;
   officialWebsiteUrl: string;
   officialDomain: string;
   reservationPortalDomain?: string;
   publicContactPageUrl: string;
+  officialSocialLinks: HostedOfficialSocialLinks;
+  cabinSellerIdentity: string;
+  officialReservationPathSummary: string;
+  cancellationAndParticipationPolicy: string | null;
+  officialPolicyUrl: string | null;
+  publicReviewProfileLinks: HostedAuthorizedReviewProfileLink[];
+  pinnedSailingSlugs?: string[];
   nonAffiliationNotice: string;
   cabinBookingPolicyNote: string;
   verifiedSourceCheckedAt: string;
@@ -379,6 +502,7 @@ export interface CanonicalHostedOrganizerFactRecord {
 
 export interface CanonicalHostedSailingFactRecord {
   hostedSailingId: string; // hosted-sailing:<organizerSlug>:<lineCode>:<shipSlug>:<sailDate>
+  reputationSailingEntityId: string; // rep:hosted-sailing:<organizerSlug>:<sailingSlug>
   organizerSlug: string;
   sailingSlug: string;
   physicalSailingId: string; // sailing:<lineCode>:<shipSlug>:<sailDate>
@@ -391,7 +515,7 @@ export interface CanonicalHostedSailingFactRecord {
   anticipationHook: string;
   primaryTheme: HostedCruiseThemeSlug;
   secondaryThemes: HostedCruiseThemeSlug[];
-  visualKey: HostedCruiseThemeDefinition["visualKey"];
+  visualKey: HostedVisualKey;
   regionLabel: string;
   officialSailingPageUrl: string;
   officialReservationFormUrl: string;

@@ -10,6 +10,11 @@ import {
   fetchHostedCruisesAdminSnapshotFromCp,
   sendHostedCruisesAdminActionToCp,
 } from "@/lib/dcc/hostedCruisesAdminBridge";
+import {
+  getOrganizerActivationCohort,
+  updateOrganizerActivationTrackingState,
+  type OrganizerActivationTrackingState,
+} from "@/lib/dcc/cruise/organizerActivationCohort";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -145,6 +150,43 @@ export async function POST(request: Request) {
       { ok: false, error: "Invalid JSON payload." },
       { status: 400, headers: NO_STORE_HEADERS },
     );
+  }
+
+  if (body.action === "update_activation_tracking_state") {
+    try {
+      const organizerSlug =
+        typeof body.organizerSlug === "string" ? body.organizerSlug : "";
+      const trackingState = (
+        typeof body.trackingState === "string" ? body.trackingState : ""
+      ) as OrganizerActivationTrackingState;
+      const ownerNotes =
+        typeof body.ownerNotes === "string" ? body.ownerNotes : undefined;
+      const updated = await updateOrganizerActivationTrackingState({
+        organizerSlug,
+        trackingState,
+        ownerNotes,
+      });
+      const activationCohort = await getOrganizerActivationCohort();
+      return NextResponse.json(
+        {
+          ok: true,
+          activationCohort,
+          actionResult: { updated },
+        },
+        { status: 200, headers: NO_STORE_HEADERS },
+      );
+    } catch (err) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            err instanceof Error
+              ? err.message
+              : "Failed to update activation tracking state.",
+        },
+        { status: 400, headers: NO_STORE_HEADERS },
+      );
+    }
   }
 
   const cpBaseUrlOverride =
