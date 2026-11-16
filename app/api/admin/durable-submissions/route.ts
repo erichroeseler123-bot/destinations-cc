@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { authorizeControlCenterCaller } from "@/app/api/admin/control-center/route";
 import { listDccFactVerificationQueue } from "@/lib/dcc/cruise/canonicalLocationsAndRoutePatterns";
+import { ensureFoundingPilotVerificationQueueSeeded } from "@/lib/dcc/cruise/foundingOrganizerPilotCohort";
 import { resolveCruisePromenadeAdminTarget } from "@/lib/dcc/hostedCruisesAdminBridge";
 
 export const runtime = "nodejs";
@@ -28,6 +29,7 @@ export async function GET(request: Request) {
   const { cpBaseUrl } = resolveCruisePromenadeAdminTarget({
     cpBaseUrlOverride: cpPreviewUrl,
   });
+  ensureFoundingPilotVerificationQueueSeeded();
   const serviceSecret = (process.env.DCC_CP_SERVICE_SECRET || "").trim();
   const dccVerificationQueue = listDccFactVerificationQueue({
     includeSyntheticTest: includeTest,

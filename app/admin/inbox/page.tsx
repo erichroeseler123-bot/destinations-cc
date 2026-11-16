@@ -52,6 +52,13 @@ export default async function OperatorInboxAdminPage({
   const rawCpPreviewUrl = firstParam(sp.cpPreviewUrl);
   const cpCheck = validateCpBaseUrlOverride(rawCpPreviewUrl);
   const validCpPreviewUrl = cpCheck.valid ? cpCheck.url : null;
+  const panelCpUrl =
+    validCpPreviewUrl ||
+    (process.env.VERCEL_ENV !== "production" &&
+    rawCpPreviewUrl &&
+    /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(rawCpPreviewUrl)
+      ? rawCpPreviewUrl
+      : null);
 
   const initialData = await getUnifiedOperatorInbox({
     view,
@@ -82,7 +89,7 @@ export default async function OperatorInboxAdminPage({
           </div>
         </header>
 
-        <DurableSubmissionsOwnerPanel cpPreviewUrl={validCpPreviewUrl} />
+        <DurableSubmissionsOwnerPanel cpPreviewUrl={panelCpUrl} />
 
         <OperatorInboxClient
           initialData={initialData}
