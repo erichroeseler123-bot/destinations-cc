@@ -1,4 +1,5 @@
 import { createHash, createHmac, timingSafeEqual } from "crypto";
+import { cookies } from "next/headers";
 
 export const ADMIN_SESSION_COOKIE = "dcc_admin_session";
 const ADMIN_SESSION_VERSION = "v1";
@@ -79,4 +80,89 @@ export function getAdminActorLabel(value: string | null | undefined) {
   if (!isValidAdminSession(value)) return "unknown-admin";
   const nonce = String(value).split(".")[2] || "admin";
   return `admin:${nonce.slice(0, 8)}`;
+}
+
+function constantTimeEqualsSecret(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  const digestA = createHash("sha256").update(a).digest();
+  const digestB = createHash("sha256").update(b).digest();
+  return timingSafeEqual(digestA, digestB);
+}
+
+function readCookieFromHeader(
+  cookieHeader: string | null,
+  cookieName: string,
+): string | null {
+  if (!cookieHeader) return null;
+  const parts = cookieHeader.split(";");
+  for (const part of parts) {
+    const idx = part.indexOf("=");
+    if (idx <= 0) continue;
+    const key = part.slice(0, idx).trim();
+    if (key === cookieName) {
+      return decodeURIComponent(part.slice(idx + 1).trim());
+    }
+  }
+  return null;
+}
+
+export async function authorizeControlCenterCaller(
+  request: Request,
+  fallbackSessionCookie?: string | null,
+): Promise<{ authorized: true; actor: string } | { authorized: false }> {
+  let sessionCookie =
+    readCookieFromHeader(request.headers.get("cookie"), ADMIN_SESSION_COOKIE) ||
+    fallbackSessionCookie ||
+    null;
+  if (!sessionCookie) {
+    try {
+      const store = await cookies();
+      sessionCookie = store.get(ADMIN_SESSION_COOKIE)?.value || null;
+    } catch {
+      sessionCookie = null;
+    }
+  }
+
+  if (sessionCookie && isValidAdminSession(sessionCookie)) {
+    return {
+      authorized: true,
+      actor: getAdminActorLabel(sessionCookie),
+    };
+  }
+
+  const bearerRaw = request.headers.get("authorization") || "";
+  const bearerToken = /^Bearer\s+/i.test(bearerRaw)
+    ? bearerRaw.replace(/^Bearer\s+/i, "").trim()
+    : "";
+  const candidate = (
+    request.headers.get("x-dcc-admin-key") ||
+    request.headers.get("x-admin-access-key") ||
+    request.headers.get("x-dcc-internal-secret") ||
+    request.headers.get("x-dcc-internal-key") ||
+    bearerToken ||
+    ""
+  ).trim();
+
+  if (!candidate) {
+    return { authorized: false };
+  }
+
+  const configuredSecrets: Array<{ label: string; value: string }> = [
+    { label: "admin_key", value: (process.env.ADMIN_ACCESS_KEY || "").trim() },
+    { label: "earthos_admin", value: (process.env.EARTHOS_ADMIN_KEY || "").trim() },
+    { label: "internal_secret", value: (process.env.INTERNAL_API_SECRET || "").trim() },
+    { label: "dcc_internal_secret", value: (process.env.DCC_INTERNAL_API_SECRET || "").trim() },
+    { label: "commerce_admin", value: (process.env.DCC_COMMERCE_ADMIN_SECRET || "").trim() },
+  ];
+
+  for (const entry of configuredSecrets) {
+    if (entry.value && constantTimeEqualsSecret(candidate, entry.value)) {
+      return {
+        authorized: true,
+        actor: entry.label,
+      };
+    }
+  }
+
+  return { authorized: false };
 }

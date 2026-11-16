@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authorizeControlCenterCaller } from "@/app/api/admin/control-center/route";
+import { authorizeControlCenterCaller } from "@/lib/adminAccess";
 import {
   getCommercialHandoffById,
   isDccInternalArtifactNotProviderConfirmation,

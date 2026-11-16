@@ -16,6 +16,9 @@ export interface FoundingPilotDraftInvitation {
   franchiseSlugs: string[];
   primarySailingSlug: string;
   backupComparisonFixtureSlug?: string;
+  outreachEligibility:
+    | "safe_pilot_ready_hold_send"
+    | "blocked_disputed_source_hold_noindex";
   outreachDispatchState: "draft_do_not_send";
   sentAt: null;
   zeroOutreachSentGuarantee: true;
@@ -826,6 +829,7 @@ export const FOUNDING_PILOT_DRAFT_INVITATIONS: readonly FoundingPilotDraftInvita
     organizerName: "The Online Itinerant (Sailing Towards Success)",
     franchiseSlugs: ["sailing-towards-success"],
     primarySailingSlug: "carnival-valor-2027-01-14",
+    outreachEligibility: "blocked_disputed_source_hold_noindex",
     outreachDispatchState: "draft_do_not_send",
     sentAt: null,
     zeroOutreachSentGuarantee: true,
@@ -848,6 +852,7 @@ export const FOUNDING_PILOT_DRAFT_INVITATIONS: readonly FoundingPilotDraftInvita
     organizerName: "King Con Cruise",
     franchiseSlugs: ["king-con-cruise"],
     primarySailingSlug: "norwegian-joy-2027-02-22",
+    outreachEligibility: "blocked_disputed_source_hold_noindex",
     outreachDispatchState: "draft_do_not_send",
     sentAt: null,
     zeroOutreachSentGuarantee: true,
@@ -868,6 +873,7 @@ export const FOUNDING_PILOT_DRAFT_INVITATIONS: readonly FoundingPilotDraftInvita
     organizerName: "The Fan Cruise (Astros, Texans & FamAlly)",
     franchiseSlugs: ["astros-fan-cruise", "texans-fan-cruise", "famally-cruise"],
     primarySailingSlug: "astros-fan-cruise-carnival-jubilee-2027-04-11",
+    outreachEligibility: "blocked_disputed_source_hold_noindex",
     outreachDispatchState: "draft_do_not_send",
     sentAt: null,
     zeroOutreachSentGuarantee: true,
@@ -893,6 +899,7 @@ export const FOUNDING_PILOT_DRAFT_INVITATIONS: readonly FoundingPilotDraftInvita
     franchiseSlugs: ["stitchin-heaven"],
     primarySailingSlug: "independence-of-the-seas-2027-04-11",
     backupComparisonFixtureSlug: "craft-cruises",
+    outreachEligibility: "safe_pilot_ready_hold_send",
     outreachDispatchState: "draft_do_not_send",
     sentAt: null,
     zeroOutreachSentGuarantee: true,
@@ -916,6 +923,7 @@ export const FOUNDING_PILOT_DRAFT_INVITATIONS: readonly FoundingPilotDraftInvita
     franchiseSlugs: ["cmmc-at-sea"],
     primarySailingSlug: "celebrity-beyond-2027-01-17",
     backupComparisonFixtureSlug: "acquisition-lab",
+    outreachEligibility: "safe_pilot_ready_hold_send",
     outreachDispatchState: "draft_do_not_send",
     sentAt: null,
     zeroOutreachSentGuarantee: true,
@@ -933,8 +941,16 @@ export const FOUNDING_PILOT_DRAFT_INVITATIONS: readonly FoundingPilotDraftInvita
 
 export function getFoundingOrganizerPilotSummary() {
   ensureFoundingPilotVerificationQueueSeeded();
+  const safePilotCandidates = FOUNDING_PILOT_DRAFT_INVITATIONS.filter(
+    (d) => d.outreachEligibility === "safe_pilot_ready_hold_send",
+  ).map((d) => d.organizerSlug);
+  const heldDisputedProspects = FOUNDING_PILOT_DRAFT_INVITATIONS.filter(
+    (d) => d.outreachEligibility === "blocked_disputed_source_hold_noindex",
+  ).map((d) => d.organizerSlug);
   return {
     primaryPilotCount: FOUNDING_PILOT_DRAFT_INVITATIONS.length,
+    safePilotCandidates,
+    heldDisputedProspects,
     backupComparisonFixtures: [
       {
         category: "crafting-and-hobbies",

@@ -20,6 +20,7 @@ interface DurableSubmissionView {
   contactConsent: boolean;
   submittedSummaryNote: string | null;
   submittedAt: string;
+  savedBeforeNotificationAt?: string | null;
   attribution: {
     sourcePage: string | null;
     utmSource: string | null;
@@ -34,6 +35,7 @@ interface DurableSubmissionView {
     overallStatus: string;
     attempts: number;
     maxAttempts: number;
+    lastSafeError?: string | null;
   };
 }
 
@@ -119,6 +121,15 @@ export default function DurableSubmissionsOwnerPanel({
 
   const filteredSubmissions = submissions.filter((s) => {
     if (activeFilter === "test") return s.isSyntheticTest;
+    if (activeFilter === "partial_or_failed") {
+      return (
+        s.completionState === "partially_completed" ||
+        s.completionState === "failed" ||
+        s.completionState === "needs_review" ||
+        s.outbox.overallStatus === "failed_retrying" ||
+        s.outbox.overallStatus === "failed_max_retries"
+      );
+    }
     if (s.isSyntheticTest && activeFilter !== "all") return false;
     if (activeFilter === "organizer_interest") {
       return (
@@ -135,13 +146,6 @@ export default function DurableSubmissionsOwnerPanel({
     }
     if (activeFilter === "completed_joins") {
       return s.completionState === "completed";
-    }
-    if (activeFilter === "partial_or_failed") {
-      return (
-        s.completionState === "partially_completed" ||
-        s.completionState === "failed" ||
-        s.completionState === "needs_review"
-      );
     }
     return true;
   });
@@ -348,7 +352,24 @@ export default function DurableSubmissionsOwnerPanel({
                         <strong>UTM:</strong> {s.attribution.utmSource}
                       </span>
                     )}
+                    {s.savedBeforeNotificationAt && (
+                      <span>
+                        <strong>Write-Ahead Saved:</strong> {s.savedBeforeNotificationAt}
+                      </span>
+                    )}
                   </div>
+
+                  {s.submittedSummaryNote && (
+                    <p className="mt-1.5 text-xs text-zinc-300">
+                      <strong>Submitted Summary:</strong> {s.submittedSummaryNote}
+                    </p>
+                  )}
+
+                  {s.outbox.lastSafeError && (
+                    <p className="mt-1 text-xs text-amber-300">
+                      <strong>Outbox Recovery Alert:</strong> {s.outbox.lastSafeError}
+                    </p>
+                  )}
 
                   {s.safeFailureReason && (
                     <p className="mt-1.5 text-xs text-rose-300">

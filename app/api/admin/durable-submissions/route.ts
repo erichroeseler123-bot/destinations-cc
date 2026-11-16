@@ -1,5 +1,9 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { authorizeControlCenterCaller } from "@/app/api/admin/control-center/route";
+import {
+  ADMIN_SESSION_COOKIE,
+  authorizeControlCenterCaller,
+} from "@/lib/adminAccess";
 import { listDccFactVerificationQueue } from "@/lib/dcc/cruise/canonicalLocationsAndRoutePatterns";
 import { ensureFoundingPilotVerificationQueueSeeded } from "@/lib/dcc/cruise/foundingOrganizerPilotCohort";
 import { resolveCruisePromenadeAdminTarget } from "@/lib/dcc/hostedCruisesAdminBridge";
@@ -12,8 +16,20 @@ const PRIVATE_NO_STORE_HEADERS = {
   "X-Robots-Tag": "noindex, nofollow",
 };
 
+async function readFallbackAdminSessionCookie(): Promise<string | null> {
+  try {
+    const store = await cookies();
+    return store.get(ADMIN_SESSION_COOKIE)?.value || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(request: Request) {
-  const auth = await authorizeControlCenterCaller(request);
+  const auth = await authorizeControlCenterCaller(
+    request,
+    await readFallbackAdminSessionCookie(),
+  );
   if (!auth.authorized) {
     return NextResponse.json(
       { ok: false, error: "UNAUTHORIZED" },
@@ -156,7 +172,10 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const auth = await authorizeControlCenterCaller(request);
+  const auth = await authorizeControlCenterCaller(
+    request,
+    await readFallbackAdminSessionCookie(),
+  );
   if (!auth.authorized) {
     return NextResponse.json(
       { ok: false, error: "UNAUTHORIZED" },

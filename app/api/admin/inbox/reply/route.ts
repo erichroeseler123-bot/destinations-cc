@@ -1,6 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { NextResponse } from "next/server";
-import { authorizeControlCenterCaller } from "@/app/api/admin/control-center/route";
+import { authorizeControlCenterCaller } from "@/lib/adminAccess";
 import {
   buildHydratedConciergePreset,
   extractPassengerFirstName,
