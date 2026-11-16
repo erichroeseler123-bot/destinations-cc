@@ -54,8 +54,21 @@ test("112b. Seeded sprint pipeline surfaces 44 deduplicated prospects, 40 phone 
   );
   assert.equal(snap.kpis.qualifiedReadyCount, 32);
   assert.equal(snap.kpis.heldOrNeedsQualificationCount, 12);
-  assert.equal(snap.kpis.outreachSentLeadsCount, 0);
-  assert.equal(snap.kpis.totalOutreachTouchesCount, 0);
+  // Verified Gmail history: CMMC at Sea sent Nov 12, 2026 (1 sent, not delivery-confirmed);
+  // Stitchin' Heaven Sep 4, 2026 attempt to travel@stitchinheaven.com bounced immediately (bounced_failed, 0 sent);
+  // Neither historical message counts as a conversion, reply, or board creation.
+  assert.equal(snap.kpis.outreachSentLeadsCount, 1);
+  assert.equal(snap.kpis.totalOutreachTouchesCount, 1);
+  assert.equal(snap.kpis.repliedCount, 0);
+  assert.equal(snap.kpis.boardsCreatedCount, 0);
+  assert.equal(snap.kpis.travelersJoinedCount, 0);
+  const stitchinSeed = snap.leads.find((l) => l.leadId === "stitchin_heaven_riley_blake")!;
+  assert.equal(stitchinSeed.outreachStatus, "bounced_failed");
+  assert.equal(stitchinSeed.hasSentOutreach, false);
+  const cmmcSeed = snap.leads.find((l) => l.leadId === "cmmc_at_sea")!;
+  assert.equal(cmmcSeed.outreachStatus, "emailed");
+  assert.equal(cmmcSeed.hasSentOutreach, true);
+  assert.equal(cmmcSeed.boardCreated, false);
   assert.equal(
     snap.corePitchVerbatim,
     "We built a free shared cruise page for hosted groups. Your travelers can meet before sailing, see which excursions everyone is joining, book the exact same departure, and keep the entire schedule together—including an offline Cruise Pack. It does not interfere with your cabin sales, travel advisor, conference programming or onboard events.",

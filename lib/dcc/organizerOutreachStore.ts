@@ -42,6 +42,7 @@ export const VALID_OUTREACH_STATUSES = [
   "interested",
   "board_live",
   "first_traveler_joined",
+  "bounced_failed",
   "wrong_contact",
   "not_a_fit",
   "on_hold",
@@ -245,6 +246,7 @@ export const OUTREACH_STATUS_LABELS: Record<OrganizerOutreachStatus, string> = {
   interested: "Interested — Follow-Up Active",
   board_live: "Board Created",
   first_traveler_joined: "First Traveler Joined",
+  bounced_failed: "Bounced / Delivery Failed",
   wrong_contact: "Wrong Contact",
   not_a_fit: "Not Interested / Not a Fit",
   on_hold: "Paused / On Hold",
@@ -394,6 +396,8 @@ interface SeedLeadDefinition {
   emailBody: string;
   recommendedNextAction: string;
   outreachStatus: OrganizerOutreachStatus;
+  lastContactedAt?: string | null;
+  lastContactChannel?: "call" | "text" | "email" | "portal" | null;
   notes: string;
 }
 
@@ -986,10 +990,10 @@ export const SEEDED_ORGANIZER_LEAD_DEFINITIONS: readonly SeedLeadDefinition[] = 
         "Quilters and non-quilting spouses can see who is joining excursions in Nassau, CocoCay, Costa Maya, and Cozumel alongside your Wednesday/Saturday sewing rotations—and print a clean paper PDF Cruise Pack before boarding. (We also verified your Jan 23, 2027 Icon of the Seas quilting sailing.)",
     }),
     recommendedNextAction:
-      "Call (903) 760-7397 Tue–Sat 10 AM–5 PM CT and ask for Clay Luttrell or the Quilting Cruise Coordinator.",
-    outreachStatus: "ready_to_call",
+      "Send approved new outreach to verified info@stitchinheaven.com (or call (903) 760-7397 Tue–Sat 10 AM–5 PM CT). Prior Sep 4, 2026 attempt to travel@stitchinheaven.com bounced immediately.",
+    outreachStatus: "bounced_failed",
     notes:
-      "Largest dedicated quilting cruise operator in Texas (6+ Royal Caribbean sailings in 2027). Printable PDF Cruise Pack is a direct fit for their demographic. 0 outreach messages sent.",
+      "Verified Gmail history: Attempted Sep 4, 2026 from erichroeseler123@gmail.com to travel@stitchinheaven.com; immediate delivery failure (bounced, not delivered). New info@stitchinheaven.com outreach has NOT been sent. 0 conversions/applications.",
   },
 
   // ============================================================================
@@ -1029,30 +1033,25 @@ export const SEEDED_ORGANIZER_LEAD_DEFINITIONS: readonly SeedLeadDefinition[] = 
     valueToPitchSummary:
       "Group room block closed Oct 28 so late-registering CMMC practitioners book cabins independently across the ship—a shared board reunites the cohort for open port days in Nassau, Cozumel, and Grand Cayman (with tender timing highlighted).",
     phoneOpeningScript:
-      "Hi — this is Erich with Cruise Promenade calling for the CMMC at Sea events team regarding your January 17 conference on Celebrity Beyond. Since your room block closed and attendees are booking cabins independently while all three sea days have CMMC sessions, we built a free shared page for that exact sailing so attendees can coordinate Nassau, Cozumel, and Grand Cayman port outings together. Could you open the link while we're on the phone?",
+      "Hi — this is Erich calling to follow up briefly on the November 12 note I sent Info@cmmcatsea.com regarding your January 17 CMMC at Sea sailing on Celebrity Beyond. Since your room block closed and attendees are booking cabins independently, our free port-day page for that exact sailing is live so attendees can coordinate Nassau, Cozumel, and Grand Cayman outings together. Could you open the link while we're on the phone?",
     voicemailScript:
-      "Hi CMMC at Sea team, Erich with Cruise Promenade calling about your January 17 Celebrity Beyond sailing. We built a free shared cruise page for that exact voyage so attendees booking cabins independently can coordinate open port days in Nassau, Cozumel, and Grand Cayman around your sea-day CMMC sessions. Happy to send the link to Info@CMMCatSea.com.",
-    phoneOrTextScript: `Hi CMMC at Sea Team — calling about the Jan 17–24, 2027 Celebrity Beyond conference sailing. ${HOSTED_ORGANIZER_CORE_PITCH} ${REQUESTED_CALL_ACTION} Link: ${buildSailingUtmUrl("celebrity-beyond", "2027-01-17", "cmmc_at_sea")}`,
+      "Hi CMMC at Sea team, Erich calling to follow up briefly on my November 12 email to Info@cmmcatsea.com about your January 17 Celebrity Beyond sailing. Your free port-day coordination page is live if you'd like to share it with attendees booking cabins independently.",
+    phoneOrTextScript: `Hi CMMC at Sea Team — brief follow-up on my Nov 12 note regarding the Jan 17–24, 2027 Celebrity Beyond conference sailing. ${HOSTED_ORGANIZER_CORE_PITCH} ${REQUESTED_CALL_ACTION} Link: ${buildSailingUtmUrl("celebrity-beyond", "2027-01-17", "cmmc_at_sea")}`,
     likelyObjection:
       "Since we are a defense cybersecurity cohort, attendees won't want to enter personal or cabin details.",
     objectionResponse:
       "Good call—boards are private (noindex), never ask for cabin numbers, emails, or company credentials, and let attendees use just a first name or handle.",
     emailSubject:
-      "Free port-day coordination board for CMMC at Sea (Jan 17 Celebrity Beyond)",
-    emailBody: buildFollowUpEmailBody({
-      greeting: "Hi CMMC at Sea Team,",
-      introLine:
-        "Following up regarding CMMC at Sea aboard Celebrity Beyond out of Fort Lauderdale on January 17–24, 2027.",
-      sailingUrl: buildSailingUtmUrl("celebrity-beyond", "2027-01-17", "cmmc_at_sea"),
-      utmSource: "cmmc_at_sea",
-      scheduleNote:
-        "It maps the published port windows—including the Grand Cayman tender call (08:00–18:00), Nassau (07:30–17:00), and Cozumel (07:00–20:00)—around your three sea days of CMMC training, with no app download or cabin numbers collected.",
-    }),
+      "Re: Quick follow-up — live port-day page for CMMC at Sea (Jan 17 Celebrity Beyond)",
+    emailBody:
+      "Hi CMMC at Sea Team,\n\nQuick follow-up on my November 12 note—the free ($0) port-day coordination page for your January 17–24, 2027 Celebrity Beyond sailing out of Fort Lauderdale is now live if you'd like to take a quick look:\n\nLive Sailing Page:\nhttps://cruisepromenade.com/hosted-cruises/cmmc-at-sea/celebrity-beyond-2027-01-17?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=cmmc_at_sea_followup_sailing_page\n\nSince your room block closed and attendees are booking cabins independently, it gives attendees and spouses one simple place to coordinate Nassau, Cozumel, and Grand Cayman shore days around your three sea-day sessions—with no cabin numbers or work emails collected, and 100% of Conference Pass registrations routing straight to cmmcatsea.com/registration/ ($0 cost and 0% pass/cabin commission; Cruise Promenade earns commissions only on optional independent shore excursions).\n\nIf you'd ever like to add a quick welcome note or pin networking meetups, your free Organizer Hub is ready here:\nhttps://cruisepromenade.com/organizer/hosted/cmmc-at-sea?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=cmmc_at_sea_followup_claim_hub\n\nNo rush at all—just wanted to share the live link in case it's helpful for your January cohort.\n\nBest,\nErich",
     recommendedNextAction:
-      "Call Edwards Performance Solutions at (443) 561-1334 (alt meeting planner DRP International at (954) 417-3636) and ask for the CMMC at Sea coordinator.",
-    outreachStatus: "ready_to_call",
+      "DO NOT send another introductory email (sent Nov 12, 2026 from erich@rollcallusa.com to Info@cmmcatsea.com; no bounce, no reply). Preserve rewritten email above as a future brief follow-up draft only.",
+    outreachStatus: "emailed",
+    lastContactedAt: "2026-11-12T00:00:00.000Z",
+    lastContactChannel: "email",
     notes:
-      "Upgraded existing pipeline record with verified public business phones from official registration checkout host edwps.com ((443) 561-1334) and planner drpintl.com ((954) 417-3636). 0 outreach messages sent.",
+      "Verified Gmail history: Successfully sent Nov 12, 2026 from erich@rollcallusa.com to Info@cmmcatsea.com; no bounce and no reply (recorded as sent, NOT delivery-confirmed). Do NOT send another introductory email; rewritten message preserved as future follow-up draft. 0 conversions/applications.",
   },
   {
     leadId: "vettechlife_mexico",
@@ -3763,8 +3762,8 @@ function mergeSeedAndOverlay(
     outreachStatusLabel: OUTREACH_STATUS_LABELS[outreachStatus],
     hasSentOutreach,
     outreachCount,
-    lastContactedAt: overlay?.lastContactedAt || null,
-    lastContactChannel: overlay?.lastContactChannel || null,
+    lastContactedAt: overlay?.lastContactedAt ?? seed?.lastContactedAt ?? null,
+    lastContactChannel: overlay?.lastContactChannel ?? seed?.lastContactChannel ?? null,
     followUpDate,
     notes:
       overlay?.notes !== undefined

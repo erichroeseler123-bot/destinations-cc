@@ -72,7 +72,28 @@ interface PilotFunnelEntryView {
       recipientEmail: string;
       sentAt: string | null;
       deliveredAt: string | null;
+      deliveryConfirmedByProvider?: boolean;
       resendMessageId: string | null;
+      historicalAttempt?: {
+        attemptedAt: string;
+        fromEmail: string;
+        toEmail: string;
+        outcome: "bounced_or_failed" | "sent_not_delivery_confirmed";
+        bounceDetected: boolean;
+        replyReceived: boolean;
+        deliveryConfirmedByProvider: false;
+        countedAsConversionOrApplication: false;
+        summary: string;
+      };
+      nextDraft?: {
+        kind: "new_recipient_intro_hold" | "future_brief_follow_up_hold";
+        fromEmail: string;
+        toEmail: string;
+        sent: boolean;
+        doNotSendAnotherIntroEmail: boolean;
+        summary: string;
+      };
+      countedAsConversionOrApplication?: false;
     };
     organizerPageVisit: {
       visited: boolean;
@@ -127,6 +148,10 @@ interface PilotFunnelEntryView {
 interface PilotMonitoringView {
   generatedAt: string;
   outreachSentCount: number;
+  outreachBouncedOrFailedCount?: number;
+  outreachDeliveredConfirmedCount?: number;
+  newWave1DraftsSentCount?: number;
+  historicalMessagesCountedAsConversionsOrApplications?: number;
   pilots: PilotFunnelEntryView[];
   syntheticCanaryAuditStatus: {
     canarySubmissionId: string;
@@ -214,6 +239,7 @@ export default function DurableSubmissionsOwnerPanel({
     organizerSlug: string,
     recipientEmail: string,
     status: "not_sent_awaiting_owner_approval" | "sent" | "delivered" | "bounced_or_failed",
+    deliveryConfirmedByProvider = false,
   ) {
     setBusyId(`pilot:${organizerSlug}`);
     try {
@@ -225,6 +251,8 @@ export default function DurableSubmissionsOwnerPanel({
           organizerSlug,
           recipientEmail,
           status,
+          deliveryConfirmedByProvider,
+          newWave1DraftSent: status === "sent" || status === "delivered",
           cpPreviewUrl,
         }),
       });
@@ -359,9 +387,15 @@ export default function DurableSubmissionsOwnerPanel({
                 Wave 1 Safe Founding Pilots — 9-Step Live Funnel Monitor
               </h3>
               <p className="text-xs text-zinc-400">
-                Outreach Sent: <strong>{pilotMonitoring.outreachSentCount}</strong> · Disputed
-                prospects (Online Itinerant, King Con, Fan Cruise) remain held, noindex &amp;
-                uncontacted
+                Historical Sent (Unconfirmed Delivery):{" "}
+                <strong>{pilotMonitoring.outreachSentCount}</strong> · Historical Bounced/Failed:{" "}
+                <strong>{pilotMonitoring.outreachBouncedOrFailedCount ?? 0}</strong> · Provider-Confirmed
+                Delivered: <strong>{pilotMonitoring.outreachDeliveredConfirmedCount ?? 0}</strong> · New
+                Wave 1 Drafts Sent: <strong>{pilotMonitoring.newWave1DraftsSentCount ?? 0}</strong> ·
+                Historical Counted as Conversions/Applications:{" "}
+                <strong>
+                  {pilotMonitoring.historicalMessagesCountedAsConversionsOrApplications ?? 0}
+                </strong>
               </p>
             </div>
           </div>
@@ -369,14 +403,23 @@ export default function DurableSubmissionsOwnerPanel({
           <div className="grid gap-4 lg:grid-cols-2">
             {pilotMonitoring.pilots.map((pilot) => {
               const f = pilot.funnel;
+              const hist = f.emailSentAndDelivered.historicalAttempt;
+              const draft = f.emailSentAndDelivered.nextDraft;
               const emailLabel =
-                f.emailSentAndDelivered.status === "delivered"
-                  ? "Delivered"
+                f.emailSentAndDelivered.status === "delivered" &&
+                f.emailSentAndDelivered.deliveryConfirmedByProvider
+                  ? "Delivered (Provider-Confirmed)"
                   : f.emailSentAndDelivered.status === "sent"
-                    ? "Sent (Awaiting Delivery Confirm)"
+                    ? `Sent — Not Delivery-Confirmed (${hist?.attemptedAt ?? "sent"} · ${hist?.fromEmail ?? ""} → ${hist?.toEmail ?? f.emailSentAndDelivered.recipientEmail} · No bounce, no reply)`
                     : f.emailSentAndDelivered.status === "bounced_or_failed"
-                      ? "Bounced / Failed"
+                      ? `Bounced / Failed (${hist?.attemptedAt?.slice(0, 10) ?? "2026-09-04"} · ${hist?.fromEmail ?? ""} → ${hist?.toEmail ?? "travel@stitchinheaven.com"})`
                       : "Hold — Awaiting Erich Approval (0 Sent)";
+              const emailTone =
+                f.emailSentAndDelivered.status === "bounced_or_failed"
+                  ? "text-rose-300"
+                  : f.emailSentAndDelivered.status === "delivered"
+                    ? "text-emerald-300"
+                    : "text-amber-200";
 
               return (
                 <div
@@ -386,10 +429,23 @@ export default function DurableSubmissionsOwnerPanel({
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2 border-b border-zinc-800 pb-2.5">
                     <div>
-                      <strong className="text-sm text-white">{pilot.organizerName}</strong>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <strong className="text-sm text-white">{pilot.organizerName}</strong>
+                        {draft?.doNotSendAnotherIntroEmail && (
+                          <span className="rounded-full border border-amber-400/50 bg-amber-500/15 px-2 py-0.5 text-[11px] font-bold text-amber-200">
+                            DO NOT SEND NEW INTRO — Brief Follow-Up Draft Held
+                          </span>
+                        )}
+                      </div>
                       <div className="text-zinc-400">{pilot.sailingTitle}</div>
                       <div className="mt-0.5 text-zinc-400">
-                        Recipient: <code>{f.emailSentAndDelivered.recipientEmail}</code>
+                        Target Recipient: <code>{f.emailSentAndDelivered.recipientEmail}</code>
+                        {draft && (
+                          <span>
+                            {" "}
+                            · Next Draft: <strong>{draft.sent ? "Sent" : "Held Unsent"}</strong>
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
@@ -413,9 +469,10 @@ export default function DurableSubmissionsOwnerPanel({
                   </div>
 
                   <div className="mt-2.5 grid gap-1.5 sm:grid-cols-2">
-                    <div className="rounded border border-zinc-800 bg-zinc-950/75 px-2.5 py-1.5">
+                    <div className="rounded border border-zinc-800 bg-zinc-950/75 px-2.5 py-1.5 sm:col-span-2">
                       <div className="text-zinc-400">1. Email Sent &amp; Delivered</div>
-                      <div className="font-semibold text-amber-200">{emailLabel}</div>
+                      <div className={`font-semibold ${emailTone}`}>{emailLabel}</div>
+                      {draft && <div className="mt-0.5 text-[11px] text-zinc-400">{draft.summary}</div>}
                     </div>
                     <div className="rounded border border-zinc-800 bg-zinc-950/75 px-2.5 py-1.5">
                       <div className="text-zinc-400">2. Organizer Page Visit</div>
@@ -491,7 +548,7 @@ export default function DurableSubmissionsOwnerPanel({
                   </div>
 
                   <div className="mt-2.5 flex flex-wrap items-center gap-1.5 border-t border-zinc-800 pt-2">
-                    <span className="text-zinc-400">Manual status log (after owner send):</span>
+                    <span className="text-zinc-400">Log new draft action:</span>
                     <button
                       type="button"
                       disabled={busyId === `pilot:${pilot.organizerSlug}`}
@@ -500,11 +557,12 @@ export default function DurableSubmissionsOwnerPanel({
                           pilot.organizerSlug,
                           f.emailSentAndDelivered.recipientEmail,
                           "sent",
+                          false,
                         )
                       }
                       className="rounded border border-zinc-700 bg-zinc-800 px-2 py-0.5 text-zinc-200 hover:bg-zinc-700"
                     >
-                      Log Sent
+                      Log New Draft Sent
                     </button>
                     <button
                       type="button"
@@ -514,11 +572,12 @@ export default function DurableSubmissionsOwnerPanel({
                           pilot.organizerSlug,
                           f.emailSentAndDelivered.recipientEmail,
                           "delivered",
+                          true,
                         )
                       }
                       className="rounded border border-zinc-700 bg-zinc-800 px-2 py-0.5 text-emerald-200 hover:bg-zinc-700"
                     >
-                      Log Delivered
+                      Confirm Provider Delivery
                     </button>
                   </div>
                 </div>

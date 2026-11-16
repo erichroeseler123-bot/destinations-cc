@@ -8,6 +8,18 @@ import {
   type DccFactVerificationQueueItem,
 } from "./canonicalLocationsAndRoutePatterns";
 
+export interface VerifiedHistoricalOutreachRecord {
+  attemptedAt: string;
+  fromAddress: string;
+  toAddress: string;
+  status: "bounced_or_failed" | "sent_not_delivery_confirmed";
+  bounceDetected: boolean;
+  replyReceived: boolean;
+  deliveryConfirmedByProvider: false;
+  countedAsConversionOrApplication: false;
+  note: string;
+}
+
 export interface FoundingPilotDraftInvitation {
   pilotNumber: 1 | 2 | 3 | 4 | 5;
   organizerId: string;
@@ -19,9 +31,14 @@ export interface FoundingPilotDraftInvitation {
   outreachEligibility:
     | "safe_pilot_ready_hold_send"
     | "blocked_disputed_source_hold_noindex";
-  outreachDispatchState: "draft_do_not_send";
+  outreachDispatchState:
+    | "draft_do_not_send"
+    | "future_follow_up_draft_do_not_send";
+  draftKind?: "initial_intro_draft" | "future_brief_follow_up_draft";
+  doNotSendAnotherIntroEmail?: boolean;
+  verifiedHistoricalOutreach?: VerifiedHistoricalOutreachRecord | null;
   sentAt: null;
-  zeroOutreachSentGuarantee: true;
+  zeroOutreachSentGuarantee: boolean;
   organizerFeeUsd: 0;
   cabinCommissionPercent: 0;
   downstreamAffiliateCommissionDisclosed: true;
@@ -913,6 +930,20 @@ export const FOUNDING_PILOT_DRAFT_INVITATIONS: readonly FoundingPilotDraftInvita
     backupComparisonFixtureSlug: "craft-cruises",
     outreachEligibility: "safe_pilot_ready_hold_send",
     outreachDispatchState: "draft_do_not_send",
+    draftKind: "initial_intro_draft",
+    doNotSendAnotherIntroEmail: false,
+    verifiedHistoricalOutreach: {
+      attemptedAt: "2026-09-04T19:59:42Z",
+      fromAddress: "erichroeseler123@gmail.com",
+      toAddress: "travel@stitchinheaven.com",
+      status: "bounced_or_failed",
+      bounceDetected: true,
+      replyReceived: false,
+      deliveryConfirmedByProvider: false,
+      countedAsConversionOrApplication: false,
+      note:
+        "Attempted Sep 4, 2026 from erichroeseler123@gmail.com to travel@stitchinheaven.com; immediate delivery failure (Google Group bounce). Recorded as bounced/failed, not delivered. New outreach to info@stitchinheaven.com has NOT been sent.",
+    },
     sentAt: null,
     zeroOutreachSentGuarantee: true,
     organizerFeeUsd: 0,
@@ -950,32 +981,46 @@ export const FOUNDING_PILOT_DRAFT_INVITATIONS: readonly FoundingPilotDraftInvita
     primarySailingSlug: "celebrity-beyond-2027-01-17",
     backupComparisonFixtureSlug: "acquisition-lab",
     outreachEligibility: "safe_pilot_ready_hold_send",
-    outreachDispatchState: "draft_do_not_send",
+    outreachDispatchState: "future_follow_up_draft_do_not_send",
+    draftKind: "future_brief_follow_up_draft",
+    doNotSendAnotherIntroEmail: true,
+    verifiedHistoricalOutreach: {
+      attemptedAt: "2026-11-12",
+      fromAddress: "erich@rollcallusa.com",
+      toAddress: "Info@cmmcatsea.com",
+      status: "sent_not_delivery_confirmed",
+      bounceDetected: false,
+      replyReceived: false,
+      deliveryConfirmedByProvider: false,
+      countedAsConversionOrApplication: false,
+      note:
+        "Successfully sent Nov 12, 2026 from erich@rollcallusa.com to Info@cmmcatsea.com; no bounce and no reply. Recorded as sent (NOT delivery-confirmed). Do NOT send another introductory email; preserve rewritten draft below as a brief future follow-up only.",
+    },
     sentAt: null,
-    zeroOutreachSentGuarantee: true,
+    zeroOutreachSentGuarantee: false,
     organizerFeeUsd: 0,
     cabinCommissionPercent: 0,
     downstreamAffiliateCommissionDisclosed: true,
     previewOrganizerWorkspacePath: "/organizer/hosted/cmmc-at-sea",
     previewPublicSailingPaths: ["/hosted-cruises/cmmc-at-sea/celebrity-beyond-2027-01-17"],
-    recipientEmail: "Info@CMMCatSea.com",
-    fromAddress: "Erich — Cruise Promenade <concierge@cruisepromenade.com>",
-    replyToAddress: "erichroeseler123@gmail.com",
+    recipientEmail: "Info@cmmcatsea.com",
+    fromAddress: "erich@rollcallusa.com",
+    replyToAddress: "erich@rollcallusa.com",
     sailingLinkWithUtm:
-      "https://cruisepromenade.com/hosted-cruises/cmmc-at-sea/celebrity-beyond-2027-01-17?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=cmmc_at_sea_sailing_page",
+      "https://cruisepromenade.com/hosted-cruises/cmmc-at-sea/celebrity-beyond-2027-01-17?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=cmmc_at_sea_followup_sailing_page",
     organizerClaimLinkWithUtm:
-      "https://cruisepromenade.com/organizer/hosted/cmmc-at-sea?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=cmmc_at_sea_claim_hub",
+      "https://cruisepromenade.com/organizer/hosted/cmmc-at-sea?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=cmmc_at_sea_followup_claim_hub",
     trackingParameters: {
       utm_source: "founder_outreach",
       utm_medium: "email",
       utm_campaign: "founding_pilot_wave1",
-      utm_content_sailing: "cmmc_at_sea_sailing_page",
-      utm_content_claim: "cmmc_at_sea_claim_hub",
+      utm_content_sailing: "cmmc_at_sea_followup_sailing_page",
+      utm_content_claim: "cmmc_at_sea_followup_claim_hub",
     },
     subjectLine:
-      "Free port-day coordination page for CMMC at Sea attendees (Jan 17–24, 2027 Celebrity Beyond)",
+      "Re: Quick follow-up — live port-day page for CMMC at Sea (Jan 17 Celebrity Beyond)",
     draftMessageBody:
-      "Hi CMMC at Sea Team,\n\nSince your group room block closed and late-registering attendees are booking staterooms independently aboard Celebrity Beyond (Jan 17–24, 2027 from Fort Lauderdale), we put together a free ($0) shared port-day page so your attendees and accompanying guests can easily connect on open port days:\n\nLive Sailing Page:\nhttps://cruisepromenade.com/hosted-cruises/cmmc-at-sea/celebrity-beyond-2027-01-17?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=cmmc_at_sea_sailing_page\n\nWhat this gives you and your attendees for free:\n• 100% of Conference Pass & training registrations stay with CMMC at Sea: Every registration button points directly to cmmcatsea.com/registration/—there is $0 cost to you and 0% commission on passes or cabins.\n• Easy open-port networking around your 3 sea-day sessions: Attendees and spouses can see who is heading ashore together in Nassau, Cozumel, and Grand Cayman (with tender timing and return-to-ship buffers built in).\n• Privacy-first & offline-ready: Attendees never enter cabin numbers, company emails, or booking codes—just a first name or handle, with a downloadable offline Cruise Pack that works without ship Wi-Fi.\n\nIf you'd like to add an official welcome note or pin networking meetups for your cohort, you can claim your free Organizer Hub here:\nhttps://cruisepromenade.com/organizer/hosted/cmmc-at-sea?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=cmmc_at_sea_claim_hub\n\n(Plain-English note: Cruise Promenade earns commissions only if a traveler chooses to book an optional independent shore excursion or travel service—never from your conference passes or cabins.)\n\nHappy to adjust anything on the page so it fits your cohort.\n\nBest,\nErich\nCruise Promenade",
+      "Hi CMMC at Sea Team,\n\nQuick follow-up on my November 12 note—the free ($0) port-day coordination page for your January 17–24, 2027 Celebrity Beyond sailing out of Fort Lauderdale is now live if you'd like to take a quick look:\n\nLive Sailing Page:\nhttps://cruisepromenade.com/hosted-cruises/cmmc-at-sea/celebrity-beyond-2027-01-17?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=cmmc_at_sea_followup_sailing_page\n\nSince your room block closed and attendees are booking cabins independently, it gives attendees and spouses one simple place to coordinate Nassau, Cozumel, and Grand Cayman shore days around your three sea-day sessions—with no cabin numbers or work emails collected, and 100% of Conference Pass registrations routing straight to cmmcatsea.com/registration/ ($0 cost and 0% pass/cabin commission; Cruise Promenade earns commissions only on optional independent shore excursions).\n\nIf you'd ever like to add a quick welcome note or pin networking meetups, your free Organizer Hub is ready here:\nhttps://cruisepromenade.com/organizer/hosted/cmmc-at-sea?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=cmmc_at_sea_followup_claim_hub\n\nNo rush at all—just wanted to share the live link in case it's helpful for your January cohort.\n\nBest,\nErich",
   },
 ];
 
@@ -1003,9 +1048,16 @@ export function getFoundingOrganizerPilotSummary() {
         sailingSlug: "brilliant-lady-2027-01-21",
       },
     ],
-    outreachSentCount: 0 as const,
+    outreachSentCount: 1 as const,
+    outreachBouncedOrFailedCount: 1 as const,
+    outreachDeliveredConfirmedCount: 0 as const,
+    newWave1DraftsSentCount: 0 as const,
+    historicalMessagesCountedAsConversionsOrApplications: 0 as const,
     allInvitationsHeldInDraftDoNotSend: FOUNDING_PILOT_DRAFT_INVITATIONS.every(
-      (d) => d.outreachDispatchState === "draft_do_not_send" && d.sentAt === null,
+      (d) =>
+        (d.outreachDispatchState === "draft_do_not_send" ||
+          d.outreachDispatchState === "future_follow_up_draft_do_not_send") &&
+        d.sentAt === null,
     ),
     draftInvitations: FOUNDING_PILOT_DRAFT_INVITATIONS,
   };

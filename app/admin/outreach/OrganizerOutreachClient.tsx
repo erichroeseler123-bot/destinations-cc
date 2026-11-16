@@ -40,6 +40,7 @@ const OUTREACH_STATUS_OPTIONS: Array<{
   { value: "interested", label: "Interested — Follow-Up Active" },
   { value: "board_live", label: "Board Created" },
   { value: "first_traveler_joined", label: "First Traveler Joined" },
+  { value: "bounced_failed", label: "Bounced / Delivery Failed" },
   { value: "wrong_contact", label: "Wrong Contact" },
   { value: "not_a_fit", label: "Not Interested / Not a Fit" },
   { value: "on_hold", label: "Paused / On Hold" },

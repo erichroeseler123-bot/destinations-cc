@@ -88,7 +88,15 @@ test("Stage 4 Founding Organizer Pilot: 5 Primary Pilots + 2 Backup Fixtures, ex
   const summary = getFoundingOrganizerPilotSummary();
   assert.equal(summary.primaryPilotCount, 5, "Pilot cohort strictly capped at 5 primary pilots");
   assert.equal(summary.backupComparisonFixtures.length, 2);
-  assert.equal(summary.outreachSentCount, 0);
+  assert.equal(summary.outreachSentCount, 1, "CMMC at Sea Nov 12 historical send recorded as sent");
+  assert.equal(summary.outreachBouncedOrFailedCount, 1, "Stitchin Heaven Sep 4 bounce recorded as bounced/failed");
+  assert.equal(summary.outreachDeliveredConfirmedCount, 0, "Neither has provider-confirmed delivery");
+  assert.equal(summary.newWave1DraftsSentCount, 0, "New Wave 1 drafts held unsent");
+  assert.equal(
+    summary.historicalMessagesCountedAsConversionsOrApplications,
+    0,
+    "Historical messages never counted as conversions or organizer applications",
+  );
   assert.equal(summary.allInvitationsHeldInDraftDoNotSend, true);
 
   // Verify 1:N Producer -> Franchise separation on The Fan Cruise (Astros, Texans, FamAlly)
@@ -117,7 +125,10 @@ test("Stage 4 Founding Organizer Pilot: 5 Primary Pilots + 2 Backup Fixtures, ex
   // Verify all 5 draft invitations disclose $0 fee, 0% cabin commission, and voluntary downstream affiliate commissions
   assert.equal(FOUNDING_PILOT_DRAFT_INVITATIONS.length, 5);
   for (const inv of FOUNDING_PILOT_DRAFT_INVITATIONS) {
-    assert.equal(inv.outreachDispatchState, "draft_do_not_send");
+    assert.ok(
+      inv.outreachDispatchState === "draft_do_not_send" ||
+        inv.outreachDispatchState === "future_follow_up_draft_do_not_send",
+    );
     assert.equal(inv.sentAt, null);
     assert.equal(inv.organizerFeeUsd, 0);
     assert.equal(inv.cabinCommissionPercent, 0);
@@ -127,4 +138,20 @@ test("Stage 4 Founding Organizer Pilot: 5 Primary Pilots + 2 Backup Fixtures, ex
     assert.match(inv.draftMessageBody, /commissions only/i);
     assert.match(inv.draftMessageBody, /\/organizer\/hosted\//);
   }
+  const stitchinDraft = FOUNDING_PILOT_DRAFT_INVITATIONS.find(
+    (d) => d.organizerSlug === "stitchin-heaven",
+  )!;
+  assert.equal(stitchinDraft.verifiedHistoricalOutreach?.status, "bounced_or_failed");
+  assert.equal(stitchinDraft.verifiedHistoricalOutreach?.toAddress, "travel@stitchinheaven.com");
+  assert.equal(stitchinDraft.recipientEmail, "info@stitchinheaven.com");
+
+  const cmmcDraft = FOUNDING_PILOT_DRAFT_INVITATIONS.find(
+    (d) => d.organizerSlug === "cmmc-at-sea",
+  )!;
+  assert.equal(cmmcDraft.outreachDispatchState, "future_follow_up_draft_do_not_send");
+  assert.equal(cmmcDraft.draftKind, "future_brief_follow_up_draft");
+  assert.equal(cmmcDraft.doNotSendAnotherIntroEmail, true);
+  assert.equal(cmmcDraft.verifiedHistoricalOutreach?.status, "sent_not_delivery_confirmed");
+  assert.equal(cmmcDraft.verifiedHistoricalOutreach?.fromAddress, "erich@rollcallusa.com");
+  assert.match(cmmcDraft.draftMessageBody, /November 12 note/i);
 });
