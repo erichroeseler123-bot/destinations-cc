@@ -12,8 +12,14 @@ import {
   type HostedCruiseThemeSlug,
 } from "./canonicalHostedCruiseContract";
 
-export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-16T14:00:00Z" as const;
-export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-16.v5-phase-b-music-cohort1" as const;
+import {
+  FOUNDING_PILOT_FRANCHISES,
+  FOUNDING_PILOT_ORGANIZERS,
+  FOUNDING_PILOT_SAILINGS,
+} from "./foundingOrganizerPilotCohort";
+
+export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-16T18:30:00Z" as const;
+export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-16.v6-founding-pilot-preview" as const;
 
 export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrganizerFactRecord> = [
   {
@@ -4448,7 +4454,8 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
       "starvista-live",
       "whet-travel"
     ]
-  }
+  },
+  ...FOUNDING_PILOT_ORGANIZERS
 ];
 
 export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranchiseFactRecord> = [
@@ -7054,7 +7061,8 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "primarySourceUrl": "https://www.salsacruise.com/",
     "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
     "verificationState": "verified"
-  }
+  },
+  ...FOUNDING_PILOT_FRANCHISES
 ];
 
 export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailingFactRecord> = [
@@ -13557,7 +13565,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
-  }
+  },
+  ...FOUNDING_PILOT_SAILINGS
 ];
 
 export const DCC_RECENT_CATALOG_CHANGE_EVENTS: ReadonlyArray<CanonicalHostedCatalogChangeEvent> = [

@@ -282,6 +282,67 @@ export const CANONICAL_DCC_SHIPS: readonly CanonicalDccShipRecord[] = [
     }
   },
   {
+    "shipId": "ship:carnival-breeze",
+    "shipSlug": "carnival-breeze",
+    "shipName": "Carnival Breeze",
+    "cruiseLine": "Carnival Cruise Line",
+    "canonicalLineCode": "ccl",
+    "inCuratedFleet": false,
+    "shipClass": "Dream Class",
+    "passengerCapacity": 3690,
+    "debutYear": 2012,
+    "homeports": [
+      "Galveston, TX"
+    ],
+    "specSourceUrl": "https://www.carnival.com/cruise-ships/carnival-breeze",
+    "specSourceName": "Carnival Cruise Line Official Fleet Specification",
+    "specVerifiedAt": "2026-11-16T16:00:00Z",
+    "containsDeckPlansOrProprietaryMedia": false,
+    "summaryDescription": "Carnival Breeze is a Dream-class Carnival ocean ship homeported in Galveston for 4-, 5-, and 7-night Western Caribbean voyages to Cozumel, Montego Bay, and Grand Cayman.",
+    "dockAndTimingGuidance": "Galveston Pier 25 turnarounds and Grand Cayman tender operations require extra transfer time; maintain a 2-hour pre-departure pier buffer.",
+    "isIndexable": false,
+    "robotsDirective": "noindex, follow",
+    "holdReasonCodes": [
+      "no_upcoming_sailings_or_port_guides",
+      "orphan_ship_page",
+      "thin_placeholder_ship_page"
+    ],
+    "upcomingPhysicalSailingCount": 0,
+    "upcomingHostedSailingCount": 0,
+    "fieldProvenance": {
+      "shipIdentity": {
+        "sourceAuthority": "cruise_line_first_party",
+        "sourceUrl": "https://www.carnival.com/cruise-ships/carnival-breeze",
+        "usageRights": "facts_only_rewritten_editorial",
+        "verifiedAtIso": "2026-11-16T16:00:00Z"
+      },
+      "vesselHardwareSpecs": {
+        "sourceAuthority": "cruise_line_first_party",
+        "sourceUrl": "https://www.carnival.com/cruise-ships/carnival-breeze",
+        "usageRights": "facts_only_rewritten_editorial",
+        "verifiedAtIso": "2026-11-16T16:00:00Z"
+      },
+      "homeports": {
+        "sourceAuthority": "cruise_line_first_party",
+        "sourceUrl": "https://www.carnival.com/cruise-ships/carnival-breeze",
+        "usageRights": "facts_only_rewritten_editorial",
+        "verifiedAtIso": "2026-11-16T16:00:00Z"
+      },
+      "editorialSummaryAndDockGuidance": {
+        "sourceAuthority": "dcc_editorial_synthesis",
+        "sourceUrl": "https://www.carnival.com/cruise-ships/carnival-breeze",
+        "usageRights": "dcc_original_editorial",
+        "verifiedAtIso": "2026-11-16T16:00:00Z"
+      },
+      "heroVisualAsset": {
+        "sourceAuthority": "licensed_visual_manifest",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Carnival_Breeze_(ship,_2011)_001_(cropped).jpg",
+        "usageRights": "licensed_cc_or_public_domain_visual",
+        "verifiedAtIso": "2026-11-16T16:00:00Z"
+      }
+    }
+  },
+  {
     "shipId": "ship:carnival-celebration",
     "shipSlug": "carnival-celebration",
     "shipName": "Carnival Celebration",

@@ -18,6 +18,16 @@ import {
   getDccCanonicalShipsSummary,
 } from "@/lib/dcc/cruise/canonicalShipSpecsRegistry";
 import {
+  CANONICAL_PORT_LOCATIONS,
+  CANONICAL_ROUTE_PATTERNS,
+  getCanonicalLocationsSummary,
+  listDccFactVerificationQueue,
+} from "@/lib/dcc/cruise/canonicalLocationsAndRoutePatterns";
+import {
+  ensureFoundingPilotVerificationQueueSeeded,
+  getFoundingOrganizerPilotSummary,
+} from "@/lib/dcc/cruise/foundingOrganizerPilotCohort";
+import {
   buildHostedCatalogFieldProvenance,
   computeStrongRfc8785Etag,
   getDccHostedIdentifierRegistry,
@@ -233,12 +243,22 @@ async function handleCatalogRequest(request: NextRequest, headOnly: boolean) {
       physicalSailingReuseMetrics: computePhysicalSailingReuseMetrics(snapshot.hostedSailings),
       canonicalShipsSummary: getDccCanonicalShipsSummary(),
       canonicalShips: CANONICAL_DCC_SHIPS,
+      canonicalLocationsSummary: getCanonicalLocationsSummary(),
+      canonicalLocations: CANONICAL_PORT_LOCATIONS,
+      canonicalRoutePatterns: CANONICAL_ROUTE_PATTERNS,
+      foundingOrganizerPilot: (() => {
+        ensureFoundingPilotVerificationQueueSeeded();
+        return getFoundingOrganizerPilotSummary();
+      })(),
+      dccVerificationQueue: listDccFactVerificationQueue({ includeSyntheticTest: false }),
       counts: {
         themes: snapshot.themes.length,
         organizers: snapshot.organizers.length,
         franchises: (snapshot.franchises ?? []).length,
         hostedSailings: snapshot.hostedSailings.length,
         canonicalShips: CANONICAL_DCC_SHIPS.length,
+        canonicalLocations: CANONICAL_PORT_LOCATIONS.length,
+        canonicalRoutePatterns: CANONICAL_ROUTE_PATTERNS.length,
         heldInsufficientEvidence: (snapshot.heldInsufficientEvidenceItems ?? []).length,
         heldPendingScheduleVerification: snapshot.hostedSailings.filter((s) =>
           Boolean(s.scheduleHoldReason),

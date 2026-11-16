@@ -282,14 +282,14 @@ describe("Phase 1 + Phase 2 DCC Provenance, Signing & Zero-Fee Organizer Contrac
     const snapshot = getDccCanonicalHostedCatalogSnapshot();
     const provenance = buildHostedCatalogFieldProvenance(snapshot);
     assert.ok(provenance.summary.verifiedFieldCount > 500);
-    assert.equal(provenance.summary.heldUnverifiedFieldCount, 8);
+    assert.equal(provenance.summary.heldUnverifiedFieldCount, 28);
 
-    // Verify Reputation Graph IDs, 109/2 schedule verification count, and held-evidence ledger
-    assert.equal(snapshot.organizers.length, 61);
-    assert.equal((snapshot.franchises || []).length, 95);
-    assert.equal(snapshot.hostedSailings.length, 111);
+    // Verify Reputation Graph IDs, 109/7 schedule verification count, and held-evidence ledger
+    assert.equal(snapshot.organizers.length, 64);
+    assert.equal((snapshot.franchises || []).length, 100);
+    assert.equal(snapshot.hostedSailings.length, 116);
     assert.equal(snapshot.hostedSailings.filter((s) => !s.scheduleHoldReason).length, 109);
-    assert.equal(snapshot.hostedSailings.filter((s) => Boolean(s.scheduleHoldReason)).length, 2);
+    assert.equal(snapshot.hostedSailings.filter((s) => Boolean(s.scheduleHoldReason)).length, 7);
     assert.equal((snapshot.heldInsufficientEvidenceItems || []).length, 46);
     for (const org of snapshot.organizers) {
       assert.match(org.reputationEntityId || "", /^rep:hosted-organizer:/);

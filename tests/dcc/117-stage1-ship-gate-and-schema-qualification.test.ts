@@ -89,8 +89,8 @@ test("Stage 1 Hosted-Cruise Structured Data Policy: automatic Event/EventSeries/
   assert.equal(EXPLICIT_FRANCHISE_EVENT_SERIES_ALLOWLIST.length, 0);
 
   const snapshot = getDccCanonicalHostedCatalogSnapshot({ includeHeld: true });
-  assert.equal(snapshot.hostedSailings.length, 111);
-  assert.equal((snapshot.franchises ?? []).length, 95);
+  assert.equal(snapshot.hostedSailings.length, 116);
+  assert.equal((snapshot.franchises ?? []).length, 100);
 
   for (const s of snapshot.hostedSailings) {
     const q = qualifiesHostedDepartureForEventSchema({
@@ -229,17 +229,17 @@ test("DCC hosted-catalog API exposes cacheIsolationVersion and structuredDataPol
   assert.equal(body.structuredDataPolicy.automaticEventMarkupEnabled, false);
   assert.equal(body.structuredDataPolicy.explicitHostedEventAllowlistCount, 0);
   assert.equal(body.structuredDataPolicy.richResultsTestValidationAloneSufficient, false);
-  assert.equal(body.counts.organizers, 61);
-  assert.equal(body.counts.franchises, 95);
-  assert.equal(body.counts.hostedSailings, 111);
-  assert.equal(body.counts.canonicalShips, 73);
+  assert.equal(body.counts.organizers, 64);
+  assert.equal(body.counts.franchises, 100);
+  assert.equal(body.counts.hostedSailings, 116);
+  assert.equal(body.counts.canonicalShips, 74);
   assert.equal(body.counts.heldInsufficientEvidence, 46);
   assert.deepEqual(body.canonicalShipsSummary, {
-    totalCanonicalShips: 73,
+    totalCanonicalShips: 74,
     curatedFleetIndexableCount: 18,
     enrichedSupplementalIndexableCount: 46,
     totalIndexableCount: 64,
-    noindexHeldCount: 9,
+    noindexHeldCount: 10,
     deckPlansOrProprietaryMediaCount: 0,
     specVerifiedAt: "2026-11-16T16:00:00Z",
   });
@@ -248,7 +248,7 @@ test("DCC hosted-catalog API exposes cacheIsolationVersion and structuredDataPol
 test("Stage 1 Pre-Release 13-Ship Source Audit across all 5 vessel categories in DCC canonical registry", () => {
   const summary = getDccCanonicalShipsSummary();
   assert.equal(summary.enrichedSupplementalIndexableCount, 46);
-  assert.equal(CANONICAL_DCC_SHIPS.length, 73);
+  assert.equal(CANONICAL_DCC_SHIPS.length, 74);
 
   const sampledSlugs = [
     // 1. Major ocean ships

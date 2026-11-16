@@ -8,6 +8,7 @@ import {
   getUnifiedOperatorInbox,
   validateCpBaseUrlOverride,
 } from "@/lib/dcc/operatorInbox";
+import DurableSubmissionsOwnerPanel from "./DurableSubmissionsOwnerPanel";
 import OperatorInboxClient from "./OperatorInboxClient";
 
 export const dynamic = "force-dynamic";
@@ -80,6 +81,8 @@ export default async function OperatorInboxAdminPage({
             </p>
           </div>
         </header>
+
+        <DurableSubmissionsOwnerPanel cpPreviewUrl={validCpPreviewUrl} />
 
         <OperatorInboxClient
           initialData={initialData}

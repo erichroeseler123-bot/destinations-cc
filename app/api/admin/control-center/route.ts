@@ -7,6 +7,7 @@ import {
   isValidAdminSession,
 } from "@/lib/adminAccess";
 import { buildOwnerControlCenterSnapshot } from "@/lib/dcc/ownerControlCenter";
+import { listDccFactVerificationQueue } from "@/lib/dcc/cruise/canonicalLocationsAndRoutePatterns";
 import {
   buildNormalizedJuneauSupplierFeed,
   getCachedSereneRezgoInspection,
@@ -196,10 +197,14 @@ export async function GET(request: Request) {
   }
 
   const snapshot = await buildOwnerControlCenterSnapshot();
+  const verificationQueueOpenCount = listDccFactVerificationQueue({
+    includeSyntheticTest: false,
+  }).filter((q) => q.state === "needs_review").length;
   return NextResponse.json(
     {
       ...snapshot,
       actor: auth.actor,
+      foundingPilotVerificationAttentionCount: verificationQueueOpenCount,
     },
     { status: 200, headers: NO_STORE_NOINDEX_HEADERS },
   );
