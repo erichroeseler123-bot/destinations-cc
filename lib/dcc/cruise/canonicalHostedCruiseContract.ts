@@ -14,6 +14,7 @@ export const SYSTEM_OF_RECORD_OWNERSHIP = {
   physical_sailing_schedule: "dcc",
   port_facts_and_timing: "dcc",
   hosted_organizer_identity: "dcc",
+  hosted_franchise_identity: "dcc",
   official_booking_source: "dcc",
   hosted_programming_facts: "dcc",
   public_organizer_description: "dcc",
@@ -138,6 +139,14 @@ export function buildHostedOrganizerId(organizerSlug: string): string {
   return `hosted-organizer:${clean}`;
 }
 
+export function buildHostedFranchiseId(franchiseSlug: string): string {
+  const clean = franchiseSlug.trim().toLowerCase();
+  if (!clean || !/^[a-z0-9-]+$/.test(clean)) {
+    throw new Error(`Invalid canonical franchiseSlug: "${franchiseSlug}"`);
+  }
+  return `hosted-franchise:${clean}`;
+}
+
 export function buildHostedSailingId(
   organizerSlug: string,
   lineInput: string,
@@ -173,6 +182,14 @@ export function buildReputationOrganizerEntityId(organizerSlug: string): string 
     throw new Error(`Invalid canonical organizerSlug for reputation entity: "${organizerSlug}"`);
   }
   return `rep:hosted-organizer:${clean}`;
+}
+
+export function buildReputationFranchiseEntityId(franchiseSlug: string): string {
+  const clean = franchiseSlug.trim().toLowerCase();
+  if (!clean || !/^[a-z0-9-]+$/.test(clean)) {
+    throw new Error(`Invalid canonical franchiseSlug for reputation entity: "${franchiseSlug}"`);
+  }
+  return `rep:hosted-franchise:${clean}`;
 }
 
 export function buildReputationHostedSailingEntityId(
@@ -363,6 +380,25 @@ export const HOSTED_VISUAL_KEYS = [
   "port-dubrovnik-old-port",
   "port-rhine-gorge-lorelei",
   "port-edinburgh-calton-hill",
+  "ship-norwegian-gem",
+  "ship-norwegian-jade",
+  "ship-norwegian-joy",
+  "ship-norwegian-jewel",
+  "ship-msc-divina",
+  "ship-msc-magnifica",
+  "ship-msc-seascape",
+  "ship-msc-poesia",
+  "ship-freedom-of-the-seas",
+  "ship-brilliance-of-the-seas",
+  "ship-serenade-of-the-seas",
+  "ship-carnival-magic",
+  "ship-carnival-breeze",
+  "ship-carnival-glory",
+  "ship-carnival-horizon",
+  "ship-celebrity-millennium",
+  "ship-celebrity-infinity",
+  "ship-celebrity-silhouette",
+  "ship-koningsdam",
 ] as const;
 
 export type HostedVisualKey = (typeof HOSTED_VISUAL_KEYS)[number];
@@ -614,15 +650,121 @@ export interface HostedProgramSubBrand {
   atmosphereAndPolicySummary: string;
 }
 
+export const HOSTED_HOLD_REASON_CODES = [
+  "UNANNOUNCED_FUTURE_DEPARTURE",
+  "COMING_SOON_UNRELEASED",
+  "BROKEN_OFFICIAL_BOOKING_OR_PAGE_404",
+  "CONFLICTING_OFFICIAL_ITINERARY_COPY",
+  "UNVERIFIED_PORT_CLOCK_WINDOWS",
+  "WAF_OR_UNVERIFIABLE_SOURCE",
+  "MISSING_SUBSTANTIVE_HOSTED_FACTS",
+  "DUPLICATE_BOILERPLATE_CONTENT",
+  "MISSING_FUNCTIONAL_SAILING_PATHWAY",
+  "ORPHAN_MISSING_INTERNAL_LINKS",
+] as const;
+
+export type HostedHoldReasonCode = (typeof HOSTED_HOLD_REASON_CODES)[number];
+
+export function formatHostedHoldReasonCodeLabel(code: HostedHoldReasonCode): string {
+  switch (code) {
+    case "UNANNOUNCED_FUTURE_DEPARTURE":
+      return "No announced future departure on official source";
+    case "COMING_SOON_UNRELEASED":
+      return "Marked coming soon without finalized live booking release";
+    case "BROKEN_OFFICIAL_BOOKING_OR_PAGE_404":
+      return "Official departure or booking URL broken / 404";
+    case "CONFLICTING_OFFICIAL_ITINERARY_COPY":
+      return "Conflicting port sequence, dates, or cloned copy on official source";
+    case "UNVERIFIED_PORT_CLOCK_WINDOWS":
+      return "Missing verified day-by-day port schedule or arrival/departure windows";
+    case "WAF_OR_UNVERIFIABLE_SOURCE":
+      return "Official subpage blocked by WAF or unverifiable primary source";
+    case "MISSING_SUBSTANTIVE_HOSTED_FACTS":
+      return "Insufficient substantive cruise-specific programming, audience, or differentiators";
+    case "DUPLICATE_BOILERPLATE_CONTENT":
+      return "High shingle overlap / duplicate boilerplate across sibling departures";
+    case "MISSING_FUNCTIONAL_SAILING_PATHWAY":
+      return "Missing functional traveler group-plan pathway on sailing page";
+    case "ORPHAN_MISSING_INTERNAL_LINKS":
+      return "Not reachable from category hub, franchise page, and organizer page";
+  }
+}
+
 export interface CanonicalHeldHostedEvidenceRecord {
   holdId: string;
   organizerSlug: string;
   organizerName: string;
+  franchiseId?: string; // hosted-franchise:<franchiseSlug>
+  franchiseSlug?: string;
+  reasonCode?: HostedHoldReasonCode;
   candidateTitle: string;
   candidateDatesOrVessel: string;
   checkedSourceUrl: string;
   checkedAt: string;
   holdReason: string;
+}
+
+export type HostedFranchiseRelationshipType =
+  | "flagship_one_to_one"
+  | "producer_owned_franchise"
+  | "sub_brand_program"
+  | "co_produced_brand"
+  | "cruise_line_themed_series";
+
+export function formatHostedFranchiseRelationshipLabel(
+  rel: HostedFranchiseRelationshipType | null | undefined,
+): string {
+  switch (rel) {
+    case "flagship_one_to_one":
+      return "Flagship recurring cruise series (1:1 separate canonical franchise entity)";
+    case "producer_owned_franchise":
+      return "Producer-operated recurring festival / cruise franchise";
+    case "sub_brand_program":
+      return "Dedicated program / sub-brand series";
+    case "co_produced_brand":
+      return "Co-produced artist or partner cruise franchise";
+    case "cruise_line_themed_series":
+      return "Cruise-line-produced recurring themed series";
+    default:
+      return "Recurring cruise series";
+  }
+}
+
+/**
+ * Canonical Recurring Cruise Franchise / Series Entity (`hosted-franchise:<slug>`)
+ *
+ * Architectural Invariant:
+ * Organizer/Producer (`hosted-organizer:<slug>`) and Franchise (`hosted-franchise:<slug>`)
+ * are ALWAYS separate canonical entity types—even when they currently have a 1:1
+ * relationship. Their entity IDs, entity-scoped reviews (`rep:hosted-organizer:*` vs
+ * `rep:hosted-franchise:*`), DCC field provenance, and future multi-series extensibility
+ * are never collapsed.
+ */
+export interface CanonicalHostedFranchiseFactRecord {
+  franchiseId: string; // hosted-franchise:<franchiseSlug>
+  reputationFranchiseEntityId: string; // rep:hosted-franchise:<franchiseSlug>
+  franchiseSlug: string;
+  aliases: string[];
+  franchiseName: string;
+  shortName: string;
+  producerOrganizerId: string; // hosted-organizer:<producerOrganizerSlug>
+  producerOrganizerSlug: string;
+  relationshipToProducer: HostedFranchiseRelationshipType;
+  primaryClassification: HostedExperienceClassification;
+  primaryTheme: HostedCruiseThemeSlug;
+  secondaryThemes: HostedCruiseThemeSlug[];
+  tagline: string;
+  independentSummary: string;
+  intendedAudience: string;
+  programmingAndLineupModel: string | null;
+  atmosphereSummary: string | null;
+  heroVisualKey: HostedVisualKey;
+  officialWebsiteUrl: string;
+  officialDomain: string;
+  departureAnnouncementStatus: HostedDepartureAnnouncementStatus;
+  primarySourceUrl: string;
+  verifiedSourceCheckedAt: string;
+  verificationState: HostedRecordVerificationState;
 }
 
 export const CURATED_HOSTED_COMPARISON_SLUGS = [
@@ -631,6 +773,7 @@ export const CURATED_HOSTED_COMPARISON_SLUGS = [
   "bear-daddy-and-silver-fox-cruises",
   "lgbtq-river-and-small-ship-cruises",
   "hosted-lgbtq-groups-and-family-sailings",
+  "music-and-festival-cruises-guide",
 ] as const;
 
 export type CuratedHostedComparisonSlug = (typeof CURATED_HOSTED_COMPARISON_SLUGS)[number];
@@ -709,6 +852,8 @@ export interface CanonicalHostedSailingFactRecord {
   hostedSailingId: string; // hosted-sailing:<organizerSlug>:<lineCode>:<shipSlug>:<sailDate>
   reputationSailingEntityId: string; // rep:hosted-sailing:<organizerSlug>:<sailingSlug>
   organizerSlug: string;
+  franchiseId?: string; // hosted-franchise:<franchiseSlug>
+  franchiseSlug?: string;
   sailingSlug: string;
   sailingAliases?: string[];
   subBrandSlug?: string | null;
@@ -764,12 +909,13 @@ export interface CanonicalHostedSailingFactRecord {
    * `noindex` and is excluded from sitemaps even if a vendor ship row exists.
    */
   scheduleHoldReason?: string;
+  scheduleHoldReasonCode?: HostedHoldReasonCode;
 }
 
 export interface CanonicalHostedCatalogChangeEvent {
   eventId: string;
   occurredAt: string;
-  entityType: "physical_sailing" | "hosted_organizer" | "hosted_sailing";
+  entityType: "physical_sailing" | "hosted_organizer" | "hosted_franchise" | "hosted_sailing";
   entityId: string;
   summary: string;
   preservesCommunityIdentity: true;
@@ -783,6 +929,7 @@ export interface CanonicalHostedCatalogSnapshot {
   consumerCanonicalHost: "https://cruisepromenade.com";
   themes: ReadonlyArray<HostedCruiseThemeDefinition>;
   organizers: ReadonlyArray<CanonicalHostedOrganizerFactRecord>;
+  franchises?: ReadonlyArray<CanonicalHostedFranchiseFactRecord>;
   hostedSailings: ReadonlyArray<CanonicalHostedSailingFactRecord>;
   recentChangeEvents: ReadonlyArray<CanonicalHostedCatalogChangeEvent>;
   heldInsufficientEvidenceItems?: ReadonlyArray<CanonicalHeldHostedEvidenceRecord>;
@@ -791,10 +938,12 @@ export interface CanonicalHostedCatalogSnapshot {
 /**
  * Entity-Scoped Reviews & Q&A
  * Every stored review attaches to EXACTLY ONE primary subject so ship food
- * never lowers an organizer's score and tour issues never lower ship scores.
+ * never lowers an organizer's score, producer operations never collapse into
+ * recurring franchise reviews, and tour issues never lower ship scores.
  */
 export type HostedReviewPrimarySubjectType =
   | "organizer"
+  | "franchise"
   | "hosted_sailing"
   | "ship"
   | "cruise_line"
@@ -967,6 +1116,9 @@ export interface RankableHostedSailingCandidate {
   hostedSailingId: string;
   organizerSlug: string;
   organizerName: string;
+  franchiseSlug?: string;
+  franchiseName?: string;
+  sailingTitle?: string;
   primaryTheme: HostedCruiseThemeSlug;
   secondaryThemes: HostedCruiseThemeSlug[];
   experienceClassification?: HostedExperienceClassification;
@@ -1101,6 +1253,9 @@ export function filterAndRankHostedSailings<T extends RankableHostedSailingCandi
       const hay = [
         c.organizerName,
         c.organizerSlug,
+        c.franchiseName || "",
+        c.franchiseSlug || "",
+        c.sailingTitle || "",
         c.shipName,
         c.cruiseLine,
         c.regionLabel,
@@ -1129,7 +1284,13 @@ export function filterAndRankHostedSailings<T extends RankableHostedSailingCandi
   const results: Array<RankedHostedSailingResult<T>> = filtered.map((item) => {
     let criteriaMatch = 20;
     if (criteria.theme && item.primaryTheme === criteria.theme) criteriaMatch += 6;
-    if (q && item.organizerName.toLowerCase().includes(q)) criteriaMatch += 4;
+    if (
+      q &&
+      (item.organizerName.toLowerCase().includes(q) ||
+        (item.franchiseName || "").toLowerCase().includes(q))
+    ) {
+      criteriaMatch += 4;
+    }
 
     const verifiedScheduleAndOrganizer =
       (item.everyPortDayVerified ? 14 : 0) + (item.everySourceVerified ? 10 : 0);
@@ -1188,7 +1349,7 @@ export function filterAndRankHostedSailings<T extends RankableHostedSailingCandi
 }
 
 /**
- * Automated Redundancy Safeguards (All 12 Invariants)
+ * Automated Redundancy & Entity-Separation Safeguards (14 Invariants)
  */
 export type RedundancySafeguardCode =
   | "DUPLICATE_PHYSICAL_SAILING_ID"
@@ -1202,7 +1363,9 @@ export type RedundancySafeguardCode =
   | "FILTER_OR_PRIVATE_URL_IN_SITEMAP"
   | "STALE_SOURCE_PRESENTED_AS_LIVE"
   | "RENAMED_ORGANIZER_DUPLICATE_IDENTITY"
-  | "CANCELLED_SAILING_SILENTLY_REPLACED";
+  | "CANCELLED_SAILING_SILENTLY_REPLACED"
+  | "COLLAPSED_ORGANIZER_AND_FRANCHISE_IDENTITY"
+  | "FRANCHISE_RATING_CONFLATED_WITH_ORGANIZER_OR_SHIP";
 
 export interface SafeguardViolation {
   code: RedundancySafeguardCode;
@@ -1218,6 +1381,7 @@ export interface RedundancyValidationInput {
     portSequenceSignature?: string;
   }>;
   organizers: ReadonlyArray<CanonicalHostedOrganizerFactRecord>;
+  franchises?: ReadonlyArray<CanonicalHostedFranchiseFactRecord>;
   hostedSailings: ReadonlyArray<CanonicalHostedSailingFactRecord & Record<string, unknown>>;
   renderedHostedPortSignatures?: ReadonlyArray<{
     hostedSailingId: string;
@@ -1398,7 +1562,7 @@ export function validateHostedCruiseRedundancySafeguards(
     }
   }
 
-  // 8. Organizer rating including ship or tour ratings
+  // 8. Organizer rating including ship, franchise, or tour ratings
   if (input.reviewsSample && input.reviewsSample.length > 0) {
     const orgIds = new Set(input.organizers.map((o) => o.organizerId));
     for (const orgId of orgIds) {
@@ -1415,6 +1579,25 @@ export function validateHostedCruiseRedundancySafeguards(
           entityId: orgId,
           message: `Organizer aggregate for "${orgId}" included non-organizer reviews.`,
         });
+      }
+    }
+
+    if (input.franchises) {
+      for (const fr of input.franchises) {
+        const agg = computeEntityReviewAggregate(input.reviewsSample, "franchise", fr.franchiseId);
+        const strictFrReviews = input.reviewsSample.filter(
+          (r) =>
+            r.moderationStatus === "approved" &&
+            r.primarySubjectType === "franchise" &&
+            r.primarySubjectId === fr.franchiseId,
+        );
+        if (agg.approvedReviewCount !== strictFrReviews.length) {
+          violations.push({
+            code: "FRANCHISE_RATING_CONFLATED_WITH_ORGANIZER_OR_SHIP",
+            entityId: fr.franchiseId,
+            message: `Franchise aggregate for "${fr.franchiseId}" included non-franchise reviews.`,
+          });
+        }
       }
     }
   }
@@ -1526,8 +1709,1296 @@ export function validateHostedCruiseRedundancySafeguards(
     }
   }
 
+  // 13. Separate Canonical Entities for Organizer/Producer and Franchise (even when 1:1)
+  if (input.franchises) {
+    const orgBySlug = new Map(
+      input.organizers.map((o) => [o.organizerSlug.toLowerCase(), o]),
+    );
+    const frById = new Map<string, CanonicalHostedFranchiseFactRecord>();
+    const frSlugOwners = new Map<string, string>();
+    const orgLinkedFranchiseCount = new Map<string, number>();
+
+    for (const fr of input.franchises) {
+      if (!/^hosted-franchise:[a-z0-9-]+$/.test(fr.franchiseId)) {
+        violations.push({
+          code: "COLLAPSED_ORGANIZER_AND_FRANCHISE_IDENTITY",
+          entityId: fr.franchiseId,
+          message: `Franchise "${fr.franchiseSlug}" must use canonical "hosted-franchise:<slug>" entity ID (got "${fr.franchiseId}").`,
+        });
+      }
+      if (!/^rep:hosted-franchise:[a-z0-9-]+$/.test(fr.reputationFranchiseEntityId)) {
+        violations.push({
+          code: "COLLAPSED_ORGANIZER_AND_FRANCHISE_IDENTITY",
+          entityId: fr.franchiseId,
+          message: `Franchise "${fr.franchiseSlug}" must use distinct "rep:hosted-franchise:<slug>" reputation ID (got "${fr.reputationFranchiseEntityId}").`,
+        });
+      }
+      const producer = orgBySlug.get(fr.producerOrganizerSlug.toLowerCase());
+      if (!producer || producer.organizerId !== fr.producerOrganizerId) {
+        violations.push({
+          code: "COLLAPSED_ORGANIZER_AND_FRANCHISE_IDENTITY",
+          entityId: fr.franchiseId,
+          message: `Franchise "${fr.franchiseId}" references unknown or mismatched producer "${fr.producerOrganizerId}" (${fr.producerOrganizerSlug}).`,
+        });
+      } else {
+        if (
+          fr.franchiseId === producer.organizerId ||
+          fr.reputationFranchiseEntityId === producer.reputationEntityId
+        ) {
+          violations.push({
+            code: "COLLAPSED_ORGANIZER_AND_FRANCHISE_IDENTITY",
+            entityId: fr.franchiseId,
+            message: `Organizer "${producer.organizerId}" and Franchise "${fr.franchiseId}" collapsed canonical or reputation entity IDs.`,
+          });
+        }
+        orgLinkedFranchiseCount.set(
+          producer.organizerId,
+          (orgLinkedFranchiseCount.get(producer.organizerId) ?? 0) + 1,
+        );
+      }
+
+      frById.set(fr.franchiseId, fr);
+      for (const s of [fr.franchiseSlug, ...(fr.aliases || [])].map((x) =>
+        x.trim().toLowerCase(),
+      )) {
+        const prevOwner = frSlugOwners.get(s);
+        if (prevOwner && prevOwner !== fr.franchiseId) {
+          violations.push({
+            code: "COLLAPSED_ORGANIZER_AND_FRANCHISE_IDENTITY",
+            entityId: fr.franchiseId,
+            message: `Franchise slug/alias "${s}" claimed by both "${prevOwner}" and "${fr.franchiseId}".`,
+          });
+        } else {
+          frSlugOwners.set(s, fr.franchiseId);
+        }
+      }
+    }
+
+    for (const org of input.organizers) {
+      if ((orgLinkedFranchiseCount.get(org.organizerId) ?? 0) === 0) {
+        violations.push({
+          code: "COLLAPSED_ORGANIZER_AND_FRANCHISE_IDENTITY",
+          entityId: org.organizerId,
+          message: `Organizer "${org.organizerId}" lacks a separate canonical Franchise record (even 1:1 organizers must maintain a distinct hosted-franchise:<slug> entity).`,
+        });
+      }
+    }
+
+    for (const hs of input.hostedSailings) {
+      if (!hs.franchiseId || !hs.franchiseSlug) {
+        violations.push({
+          code: "COLLAPSED_ORGANIZER_AND_FRANCHISE_IDENTITY",
+          entityId: hs.hostedSailingId,
+          message: `Hosted sailing "${hs.hostedSailingId}" is missing explicit franchiseId / franchiseSlug.`,
+        });
+        continue;
+      }
+      const fr = frById.get(hs.franchiseId);
+      if (!fr || fr.franchiseSlug !== hs.franchiseSlug) {
+        violations.push({
+          code: "COLLAPSED_ORGANIZER_AND_FRANCHISE_IDENTITY",
+          entityId: hs.hostedSailingId,
+          message: `Hosted sailing "${hs.hostedSailingId}" references invalid franchise "${hs.franchiseId}" (${hs.franchiseSlug}).`,
+        });
+      } else if (fr.producerOrganizerSlug.toLowerCase() !== hs.organizerSlug.toLowerCase()) {
+        violations.push({
+          code: "COLLAPSED_ORGANIZER_AND_FRANCHISE_IDENTITY",
+          entityId: hs.hostedSailingId,
+          message: `Hosted sailing "${hs.hostedSailingId}" links organizer "${hs.organizerSlug}" to franchise "${fr.franchiseId}" owned by "${fr.producerOrganizerSlug}".`,
+        });
+      }
+    }
+  }
+
   return {
     valid: violations.length === 0,
     violations,
+  };
+}
+
+// ============================================================================
+// Phase A: Formal 9-Point Publication Gate & Empirical Physical-Sailing Reuse
+// ============================================================================
+
+export const BANNED_GENERIC_HOSTED_FILLER_REGEX =
+  /\b(sunset\s+mixer|sunset\s+sail-away\s+mixer|cocktail\s+mixer|hosted\s+dinner|group\s+beach\s+day|onboard\s+social\s+event)s?\b/i;
+
+export type HostedPublicationGateCheckId =
+  | "confirmed_organizer_and_franchise"
+  | "confirmed_physical_sailing"
+  | "official_booking_or_contact_link"
+  | "verified_ship_and_dates"
+  | "meaningfully_complete_itinerary"
+  | "source_evidence_and_verification_date"
+  | "substantive_unique_facts"
+  | "functional_sailing_pathway"
+  | "internal_link_reachability";
+
+export interface HostedPublicationGateCheckResult {
+  checkNumber: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+  checkId: HostedPublicationGateCheckId;
+  passed: boolean;
+  reasonCode: HostedHoldReasonCode | null;
+  detail: string;
+}
+
+export type HostedSailingTravelerPathwayKind =
+  | "join_group_plan"
+  | "request_group_access"
+  | "open_group_plan"
+  | "completed_edition_continuity"
+  | "none";
+
+export interface HostedPublicationGateEvaluationInput {
+  organizer: CanonicalHostedOrganizerFactRecord | null | undefined;
+  franchise: CanonicalHostedFranchiseFactRecord | null | undefined;
+  sailing: CanonicalHostedSailingFactRecord;
+  physicalSchedule: {
+    resolved: boolean;
+    physicalSailingId: string;
+    shipSlug: string;
+    shipName: string;
+    sailDate: string;
+    returnDate: string | null;
+    nights: number | null;
+    isExpired: boolean;
+    hasCompletePortItinerary: boolean;
+    daysCount: number;
+    portDaysCount: number;
+    hasUnknownDayTypes: boolean;
+    everyPortDayVerified: boolean;
+    embarkPortLabel: string;
+    portStopsSummary: string;
+    scheduleSourceUrl: string | null;
+  } | null;
+  siblingSailingsCompositeTexts?: ReadonlyArray<{
+    hostedSailingId: string;
+    compositeText: string;
+  }>;
+  sailingPathway: {
+    hasFunctionalSailingPathway: boolean;
+    pathwayKind: HostedSailingTravelerPathwayKind;
+    enrollmentApiPath: string | null;
+    communityId: string | null;
+    /**
+     * Explicit proof field for User Correction #2:
+     * A populated comparison matrix adds value on hubs, but CANNOT substitute
+     * for a functional traveler pathway on the sailing page itself.
+     */
+    hasPopulatedComparisonMatrix?: boolean;
+  };
+  internalLinkReachability: {
+    linkedFromCategoryHub: boolean;
+    linkedFromFranchisePage: boolean;
+    linkedFromOrganizerPage: boolean;
+  };
+}
+
+export interface HostedPublicationGateEvaluationResult {
+  passed: boolean;
+  eligibleForSitemap: boolean;
+  recommendedRobots: "index, follow" | "noindex, follow";
+  primaryHoldReasonCode: HostedHoldReasonCode | null;
+  checks: ReadonlyArray<HostedPublicationGateCheckResult>;
+  failedCheckIds: ReadonlyArray<HostedPublicationGateCheckId>;
+  substantiveFactsBreakdown: {
+    hasCruiseSpecificProgrammingAndAudience: boolean;
+    hasExplicitEntityRelationship: boolean;
+    hasVerifiedOfficialLinks: boolean;
+    hasItineraryAndEmbarkationContext: boolean;
+    structuredDifferentiatorCount: number;
+    structuredDifferentiatorsPresent: string[];
+    containsBannedGenericFiller: boolean;
+    maxSiblingFourWordShingleJaccard: number;
+    shingleDuplicateSafeguardThreshold: number;
+  };
+}
+
+export function buildFourWordShingles(rawText: string): Set<string> {
+  const words = rawText
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]+/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 0);
+  const shingles = new Set<string>();
+  if (words.length < 4) {
+    if (words.length > 0) shingles.add(words.join(" "));
+    return shingles;
+  }
+  for (let i = 0; i <= words.length - 4; i++) {
+    shingles.add(`${words[i]} ${words[i + 1]} ${words[i + 2]} ${words[i + 3]}`);
+  }
+  return shingles;
+}
+
+export function computeFourWordShingleJaccard(textA: string, textB: string): number {
+  const setA = buildFourWordShingles(textA);
+  const setB = buildFourWordShingles(textB);
+  if (setA.size === 0 && setB.size === 0) return 0;
+  if (setA.size === 0 || setB.size === 0) return 0;
+  let intersection = 0;
+  for (const item of setA) {
+    if (setB.has(item)) intersection += 1;
+  }
+  const union = setA.size + setB.size - intersection;
+  if (union <= 0) return 0;
+  return Math.round((intersection / union) * 1000) / 1000;
+}
+
+export function buildHostedSailingSubstantiveCompositeText(
+  sailing: CanonicalHostedSailingFactRecord,
+): string {
+  return [
+    sailing.sailingTitle,
+    sailing.editionSubtitle,
+    sailing.anticipationHook,
+    sailing.announcedHostedProgramming || "",
+    sailing.communityAtmosphereSummary || "",
+    sailing.cabinAvailabilityNote || "",
+    sailing.soloSupport || "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function isExternalHttpsUrl(raw: string | null | undefined): boolean {
+  if (!raw || typeof raw !== "string") return false;
+  const trimmed = raw.trim();
+  if (!trimmed.startsWith("https://")) return false;
+  try {
+    const parsed = new URL(trimmed);
+    const host = parsed.hostname.toLowerCase();
+    return Boolean(
+      host &&
+        host.includes(".") &&
+        host !== "localhost" &&
+        !host.endsWith(".localhost") &&
+        !host.endsWith(".invalid"),
+    );
+  } catch {
+    return false;
+  }
+}
+
+export const SHINGLE_DUPLICATE_SAFEGUARD_MAX_JACCARD = 0.72 as const;
+
+export function evaluateHostedPublicationGate(
+  input: HostedPublicationGateEvaluationInput,
+): HostedPublicationGateEvaluationResult {
+  const { organizer, franchise, sailing, physicalSchedule, sailingPathway, internalLinkReachability } =
+    input;
+  const checks: HostedPublicationGateCheckResult[] = [];
+
+  // Check #1: Confirmed Organizer/Producer AND separate Franchise entity
+  const orgValid = Boolean(
+    organizer &&
+      /^hosted-organizer:[a-z0-9-]+$/.test(organizer.organizerId) &&
+      /^rep:hosted-organizer:[a-z0-9-]+$/.test(organizer.reputationEntityId) &&
+      organizer.organizerSlug === sailing.organizerSlug,
+  );
+  const frValid = Boolean(
+    franchise &&
+      organizer &&
+      /^hosted-franchise:[a-z0-9-]+$/.test(franchise.franchiseId) &&
+      /^rep:hosted-franchise:[a-z0-9-]+$/.test(franchise.reputationFranchiseEntityId) &&
+      franchise.franchiseId !== organizer.organizerId &&
+      franchise.reputationFranchiseEntityId !== organizer.reputationEntityId &&
+      franchise.producerOrganizerId === organizer.organizerId &&
+      sailing.franchiseId === franchise.franchiseId &&
+      sailing.franchiseSlug === franchise.franchiseSlug,
+  );
+  const check1Passed = orgValid && frValid;
+  checks.push({
+    checkNumber: 1,
+    checkId: "confirmed_organizer_and_franchise",
+    passed: check1Passed,
+    reasonCode: check1Passed ? null : "MISSING_SUBSTANTIVE_HOSTED_FACTS",
+    detail: check1Passed
+      ? `Confirmed distinct Producer (${organizer!.organizerId}) and Franchise (${franchise!.franchiseId}).`
+      : "Missing or collapsed canonical Organizer/Producer and Franchise entity linkage.",
+  });
+
+  // Check #2: Confirmed physical sailing (upcoming & active)
+  const check2Passed = Boolean(
+    physicalSchedule &&
+      physicalSchedule.resolved &&
+      /^sailing:[a-z0-9]+:[a-z0-9-]+:\d{4}-\d{2}-\d{2}$/.test(sailing.physicalSailingId) &&
+      physicalSchedule.physicalSailingId === sailing.physicalSailingId &&
+      sailing.lifecycleStatus === "upcoming" &&
+      !physicalSchedule.isExpired,
+  );
+  checks.push({
+    checkNumber: 2,
+    checkId: "confirmed_physical_sailing",
+    passed: check2Passed,
+    reasonCode: check2Passed ? null : "UNVERIFIED_PORT_CLOCK_WINDOWS",
+    detail: check2Passed
+      ? `Confirmed active physical sailing ${sailing.physicalSailingId}.`
+      : sailing.lifecycleStatus !== "upcoming" || physicalSchedule?.isExpired
+        ? "Sailing is completed, expired, or cancelled (held from active sitemap indexation)."
+        : "Physical ship sailing record is missing or unresolved.",
+  });
+
+  // Check #3: Official booking & contact links
+  const check3Passed = Boolean(
+    organizer &&
+      isExternalHttpsUrl(sailing.officialSailingPageUrl) &&
+      isExternalHttpsUrl(sailing.officialReservationFormUrl) &&
+      isExternalHttpsUrl(organizer.publicContactPageUrl) &&
+      isExternalHttpsUrl(organizer.officialWebsiteUrl),
+  );
+  checks.push({
+    checkNumber: 3,
+    checkId: "official_booking_or_contact_link",
+    passed: check3Passed,
+    reasonCode: check3Passed ? null : "BROKEN_OFFICIAL_BOOKING_OR_PAGE_404",
+    detail: check3Passed
+      ? `Verified external HTTPS official sailing, reservation, and contact URLs.`
+      : "Missing or invalid official HTTPS booking, sailing, or contact URL.",
+  });
+
+  // Check #4: Verified ship and dates
+  const check4Passed = Boolean(
+    physicalSchedule &&
+      sailing.canonicalShipSlug.trim().length > 0 &&
+      physicalSchedule.shipName.trim().length > 0 &&
+      /^\d{4}-\d{2}-\d{2}$/.test(sailing.canonicalSailDate) &&
+      physicalSchedule.sailDate === sailing.canonicalSailDate &&
+      physicalSchedule.returnDate &&
+      /^\d{4}-\d{2}-\d{2}$/.test(physicalSchedule.returnDate) &&
+      physicalSchedule.returnDate >= sailing.canonicalSailDate &&
+      typeof physicalSchedule.nights === "number" &&
+      physicalSchedule.nights >= 1,
+  );
+  checks.push({
+    checkNumber: 4,
+    checkId: "verified_ship_and_dates",
+    passed: check4Passed,
+    reasonCode: check4Passed ? null : "UNANNOUNCED_FUTURE_DEPARTURE",
+    detail: check4Passed
+      ? `Verified vessel ${physicalSchedule!.shipName} (${sailing.canonicalSailDate} to ${physicalSchedule!.returnDate}, ${physicalSchedule!.nights} nights).`
+      : "Missing or inconsistent ship identity, departure/return dates, or duration.",
+  });
+
+  // Check #5: Meaningfully complete itinerary (zero embedded itinerary duplication)
+  const rawRecord = sailing as unknown as Record<string, unknown>;
+  const hasEmbeddedItinerary =
+    rawRecord.itinerary !== undefined ||
+    rawRecord.itineraryDays !== undefined ||
+    rawRecord.portDays !== undefined ||
+    rawRecord.ports !== undefined;
+  const check5Passed = Boolean(
+    !hasEmbeddedItinerary &&
+      physicalSchedule &&
+      physicalSchedule.hasCompletePortItinerary &&
+      physicalSchedule.daysCount >= 2 &&
+      physicalSchedule.portDaysCount >= 1 &&
+      !physicalSchedule.hasUnknownDayTypes &&
+      physicalSchedule.everyPortDayVerified,
+  );
+  checks.push({
+    checkNumber: 5,
+    checkId: "meaningfully_complete_itinerary",
+    passed: check5Passed,
+    reasonCode: check5Passed ? null : "UNVERIFIED_PORT_CLOCK_WINDOWS",
+    detail: check5Passed
+      ? `Verified ${physicalSchedule!.daysCount} itinerary days (${physicalSchedule!.portDaysCount} port calls) inherited from ${sailing.physicalSailingId}.`
+      : "Itinerary is incomplete, contains unverified port windows/unknown days, or embeds duplicated itinerary arrays.",
+  });
+
+  // Check #6: Source evidence and verification date
+  const checkedAtValid = Number.isFinite(Date.parse(sailing.organizerSourceCheckedAt));
+  const effectivePrimarySource = sailing.primarySourceUrl || sailing.officialSailingPageUrl;
+  const hasScheduleHold = Boolean(sailing.scheduleHoldReason && sailing.scheduleHoldReason.trim());
+  const check6Passed = Boolean(
+    !hasScheduleHold &&
+      checkedAtValid &&
+      isExternalHttpsUrl(effectivePrimarySource) &&
+      physicalSchedule &&
+      isExternalHttpsUrl(physicalSchedule.scheduleSourceUrl) &&
+      (sailing.verificationState === undefined || sailing.verificationState === "verified"),
+  );
+  checks.push({
+    checkNumber: 6,
+    checkId: "source_evidence_and_verification_date",
+    passed: check6Passed,
+    reasonCode: check6Passed
+      ? null
+      : (sailing.scheduleHoldReasonCode ?? "UNVERIFIED_PORT_CLOCK_WINDOWS"),
+    detail: check6Passed
+      ? `Verified primary organizer source (${effectivePrimarySource}) and schedule source checked at ${sailing.organizerSourceCheckedAt}.`
+      : hasScheduleHold
+        ? `Held by explicit scheduleHoldReason: ${sailing.scheduleHoldReason}`
+        : "Missing primary-source URL, schedule provenance URL, or valid ISO verification timestamp.",
+  });
+
+  // Check #7: Substantive unique facts + secondary 4-word shingle duplicate safeguard
+  const programmingOrContextText = [
+    (sailing.announcedHostedProgramming || "").trim(),
+    (sailing.anticipationHook || "").trim(),
+  ]
+    .filter((t) => t.length > 0 && t.toLowerCase() !== "group activities and time together")
+    .join(" ");
+  const audienceText = (sailing.typicalAudience || "").trim();
+  const compositeText = buildHostedSailingSubstantiveCompositeText(sailing);
+  const containsBannedGenericFiller = BANNED_GENERIC_HOSTED_FILLER_REGEX.test(compositeText);
+
+  const hasCruiseSpecificProgrammingAndAudience =
+    programmingOrContextText.length >= 25 &&
+    audienceText.length >= 15 &&
+    !containsBannedGenericFiller;
+
+  const effectiveOrgType =
+    sailing.organizerType ??
+    organizer?.organizerType ??
+    (organizer?.typicalCharterModel === "full_ship_charter"
+      ? "independent_charter_operator"
+      : organizer?.typicalCharterModel === "hosted_group_block"
+        ? "hosted_group_organizer"
+        : undefined);
+  const effectiveClassification =
+    sailing.experienceClassification ??
+    organizer?.primaryClassification ??
+    (sailing.fullShipCharter === true
+      ? "full_ship_charter"
+      : sailing.fullShipCharter === false
+        ? "hosted_group_sailing"
+        : undefined);
+  const hasExplicitEntityRelationship = Boolean(
+    effectiveOrgType &&
+      effectiveClassification &&
+      sailing.cabinSellerLabel &&
+      sailing.cabinSellerLabel.trim().length >= 3 &&
+      franchise?.relationshipToProducer,
+  );
+
+  const hasVerifiedOfficialLinks =
+    isExternalHttpsUrl(sailing.officialSailingPageUrl) &&
+    isExternalHttpsUrl(sailing.officialReservationFormUrl);
+
+  const embarkLabel = (physicalSchedule?.embarkPortLabel || "").trim();
+  const portStops = (physicalSchedule?.portStopsSummary || "").trim();
+  const hasItineraryAndEmbarkationContext = Boolean(
+    sailing.regionLabel.trim().length >= 3 &&
+      embarkLabel.length >= 3 &&
+      embarkLabel.toLowerCase() !== "see official itinerary" &&
+      portStops.length >= 3,
+  );
+
+  const structuredDifferentiatorsPresent: string[] = [];
+  if (sailing.fullShipCharter !== null) {
+    structuredDifferentiatorsPresent.push("charter_vs_group_block_model");
+  }
+  if (
+    (sailing.vesselType && sailing.vesselType.trim().length >= 3) ||
+    (sailing.approximateVesselScale && sailing.approximateVesselScale.trim().length >= 3) ||
+    (sailing.approximateGroupSizeLabel && sailing.approximateGroupSizeLabel.trim().length >= 3) ||
+    (organizer?.vesselTypeSummary && organizer.vesselTypeSummary.trim().length >= 3)
+  ) {
+    structuredDifferentiatorsPresent.push("vessel_scale_or_group_size");
+  }
+  if (
+    sailing.verifiedStartingPriceUsd !== null ||
+    (sailing.publishedPriceDisplay && sailing.publishedPriceDisplay.trim().length >= 3) ||
+    (sailing.inclusionsSummary && sailing.inclusionsSummary.trim().length >= 10) ||
+    (organizer?.inclusionsSummary && organizer.inclusionsSummary.trim().length >= 10)
+  ) {
+    structuredDifferentiatorsPresent.push("pricing_or_inclusions");
+  }
+  if (
+    (sailing.soloSupport && sailing.soloSupport.trim().length >= 10 && sailing.soloFriendly !== null) ||
+    (organizer?.soloSupportSummary && organizer.soloSupportSummary.trim().length >= 10)
+  ) {
+    structuredDifferentiatorsPresent.push("solo_traveler_support");
+  }
+  if (sailing.familyPolicy && sailing.familyPolicy !== "not_verified") {
+    structuredDifferentiatorsPresent.push("family_or_age_policy");
+  }
+  if (
+    (sailing.accessibilitySummary && sailing.accessibilitySummary.trim().length >= 10) ||
+    (organizer?.accessibilitySummary && organizer.accessibilitySummary.trim().length >= 10)
+  ) {
+    structuredDifferentiatorsPresent.push("accessibility_disclosure");
+  }
+  if (
+    (organizer?.cancellationAndParticipationPolicy &&
+      organizer.cancellationAndParticipationPolicy.trim().length >= 20) ||
+    (organizer?.officialReservationPathSummary &&
+      organizer.officialReservationPathSummary.trim().length >= 20)
+  ) {
+    structuredDifferentiatorsPresent.push("reservation_and_participation_policy");
+  }
+
+  let maxSiblingJaccard = 0;
+  for (const sib of input.siblingSailingsCompositeTexts || []) {
+    if (sib.hostedSailingId === sailing.hostedSailingId) continue;
+    const sim = computeFourWordShingleJaccard(compositeText, sib.compositeText);
+    if (sim > maxSiblingJaccard) maxSiblingJaccard = sim;
+  }
+
+  const substantiveFactsMet =
+    hasCruiseSpecificProgrammingAndAudience &&
+    hasExplicitEntityRelationship &&
+    hasVerifiedOfficialLinks &&
+    hasItineraryAndEmbarkationContext &&
+    structuredDifferentiatorsPresent.length >= 2;
+
+  const shingleSafeguardMet = maxSiblingJaccard < SHINGLE_DUPLICATE_SAFEGUARD_MAX_JACCARD;
+  const check7Passed = substantiveFactsMet && shingleSafeguardMet;
+
+  checks.push({
+    checkNumber: 7,
+    checkId: "substantive_unique_facts",
+    passed: check7Passed,
+    reasonCode: check7Passed
+      ? null
+      : !substantiveFactsMet
+        ? "MISSING_SUBSTANTIVE_HOSTED_FACTS"
+        : "DUPLICATE_BOILERPLATE_CONTENT",
+    detail: check7Passed
+      ? `Substantive facts verified (${structuredDifferentiatorsPresent.length} structured differentiators; max sibling 4-shingle Jaccard ${maxSiblingJaccard}).`
+      : !substantiveFactsMet
+        ? `Failed substantive unique facts requirement (programming/audience=${hasCruiseSpecificProgrammingAndAudience}, relationship=${hasExplicitEntityRelationship}, links=${hasVerifiedOfficialLinks}, embark/itinerary=${hasItineraryAndEmbarkationContext}, differentiators=${structuredDifferentiatorsPresent.length}/2, bannedFiller=${containsBannedGenericFiller}).`
+        : `Failed shingle duplicate-content safeguard (max sibling 4-word shingle Jaccard ${maxSiblingJaccard} >= ${SHINGLE_DUPLICATE_SAFEGUARD_MAX_JACCARD}).`,
+  });
+
+  // Check #8: Mandatory functional traveler pathway on EVERY sailing page
+  // (A populated comparison matrix CANNOT substitute for sailing-page utility!)
+  const validActivePathwayKinds = new Set<HostedSailingTravelerPathwayKind>([
+    "join_group_plan",
+    "request_group_access",
+    "open_group_plan",
+  ]);
+  const check8Passed = Boolean(
+    sailingPathway.hasFunctionalSailingPathway &&
+      validActivePathwayKinds.has(sailingPathway.pathwayKind) &&
+      sailingPathway.enrollmentApiPath &&
+      sailingPathway.enrollmentApiPath.startsWith("/api/v2/hosted-cruises/") &&
+      sailingPathway.communityId &&
+      /^community:[a-z0-9-]+:[a-z0-9-]+:\d{4}-\d{2}-\d{2}$/.test(sailingPathway.communityId),
+  );
+  checks.push({
+    checkNumber: 8,
+    checkId: "functional_sailing_pathway",
+    passed: check8Passed,
+    reasonCode: check8Passed ? null : "MISSING_FUNCTIONAL_SAILING_PATHWAY",
+    detail: check8Passed
+      ? `Active sailing-page traveler pathway (${sailingPathway.pathwayKind}) wired to ${sailingPathway.communityId}.`
+      : sailingPathway.hasPopulatedComparisonMatrix
+        ? "Missing functional traveler pathway on sailing page (comparison matrix presence cannot substitute for Join Group Plan utility)."
+        : "Missing functional Join Group Plan / group-access pathway on sailing page.",
+  });
+
+  // Check #9: Internal-link reachability from Category Hub, Franchise Page, and Organizer Page
+  const check9Passed = Boolean(
+    internalLinkReachability.linkedFromCategoryHub &&
+      internalLinkReachability.linkedFromFranchisePage &&
+      internalLinkReachability.linkedFromOrganizerPage,
+  );
+  checks.push({
+    checkNumber: 9,
+    checkId: "internal_link_reachability",
+    passed: check9Passed,
+    reasonCode: check9Passed ? null : "ORPHAN_MISSING_INTERNAL_LINKS",
+    detail: check9Passed
+      ? "Linked from theme category hub, recurring franchise page, and producer/organizer profile."
+      : `Orphan risk: categoryHub=${internalLinkReachability.linkedFromCategoryHub}, franchisePage=${internalLinkReachability.linkedFromFranchisePage}, organizerPage=${internalLinkReachability.linkedFromOrganizerPage}.`,
+  });
+
+  const failedChecks = checks.filter((c) => !c.passed);
+  const passed = failedChecks.length === 0;
+
+  return {
+    passed,
+    eligibleForSitemap: passed,
+    recommendedRobots: passed ? "index, follow" : "noindex, follow",
+    primaryHoldReasonCode: passed ? null : (failedChecks[0]?.reasonCode ?? "MISSING_SUBSTANTIVE_HOSTED_FACTS"),
+    checks,
+    failedCheckIds: failedChecks.map((c) => c.checkId),
+    substantiveFactsBreakdown: {
+      hasCruiseSpecificProgrammingAndAudience,
+      hasExplicitEntityRelationship,
+      hasVerifiedOfficialLinks,
+      hasItineraryAndEmbarkationContext,
+      structuredDifferentiatorCount: structuredDifferentiatorsPresent.length,
+      structuredDifferentiatorsPresent,
+      containsBannedGenericFiller,
+      maxSiblingFourWordShingleJaccard: maxSiblingJaccard,
+      shingleDuplicateSafeguardThreshold: SHINGLE_DUPLICATE_SAFEGUARD_MAX_JACCARD,
+    },
+  };
+}
+
+export interface PhysicalSailingReuseMetrics {
+  totalHostedDepartures: number;
+  distinctPhysicalSailings: number;
+  sharedPhysicalSailingsCount: number;
+  multiGroupHostedDeparturesCount: number;
+  empiricalMultiGroupDepartureSharePct: number;
+  distinctShipsCount: number;
+  top15ShipsHostedDeparturesCount: number;
+  top15ShipsDepartureSharePct: number;
+  topShipsByHostedDepartureCount: ReadonlyArray<{
+    shipSlug: string;
+    lineCode: CanonicalCruiseLineCode;
+    hostedDeparturesCount: number;
+    distinctPhysicalSailingsCount: number;
+  }>;
+  sharedPhysicalSailings: ReadonlyArray<{
+    physicalSailingId: string;
+    shipSlug: string;
+    sailDate: string;
+    hostedDepartureIds: string[];
+    organizerSlugs: string[];
+  }>;
+  methodologyNote: string;
+}
+
+export function computePhysicalSailingReuseMetrics(
+  hostedSailings: ReadonlyArray<
+    Pick<
+      CanonicalHostedSailingFactRecord,
+      | "hostedSailingId"
+      | "organizerSlug"
+      | "physicalSailingId"
+      | "canonicalLineCode"
+      | "canonicalShipSlug"
+      | "canonicalSailDate"
+    >
+  >,
+): PhysicalSailingReuseMetrics {
+  const totalHostedDepartures = hostedSailings.length;
+  const byPhysical = new Map<
+    string,
+    {
+      physicalSailingId: string;
+      shipSlug: string;
+      sailDate: string;
+      hostedDepartureIds: string[];
+      organizerSlugs: string[];
+    }
+  >();
+  const byShip = new Map<
+    string,
+    {
+      shipSlug: string;
+      lineCode: CanonicalCruiseLineCode;
+      hostedDeparturesCount: number;
+      physicalIds: Set<string>;
+    }
+  >();
+
+  for (const hs of hostedSailings) {
+    const existingPhys = byPhysical.get(hs.physicalSailingId);
+    if (existingPhys) {
+      existingPhys.hostedDepartureIds.push(hs.hostedSailingId);
+      if (!existingPhys.organizerSlugs.includes(hs.organizerSlug)) {
+        existingPhys.organizerSlugs.push(hs.organizerSlug);
+      }
+    } else {
+      byPhysical.set(hs.physicalSailingId, {
+        physicalSailingId: hs.physicalSailingId,
+        shipSlug: hs.canonicalShipSlug,
+        sailDate: hs.canonicalSailDate,
+        hostedDepartureIds: [hs.hostedSailingId],
+        organizerSlugs: [hs.organizerSlug],
+      });
+    }
+
+    const shipKey = hs.canonicalShipSlug.toLowerCase();
+    const existingShip = byShip.get(shipKey);
+    if (existingShip) {
+      existingShip.hostedDeparturesCount += 1;
+      existingShip.physicalIds.add(hs.physicalSailingId);
+    } else {
+      byShip.set(shipKey, {
+        shipSlug: hs.canonicalShipSlug,
+        lineCode: hs.canonicalLineCode,
+        hostedDeparturesCount: 1,
+        physicalIds: new Set([hs.physicalSailingId]),
+      });
+    }
+  }
+
+  const sharedPhysicalSailings = Array.from(byPhysical.values())
+    .filter((p) => p.hostedDepartureIds.length >= 2)
+    .sort((a, b) => b.hostedDepartureIds.length - a.hostedDepartureIds.length);
+
+  const multiGroupHostedDeparturesCount = sharedPhysicalSailings.reduce(
+    (sum, item) => sum + item.hostedDepartureIds.length,
+    0,
+  );
+
+  const sortedShips = Array.from(byShip.values())
+    .map((s) => ({
+      shipSlug: s.shipSlug,
+      lineCode: s.lineCode,
+      hostedDeparturesCount: s.hostedDeparturesCount,
+      distinctPhysicalSailingsCount: s.physicalIds.size,
+    }))
+    .sort((a, b) => {
+      if (b.hostedDeparturesCount !== a.hostedDeparturesCount) {
+        return b.hostedDeparturesCount - a.hostedDeparturesCount;
+      }
+      return a.shipSlug.localeCompare(b.shipSlug);
+    });
+
+  const top15Ships = sortedShips.slice(0, 15);
+  const top15Count = top15Ships.reduce((sum, s) => sum + s.hostedDeparturesCount, 0);
+
+  return {
+    totalHostedDepartures,
+    distinctPhysicalSailings: byPhysical.size,
+    sharedPhysicalSailingsCount: sharedPhysicalSailings.length,
+    multiGroupHostedDeparturesCount,
+    empiricalMultiGroupDepartureSharePct:
+      totalHostedDepartures > 0
+        ? Math.round((multiGroupHostedDeparturesCount / totalHostedDepartures) * 1000) / 10
+        : 0,
+    distinctShipsCount: sortedShips.length,
+    top15ShipsHostedDeparturesCount: top15Count,
+    top15ShipsDepartureSharePct:
+      totalHostedDepartures > 0
+        ? Math.round((top15Count / totalHostedDepartures) * 1000) / 10
+        : 0,
+    topShipsByHostedDepartureCount: top15Ships,
+    sharedPhysicalSailings,
+    methodologyNote:
+      "Empirically computed from verified hosted-departure records in DCC rather than assumed percentages.",
+  };
+}
+
+// ============================================================================
+// Stage 1: Ship-Page Publication Gate (9 Checks) & Event Schema Qualification
+// ============================================================================
+
+export const SHIP_PUBLICATION_GATE_CHECK_IDS = [
+  "canonical_ship_and_line_identity",
+  "verified_ship_facts",
+  "useful_traveler_content",
+  "upcoming_sailing_relationships",
+  "correct_canonical_metadata",
+  "internal_link_reachability",
+  "structured_data_parity",
+  "no_identity_conflict",
+  "no_thin_placeholder_presentation",
+] as const;
+
+export type ShipPublicationGateCheckId =
+  (typeof SHIP_PUBLICATION_GATE_CHECK_IDS)[number];
+
+export const SHIP_HOLD_REASON_CODES = [
+  "missing_canonical_ship_identity",
+  "unverified_ship_facts",
+  "insufficient_traveler_content",
+  "no_upcoming_sailings_or_port_guides",
+  "invalid_canonical_metadata",
+  "orphan_ship_page",
+  "structured_data_parity_failure",
+  "unresolved_ship_identity_conflict",
+  "thin_placeholder_ship_page",
+] as const;
+
+export type ShipHoldReasonCode = (typeof SHIP_HOLD_REASON_CODES)[number];
+
+export interface ShipPublicationGateInput {
+  shipSlug: string;
+  shipName: string;
+  cruiseLineName: string;
+  canonicalLineCode: CanonicalCruiseLineCode | null;
+  shipClass: string | null;
+  passengerCapacity: number | null;
+  debutYear: number | null;
+  homeports: ReadonlyArray<string>;
+  specSourceUrl: string | null;
+  summaryDescription: string;
+  dockAndTimingGuidance: string;
+  curatedPortGuideCount: number;
+  verifiedItineraryPortCount: number;
+  upcomingIndexablePhysicalSailingCount: number;
+  upcomingIndexableHostedSailingCount: number;
+  canonicalPath: string;
+  hasDistinctTitleAndDescription: boolean;
+  linkedFromFleetHubOrLineOrSailing: boolean;
+  hasTruthfulStructuredDataParity: boolean;
+  usesDeprecatedTouristTripRootType?: boolean;
+  identityConflictNote: string | null;
+  hasShipSafeHeroVisual: boolean;
+}
+
+export interface ShipPublicationGateCheckResult {
+  checkId: ShipPublicationGateCheckId;
+  passed: boolean;
+  holdReasonCode: ShipHoldReasonCode | null;
+  detail: string;
+}
+
+export interface ShipPublicationGateEvaluationResult {
+  passed: boolean;
+  robotsDirective: "index, follow" | "noindex, follow";
+  includeInSitemap: boolean;
+  primaryHoldReasonCode: ShipHoldReasonCode | null;
+  holdReasonCodes: ShipHoldReasonCode[];
+  checks: ShipPublicationGateCheckResult[];
+}
+
+export function evaluateShipPublicationGate(
+  input: ShipPublicationGateInput,
+): ShipPublicationGateEvaluationResult {
+  const checks: ShipPublicationGateCheckResult[] = [];
+
+  const hasIdentity =
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input.shipSlug.trim()) &&
+    input.shipName.trim().length >= 3 &&
+    input.cruiseLineName.trim().length >= 3 &&
+    input.cruiseLineName.trim().toLowerCase() !== "cruise line" &&
+    input.canonicalLineCode !== null;
+  checks.push({
+    checkId: "canonical_ship_and_line_identity",
+    passed: hasIdentity,
+    holdReasonCode: hasIdentity ? null : "missing_canonical_ship_identity",
+    detail: hasIdentity
+      ? `Canonical vessel "${input.shipName}" (${input.shipSlug}) mapped to ${input.cruiseLineName} (${input.canonicalLineCode}).`
+      : "Missing canonical vessel slug, ship name, or verified cruise line identity.",
+  });
+
+  const hasVerifiedShipFacts =
+    Boolean(input.shipClass && input.shipClass.trim().length >= 3) &&
+    typeof input.passengerCapacity === "number" &&
+    input.passengerCapacity >= 50 &&
+    typeof input.debutYear === "number" &&
+    input.debutYear >= 1980 &&
+    input.debutYear <= 2030 &&
+    input.homeports.length >= 1 &&
+    Boolean(input.specSourceUrl && input.specSourceUrl.startsWith("https://"));
+  checks.push({
+    checkId: "verified_ship_facts",
+    passed: hasVerifiedShipFacts,
+    holdReasonCode: hasVerifiedShipFacts ? null : "unverified_ship_facts",
+    detail: hasVerifiedShipFacts
+      ? `Verified ship specs (${input.shipClass}, ${input.passengerCapacity} guests, debut ${input.debutYear}) backed by ${input.specSourceUrl}.`
+      : "Vessel lacks complete official source-backed class, guest capacity, debut year, or homeport facts.",
+  });
+
+  const combinedCopyLength =
+    input.summaryDescription.trim().length + input.dockAndTimingGuidance.trim().length;
+  const hasUsefulContent =
+    input.summaryDescription.trim().length >= 80 &&
+    input.dockAndTimingGuidance.trim().length >= 50 &&
+    combinedCopyLength >= 150 &&
+    !/coming soon|tbd|placeholder/i.test(
+      `${input.summaryDescription} ${input.dockAndTimingGuidance}`,
+    );
+  checks.push({
+    checkId: "useful_traveler_content",
+    passed: hasUsefulContent,
+    holdReasonCode: hasUsefulContent ? null : "insufficient_traveler_content",
+    detail: hasUsefulContent
+      ? `Substantive vessel overview and pier/all-aboard planning guidance (${combinedCopyLength} chars).`
+      : "Summary or dock/timing traveler guidance is missing or too thin.",
+  });
+
+  const totalRelationships =
+    input.upcomingIndexablePhysicalSailingCount +
+    input.upcomingIndexableHostedSailingCount +
+    input.curatedPortGuideCount;
+  const hasRelationships = totalRelationships >= 1;
+  checks.push({
+    checkId: "upcoming_sailing_relationships",
+    passed: hasRelationships,
+    holdReasonCode: hasRelationships ? null : "no_upcoming_sailings_or_port_guides",
+    detail: hasRelationships
+      ? `${input.upcomingIndexablePhysicalSailingCount} physical sailings, ${input.upcomingIndexableHostedSailingCount} hosted departures, ${input.curatedPortGuideCount} curated ship-port excursion guides.`
+      : "No upcoming indexable physical sailings, hosted departures, or curated ship-port guides.",
+  });
+
+  const expectedCanonical = `/cruise-ships/${input.shipSlug.trim().toLowerCase()}`;
+  const hasCanonicalMeta =
+    input.canonicalPath === expectedCanonical && input.hasDistinctTitleAndDescription;
+  checks.push({
+    checkId: "correct_canonical_metadata",
+    passed: hasCanonicalMeta,
+    holdReasonCode: hasCanonicalMeta ? null : "invalid_canonical_metadata",
+    detail: hasCanonicalMeta
+      ? `Canonical locked to ${expectedCanonical} with distinct title and description.`
+      : `Expected canonical ${expectedCanonical} with distinct metadata (received ${input.canonicalPath}).`,
+  });
+
+  checks.push({
+    checkId: "internal_link_reachability",
+    passed: input.linkedFromFleetHubOrLineOrSailing,
+    holdReasonCode: input.linkedFromFleetHubOrLineOrSailing ? null : "orphan_ship_page",
+    detail: input.linkedFromFleetHubOrLineOrSailing
+      ? "Reachable from /cruise-ships directory, cruise-line hub, or indexable sailing pages."
+      : "Orphan ship page without internal incoming links.",
+  });
+
+  const structuredDataOk =
+    input.hasTruthfulStructuredDataParity && !input.usesDeprecatedTouristTripRootType;
+  checks.push({
+    checkId: "structured_data_parity",
+    passed: structuredDataOk,
+    holdReasonCode: structuredDataOk ? null : "structured_data_parity_failure",
+    detail: structuredDataOk
+      ? "Truthful WebPage + BreadcrumbList + Organization + ItemList JSON-LD matches visible content."
+      : "Structured data is missing, mismatched, or misrepresents ship profile as TouristTrip.",
+  });
+
+  const noConflict = !input.identityConflictNote || input.identityConflictNote.trim().length === 0;
+  checks.push({
+    checkId: "no_identity_conflict",
+    passed: noConflict,
+    holdReasonCode: noConflict ? null : "unresolved_ship_identity_conflict",
+    detail: noConflict
+      ? "No vessel or cruise-line identity conflict."
+      : `Unresolved vessel identity conflict: ${input.identityConflictNote}`,
+  });
+
+  const distinctPortDepth = Math.max(
+    input.curatedPortGuideCount,
+    input.verifiedItineraryPortCount,
+  );
+  const notThinPlaceholder = distinctPortDepth >= 2 && input.hasShipSafeHeroVisual;
+  checks.push({
+    checkId: "no_thin_placeholder_presentation",
+    passed: notThinPlaceholder,
+    holdReasonCode: notThinPlaceholder ? null : "thin_placeholder_ship_page",
+    detail: notThinPlaceholder
+      ? `Rich multi-port presentation (${distinctPortDepth} verified ports) with ship-safe visual asset.`
+      : `Insufficient verified port depth (${distinctPortDepth} ports) or missing ship-safe visual.`,
+  });
+
+  const holdReasonCodes = checks
+    .filter((c) => !c.passed && c.holdReasonCode !== null)
+    .map((c) => c.holdReasonCode as ShipHoldReasonCode);
+  const passed = holdReasonCodes.length === 0;
+
+  return {
+    passed,
+    robotsDirective: passed ? "index, follow" : "noindex, follow",
+    includeInSitemap: passed,
+    primaryHoldReasonCode: holdReasonCodes[0] ?? null,
+    holdReasonCodes,
+    checks,
+  };
+}
+
+const GENUINE_EVENT_PROGRAMMING_PATTERN =
+  /\b(concert|concerts|festival|music|stage|stages|lineup|artist|artists|band|bands|performances?|headliner|dj|djs|party|parties|ball|tea dance|cabaret|comedy|comedian|drag|workshop|workshops|conference|summit|keynote|seminar|classes|clinic|tournament|mastermind|continuing education|\bce\b|\bcme\b|\bcle\b|quilting|knitting|craft|dance|tasting|winemaker|hosted events|themed nights|private events)\b/i;
+
+const GENERIC_VACATION_PACKAGE_ONLY_PATTERN =
+  /^(group activities and time together\.?|group shore excursions and casual welcome meetups\.?|vacation package\.?|cruise vacation\.?|hosted cabin block\.?|not disclosed\.?|not yet verified\.?)$/i;
+
+/**
+ * Explicit manual-evidence allowlist entry required before ANY hosted departure
+ * may emit Google-facing `Event` structured data.
+ *
+ * Policy Rule:
+ * - Never emit `Event` markup automatically based only on named concerts, workshops,
+ *   festivals, or themed programming.
+ * - Rich Results Test validation alone is NOT sufficient evidence of Google Event
+ *   policy eligibility.
+ * - `Offer`, price, availability, `Review`, and `AggregateRating` remain disabled
+ *   unless each item independently qualifies, is explicitly enabled here, and matches
+ *   visible content on the page.
+ */
+export interface HostedEventSchemaManualAllowlistEntry {
+  hostedSailingId: string;
+  approvedBy: string;
+  approvedAtIso: string;
+  publicEventQualificationEvidence: string;
+  physicalLocationPolicyEvidence: string;
+  visibleContentParityVerified: boolean;
+  richResultsTestAloneInsufficientAcknowledged: boolean;
+  allowOffersMarkup?: boolean;
+  allowAggregateRatingMarkup?: boolean;
+}
+
+export interface HostedFranchiseEventSeriesManualAllowlistEntry {
+  franchiseId: string;
+  approvedBy: string;
+  approvedAtIso: string;
+  manualSeriesPolicyEvidence: string;
+  visibleContentParityVerified: boolean;
+  richResultsTestAloneInsufficientAcknowledged: boolean;
+  allowAggregateRatingMarkup?: boolean;
+}
+
+/**
+ * Production Release Allowlist (Default: Empty `[]`):
+ * All hosted departures emit `WebPage` + `BreadcrumbList` with truthful
+ * `Organization` / `Place` relationships until individually audited and added here.
+ */
+export const EXPLICIT_HOSTED_EVENT_SCHEMA_ALLOWLIST: ReadonlyArray<HostedEventSchemaManualAllowlistEntry> =
+  [];
+
+export const EXPLICIT_FRANCHISE_EVENT_SERIES_ALLOWLIST: ReadonlyArray<HostedFranchiseEventSeriesManualAllowlistEntry> =
+  [];
+
+export interface HostedEventSchemaQualificationInput {
+  hostedSailingId?: string;
+  isIndexable: boolean;
+  isSynthetic?: boolean;
+  lifecycleStatus: HostedSailingLifecycleStatus;
+  isExpired: boolean;
+  experienceClassification: HostedExperienceClassification;
+  primaryTheme: HostedCruiseThemeSlug;
+  sailingTitle: string;
+  announcedHostedProgramming: string | null;
+  typicalHostedProgramming?: string | null;
+  startDateIso: string;
+  endDateIso: string | null;
+  embarkLocationName: string;
+  organizerName: string;
+  officialOrganizerUrl: string;
+  officialSailingPageUrl: string;
+  verifiedStartingPriceUsd: number | null;
+  visiblePriceDisplayed: boolean;
+  approvedReviewCount: number;
+  averageRating: number | null;
+  visibleRatingDisplayed: boolean;
+}
+
+export interface HostedEventSchemaQualificationResult {
+  qualifiesForEventSchema: boolean;
+  primarySchemaType: "Event" | "WebPage";
+  includeOffers: boolean;
+  includeAggregateRating: boolean;
+  explicitlyAllowlisted: boolean;
+  disqualificationReason: string | null;
+  policyNote: string;
+}
+
+export function qualifiesHostedDepartureForEventSchema(
+  input: HostedEventSchemaQualificationInput,
+  allowlist: ReadonlyArray<HostedEventSchemaManualAllowlistEntry> = EXPLICIT_HOSTED_EVENT_SCHEMA_ALLOWLIST,
+): HostedEventSchemaQualificationResult {
+  const allowEntry = input.hostedSailingId
+    ? allowlist.find((entry) => entry.hostedSailingId === input.hostedSailingId) ?? null
+    : null;
+
+  const hasCompleteManualEvidence = Boolean(
+    allowEntry &&
+      allowEntry.approvedBy.trim().length >= 2 &&
+      /^\d{4}-\d{2}-\d{2}/.test(allowEntry.approvedAtIso) &&
+      allowEntry.publicEventQualificationEvidence.trim().length >= 30 &&
+      allowEntry.physicalLocationPolicyEvidence.trim().length >= 30 &&
+      allowEntry.visibleContentParityVerified === true &&
+      allowEntry.richResultsTestAloneInsufficientAcknowledged === true,
+  );
+
+  if (!allowEntry || !hasCompleteManualEvidence) {
+    return {
+      qualifiesForEventSchema: false,
+      primarySchemaType: "WebPage",
+      includeOffers: false,
+      includeAggregateRating: false,
+      explicitlyAllowlisted: false,
+      disqualificationReason: !allowEntry
+        ? "Hosted departure is not on EXPLICIT_HOSTED_EVENT_SCHEMA_ALLOWLIST; automatic Event markup from programming keywords is disabled."
+        : "Allowlist entry lacks complete manual public-event, physical-location, or visible-parity evidence (Rich Results Test validation alone is insufficient).",
+      policyNote:
+        "Emit WebPage + BreadcrumbList with truthful Organization and Place relationships; keep Offer, price, availability, Review, and AggregateRating disabled.",
+    };
+  }
+
+  if (!input.isIndexable || input.isSynthetic) {
+    return {
+      qualifiesForEventSchema: false,
+      primarySchemaType: "WebPage",
+      includeOffers: false,
+      includeAggregateRating: false,
+      explicitlyAllowlisted: true,
+      disqualificationReason: "Sailing is non-indexable or synthetic.",
+      policyNote:
+        "Emit WebPage + BreadcrumbList only; non-indexable/held departures do not emit Event markup.",
+    };
+  }
+
+  if (input.lifecycleStatus !== "upcoming" || input.isExpired) {
+    return {
+      qualifiesForEventSchema: false,
+      primarySchemaType: "WebPage",
+      includeOffers: false,
+      includeAggregateRating: false,
+      explicitlyAllowlisted: true,
+      disqualificationReason: "Sailing is completed, expired, or cancelled.",
+      policyNote:
+        "Emit WebPage + BreadcrumbList only; past or cancelled departures are not represented as active upcoming Events.",
+    };
+  }
+
+  const validDates =
+    /^\d{4}-\d{2}-\d{2}$/.test(input.startDateIso) &&
+    (!input.endDateIso ||
+      (/^\d{4}-\d{2}-\d{2}$/.test(input.endDateIso) &&
+        input.endDateIso >= input.startDateIso));
+  const validLocationAndOrg =
+    input.embarkLocationName.trim().length >= 2 &&
+    !/^see official itinerary$/i.test(input.embarkLocationName.trim()) &&
+    input.organizerName.trim().length >= 2 &&
+    input.officialOrganizerUrl.startsWith("https://");
+
+  if (!validDates || !validLocationAndOrg) {
+    return {
+      qualifiesForEventSchema: false,
+      primarySchemaType: "WebPage",
+      includeOffers: false,
+      includeAggregateRating: false,
+      explicitlyAllowlisted: true,
+      disqualificationReason:
+        "Missing verified ISO start/end dates, physical embarkation port, or official organizer URL.",
+      policyNote:
+        "Google Event structured data requires visible, verified startDate, physical location, and organizer.",
+    };
+  }
+
+  const programmingText = (input.announcedHostedProgramming || "").trim();
+  const isGenericTripCopy =
+    programmingText.length < 35 ||
+    GENERIC_VACATION_PACKAGE_ONLY_PATTERN.test(programmingText);
+  const hasSpecificEventProgramming =
+    !isGenericTripCopy && GENUINE_EVENT_PROGRAMMING_PATTERN.test(programmingText);
+
+  if (!hasSpecificEventProgramming) {
+    return {
+      qualifiesForEventSchema: false,
+      primarySchemaType: "WebPage",
+      includeOffers: false,
+      includeAggregateRating: false,
+      explicitlyAllowlisted: true,
+      disqualificationReason:
+        "Departure describes an ordinary cruise vacation or generic group block without specific named festival, concert, conference, workshop, or themed event programming.",
+      policyNote:
+        "Per Google Event guidelines, ordinary trip/vacation packages must not be marked up as Event; emit WebPage + BreadcrumbList instead.",
+    };
+  }
+
+  const includeOffers =
+    allowEntry.allowOffersMarkup === true &&
+    typeof input.verifiedStartingPriceUsd === "number" &&
+    Number.isFinite(input.verifiedStartingPriceUsd) &&
+    input.verifiedStartingPriceUsd > 0 &&
+    input.visiblePriceDisplayed &&
+    input.officialSailingPageUrl.startsWith("https://");
+
+  const includeAggregateRating =
+    allowEntry.allowAggregateRatingMarkup === true &&
+    input.approvedReviewCount > 0 &&
+    typeof input.averageRating === "number" &&
+    Number.isFinite(input.averageRating) &&
+    input.averageRating >= 1 &&
+    input.averageRating <= 5 &&
+    input.visibleRatingDisplayed;
+
+  return {
+    qualifiesForEventSchema: true,
+    primarySchemaType: "Event",
+    includeOffers,
+    includeAggregateRating,
+    explicitlyAllowlisted: true,
+    disqualificationReason: null,
+    policyNote:
+      "Explicitly allowlisted with manual public-event, location, and visible-parity evidence. Rich Results Test validation alone is never sufficient; rich results are never promised.",
+  };
+}
+
+export interface HostedFranchiseEventSeriesQualificationInput {
+  franchiseId?: string;
+  isStandaloneIndexable: boolean;
+  isSynthetic?: boolean;
+  franchiseName: string;
+  programmingAndLineupModel: string | null;
+  officialWebsiteUrl: string;
+  qualifyingUpcomingEventCount: number;
+  approvedReviewCount: number;
+  averageRating: number | null;
+  visibleRatingDisplayed: boolean;
+}
+
+export interface HostedFranchiseEventSeriesQualificationResult {
+  qualifiesForEventSeriesSchema: boolean;
+  primarySchemaType: "EventSeries" | "CollectionPage";
+  includeAggregateRating: boolean;
+  explicitlyAllowlisted: boolean;
+  disqualificationReason: string | null;
+  vocabularyNote: string;
+}
+
+export function qualifiesFranchiseForEventSeriesSchema(
+  input: HostedFranchiseEventSeriesQualificationInput,
+  allowlist: ReadonlyArray<HostedFranchiseEventSeriesManualAllowlistEntry> = EXPLICIT_FRANCHISE_EVENT_SERIES_ALLOWLIST,
+): HostedFranchiseEventSeriesQualificationResult {
+  const allowEntry = input.franchiseId
+    ? allowlist.find((entry) => entry.franchiseId === input.franchiseId) ?? null
+    : null;
+
+  const hasManualSeriesEvidence = Boolean(
+    allowEntry &&
+      allowEntry.approvedBy.trim().length >= 2 &&
+      /^\d{4}-\d{2}-\d{2}/.test(allowEntry.approvedAtIso) &&
+      allowEntry.manualSeriesPolicyEvidence.trim().length >= 30 &&
+      allowEntry.visibleContentParityVerified === true &&
+      allowEntry.richResultsTestAloneInsufficientAcknowledged === true,
+  );
+
+  if (!allowEntry || !hasManualSeriesEvidence) {
+    return {
+      qualifiesForEventSeriesSchema: false,
+      primarySchemaType: "CollectionPage",
+      includeAggregateRating: false,
+      explicitlyAllowlisted: false,
+      disqualificationReason:
+        "Franchise is not on EXPLICIT_FRANCHISE_EVENT_SERIES_ALLOWLIST; emit CollectionPage + BreadcrumbList by default.",
+      vocabularyNote:
+        "Emit CollectionPage + BreadcrumbList by default; preserve Franchise, Producer, and HostedDeparture relationships in DCC's canonical graph and machine contracts.",
+    };
+  }
+
+  const progText = (input.programmingAndLineupModel || "").trim();
+  const hasEventProgramming =
+    progText.length >= 35 &&
+    !GENERIC_VACATION_PACKAGE_ONLY_PATTERN.test(progText) &&
+    GENUINE_EVENT_PROGRAMMING_PATTERN.test(progText);
+
+  if (
+    !input.isStandaloneIndexable ||
+    input.isSynthetic ||
+    input.qualifyingUpcomingEventCount < 1 ||
+    !hasEventProgramming ||
+    !input.officialWebsiteUrl.startsWith("https://")
+  ) {
+    return {
+      qualifiesForEventSeriesSchema: false,
+      primarySchemaType: "CollectionPage",
+      includeAggregateRating: false,
+      explicitlyAllowlisted: true,
+      disqualificationReason: !input.isStandaloneIndexable
+        ? "Franchise is 1:1 flagship or non-indexable."
+        : input.qualifyingUpcomingEventCount < 1
+          ? "Franchise has no upcoming edition qualifying as an allowlisted scheduled Event."
+          : "Franchise describes general group travel rather than a recurring programmed festival/conference series.",
+      vocabularyNote:
+        "Emit CollectionPage + BreadcrumbList; EventSeries requires both explicit manual allowlisting and at least one allowlisted upcoming Event.",
+    };
+  }
+
+  const includeAggregateRating =
+    allowEntry.allowAggregateRatingMarkup === true &&
+    input.approvedReviewCount > 0 &&
+    typeof input.averageRating === "number" &&
+    Number.isFinite(input.averageRating) &&
+    input.averageRating >= 1 &&
+    input.averageRating <= 5 &&
+    input.visibleRatingDisplayed;
+
+  return {
+    qualifiesForEventSeriesSchema: true,
+    primarySchemaType: "EventSeries",
+    includeAggregateRating,
+    explicitlyAllowlisted: true,
+    disqualificationReason: null,
+    vocabularyNote:
+      "Schema.org EventSeries entity semantics only (explicitly allowlisted; separate from Google rich-result eligibility; rich results are never promised).",
   };
 }

@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  computePhysicalSailingReuseMetrics,
+  EXPLICIT_FRANCHISE_EVENT_SERIES_ALLOWLIST,
+  EXPLICIT_HOSTED_EVENT_SCHEMA_ALLOWLIST,
   HOSTED_CRUISE_THEME_SLUGS,
   SYSTEM_OF_RECORD_OWNERSHIP,
   type HostedCruiseThemeSlug,
 } from "@/lib/dcc/cruise/canonicalHostedCruiseContract";
 import {
   getDccCanonicalHostedCatalogSnapshot,
+  resolveDccHostedFranchiseBySlugOrAlias,
   resolveDccHostedOrganizerBySlugOrAlias,
   validateDccHostedCatalogIntegrity,
 } from "@/lib/dcc/cruise/hostedCatalogRegistry";
+import {
+  CANONICAL_DCC_SHIPS,
+  getDccCanonicalShipsSummary,
+} from "@/lib/dcc/cruise/canonicalShipSpecsRegistry";
 import {
   buildHostedCatalogFieldProvenance,
   computeStrongRfc8785Etag,
@@ -76,6 +84,25 @@ async function handleCatalogRequest(request: NextRequest, headOnly: boolean) {
     );
   }
 
+  const franchiseParam = (
+    searchParams.get("franchise") ||
+    searchParams.get("franchiseSlug") ||
+    ""
+  ).trim();
+  const resolvedFranchise = franchiseParam
+    ? resolveDccHostedFranchiseBySlugOrAlias(franchiseParam)
+    : null;
+
+  if (franchiseParam && !resolvedFranchise) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: `Hosted franchise "${franchiseParam}" not found in DCC canonical registry.`,
+      },
+      { status: 404, headers: BASE_MACHINE_HEADERS },
+    );
+  }
+
   const includeHeldParam = searchParams.get("includeHeld");
   const includeHeld =
     includeHeldParam === null
@@ -90,6 +117,7 @@ async function handleCatalogRequest(request: NextRequest, headOnly: boolean) {
   const snapshot = getDccCanonicalHostedCatalogSnapshot({
     theme,
     organizerSlug: resolvedOrganizer?.organizerSlug ?? null,
+    franchiseSlug: resolvedFranchise?.franchiseSlug ?? null,
     includeHeld,
   });
 
@@ -147,6 +175,33 @@ async function handleCatalogRequest(request: NextRequest, headOnly: boolean) {
       etag,
       snapshotRfc8785Sha256: snapshotSha256,
       latestLedgerCursor: latestCursorToken,
+      cacheIsolationVersion: {
+        contractVersion: snapshot.contractVersion,
+        snapshotId: snapshot.snapshotId,
+        generatedAt: snapshot.generatedAt,
+        snapshotRfc8785Sha256: snapshotSha256,
+        latestLedgerCursor: latestCursorToken,
+        cacheKeyAxes: [
+          "cruiseLine",
+          "shipSlug",
+          "sailDate",
+          "itineraryVersion",
+          "sourceVersion",
+          "organizerSlug",
+          "sailingSlug",
+        ],
+      },
+      structuredDataPolicy: {
+        defaultHostedDepartureSchema:
+          "WebPage + BreadcrumbList (with truthful Organization and Place relationships)",
+        defaultFranchiseSchema: "CollectionPage + BreadcrumbList",
+        automaticEventMarkupEnabled: false,
+        offersPriceAvailabilityAndRatingsDisabledByDefault: true,
+        richResultsTestValidationAloneSufficient: false,
+        explicitHostedEventAllowlistCount: EXPLICIT_HOSTED_EVENT_SCHEMA_ALLOWLIST.length,
+        explicitFranchiseEventSeriesAllowlistCount:
+          EXPLICIT_FRANCHISE_EVENT_SERIES_ALLOWLIST.length,
+      },
       incrementalChangesEndpoint: `/api/v1/cruises/hosted-catalog/changes?since=${latestCursorToken}`,
       zeroFeeOrganizerPolicy: ZERO_FEE_ORGANIZER_POLICY,
       systemOfRecordOwnership: SYSTEM_OF_RECORD_OWNERSHIP,
@@ -160,6 +215,7 @@ async function handleCatalogRequest(request: NextRequest, headOnly: boolean) {
         ? {
             fieldProvenance: {
               organizersByEntityId: provenanceBundle.organizersByEntityId,
+              franchisesByEntityId: provenanceBundle.franchisesByEntityId,
               hostedSailingsByEntityId: provenanceBundle.hostedSailingsByEntityId,
             },
           }
@@ -174,10 +230,16 @@ async function handleCatalogRequest(request: NextRequest, headOnly: boolean) {
         valid: integrity.valid,
         violationCount: integrity.violations.length,
       },
+      physicalSailingReuseMetrics: computePhysicalSailingReuseMetrics(snapshot.hostedSailings),
+      canonicalShipsSummary: getDccCanonicalShipsSummary(),
+      canonicalShips: CANONICAL_DCC_SHIPS,
       counts: {
         themes: snapshot.themes.length,
         organizers: snapshot.organizers.length,
+        franchises: (snapshot.franchises ?? []).length,
         hostedSailings: snapshot.hostedSailings.length,
+        canonicalShips: CANONICAL_DCC_SHIPS.length,
+        heldInsufficientEvidence: (snapshot.heldInsufficientEvidenceItems ?? []).length,
         heldPendingScheduleVerification: snapshot.hostedSailings.filter((s) =>
           Boolean(s.scheduleHoldReason),
         ).length,

@@ -16,10 +16,12 @@ import {
 import {
   CANONICAL_HOSTED_CRUISE_CONTRACT_VERSION,
   type CanonicalHostedCatalogSnapshot,
+  type CanonicalHostedFranchiseFactRecord,
   type CanonicalHostedOrganizerFactRecord,
   type CanonicalHostedSailingFactRecord,
 } from "./canonicalHostedCruiseContract";
 import {
+  DCC_CANONICAL_HOSTED_FRANCHISES,
   DCC_CANONICAL_HOSTED_ORGANIZERS,
   DCC_CANONICAL_HOSTED_SAILINGS,
   DCC_RECENT_CATALOG_CHANGE_EVENTS,
@@ -434,6 +436,41 @@ export const HOSTED_FIELD_AUTHORITY_MATRIX: Record<string, HostedFieldPermission
     defaultUsageRights: "factual_reference_reusable",
     description: "Reputation Graph compatible hosted-sailing entity ID (rep:hosted-sailing:<org>:<sailing>).",
   },
+  franchiseId: {
+    fieldName: "franchiseId",
+    authority: "dcc_only",
+    defaultSourceAuthority: "dcc_verified_research",
+    defaultUsageRights: "factual_reference_reusable",
+    description: "Permanent canonical franchise entity ID (hosted-franchise:<slug>).",
+  },
+  reputationFranchiseEntityId: {
+    fieldName: "reputationFranchiseEntityId",
+    authority: "dcc_only",
+    defaultSourceAuthority: "dcc_verified_research",
+    defaultUsageRights: "factual_reference_reusable",
+    description: "Reputation Graph compatible franchise entity ID (rep:hosted-franchise:<slug>).",
+  },
+  franchiseSlug: {
+    fieldName: "franchiseSlug",
+    authority: "dcc_only",
+    defaultSourceAuthority: "dcc_verified_research",
+    defaultUsageRights: "factual_reference_reusable",
+    description: "Canonical URL slug for the recurring franchise series.",
+  },
+  producerOrganizerId: {
+    fieldName: "producerOrganizerId",
+    authority: "dcc_only",
+    defaultSourceAuthority: "dcc_verified_research",
+    defaultUsageRights: "factual_reference_reusable",
+    description: "Canonical producer/organizer ID owning or operating the franchise.",
+  },
+  relationshipToProducer: {
+    fieldName: "relationshipToProducer",
+    authority: "dcc_only",
+    defaultSourceAuthority: "dcc_verified_research",
+    defaultUsageRights: "factual_reference_reusable",
+    description: "Canonical relationship between producer organizer and recurring franchise.",
+  },
   knownBrandAliases: {
     fieldName: "knownBrandAliases",
     authority: "dcc_only",
@@ -697,7 +734,12 @@ export function evaluateVerifyOnceReuse(params: {
 
 export interface AllocatedCanonicalEntityIdentifier {
   entityId: string;
-  entityKind: "physical_sailing" | "hosted_organizer" | "hosted_sailing" | "private_community";
+  entityKind:
+    | "physical_sailing"
+    | "hosted_organizer"
+    | "hosted_franchise"
+    | "hosted_sailing"
+    | "private_community";
   bindingSignature: string;
   status: "active" | "retired_never_recycle";
   allocatedAt: string;
@@ -707,6 +749,7 @@ export interface AllocatedCanonicalEntityIdentifier {
 export class HostedCanonicalIdentifierRegistry {
   private readonly allocated = new Map<string, AllocatedCanonicalEntityIdentifier>();
   private readonly aliasToOrganizerId = new Map<string, string>();
+  private readonly aliasToFranchiseId = new Map<string, string>();
 
   constructor(seedFromCanonicalCatalog = true) {
     if (seedFromCanonicalCatalog) {
@@ -720,6 +763,18 @@ export class HostedCanonicalIdentifierRegistry {
         this.registerOrganizerAlias(org.organizerSlug, org.organizerId);
         for (const alias of org.aliases) {
           this.registerOrganizerAlias(alias, org.organizerId);
+        }
+      }
+      for (const fr of DCC_CANONICAL_HOSTED_FRANCHISES) {
+        this.registerEntityId({
+          entityId: fr.franchiseId,
+          entityKind: "hosted_franchise",
+          bindingSignature: `franchise:${fr.franchiseSlug.toLowerCase()}|producer:${fr.producerOrganizerId}`,
+          allocatedAt: fr.verifiedSourceCheckedAt,
+        });
+        this.registerFranchiseAlias(fr.franchiseSlug, fr.franchiseId);
+        for (const alias of fr.aliases) {
+          this.registerFranchiseAlias(alias, fr.franchiseId);
         }
       }
       for (const hs of DCC_CANONICAL_HOSTED_SAILINGS) {
@@ -807,6 +862,21 @@ export class HostedCanonicalIdentifierRegistry {
     return this.aliasToOrganizerId.get(slugOrAlias.trim().toLowerCase()) ?? null;
   }
 
+  registerFranchiseAlias(aliasOrSlug: string, franchiseId: string): void {
+    const clean = aliasOrSlug.trim().toLowerCase();
+    const existing = this.aliasToFranchiseId.get(clean);
+    if (existing && existing !== franchiseId) {
+      throw new HostedIdentifierRecyclingForbiddenError(
+        `CANONICAL_ENTITY_ID_RECYCLING_FORBIDDEN: Franchise slug/alias "${clean}" is permanently bound to "${existing}" and cannot be reassigned to "${franchiseId}".`,
+      );
+    }
+    this.aliasToFranchiseId.set(clean, franchiseId);
+  }
+
+  resolveFranchiseId(slugOrAlias: string): string | null {
+    return this.aliasToFranchiseId.get(slugOrAlias.trim().toLowerCase()) ?? null;
+  }
+
   getSummaryCounts() {
     let active = 0;
     let retired = 0;
@@ -819,6 +889,7 @@ export class HostedCanonicalIdentifierRegistry {
       active,
       retiredNeverRecycle: retired,
       registeredOrganizerSlugsAndAliases: this.aliasToOrganizerId.size,
+      registeredFranchiseSlugsAndAliases: this.aliasToFranchiseId.size,
     };
   }
 }
@@ -845,7 +916,7 @@ export interface HostedProvenanceLedgerEvent {
   suppliedBy: string;
   sourceAuthority: HostedSourceAuthority;
   usageRights: HostedUsageRights;
-  entityType: "physical_sailing" | "hosted_organizer" | "hosted_sailing";
+  entityType: "physical_sailing" | "hosted_organizer" | "hosted_franchise" | "hosted_sailing";
   entityId: string;
   changedFields: ReadonlyArray<string>;
   beforeValues: Record<string, unknown>;
@@ -921,7 +992,7 @@ export class HostedCatalogProvenanceLedger {
     suppliedBy: string;
     sourceAuthority: HostedSourceAuthority;
     usageRights: HostedUsageRights;
-    entityType: "physical_sailing" | "hosted_organizer" | "hosted_sailing";
+    entityType: "physical_sailing" | "hosted_organizer" | "hosted_franchise" | "hosted_sailing";
     entityId: string;
     changedFields: string[];
     beforeValues: Record<string, unknown>;
@@ -1218,11 +1289,27 @@ const TRACKED_ORGANIZER_PROVENANCE_FIELDS: ReadonlyArray<
   "cabinBookingPolicyNote",
 ];
 
+const TRACKED_FRANCHISE_PROVENANCE_FIELDS: ReadonlyArray<
+  keyof CanonicalHostedFranchiseFactRecord & string
+> = [
+  "franchiseId",
+  "reputationFranchiseEntityId",
+  "franchiseSlug",
+  "producerOrganizerId",
+  "relationshipToProducer",
+  "officialWebsiteUrl",
+  "independentSummary",
+  "departureAnnouncementStatus",
+  "verificationState",
+];
+
 const TRACKED_SAILING_PROVENANCE_FIELDS: ReadonlyArray<
   keyof CanonicalHostedSailingFactRecord & string
 > = [
   "hostedSailingId",
   "reputationSailingEntityId",
+  "franchiseId",
+  "franchiseSlug",
   "physicalSailingId",
   "canonicalLineCode",
   "canonicalShipSlug",
@@ -1238,6 +1325,32 @@ const TRACKED_SAILING_PROVENANCE_FIELDS: ReadonlyArray<
   "soloFriendly",
   "familyPolicy",
 ];
+
+export function buildFranchiseFieldProvenanceMap(
+  fr: CanonicalHostedFranchiseFactRecord,
+  ledger = getDccHostedProvenanceLedger(),
+): Record<string, HostedFieldProvenance> {
+  const out: Record<string, HostedFieldProvenance> = {};
+  for (const field of TRACKED_FRANCHISE_PROVENANCE_FIELDS) {
+    const override = ledger.getFieldProvenanceOverride(fr.franchiseId, field);
+    if (override) {
+      out[field] = override;
+      continue;
+    }
+    const spec = HOSTED_FIELD_AUTHORITY_MATRIX[field];
+    const val = fr[field];
+    out[field] = {
+      suppliedBy: "dcc:catalog-research",
+      suppliedAt: fr.verifiedSourceCheckedAt,
+      sourceAuthority: spec?.defaultSourceAuthority ?? "dcc_verified_research",
+      usageRights: spec?.defaultUsageRights ?? "factual_reference_reusable",
+      dccVerified: true,
+      lastCheckedAt: fr.verifiedSourceCheckedAt,
+      verifiedOnceFingerprint: computeVerifiedOnceFingerprint(fr.franchiseId, field, val),
+    };
+  }
+  return out;
+}
 
 export function buildOrganizerFieldProvenanceMap(
   org: CanonicalHostedOrganizerFactRecord,
@@ -1308,6 +1421,7 @@ export function buildHostedCatalogFieldProvenance(
   ledger = getDccHostedProvenanceLedger(),
 ): {
   organizersByEntityId: Record<string, Record<string, HostedFieldProvenance>>;
+  franchisesByEntityId: Record<string, Record<string, HostedFieldProvenance>>;
   hostedSailingsByEntityId: Record<string, Record<string, HostedFieldProvenance>>;
   summary: {
     verifiedFieldCount: number;
@@ -1316,6 +1430,7 @@ export function buildHostedCatalogFieldProvenance(
   };
 } {
   const organizersByEntityId: Record<string, Record<string, HostedFieldProvenance>> = {};
+  const franchisesByEntityId: Record<string, Record<string, HostedFieldProvenance>> = {};
   const hostedSailingsByEntityId: Record<string, Record<string, HostedFieldProvenance>> = {};
   let verifiedFieldCount = 0;
   let heldUnverifiedFieldCount = 0;
@@ -1323,6 +1438,15 @@ export function buildHostedCatalogFieldProvenance(
   for (const org of snapshot.organizers) {
     const map = buildOrganizerFieldProvenanceMap(org, ledger);
     organizersByEntityId[org.organizerId] = map;
+    for (const p of Object.values(map)) {
+      if (p.dccVerified) verifiedFieldCount += 1;
+      else heldUnverifiedFieldCount += 1;
+    }
+  }
+
+  for (const fr of snapshot.franchises || []) {
+    const map = buildFranchiseFieldProvenanceMap(fr, ledger);
+    franchisesByEntityId[fr.franchiseId] = map;
     for (const p of Object.values(map)) {
       if (p.dccVerified) verifiedFieldCount += 1;
       else heldUnverifiedFieldCount += 1;
@@ -1340,6 +1464,7 @@ export function buildHostedCatalogFieldProvenance(
 
   return {
     organizersByEntityId,
+    franchisesByEntityId,
     hostedSailingsByEntityId,
     summary: {
       verifiedFieldCount,
