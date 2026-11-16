@@ -53,6 +53,91 @@ interface VerificationQueueItemView {
   createdAt: string;
 }
 
+interface PilotFunnelEntryView {
+  organizerSlug: string;
+  organizerName: string;
+  primarySailingSlug: string;
+  sailingTitle: string;
+  publicSailingUrl: string;
+  organizerClaimUrl: string;
+  sailingLinkWithUtm: string;
+  claimLinkWithUtm: string;
+  funnel: {
+    emailSentAndDelivered: {
+      status:
+        | "not_sent_awaiting_owner_approval"
+        | "sent"
+        | "delivered"
+        | "bounced_or_failed";
+      recipientEmail: string;
+      sentAt: string | null;
+      deliveredAt: string | null;
+      resendMessageId: string | null;
+    };
+    organizerPageVisit: {
+      visited: boolean;
+      totalPageViews: number;
+      workspaceVisits: number;
+      trackedOutreachVisits: number;
+      lastVisitedAt: string | null;
+      lastOutreachUtmContent: string | null;
+    };
+    claimOrApplicationStarted: {
+      started: boolean;
+      claimStartedCount: number;
+      lastStartedAt: string | null;
+    };
+    durableSubmissionReceived: {
+      received: boolean;
+      genuineCount: number;
+      latestSubmissionId: string | null;
+      latestSubmittedAt: string | null;
+      latestCompletionState: string | null;
+    };
+    workspaceClaimed: {
+      claimed: boolean;
+      claimedStatus: "unclaimed" | "pending_verification" | "verified";
+      hasWorkspaceKey: boolean;
+      claimedAt: string | null;
+    };
+    sailingBoardOpened: {
+      opened: boolean;
+      boardProvisioned: boolean;
+      boardOpenedCount: number;
+      lastBoardOpenedAt: string | null;
+    };
+    firstTravelerJoined: {
+      joined: boolean;
+      genuineTravelerPartiesCount: number;
+      firstJoinedAt: string | null;
+    };
+    firstActivityPinned: {
+      pinned: boolean;
+      pinnedActivitiesCount: number;
+      firstPinnedAt: string | null;
+    };
+    failuresRequiringAttention: {
+      attentionRequired: boolean;
+      count: number;
+      items: Array<{ source: string; summary: string; occurredAt: string }>;
+    };
+  };
+}
+
+interface PilotMonitoringView {
+  generatedAt: string;
+  outreachSentCount: number;
+  pilots: PilotFunnelEntryView[];
+  syntheticCanaryAuditStatus: {
+    canarySubmissionId: string;
+    presentAsResolvedAuditRecord: boolean;
+    excludedFromAllGenuineLeadAndConversionCounts: boolean;
+    realOrganizersCompletedWorkflowCount: number;
+    readyForPrivacyDeleteReminder: boolean;
+    reminderBannerMessage: string;
+  };
+}
+
 type FilterKey =
   | "all"
   | "organizer_interest"
@@ -69,9 +154,12 @@ export default function DurableSubmissionsOwnerPanel({
 }) {
   const [loading, setLoading] = useState(true);
   const [cpBaseUrl, setCpBaseUrl] = useState("https://cruisepromenade.com");
+  const [genuineCount, setGenuineCount] = useState(0);
+  const [testCount, setTestCount] = useState(0);
   const [needsAttentionCount, setNeedsAttentionCount] = useState(0);
   const [submissions, setSubmissions] = useState<DurableSubmissionView[]>([]);
   const [verificationQueue, setVerificationQueue] = useState<VerificationQueueItemView[]>([]);
+  const [pilotMonitoring, setPilotMonitoring] = useState<PilotMonitoringView | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -84,9 +172,12 @@ export default function DurableSubmissionsOwnerPanel({
       if (res.ok) {
         const body = await res.json();
         setCpBaseUrl(body.cpBaseUrl || "https://cruisepromenade.com");
+        setGenuineCount(body.counts?.genuineCount ?? 0);
+        setTestCount(body.counts?.testCount ?? 0);
         setNeedsAttentionCount(body.counts?.needsAttentionCount ?? 0);
         setSubmissions(body.submissions ?? []);
         setVerificationQueue(body.dccVerificationQueue ?? []);
+        setPilotMonitoring(body.pilotMonitoring ?? null);
       }
     } finally {
       setLoading(false);
@@ -110,6 +201,30 @@ export default function DurableSubmissionsOwnerPanel({
           submissionId,
           action,
           ownerNotes: noteDrafts[submissionId] ?? undefined,
+          cpPreviewUrl,
+        }),
+      });
+      await loadSnapshot();
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function updatePilotEmailState(
+    organizerSlug: string,
+    recipientEmail: string,
+    status: "not_sent_awaiting_owner_approval" | "sent" | "delivered" | "bounced_or_failed",
+  ) {
+    setBusyId(`pilot:${organizerSlug}`);
+    try {
+      await fetch("/api/admin/durable-submissions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_pilot_email_state",
+          organizerSlug,
+          recipientEmail,
+          status,
           cpPreviewUrl,
         }),
       });
@@ -165,6 +280,12 @@ export default function DurableSubmissionsOwnerPanel({
             <span className="rounded-full bg-teal-500/20 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-teal-200">
               Founding Pilot &amp; Durable Interest Recovery
             </span>
+            <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-bold text-emerald-200">
+              Genuine Leads: {genuineCount}
+            </span>
+            <span className="rounded-full bg-fuchsia-500/20 px-2.5 py-0.5 text-xs font-bold text-fuchsia-200">
+              Excluded Synthetic Audits: {testCount}
+            </span>
             <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 text-xs font-bold text-amber-200">
               Needs Attention: {needsAttentionCount}
             </span>
@@ -193,6 +314,219 @@ export default function DurableSubmissionsOwnerPanel({
           </a>
         </div>
       </div>
+
+      {pilotMonitoring && (
+        <div
+          data-testid="dcc-wave1-pilot-monitor"
+          className="mt-4 rounded-xl border border-teal-500/30 bg-zinc-950/85 p-4"
+        >
+          {pilotMonitoring.syntheticCanaryAuditStatus.presentAsResolvedAuditRecord && (
+            <div
+              data-testid="dcc-canary-audit-banner"
+              className={`mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3.5 py-2.5 text-xs ${
+                pilotMonitoring.syntheticCanaryAuditStatus.readyForPrivacyDeleteReminder
+                  ? "border-amber-400/60 bg-amber-500/15 text-amber-100"
+                  : "border-zinc-700 bg-zinc-900/90 text-zinc-300"
+              }`}
+            >
+              <div>
+                <strong className="text-white">
+                  Audit Isolation ({pilotMonitoring.syntheticCanaryAuditStatus.canarySubmissionId}):
+                </strong>{" "}
+                {pilotMonitoring.syntheticCanaryAuditStatus.reminderBannerMessage}
+              </div>
+              {pilotMonitoring.syntheticCanaryAuditStatus.readyForPrivacyDeleteReminder && (
+                <button
+                  type="button"
+                  disabled={busyId === pilotMonitoring.syntheticCanaryAuditStatus.canarySubmissionId}
+                  onClick={() =>
+                    void runOwnerAction(
+                      pilotMonitoring.syntheticCanaryAuditStatus.canarySubmissionId,
+                      "privacy_delete",
+                    )
+                  }
+                  className="rounded bg-rose-600 px-3 py-1 font-bold text-white hover:bg-rose-500"
+                >
+                  Privacy Delete {pilotMonitoring.syntheticCanaryAuditStatus.canarySubmissionId}
+                </button>
+              )}
+            </div>
+          )}
+
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-wider text-teal-300">
+                Wave 1 Safe Founding Pilots — 9-Step Live Funnel Monitor
+              </h3>
+              <p className="text-xs text-zinc-400">
+                Outreach Sent: <strong>{pilotMonitoring.outreachSentCount}</strong> · Disputed
+                prospects (Online Itinerant, King Con, Fan Cruise) remain held, noindex &amp;
+                uncontacted
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            {pilotMonitoring.pilots.map((pilot) => {
+              const f = pilot.funnel;
+              const emailLabel =
+                f.emailSentAndDelivered.status === "delivered"
+                  ? "Delivered"
+                  : f.emailSentAndDelivered.status === "sent"
+                    ? "Sent (Awaiting Delivery Confirm)"
+                    : f.emailSentAndDelivered.status === "bounced_or_failed"
+                      ? "Bounced / Failed"
+                      : "Hold — Awaiting Erich Approval (0 Sent)";
+
+              return (
+                <div
+                  key={pilot.organizerSlug}
+                  data-testid={`dcc-pilot-card-${pilot.organizerSlug}`}
+                  className="rounded-xl border border-zinc-800 bg-zinc-900/90 p-3.5 text-xs"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2 border-b border-zinc-800 pb-2.5">
+                    <div>
+                      <strong className="text-sm text-white">{pilot.organizerName}</strong>
+                      <div className="text-zinc-400">{pilot.sailingTitle}</div>
+                      <div className="mt-0.5 text-zinc-400">
+                        Recipient: <code>{f.emailSentAndDelivered.recipientEmail}</code>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      <a
+                        href={pilot.publicSailingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-teal-200 hover:bg-zinc-700"
+                      >
+                        Sailing Page ↗
+                      </a>
+                      <a
+                        href={pilot.organizerClaimUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-cyan-200 hover:bg-zinc-700"
+                      >
+                        Claim Hub ↗
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="mt-2.5 grid gap-1.5 sm:grid-cols-2">
+                    <div className="rounded border border-zinc-800 bg-zinc-950/75 px-2.5 py-1.5">
+                      <div className="text-zinc-400">1. Email Sent &amp; Delivered</div>
+                      <div className="font-semibold text-amber-200">{emailLabel}</div>
+                    </div>
+                    <div className="rounded border border-zinc-800 bg-zinc-950/75 px-2.5 py-1.5">
+                      <div className="text-zinc-400">2. Organizer Page Visit</div>
+                      <div className="font-semibold text-zinc-100">
+                        Outreach Clicks: {f.organizerPageVisit.trackedOutreachVisits} · Total:{" "}
+                        {f.organizerPageVisit.totalPageViews + f.organizerPageVisit.workspaceVisits}
+                      </div>
+                    </div>
+                    <div className="rounded border border-zinc-800 bg-zinc-950/75 px-2.5 py-1.5">
+                      <div className="text-zinc-400">3. Claim / Application Started</div>
+                      <div className="font-semibold text-zinc-100">
+                        {f.claimOrApplicationStarted.started
+                          ? `Yes (${f.claimOrApplicationStarted.claimStartedCount})`
+                          : "Not yet (0)"}
+                      </div>
+                    </div>
+                    <div className="rounded border border-zinc-800 bg-zinc-950/75 px-2.5 py-1.5">
+                      <div className="text-zinc-400">4. Durable Submission Received</div>
+                      <div className="font-semibold text-zinc-100">
+                        {f.durableSubmissionReceived.received
+                          ? `${f.durableSubmissionReceived.genuineCount} (${f.durableSubmissionReceived.latestSubmissionId})`
+                          : "0 genuine submissions"}
+                      </div>
+                    </div>
+                    <div className="rounded border border-zinc-800 bg-zinc-950/75 px-2.5 py-1.5">
+                      <div className="text-zinc-400">5. Workspace Claimed</div>
+                      <div className="font-semibold text-zinc-100">
+                        {f.workspaceClaimed.claimed
+                          ? "Verified & Claimed"
+                          : f.workspaceClaimed.claimedStatus}
+                      </div>
+                    </div>
+                    <div className="rounded border border-zinc-800 bg-zinc-950/75 px-2.5 py-1.5">
+                      <div className="text-zinc-400">6. Sailing Board Opened</div>
+                      <div className="font-semibold text-zinc-100">
+                        {f.sailingBoardOpened.opened
+                          ? `Opened (${f.sailingBoardOpened.boardOpenedCount} views)`
+                          : "Not opened yet (0)"}
+                      </div>
+                    </div>
+                    <div className="rounded border border-zinc-800 bg-zinc-950/75 px-2.5 py-1.5">
+                      <div className="text-zinc-400">7. First Traveler Joined</div>
+                      <div className="font-semibold text-zinc-100">
+                        {f.firstTravelerJoined.joined
+                          ? `${f.firstTravelerJoined.genuineTravelerPartiesCount} parties joined`
+                          : "0 parties"}
+                      </div>
+                    </div>
+                    <div className="rounded border border-zinc-800 bg-zinc-950/75 px-2.5 py-1.5">
+                      <div className="text-zinc-400">8. First Activity Pinned</div>
+                      <div className="font-semibold text-zinc-100">
+                        {f.firstActivityPinned.pinned
+                          ? `${f.firstActivityPinned.pinnedActivitiesCount} pinned`
+                          : "0 pinned"}
+                      </div>
+                    </div>
+                    <div
+                      className={`rounded border px-2.5 py-1.5 sm:col-span-2 ${
+                        f.failuresRequiringAttention.attentionRequired
+                          ? "border-rose-500/50 bg-rose-950/40 text-rose-200"
+                          : "border-zinc-800 bg-zinc-950/75 text-emerald-300"
+                      }`}
+                    >
+                      <div className="text-zinc-400">9. Any Failure Requiring Attention</div>
+                      <div className="font-semibold">
+                        {f.failuresRequiringAttention.attentionRequired
+                          ? `${f.failuresRequiringAttention.count} failure(s): ${f.failuresRequiringAttention.items
+                              .map((it) => it.summary)
+                              .join(" · ")}`
+                          : "0 failures — healthy"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-2.5 flex flex-wrap items-center gap-1.5 border-t border-zinc-800 pt-2">
+                    <span className="text-zinc-400">Manual status log (after owner send):</span>
+                    <button
+                      type="button"
+                      disabled={busyId === `pilot:${pilot.organizerSlug}`}
+                      onClick={() =>
+                        void updatePilotEmailState(
+                          pilot.organizerSlug,
+                          f.emailSentAndDelivered.recipientEmail,
+                          "sent",
+                        )
+                      }
+                      className="rounded border border-zinc-700 bg-zinc-800 px-2 py-0.5 text-zinc-200 hover:bg-zinc-700"
+                    >
+                      Log Sent
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busyId === `pilot:${pilot.organizerSlug}`}
+                      onClick={() =>
+                        void updatePilotEmailState(
+                          pilot.organizerSlug,
+                          f.emailSentAndDelivered.recipientEmail,
+                          "delivered",
+                        )
+                      }
+                      className="rounded border border-zinc-700 bg-zinc-800 px-2 py-0.5 text-emerald-200 hover:bg-zinc-700"
+                    >
+                      Log Delivered
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="mt-4 flex flex-wrap gap-2">
         {(

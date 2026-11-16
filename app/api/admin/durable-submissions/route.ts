@@ -142,6 +142,7 @@ export async function GET(request: Request) {
         },
         submissions: body.submissions ?? [],
         scheduleCorrections: body.scheduleCorrections ?? [],
+        pilotMonitoring: body.pilotMonitoring ?? null,
         dccVerificationQueue,
       },
       { status: 200, headers: PRIVATE_NO_STORE_HEADERS },

@@ -27,6 +27,18 @@ export interface FoundingPilotDraftInvitation {
   downstreamAffiliateCommissionDisclosed: true;
   previewOrganizerWorkspacePath: string;
   previewPublicSailingPaths: string[];
+  recipientEmail?: string;
+  fromAddress?: string;
+  replyToAddress?: string;
+  sailingLinkWithUtm?: string;
+  organizerClaimLinkWithUtm?: string;
+  trackingParameters?: {
+    utm_source: string;
+    utm_medium: string;
+    utm_campaign: string;
+    utm_content_sailing: string;
+    utm_content_claim: string;
+  };
   subjectLine: string;
   draftMessageBody: string;
 }
@@ -910,10 +922,24 @@ export const FOUNDING_PILOT_DRAFT_INVITATIONS: readonly FoundingPilotDraftInvita
     previewPublicSailingPaths: [
       "/hosted-cruises/stitchin-heaven/independence-of-the-seas-2027-04-11",
     ],
+    recipientEmail: "info@stitchinheaven.com",
+    fromAddress: "Erich — Cruise Promenade <concierge@cruisepromenade.com>",
+    replyToAddress: "erichroeseler123@gmail.com",
+    sailingLinkWithUtm:
+      "https://cruisepromenade.com/hosted-cruises/stitchin-heaven/independence-of-the-seas-2027-04-11?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=stitchin_heaven_sailing_page",
+    organizerClaimLinkWithUtm:
+      "https://cruisepromenade.com/organizer/hosted/stitchin-heaven?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=stitchin_heaven_claim_hub",
+    trackingParameters: {
+      utm_source: "founder_outreach",
+      utm_medium: "email",
+      utm_campaign: "founding_pilot_wave1",
+      utm_content_sailing: "stitchin_heaven_sailing_page",
+      utm_content_claim: "stitchin_heaven_claim_hub",
+    },
     subjectLine:
-      "[DRAFT — DO NOT SEND] Free shore-excursion planner for Stitchin' Heaven's 2027 Quilting Cruises (incl. non-sewing companions)",
+      "Free shared shore-day planner & printable Cruise Pack for your Apr 11, 2027 Riley Blake Quilting Cruise",
     draftMessageBody:
-      "Hi Stitchin' Heaven Travel Team,\n\nWe prepared a free ($0) Founding Organizer Pilot workspace on Cruise Promenade for your 2027 Riley Blake Quilting Cruise aboard Independence of the Seas (Apr 11–18, 2027 from Miami).\n\n• You keep 100% of quilting cruise & kit revenue: All cabin bookings remain directly on stitchinheaven.com with $0 cost and 0% commission to Cruise Promenade.\n• Ideal for both quilters and non-sewing companions: Guests can coordinate Nassau, CocoCay, Costa Maya, and Cozumel shore excursions (with partial-party splits while quilters are in sea-day classes!) and Cruise Promenade earns disclosed commissions only when travelers voluntarily book eligible downstream shore excursions.\n• Private Preview Workspace Demo: /organizer/hosted/stitchin-heaven\n\nWould love to show you the Preview workspace whenever convenient.\n\nBest,\nErich",
+      "Hi Clay, Deb & the Stitchin' Heaven Travel Team,\n\nWe put together a free ($0) group shore-day page for your April 11–18, 2027 Riley Blake Quilting Cruise aboard Independence of the Seas out of Miami so your quilters and non-sewing spouses can easily coordinate port days together:\n\nLive Sailing Page:\nhttps://cruisepromenade.com/hosted-cruises/stitchin-heaven/independence-of-the-seas-2027-04-11?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=stitchin_heaven_sailing_page\n\nWhat this gives you and your guests for free:\n• 100% of cabin & quilting package bookings stay with Stitchin' Heaven: Every registration button sends travelers straight to stitchinheaven.com—there is $0 cost to you and 0% commission on cabins or class packages.\n• Built for quilters AND non-quilting companions: Guests can see which excursions fellow quilters and spouses are joining in Nassau, Perfect Day at CocoCay, Costa Maya, and Cozumel around your Wednesday and Saturday sewing rotations.\n• Printable paper Cruise Pack (no ship Wi-Fi or app needed): Guests can print a clean paper day-by-day schedule with pier-return buffers before leaving home, and you can pin group meetups or welcome notes in minutes.\n\nIf you'd like to customize your welcome note or pin group highlights for your cruisers, you can claim your free Organizer Hub here:\nhttps://cruisepromenade.com/organizer/hosted/stitchin-heaven?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=stitchin_heaven_claim_hub\n\n(Plain-English note: Cruise Promenade earns commissions only if a traveler chooses to book an optional independent shore excursion or travel service—never from your cruise packages.)\n\nHappy to make any edits you'd like before you share it with your group.\n\nWarmly,\nErich\nCruise Promenade",
   },
   {
     pilotNumber: 5,
@@ -932,10 +958,24 @@ export const FOUNDING_PILOT_DRAFT_INVITATIONS: readonly FoundingPilotDraftInvita
     downstreamAffiliateCommissionDisclosed: true,
     previewOrganizerWorkspacePath: "/organizer/hosted/cmmc-at-sea",
     previewPublicSailingPaths: ["/hosted-cruises/cmmc-at-sea/celebrity-beyond-2027-01-17"],
+    recipientEmail: "Info@CMMCatSea.com",
+    fromAddress: "Erich — Cruise Promenade <concierge@cruisepromenade.com>",
+    replyToAddress: "erichroeseler123@gmail.com",
+    sailingLinkWithUtm:
+      "https://cruisepromenade.com/hosted-cruises/cmmc-at-sea/celebrity-beyond-2027-01-17?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=cmmc_at_sea_sailing_page",
+    organizerClaimLinkWithUtm:
+      "https://cruisepromenade.com/organizer/hosted/cmmc-at-sea?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=cmmc_at_sea_claim_hub",
+    trackingParameters: {
+      utm_source: "founder_outreach",
+      utm_medium: "email",
+      utm_campaign: "founding_pilot_wave1",
+      utm_content_sailing: "cmmc_at_sea_sailing_page",
+      utm_content_claim: "cmmc_at_sea_claim_hub",
+    },
     subjectLine:
-      "[DRAFT — DO NOT SEND] $0 Founding Organizer Workspace for CMMC at Sea 2027 (Celebrity Beyond)",
+      "Free port-day coordination page for CMMC at Sea attendees (Jan 17–24, 2027 Celebrity Beyond)",
     draftMessageBody:
-      "Hi CMMC at Sea & Edwards Performance Solutions Team,\n\nWe prepared a free ($0) Founding Organizer Pilot workspace on Cruise Promenade for CMMC at Sea 2027 aboard Celebrity Beyond (Jan 17–24, 2027 from Port Everglades).\n\n• 100% of Conference Pass & CCP training revenue stays with you: Every Conference Pass ($295) and CCP at Sea registration routes directly to your official pages—you owe Cruise Promenade $0 and 0% commission.\n• Transparent downstream disclosure: Attendees and accompanying spouses/guests can coordinate Nassau, Cozumel, and Grand Cayman port days around your Jan 19, 21 & 23 Sea Day sessions; Cruise Promenade may earn disclosed commissions only when travelers voluntarily book eligible shore excursions or travel services.\n• Private Preview Workspace Demo: /organizer/hosted/cmmc-at-sea\n\nHappy to share a quick walkthrough of the Preview workspace anytime.\n\nBest,\nErich",
+      "Hi CMMC at Sea Team,\n\nSince your group room block closed and late-registering attendees are booking staterooms independently aboard Celebrity Beyond (Jan 17–24, 2027 from Fort Lauderdale), we put together a free ($0) shared port-day page so your attendees and accompanying guests can easily connect on open port days:\n\nLive Sailing Page:\nhttps://cruisepromenade.com/hosted-cruises/cmmc-at-sea/celebrity-beyond-2027-01-17?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=cmmc_at_sea_sailing_page\n\nWhat this gives you and your attendees for free:\n• 100% of Conference Pass & training registrations stay with CMMC at Sea: Every registration button points directly to cmmcatsea.com/registration/—there is $0 cost to you and 0% commission on passes or cabins.\n• Easy open-port networking around your 3 sea-day sessions: Attendees and spouses can see who is heading ashore together in Nassau, Cozumel, and Grand Cayman (with tender timing and return-to-ship buffers built in).\n• Privacy-first & offline-ready: Attendees never enter cabin numbers, company emails, or booking codes—just a first name or handle, with a downloadable offline Cruise Pack that works without ship Wi-Fi.\n\nIf you'd like to add an official welcome note or pin networking meetups for your cohort, you can claim your free Organizer Hub here:\nhttps://cruisepromenade.com/organizer/hosted/cmmc-at-sea?utm_source=founder_outreach&utm_medium=email&utm_campaign=founding_pilot_wave1&utm_content=cmmc_at_sea_claim_hub\n\n(Plain-English note: Cruise Promenade earns commissions only if a traveler chooses to book an optional independent shore excursion or travel service—never from your conference passes or cabins.)\n\nHappy to adjust anything on the page so it fits your cohort.\n\nBest,\nErich\nCruise Promenade",
   },
 ];
 
