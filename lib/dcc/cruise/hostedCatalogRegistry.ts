@@ -2,6 +2,7 @@ import {
   CANONICAL_HOSTED_CRUISE_CONTRACT_VERSION,
   HOSTED_CRUISE_THEMES,
   validateHostedCruiseRedundancySafeguards,
+  type CanonicalHeldHostedEvidenceRecord,
   type CanonicalHostedCatalogChangeEvent,
   type CanonicalHostedCatalogSnapshot,
   type CanonicalHostedOrganizerFactRecord,
@@ -9,8 +10,8 @@ import {
   type HostedCruiseThemeSlug,
 } from "./canonicalHostedCruiseContract";
 
-export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-15T17:30:00Z" as const;
-export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-15.v2" as const;
+export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-16T08:30:00Z" as const;
+export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-16.v3" as const;
 
 export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrganizerFactRecord> = [
   {
@@ -49,12 +50,12 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.arnoscruises.com/contact-us/",
     "nonAffiliationNotice": "Cruise Promenade is an independent group-planning and shore-coordination tool. Unless claimed and verified by the organizer, this page is an independent itinerary companion and is not affiliated with or endorsed by Arno’s Bear Cruises, Royal Caribbean International, or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Book your stateroom directly through Arno’s Bear Cruises so your reservation is inside the official hosted group block. Cruise Promenade never sells cabins or competes for your cruise fare.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
     "comparableOrganizerSlugs": [
-      "atlantis-events",
-      "vacaya",
-      "pied-piper-travel",
-      "aquafest-cruises"
+      "bearcruise",
+      "adventure-bears",
+      "daddy-cruises",
+      "atlantis-events"
     ],
     "reputationEntityId": "rep:hosted-organizer:arnos-bear-cruises",
     "knownBrandAliases": [
@@ -69,7 +70,29 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Hosted group cruise organizer (Arno's Bear Cruises via bearcruiseusa.com reservation forms), selling per-person double-occupancy group cabin allotments and private group access aboard mainstream Royal Caribbean, Celebrity Cruises, and river cruise vessels.",
     "officialReservationPathSummary": "Travelers browse upcoming hosted bear group sailings on arnoscruises.com and click 'Register for Cruise' to submit a sailing-specific online reservation form hosted on bearcruiseusa.com (e.g., ArnosCruiseReservationForm.asp?CruiseID=96), or contact Arno directly by phone or email.",
     "cancellationAndParticipationPolicy": "Per Arno's official sailing reservation forms on bearcruiseusa.com, standard group deposits are refundable until the final payment cutoff unless a non-refundable deposit fare is chosen, after which tiered per-guest cancellation penalties apply (89–75 days: 25%, 74–61 days: 50%, 60–31 days: 75%, 30–0 days: 100%). Private Arno's Bear Cruises onboard events require booking within Arno's hosted group.",
-    "officialPolicyUrl": "https://bearcruiseusa.com/ArnosCruiseReservationForm.asp?CruiseID=96"
+    "officialPolicyUrl": "https://bearcruiseusa.com/ArnosCruiseReservationForm.asp?CruiseID=96",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing",
+      "river_cruise"
+    ],
+    "audienceFocusTags": [
+      "bears_cubs",
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "vesselTypeSummary": "Large mainstream & contemporary ocean ships (Royal Caribbean Oasis/Vision/Voyager class & Celebrity Edge class) plus select river voyages",
+    "approximateScaleSummary": "Hosted group block aboard ~2,400–5,500-guest mainstream ships",
+    "publishedStartingPriceSummary": "Prevailing group-block cabin rates (varies by ship & cabin category; taxes included on reservation quote)",
+    "inclusionsSummary": "Cruise fare, port taxes, main dining, and private Arno’s Bear Cruises onboard group events (gratuities extra per cruise line)",
+    "accessibilitySummary": "Official reservation forms on bearcruiseusa.com offer accessible stateroom requests (\"Accessible State rooms - Ask for pricing\") and collect disability accommodation notes for cruise-line coordination.",
+    "officialAccessibilityUrl": "https://bearcruiseusa.com/ArnosCruiseReservationForm.asp?CruiseID=96",
+    "generalAtmosphereSummary": "Warm, relaxed, social bear-and-friends community group with casual meetups, group dining, and optional clothing-optional shore beach days.",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.arnoscruises.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:atlantis-events",
@@ -104,12 +127,12 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://atlantisevents.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning platform and is not affiliated with or endorsed by Atlantis Events, Virgin Voyages, or Royal Caribbean International.",
     "cabinBookingPolicyNote": "All Atlantis ocean voyages are private full-ship charters. Reserve your cabin directly through Atlantis Events.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
     "comparableOrganizerSlugs": [
       "vacaya",
-      "olivia-travel",
-      "arnos-bear-cruises",
-      "pied-piper-travel"
+      "the-cruise-la-demence",
+      "tryst-cruises",
+      "olivia-travel"
     ],
     "reputationEntityId": "rep:hosted-organizer:atlantis-events",
     "knownBrandAliases": [
@@ -127,7 +150,27 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Full-ship LGBTQ+ charter operator (Atlantis Events, Inc., acting as charterer of the entire cruise vessel and processing cabin reservations, payment plans, and room-share assignments directly via res.atlantisevents.com).",
     "officialReservationPathSummary": "Travelers book directly online 24/7 through Atlantis's RezMagic booking portal (res.atlantisevents.com/Booking/), by calling Atlantis Guest Services at official phone line, or through an authorized travel agent.",
     "cancellationAndParticipationPolicy": "Minimum guest age is 18, and guests aged 18–21 must share a stateroom with a companion over age 25. Atlantis offers Standard, Monthly Payment Plan , and Pay-in-Full options; tiered cruise cancellation penalties start at published rate–published rate more than 180 days prior to departure and scale to 100% within 60 days of sailing .",
-    "officialPolicyUrl": "https://atlantisevents.com/terms-and-conditions"
+    "officialPolicyUrl": "https://atlantisevents.com/terms-and-conditions",
+    "organizerType": "independent_charter_operator",
+    "primaryClassification": "full_ship_charter",
+    "supportedClassifications": [
+      "full_ship_charter"
+    ],
+    "audienceFocusTags": [
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "vesselTypeSummary": "Full-ship chartered mega ocean ships & modern adults-only ships (Royal Caribbean Oasis class & Virgin Voyages Lady class)",
+    "approximateScaleSummary": "~2,770–5,400+ guests (100% full-ship buyout)",
+    "publishedStartingPriceSummary": "From $1,199–$1,799 USD per person double occupancy before port fees & gratuities (2027 ocean charters)",
+    "inclusionsSummary": "Full-ship charter stateroom, complimentary ship dining, custom concerts/comedy/cabaret/DJs, and line-specific inclusions (20+ eateries & basic Wi-Fi on Virgin; 2027 Allure adds 2 Nassau Paradise Beach Club passes, drink vouchers & 2 specialty dinners per room)",
+    "accessibilitySummary": "Dedicated ADA Compliance Coordinator (notify at booking and at least 60 days prior via Guest Special Needs Form for wheelchair-accessible cabins, medical equipment, ASL interpreters, or service animals).",
+    "officialAccessibilityUrl": "https://atlantisevents.com/accessibility",
+    "generalAtmosphereSummary": "High-energy full-ship festival atmosphere combining large-scale poolside T-dances and international DJ parties with Broadway/cabaret concerts, comedy, and open-seating dining.",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://atlantisevents.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:vacaya",
@@ -162,12 +205,12 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.myvacaya.com/contact/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning platform and is not affiliated with or endorsed by VACAYA or Celebrity Cruises.",
     "cabinBookingPolicyNote": "All VACAYA voyages are private full-ship charters. Reserve your stateroom directly through VACAYA.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
     "comparableOrganizerSlugs": [
       "atlantis-events",
       "olivia-travel",
-      "arnos-bear-cruises",
-      "pied-piper-travel"
+      "brand-g-vacations",
+      "tryst-cruises"
     ],
     "reputationEntityId": "rep:hosted-organizer:vacaya",
     "knownBrandAliases": [
@@ -185,7 +228,30 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Full-ship and full-resort LGBT+ charter operator (VACAYA, LLC, contracting entire ships/resorts and selling reservations and interest-free monthly payment plans directly through myvacaya.rezmagic.com).",
     "officialReservationPathSummary": "Travelers book online 24/7 via VACAYA's RezMagic booking portal (myvacaya.rezmagic.com/Booking/), by phone/SMS chat with V Team Vacation Planners at official phone line (Mon–Fri 10am–4pm ET), or through registered Travel Pros.",
     "cancellationAndParticipationPolicy": "Per VACAYA's FAQs, the minimum guest age is 18, and guests aged 18–20 must share a room with a companion over 25 (Terms also prohibit unaccompanied minors under 18). All cancellation fees apply to total fare plus port charges and gratuities on a tiered schedule: 10% at 300+ days, 20% (299–240 days), 40% (239–180 days), 60%–75% (at/under 180–120 days per trip schedule), 80% (119–90 days), and 100% within 89 days of departure .",
-    "officialPolicyUrl": "https://www.myvacaya.com/guest-resources/guest-terms-conditions/"
+    "officialPolicyUrl": "https://www.myvacaya.com/guest-resources/guest-terms-conditions/",
+    "organizerType": "independent_charter_operator",
+    "primaryClassification": "full_ship_charter",
+    "supportedClassifications": [
+      "full_ship_charter",
+      "river_cruise",
+      "small_ship_yacht_expedition"
+    ],
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "lesbian_queer_women",
+      "solo_friendly"
+    ],
+    "vesselTypeSummary": "Full-ship luxury/contemporary ocean liners (Celebrity Edge class), boutique expedition vessels, and European river ships",
+    "approximateScaleSummary": "~2,900–3,260 guests on big-ship charters; ~120–200 guests on river/expedition charters",
+    "publishedStartingPriceSummary": "From $1,648 USD per person double occupancy before port taxes & prepaid gratuities (2027 Caribbean Cruise)",
+    "inclusionsSummary": "Full-ship all-LGBTQIA+ charter stateroom, complimentary ship dining & room service, All-Star VACAYA entertainment, V-Dances & theme parties, Nude Sun Deck, and ReachOUT community service opportunities",
+    "accessibilitySummary": "Dedicated Accessibility Specialist (notify 90+ days prior): wheelchair-accessible cabins/seating, adapted shore tours, dietary/braille support, complimentary ASL interpreters on US-port big-ship charters, and 50/50 shared ASL cost on non-US big-ship charters.",
+    "officialAccessibilityUrl": "https://www.myvacaya.com/discover/accessibility/",
+    "generalAtmosphereSummary": "Welcoming, pan-LGBTQIA+ celebration balancing camp comedy, signature concerts, and themed V-Dances with daytime mixers and solo-traveler hospitality.",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.myvacaya.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:olivia-travel",
@@ -220,12 +286,12 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.olivia.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning platform and is not affiliated with or endorsed by Olivia Travel or Holland America Line.",
     "cabinBookingPolicyNote": "All Olivia ocean cruises are private full-ship charters. Reserve your stateroom directly through Olivia Travel.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
     "comparableOrganizerSlugs": [
-      "vacaya",
       "lesbians-aboard",
-      "atlantis-events",
-      "pied-piper-travel"
+      "vacaya",
+      "brand-g-vacations",
+      "kelligregg-travel"
     ],
     "reputationEntityId": "rep:hosted-organizer:olivia-travel",
     "knownBrandAliases": [
@@ -240,11 +306,40 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
       "youtubeUrl": "https://www.youtube.com/user/OliviaTravel",
       "tiktokUrl": "https://www.tiktok.com/@oliviatravelofficial"
     },
-    "publicReviewProfileLinks": [],
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "Olivia Verified Guest Reviews (Homepage Showcase)",
+        "url": "https://www.olivia.com/",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
     "cabinSellerIdentity": "Full-ship, luxury yacht, and riverboat charter operator for lesbians and LGBTQ+ women (The Olivia Companies, LLC, contracting vessels directly and managing bookings, no-interest payment plans, and room-share matching in-house).",
     "officialReservationPathSummary": "Travelers book online via Olivia's RezMagic portal (olivia.rezmagic.com, using trip-specific Reservation/Start?tripID=... links) or call an Olivia Travel Consultant at official phone line / official phone line (phone booking is required for Room Share Program reservations and Flex Pay).",
     "cancellationAndParticipationPolicy": "Deposits and service fees are non-refundable, and travelers must return a signed Terms & Conditions agreement within 72 hours of booking. Olivia's published cancellation penalty schedule is 50% of trip cost at 365 or more days before departure and 100% of trip cost (no refund) at 0–364 days before departure (published rate name-change fee where permitted; trip cancellation insurance strongly recommended).",
-    "officialPolicyUrl": "https://www.olivia.com/terms-and-conditions"
+    "officialPolicyUrl": "https://www.olivia.com/terms-and-conditions",
+    "organizerType": "independent_charter_operator",
+    "primaryClassification": "full_ship_charter",
+    "supportedClassifications": [
+      "full_ship_charter",
+      "river_cruise",
+      "small_ship_yacht_expedition"
+    ],
+    "audienceFocusTags": [
+      "lesbian_queer_women",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "vesselTypeSummary": "Full-ship chartered premium ocean liners (Holland America Signature class), riverboats, and expedition yachts",
+    "approximateScaleSummary": "~2,100 guests on full-ship ocean charters",
+    "publishedStartingPriceSummary": "From $999 USD per person double occupancy plus NDA fees (2027 XOXO Caribbean Cruise)",
+    "inclusionsSummary": "Full-ship women’s charter stateroom, main dining & room service, gratuities (included within NDA fees), signature women’s music concerts/comedy/workshops, and dedicated onboard Solos Coordinators",
+    "accessibilitySummary": "Onboard Specific Needs Coordinators (medical, mobility, dietary), ASL interpreters at nightly shows upon request, and trip Activity Level ratings; notify 90+ days prior and book accessible staterooms by phone.",
+    "officialAccessibilityUrl": "https://www.olivia.com/trip-planning-resources/specific-needs",
+    "generalAtmosphereSummary": "Warm, empowering women’s community atmosphere centered on live acoustic/band concerts, women’s comedy, workshops, dances, and strong solo-traveler connection.",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.olivia.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:bond-and-beyond-network",
@@ -297,7 +392,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "TravelJoy group booking portal managed by travel advisor Karen at Why Not Now Travels for Norwegian Cruise Line's Norwegian Escape",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Bond & Beyond Network so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "A a published per-person deposit secures a cabin at the locked-in group rate , with final cruise payment due December 17, 2026; cruise-specific cancellation penalty tiers are not published on the event page (general network membership fees are non-refundable per the FAQ).",
-    "officialPolicyUrl": "https://bondandbeyondnetwork.com/faq/"
+    "officialPolicyUrl": "https://bondandbeyondnetwork.com/faq/",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://bondandbeyondnetwork.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:hr-conference-cruise",
@@ -357,7 +460,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Aspect Marketing and Communications, Inc. (Mike Medoro, official organizer contact / official phone line) via its MightEvent conference and stateroom portal and direct invoicing",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through HR Conference Cruise (Aspect Marketing & Communications) so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Conference registration (published rate–published rate tiered, separate from stateroom fare) and staterooms each require a published rate per-person non-refundable deposit, with balance due by December 15, 2026 / January 15, 2027. For the April 23–28, 2027 sailing, cancellations before January 15, 2027 receive a 100% refund less the non-refundable deposit, transfers are free through March 5, 2027, and no cancellations are permitted after January 15, 2027.",
-    "officialPolicyUrl": "https://hrcruise.com/cancellations.cfm"
+    "officialPolicyUrl": "https://hrcruise.com/cancellations.cfm",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://hrcruise.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:national-reia",
@@ -411,7 +522,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "National REIA group cabin block aboard Royal Caribbean's Icon of the Seas via National REIA's official registration portal official phone line)",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through National REIA so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Open to the public (REIA membership is not required). Booking requires a published rate per-cabin deposit with final payment processed in November 2026, plus a conference fee of published rate per person or published rate per couple for guests attending educational sessions; specific cancellation penalty tiers are not published on the website.",
-    "officialPolicyUrl": "https://nationalreiacruise.com/faq/"
+    "officialPolicyUrl": "https://nationalreiacruise.com/faq/",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://nationalreiacruise.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:sea-day-cle",
@@ -460,7 +579,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Sea Day CLE (Kirton McConkie) so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Participants cannot book online with Celebrity Cruises and must book through group travel agent Sheila Lambie to join Sea Day CLE (which includes a published rate administrative fee for CLE materials and accreditation, with no additional tuition charge). Booking requires a published rate per-cabin deposit , final payment due April 1, 2027, and mandatory travel insurance.",
     "officialPolicyUrl": "https://clecruise.com/faqs",
-    "officialSocialLinks": {}
+    "officialSocialLinks": {},
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://clecruise.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:debusk-travels",
@@ -525,7 +652,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "DeBusk Travels (Terry & Denise DeBusk, Clermont, FL), an independently owned and operated Cruise Planners franchise (FL ST# 39068, official phone line)",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through DeBusk Travels so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Special group amenities and hosted onboard events are reserved exclusively for guests booked through Cruise Planners / DeBusk Travels. Requires a a published per-person deposit , refundable through April 11, 2027, followed by non-refundable deposit penalties April 12–May 10, 2027, 50% of cruise fare May 11–May 25, 2027, 75% May 26–June 24, 2027, and 100% June 25–July 10, 2027.",
-    "officialPolicyUrl": "https://www.debusktravels.com/GroupRegistrations/view/142382"
+    "officialPolicyUrl": "https://www.debusktravels.com/GroupRegistrations/view/142382",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.debusktravels.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:pied-piper-travel",
@@ -558,12 +693,12 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.piedpipertravel.com/gaygroupcruises/contact-us.php",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Pied Piper Travel or Virgin Voyages.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Pied Piper Travel so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
     "comparableOrganizerSlugs": [
-      "arnos-bear-cruises",
-      "atlantis-events",
-      "vacaya",
-      "olivia-travel"
+      "aquafest-cruises",
+      "kelligregg-travel",
+      "daddy-cruises",
+      "silver-fox-cruisers"
     ],
     "reputationEntityId": "rep:hosted-organizer:pied-piper-travel",
     "knownBrandAliases": [
@@ -578,7 +713,27 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Hosted LGBTQ+ group travel agency (Pied Piper Cruises, Inc., acting as agent for passengers and managing hosted group blocks of 15 to 900+ guests on mainstream luxury and premium cruise lines; non-Pied-Piper bookings cannot attend private group events).",
     "officialReservationPathSummary": "Travelers select a sailing from Pied Piper's Gay Group Cruises calendar (piedpipertravel.com/gaygroupcruises/calendar.php) and submit the sailing-specific secure reservation form (reservations.php?cruise_id=...), call official phone line / official phone line, or book/transfer through a certified travel agent prior to final payment.",
     "cancellationAndParticipationPolicy": "Pied Piper acts as travel agent for passengers, and exact deposit/cancellation penalty schedules follow the designated cruise line's contract as itemized on each sailing's reservation form (for example, 25% immediate deposit on the 2027 Brilliant Lady Alaska group). Per cruise line policy, only passengers booked through Pied Piper (or transferred into the group before final payment via a travel agent) may participate in Pied Piper's onboard private parties, dining groups, and hosted excursions, and Pied Piper reserves the right to cancel hosted tour components if minimum group space is not met.",
-    "officialPolicyUrl": "https://www.piedpipertravel.com/gaygroupcruises/terms-conditions.php"
+    "officialPolicyUrl": "https://www.piedpipertravel.com/gaygroupcruises/terms-conditions.php",
+    "organizerType": "travel_agency_hosted_brand",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "daddies_silver_fox"
+    ],
+    "vesselTypeSummary": "Premium & contemporary scheduled ocean ships (Celebrity, Virgin Voyages, Cunard, Royal Caribbean)",
+    "approximateScaleSummary": "Hosted LGBTQ+ group block aboard ~2,000–3,500-guest ocean liners",
+    "publishedStartingPriceSummary": null,
+    "inclusionsSummary": "Standard cruise-line inclusions (e.g., 20+ eateries, Wi-Fi & basic drinks on Virgin Voyages) plus Pied Piper private cocktail receptions, onboard host, and group dining section (subject to minimum group size)",
+    "accessibilitySummary": null,
+    "officialAccessibilityUrl": null,
+    "generalAtmosphereSummary": "Convivial, low-pressure hosted LGBTQ+ group experience since 1990 suited to travelers who prefer a classic cruise ship ambiance over round-the-clock circuit parties.",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.piedpipertravel.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:financial-connextion-cruise",
@@ -630,7 +785,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Continuing Education at Seas / Worldwide Adventure Travel official phone line, official organizer contact), exclusive booking agency for the Financial ConNEXTion Cruise Conference",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Financial ConNEXTion Cruise so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Attendees must book their cabin through Continuing Education at Seas official phone line) rather than Royal Caribbean or outside travel agents; anyone booking outside the official group block is barred from attending conference sessions. Reservations and group rate lock are due by November 12, 2026, with a sliding-scale cruise cancellation policy that generally provides a full refund when canceled more than 75 days prior to departure.",
-    "officialPolicyUrl": "https://www.financialconnextioncruise.com/supporting-chapters"
+    "officialPolicyUrl": "https://www.financialconnextioncruise.com/supporting-chapters",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.financialconnextioncruise.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:dance-fun",
@@ -682,7 +845,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Dance Fun Cruises in partnership with travel advisor Jennifer Cameron at Practically Perfect Vacations, Inc. (official organizer contact, FL ST41677 / CA T187216) via Tern booking request portal",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Dance Fun Cruises so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "All participants must book their cabin through DanceFun with no exceptions—guests who book outside the group block cannot purchase a dance pass or attend nightly dances, workshops, parties, shore excursions, or group dining. The Alaska 2027 Dance Fun package fee is published rate per person in addition to cruise fare; standard DanceFun cruise deposits range from published rate–published rate per person with final payment due roughly 90 days prior to sailing and written cancellation required.",
-    "officialPolicyUrl": "https://dancefun.com/dance-cruise-faqs/"
+    "officialPolicyUrl": "https://dancefun.com/dance-cruise-faqs/",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://dancefun.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:wine-masters-cruises",
@@ -726,7 +897,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Wine Masters Cruises so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Group event participation requires booking inside Wine Masters Cruises’s official block or charter inventory; cancellation schedules follow published organizer and cruise-line terms.",
     "officialPolicyUrl": null,
-    "officialSocialLinks": {}
+    "officialSocialLinks": {},
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.winemasterscruises.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:stitchin-heaven",
@@ -788,7 +967,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Stitchin' Heaven Travel in-house cruise desk (Quitman, TX; official phone line, official organizer contact)",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Stitchin' Heaven so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Requires a a published per-person deposit at registration , with final payment due January 1, 2027. Cancellations incur 50% of total trip cost from final payment to 60 days prior to departure, 75% from 59–30 days prior, and 100% within 29 days of departure; sewing package and optional Sail & Sew fabric kit fees are non-refundable.",
-    "officialPolicyUrl": "https://cdn.shopify.com/s/files/1/0014/9458/1366/files/Travel_Terms_Conditions_1c2070a4-b5f5-418d-8395-88ee120f1d46.pdf?v=1752595663"
+    "officialPolicyUrl": "https://cdn.shopify.com/s/files/1/0014/9458/1366/files/Travel_Terms_Conditions_1c2070a4-b5f5-418d-8395-88ee120f1d46.pdf?v=1752595663",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://stitchinheaven.com/collections/quilting-cruises",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:cmmc-at-sea",
@@ -837,7 +1024,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Independent split model: Celebrity Cruises legally sells and operates the cruise cabin reservation directly to the traveler, while Edwards Performance Solutions (edwps.com) separately sells the published rate Conference Pass and optional published rate CCP certification course.",
     "officialReservationPathSummary": "Two-step unbundled booking model (since the initial DRP Intl bundled room block closed October 28, 2026): (1) purchase the published rate Defense Contractor Conference Pass (and optional published rate 4-day CCP at Sea training) from Edwards Performance Solutions at edwps.com/product/defense-contractor-conference-pass/, (2) book a cruise cabin directly with Celebrity Cruises on the Jan 17–24, 2027 Celebrity Beyond sailing, and (3) email the Celebrity booking confirmation to official organizer contact.",
     "cancellationAndParticipationPolicy": "Per cmmcatsea.com/cmmc-at-sea-101/#policies, all published rate Conference Passes and published rate CCP at Sea training registrations sold by Edwards Performance Solutions are non-refundable, while cruise cabin deposits, changes, and cancellations are governed solely by Celebrity Cruises' guest ticket terms. Every conference session attendee must hold a paid Conference Pass and email their Celebrity confirmation to official organizer contact, whereas accompanying family members sharing the cabin do not need a Conference Pass unless attending conference sessions.",
-    "officialPolicyUrl": "https://cmmcatsea.com/cmmc-at-sea-101/#policies"
+    "officialPolicyUrl": "https://cmmcatsea.com/cmmc-at-sea-101/#policies",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://cmmcatsea.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:vet-tech-life",
@@ -890,7 +1085,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Julia Stewart at McKee Travel (official organizer contact / official phone line) via TravelJoy group booking portal for staterooms, with separate CE registration administered via Success Strategies on Podia",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Vet Tech Life so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Cruise cabin and CE conference registration are purchased separately: attendees must book their cabin through group travel advisor Julia Stewart at McKee Travel (TravelJoy) to be linked to the group block and purchase CE tuition separately on Podia. Group cabin categories on TravelJoy carry non-refundable deposits and follow Royal Caribbean's cancellation schedule (25% penalty 89–75 days prior, 50% 74–61 days, 75% 60–31 days, 100% within 30 days).",
-    "officialPolicyUrl": "https://traveljoy.com/bookings/nv4Xq7XAq12wDqQpeLLECbq5"
+    "officialPolicyUrl": "https://traveljoy.com/bookings/nv4Xq7XAq12wDqQpeLLECbq5",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://vettechlife.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:michigan-wisconsin-dental-associations",
@@ -949,7 +1152,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Michigan Dental Association stateroom booking assistance (Annie McIntosh, official organizer contact) at prevailing cruise rates, or direct cabin booking with Royal Caribbean (with confirmation number emailed to MDA)",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Michigan & Wisconsin Dental Associations so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "CE course registration is billed separately from the cruise cabin (published rate MDA, WDA, or out-of-state ADA member dentist; published rate non-member dentist; published rate dental team member). Attendees may request stateroom booking assistance through MDA during registration or book directly with Royal Caribbean and submit their confirmation number to MDA; full CE registration refunds were available for cancellations through October 15, 2026.",
-    "officialPolicyUrl": null
+    "officialPolicyUrl": null,
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.dentalcruiseadventure.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:cu-conferences",
@@ -1010,7 +1221,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Jill Donati at Altair Travel and Cruises (official organizer contact / official phone line), official cruise travel agency for CU Conferences, paired with CU Conferences online conference registration",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through CU Conferences so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Bundled double-occupancy package rates (published rate–published rate per conference participant; published rate–published rate per spouse/guest, plus published rate per person taxes and fees) include the stateroom, conference tuition, Classic Beverage Package, and basic Wi-Fi. Holding a cabin requires a a published per-person deposit (which includes travel insurance), and cruise conferences follow a dedicated cancellation schedule managed through Jill Donati at Altair Travel.",
-    "officialPolicyUrl": "https://www.cuconferences.com/about-us/faqs"
+    "officialPolicyUrl": "https://www.cuconferences.com/about-us/faqs",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.cuconferences.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:travel-partners-in-dublin",
@@ -1079,7 +1298,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Travel Partners in Dublin / Travel Partners Specialty Tours (Dublin, OH; IATAN, ARC, and Travel Leaders Network affiliate, official phone line)",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Travel Partners in Dublin so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Reservations are submitted through Travel Partners Specialty Tours' online group booking form (published rate–published rate+ per person double occupancy including taxes, fees, Classic Beverage Package, and Classic Wi-Fi Package), with a deposit collected once a consultant confirms cabin availability; specific deposit amounts and cancellation penalty tiers are not published on the website.",
-    "officialPolicyUrl": null
+    "officialPolicyUrl": null,
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.travelpartnersindublin.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:singlescruise",
@@ -1133,7 +1360,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Hosted singles group travel agency (Travel Leaders Leisure Group, LLC / The Vacation Group operating SinglesCruise.com, selling hosted group cabin allotments and bundled private singles event access; travelers must book through SinglesCruise to attend private onboard singles events).",
     "officialReservationPathSummary": "Travelers browse hosted singles sailings on singlescruise.com/all-cruises/ and click 'BOOK ONLINE' to register directly in SinglesCruise's MyAgentMate group booking portal (e.g., app.myagentmate.com/Public/Groups/GrpRegistration.aspx?g=MTUyMzM0&s=MTk2MjY%3d), submit a 'REQUEST QUOTE' form (singlescruise.com/quote/?sailing=...), or call official phone line / official phone line. All cabin deposits and final payments are processed through SinglesCruise rather than directly with the cruise line.",
     "cancellationAndParticipationPolicy": "Per singlescruise.com/your-experience/ FAQs, all SinglesCruise group participants must be 21 years of age or older and must book their cabin directly through SinglesCruise (typically with final payment due 90 days before sailing) to receive credentials for private singles parties, speed meeting, and group dining; optional SinglesCruise shore excursions are non-refundable, and SinglesCruise reserves the right to sail un-hosted if minimum group counts are not met. Note: SinglesCruise's dedicated /terms/ page currently returns HTTP 404 during site maintenance, so exact cruise cabin cancellation fee tiers are not currently published on singlescruise.com.",
-    "officialPolicyUrl": "https://www.singlescruise.com/your-experience/"
+    "officialPolicyUrl": "https://www.singlescruise.com/your-experience/",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.singlescruise.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:pickleball-at-sea",
@@ -1187,7 +1422,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Pickleball At Sea Group Cruise (published rate/person Experience Deposit) in partnership with Escape Group Cruises (FL Seller of Travel ST15578 / CST 2090937-50, official phone line, official organizer contact), which processes stateroom reservations and cruise final payments",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Pickleball At Sea (Escape Group Cruises) so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Booking requires a non-refundable, non-cancellable published rate per-person Experience Deposit paid to Pickleball At Sea Group Cruise (transferable once to another sailing up to 7 days prior to departure), followed by a Reservation Intake Form and stateroom deposit/balance paid through Escape Group Cruises. Final cruise payment is due at least 90 days prior to departure and is subject to Royal Caribbean's standard cancellation schedule.",
-    "officialPolicyUrl": "https://www.pickleballatseagroupcruise.com/policies/refund-policy"
+    "officialPolicyUrl": "https://www.pickleballatseagroupcruise.com/policies/refund-policy",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.pickleballatseagroupcruise.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:cruise-and-crop",
@@ -1241,7 +1484,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Cruise & Crop / Dream Vacations franchise owned by Cheri Thomas & Gail Pastor (official organizer contact / official organizer contact)",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Cruise & Crop so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Attendees MUST book their cabin through Cruise & Crop—anyone booking directly with Holland America or another travel agent cannot participate in the conference. Requires a published rate per-person cruise deposit plus a published rate per-crafter Participant Fee (published rate non-refundable deposit at booking; published rate balance due with final payment on November 6, 2026 and non-refundable thereafter; non-crafting roommates are exempt), and cancellations after deposit incur a published rate per-person Cruise & Crop administrative fee plus cruise line penalties.",
-    "officialPolicyUrl": "https://www.cruiseandcrop.com/StampinAtSea2027.html"
+    "officialPolicyUrl": "https://www.cruiseandcrop.com/StampinAtSea2027.html",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.cruiseandcrop.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:krouse-travel",
@@ -1296,7 +1547,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Krouse Travel, Inc. (full-service travel agency in York and Lancaster, PA; independent affiliate of Travel Planners International, CST #2063964-50 / FL #DT-27389 / WA UBI #602-232-785, and Signature Travel Network member), booking into its Norwegian Cruise Line group block",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Krouse Travel so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Reservations for Tammy's 7-Night Bermuda Retirement Cruise require a a published per-person deposit with final payment due January 22, 2027, and a Krouse Travel escort accompanies the group when minimum group participation is met. Per Krouse Travel's published Terms & Conditions, bookings are subject to supplier cancellation penalties and optional agency re-booking fees.",
-    "officialPolicyUrl": "https://krousetravel.com/downloads/files/krouse-travel-terms-and-conditions-2025.pdf"
+    "officialPolicyUrl": "https://krousetravel.com/downloads/files/krouse-travel-terms-and-conditions-2025.pdf",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://krousetravel.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:bribeck-travel",
@@ -1353,7 +1612,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Cruise Planners - Becki Bozart / BriBeck Travel (independently owned and operated Cruise Planners franchise in St. Helens, OR; FL ST #39068, CA CST #2034468-50, WA UBI #603-399-504), processing cabin bookings and deposits directly with Royal Caribbean International",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through BriBeck Travel so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Special group amenities and events on SOWERS 2027 are strictly exclusive to guests booked through Cruise Planners (Becki Bozart). Registrations require a a published per-person deposit for 1–2 passengers (processed directly with the cruise line within 7 days of registration), and Royal Caribbean's tiered cancellation penalties apply up to 100% within 7 days of sailing.",
-    "officialPolicyUrl": "https://www.bribecktravel.com/GroupRegistrations/view/139004"
+    "officialPolicyUrl": "https://www.bribecktravel.com/GroupRegistrations/view/139004",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.bribecktravel.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:welcome-home-rgv",
@@ -1408,7 +1675,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Welcome Home Travel & Tours (in-house Tours & Travel Department of Welcome Home RGV LLC in McAllen, TX, led by Travel Manager Kristy Meyer; affiliated with Travel Leaders Network, CLIA, and ASTA)",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Welcome Home Travel & Tours so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Reservations for Cruise with Kristi require a non-refundable and non-transferable a published per-person deposit, with final payment due October 15, 2026. Published package rates include round-trip motorcoach transfers from the Rio Grande Valley, a pre-cruise hotel night with breakfast, port charges, taxes, prepaid gratuities, and cruise insurance.",
-    "officialPolicyUrl": "https://welcomehomergv.com/tours-travel/cruise-vacations/cruisewithkristi/"
+    "officialPolicyUrl": "https://welcomehomergv.com/tours-travel/cruise-vacations/cruisewithkristi/",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://welcomehomergv.com/tours-travel/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:quick-quick-slow-travel",
@@ -1459,7 +1734,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Two-step booking: Quick Quick Slow Travel, Inc. collects the registration packet and mandatory Full Dancer Package event fee, then assigns cabins into its Norwegian Cruise Line Groups Department block (Group ID #3020592), where guests pay cabin deposits and balances directly to NCL",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Quick Quick Slow Travel so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Participants must book within Quick Quick Slow Travel's NCL group block and pay a mandatory, non-refundable published rate per person Full Dancer Package event fee prior to paying NCL (transferable only with prior approval and a published rate transfer fee; rare outside-booking exceptions cost published rate). A published rate per cabin deposit is due to NCL within 5 business days of NCL's payment email, and final cruise payment is due June 1, 2027 (non-refundable thereafter).",
-    "officialPolicyUrl": "https://www.quickquickslowtravel.com/terms-of-service"
+    "officialPolicyUrl": "https://www.quickquickslowtravel.com/terms-of-service",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.quickquickslowtravel.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:alice-travel-bridge-cruises",
@@ -1509,7 +1792,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Alice Travel Bridge Cruises so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "All bridge tournament fees, shipboard gratuities, and a Group Travel Protection Plan (for guests with a U.S. address) are bundled into Alice Travel's group cruise fare, requiring participants to book through the Alice Travel Bridge Desk. Applicable cruise cancellation penalties apply, and lecturer or instructor substitutions do not entitle guests to refunds.",
     "officialPolicyUrl": "https://alicetravelbridgecruises.com/faq",
-    "officialSocialLinks": {}
+    "officialSocialLinks": {},
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://alicetravelbridgecruises.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:travel-with-donna",
@@ -1579,7 +1870,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Travel with Donna LLC (Donna Peterson, Certified Travel Advisor in Ventnor City, NJ, operating as an independent affiliate of Nexion Travel Group)",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Travel with Donna LLC so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Group event participation requires booking inside Travel with Donna LLC’s official block or charter inventory; cancellation schedules follow published organizer and cruise-line terms.",
-    "officialPolicyUrl": null
+    "officialPolicyUrl": null,
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.travelwithdonna.vip/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:moody-radio",
@@ -1633,7 +1932,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Inspiration Cruises & Tours / Inspiration Travel (CST #2008327-40, Fresno, CA; official phone line), official Christian cruise management and cabin reservation partner for Moody Radio",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Moody Radio so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "All onboard Bible teaching, concerts, and group events (including a published rate conference cost built into package rates) are exclusive to guests who book through Inspiration Travel. Reservations require a published rate per passenger deposit with final payment due February 15, 2027; written cancellations incur a published rate fee through March 2, 2027 and escalate to 100% (non-refundable) on or after April 16, 2027.",
-    "officialPolicyUrl": "https://www.inspirationtravel.com/event/moody-radio-alaska-cruise-2027#faqs"
+    "officialPolicyUrl": "https://www.inspirationtravel.com/event/moody-radio-alaska-cruise-2027#faqs",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.moodyradio.org/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:templeton-tours",
@@ -1684,7 +1991,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Templeton Tours so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Because Singing at Sea is a full-ship Christian charter of Carnival Glory (with onboard bars and casino closed), all staterooms must be booked directly through Templeton Tours. Reservations require a a published per-person deposit, a published rate second payment by July 29, 2026, and final payment 60 days prior to sailing (November 25, 2026); written cancellations incur published rate/person (>60 days), 25% (60–30 days), 50% (29–15 days), and 100% within 14 days of sailing.",
     "officialPolicyUrl": "https://templetontours.com/singingatsea/conditions.shtml",
-    "officialSocialLinks": {}
+    "officialSocialLinks": {},
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://templetontours.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:craft-cruises",
@@ -1736,7 +2051,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "officialReservationPathSummary": "Travelers browse specialty fiber/craft sailings on craftcruises.com/featured_cruises.php and request a custom cabin + class package quote or register by calling Craft Cruises Reservations at official phone line (877-97-CRAFT) or submitting the inquiry form at craftcruises.com/contact_us.php.",
     "cancellationAndParticipationPolicy": "Per craftcruises.com/terms_and_conditions.php, all Craft Cruises class program fees, private group shore excursions, and planning fees are 100% non-refundable once paid. For cruise cabin cancellations, Craft Cruises charges a published rate per-person administrative cancellation fee (and up to published rate per change/rebooking plus a published rate late final-payment fee) on top of the underlying cruise line's cancellation penalties.",
     "officialPolicyUrl": "https://www.craftcruises.com/terms_and_conditions.php",
-    "officialSocialLinks": {}
+    "officialSocialLinks": {},
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.craftcruises.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:aquafest-cruises",
@@ -1770,12 +2093,12 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://aquafestcruises.com/contact/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Aquafest Cruises or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Aquafest Cruises so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
     "comparableOrganizerSlugs": [
-      "arnos-bear-cruises",
-      "atlantis-events",
-      "vacaya",
-      "olivia-travel"
+      "pied-piper-travel",
+      "traveling-gays-getaways",
+      "big-gay-cruise",
+      "daddy-cruises"
     ],
     "reputationEntityId": "rep:hosted-organizer:aquafest-cruises",
     "knownBrandAliases": [
@@ -1790,7 +2113,27 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Hosted LGBT+ group cruise agency (Aquafest Cruises, a division of CruiseCenter / Atlas Partners LLC, acting as retail cruise travel agency for hosted groups of 50 to 500+ passengers; private onboard events are restricted exclusively to guests booked through Aquafest).",
     "officialReservationPathSummary": "Travelers review per-sailing pricing on aquafestcruises.com and book by calling an Aquafest Cruise Consultant at official phone line or submitting a web inquiry on aquafestcruises.com/contact/ (Aquafest explicitly states on its pricing/terms pages that it does not accept electronic transmission of credit cards online). A published rate non-refundable booking processing fee and a published rate per-person Aquafest Private Group Fee (at final payment) apply.",
     "cancellationAndParticipationPolicy": "Cruise-line cancellation penalties begin approximately 120–75 days prior to departure and increase up to 100%, in addition to Aquafest's published rate non-refundable booking processing fee and a published rate per-cabin Aquafest cancellation fee . Only guests who book their cabin directly through Aquafest are admitted to Aquafest's private parties, entertainment, hospitality desk, and group dining, and hosted programming requires a minimum of 50 group guests.",
-    "officialPolicyUrl": "https://aquafestcruises.com/terms/"
+    "officialPolicyUrl": "https://aquafestcruises.com/terms/",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "vesselTypeSummary": "Mainstream & premium ocean cruise ships (Celebrity Millennium/Solstice class, Royal Caribbean, Princess)",
+    "approximateScaleSummary": "Hosted LGBTQ+ group block aboard ~2,150–3,500-guest ocean ships",
+    "publishedStartingPriceSummary": "From $903–$1,460 USD per person double occupancy before port taxes & $100 pp Aquafest Private Group Fee (2027 Halloween Transatlantic)",
+    "inclusionsSummary": "Cruise fare, main dining, $50/cabin onboard credit, and Aquafest private cocktail parties, games, 26th Annual Halloween Costume Contest with cash/prizes, and hosted group dining",
+    "accessibilitySummary": null,
+    "officialAccessibilityUrl": null,
+    "generalAtmosphereSummary": "Friendly, affordability-focused hosted LGBTQ+ & friends social group known for its signature annual Halloween costume cruise, movie/game afternoons, and nightly group dinners.",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://aquafestcruises.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:living-passages",
@@ -1851,7 +2194,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Living Passages (Coeur d'Alene, ID; official phone line; IATA- and Virtuoso-affiliated biblical tour and cruise operator, processing tour and cabin registrations via its Travel Management Inc. Zoho registration portal)",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Living Passages so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Cruise and tour packages are custom-bundled by Living Passages (including private biblical shore excursions, teachings, accommodations, and selected gratuities), with cash/check discounts and major credit cards accepted. Per the official FAQ, refund eligibility and cancellation penalties vary per tour based on cancellation timing and final payment deadlines as specified in each trip's brochure terms and conditions, with optional trip insurance available upon booking.",
-    "officialPolicyUrl": "https://livingpassages.com/faqs/"
+    "officialPolicyUrl": "https://livingpassages.com/faqs/",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://livingpassages.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:lesbians-aboard",
@@ -1884,12 +2235,12 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://lesbiansaboard.com/contact-us",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Lesbians Aboard or Virgin Voyages.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Lesbians Aboard so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
     "comparableOrganizerSlugs": [
-      "arnos-bear-cruises",
-      "atlantis-events",
+      "olivia-travel",
       "vacaya",
-      "olivia-travel"
+      "kelligregg-travel",
+      "traveling-gays-getaways"
     ],
     "reputationEntityId": "rep:hosted-organizer:lesbians-aboard",
     "reservationPortalDomain": "virginvoyages.com",
@@ -1906,7 +2257,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicReviewProfileLinks": [
       {
         "platform": "official_testimonials",
-        "label": "Lesbians Aboard Official Testimonials",
+        "label": "Lesbians Aboard Official Guest Testimonials",
         "url": "https://lesbiansaboard.com/testimonials",
         "authorizationBasis": "official_site_linked"
       }
@@ -1914,7 +2265,27 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Cruise-line direct sale via dedicated First Mate travel advisor: Virgin Voyages legally sells and operates the cabin reservation, while co-host Natasha DeJesus (independent Virgin Voyages Top 100 First Mate, agencyId=477, agentId=140537) serves as advisor of record and hosts the Lesbians Aboard group at no extra membership or event fee.",
     "officialReservationPathSummary": "Travelers click 'Check Prices & Availability' on a Lesbians Aboard sailing page to book directly inside Virgin Voyages' official checkout portal via Natasha DeJesus's First Mate referral link (virginvoyages.com/book/voyage-planner/... with agencyId=477 & agentId=140537) at published rate extra group fee, or submit a booking inquiry on lesbiansaboard.com/contact-us / call official phone line so Natasha attaches the cabin to the hosted group.",
     "cancellationAndParticipationPolicy": "There is no separate Lesbians Aboard group fee when booked through co-host Natasha DeJesus's Virgin Voyages advisor link, and all onboard group meetups and dinners are optional. All cabin fares, deposits, cancellations, Sailor conduct rules, and onboard operations are governed directly by Virgin Voyages' standard Sailor contract and ship security policies.",
-    "officialPolicyUrl": "https://lesbiansaboard.com/faq"
+    "officialPolicyUrl": "https://lesbiansaboard.com/faq",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "audienceFocusTags": [
+      "lesbian_queer_women",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "vesselTypeSummary": "Modern 18+ adults-only ocean ships (Virgin Voyages Lady class)",
+    "approximateScaleSummary": "Hosted queer-women community group aboard ~2,770-guest Virgin Voyages ships",
+    "publishedStartingPriceSummary": "Live Virgin Voyages prevailing cabin fares ($0 extra Lesbians Aboard group fee)",
+    "inclusionsSummary": "Virgin Voyages inclusions (20+ eateries, Wi-Fi, basic beverages, fitness classes) plus $0-fee Lesbians Aboard private group chat, hosted meetups, group dinners, and onboard swag bag",
+    "accessibilitySummary": null,
+    "officialAccessibilityUrl": null,
+    "generalAtmosphereSummary": "Relaxed, inclusive queer-women & trans/non-binary friendly hosted meetup group aboard 18+ Virgin Voyages with zero extra organizer markup.",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://lesbiansaboard.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:fintalks",
@@ -1966,7 +2337,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Amberly Grant acting directly as the group's travel agent , booking staterooms and processing deposits and final payments via credit card authorization form within the FinTalks Royal Caribbean group block",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through FinTalks (Amberly Grant) so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "All attendees must book their stateroom directly through Amberly Grant's FinTalks group block; outside bookings do not receive group rates and are strictly excluded from all FinTalks onboard activities. Participation requires a non-refundable published rate per person event fee (waived for paid FinTalks members and guests under 18), a cruise deposit via credit card authorization form to confirm the cabin, and final cruise payment 90 days before sailing.",
-    "officialPolicyUrl": "https://www.amberlygrant.com/caribbean-cruise-icon"
+    "officialPolicyUrl": "https://www.amberlygrant.com/caribbean-cruise-icon",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.amberlygrant.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:acquisition-lab",
@@ -2030,7 +2409,15 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Acquisition Lab (Acquisition Lab Ops LLC) via its dedicated summit registration portal (register.acquireit.com), selling all-inclusive Virgin Voyages Summit cabin packages directly on a per-cabin basis",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Acquisition Lab so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "Attendees must book their cabin directly through Acquisition Lab at register.acquireit.com; cabins booked directly with Virgin Voyages or third parties are ineligible for Summit sessions, receptions, or group dinners. Cabins are priced per stateroom (for 1 or 2 guests) on a 3-installment schedule (20% deposit at booking, 40% due October 31, 2026, and 40% due November 30, 2026) and may be transferred to another Lab member at no cost until a few weeks before sailing.",
-    "officialPolicyUrl": "https://acquisitionlab.com/events/annual-summit-2027"
+    "officialPolicyUrl": "https://acquisitionlab.com/events/annual-summit-2027",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://acquisitionlab.com/",
+    "verificationState": "verified"
   },
   {
     "organizerId": "hosted-organizer:marketers-cruise",
@@ -2080,7 +2467,1195 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "cabinSellerIdentity": "Little Shop Of Cruises - Special Events At Sea (SpecialEventsAtSea.com, led by co-founder Captain Lou Edwards), exclusive group cruise agency and reservation desk for the Marketers Cruise",
     "officialReservationPathSummary": "Register and book your stateroom or conference pass directly through Marketers Cruise (Special Events at Sea) so your reservation stays inside the official group.",
     "cancellationAndParticipationPolicy": "All participants must book through the official Marketers Cruise group package at marketerscruise.com/checkout (name badge and VIP wristband required); guests booking directly with Carnival or third-party sites are strictly excluded from all mastermind sessions, group dinners, parties, excursions, directory listings, and the private Facebook group. Deposits carry free change protection until final payment is due on September 15, 2026, with a 2-payment plan available.",
-    "officialPolicyUrl": "https://marketerscruise.com/"
+    "officialPolicyUrl": "https://marketerscruise.com/",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://marketerscruise.com/",
+    "verificationState": "verified"
+  },
+  {
+    "organizerId": "hosted-organizer:brand-g-vacations",
+    "reputationEntityId": "rep:hosted-organizer:brand-g-vacations",
+    "organizerSlug": "brand-g-vacations",
+    "aliases": [
+      "brand-g",
+      "brandg",
+      "brandg-vacations"
+    ],
+    "knownBrandAliases": [
+      "Brand g",
+      "Brand G Vacations"
+    ],
+    "organizerName": "Brand g Vacations",
+    "shortName": "Brand g",
+    "categoryLabel": "All-Inclusive LGBTQ+ River & Small-Ship Luxury Charters",
+    "organizerType": "independent_charter_operator",
+    "primaryClassification": "river_cruise",
+    "supportedClassifications": [
+      "river_cruise",
+      "small_ship_yacht_expedition",
+      "full_ship_charter"
+    ],
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [],
+    "tagline": "All-inclusive full-ship LGBTQ+ luxury river cruises and intimate small-ship & expedition charters since 2011.",
+    "independentSummary": "Founded in 2011, Brand g Vacations charters entire boutique riverboats across Europe and Asia as well as <200-guest luxury superyachts and expedition vessels for LGBT+ adults (21+) and allies. Fares bundle airport transfers, unlimited beverages, curated shore excursions, and signature cabaret entertainment.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "LGBT+ adults (strictly 21+, welcoming gay men, lesbians, bisexual & trans guests, couples, solos, and allies; average age mid-50s).",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "lesbian_queer_women",
+      "solo_friendly"
+    ],
+    "typicalHostedProgramming": "Nightly Brand g Signature cabaret, comedy, and vocal performers, themed deck/lounge parties, cocktail socials, and included daily guided shore excursions.",
+    "generalAtmosphereSummary": "Upscale, relaxed 4.5-to-5-star sightseeing and social luxury ambiance prioritizing cultural immersion, culinary quality, and intimate community connection over all-night mega-ship raves.",
+    "typicalCharterModel": "full_ship_charter",
+    "vesselTypeSummary": "Deluxe European & Mekong river cruise ships (~40–158 guests, e.g., Amadeus fleet) and small luxury/expedition yachts (~100–198 guests, e.g., Atlas Ocean Voyages)",
+    "approximateScaleSummary": "~40–198 guests (100% private full-vessel charters)",
+    "publishedStartingPriceSummary": "From $4,899 USD pp double on European river charters; from $7,499–$8,499 USD pp double on luxury small-ship ocean charters",
+    "inclusionsSummary": "Arrival/departure airport transfers, all onboard meals, unlimited beer/wine/select or premium spirits/soft drinks, daily guided shore excursions with wireless headsets, and Brand g Signature entertainment & hosts",
+    "soloSupportSummary": "Dedicated single-occupancy cabins on select riverboats (e.g., C-4 Single on Amadeus Aurea), reduced solo supplements (+$2,500–$5,000) in select categories, and Brand g’s vetted \"CARE TO SHARE\" private Facebook roommate-matching group.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": "Limited physical accessibility: guests using mobility devices or oxygen must notify Brand g in writing at booking and travel with an able-bodied companion; wheel-on/wheel-off access is not available at ports of call and guests are strongly advised to navigate ship stairs unassisted.",
+    "officialAccessibilityUrl": "https://www.brandgvacations.com/faq/",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "goodForTags": [
+      "All-inclusive luxury",
+      "River cruises",
+      "Small-ship charters",
+      "21+ adults only"
+    ],
+    "heroVisualKey": "port-budapest-parliament-danube",
+    "officialWebsiteUrl": "https://www.brandgvacations.com/",
+    "officialDomain": "brandgvacations.com",
+    "reservationPortalDomain": "brandg.rezmagic.com",
+    "publicContactPageUrl": "https://www.brandgvacations.com/contact-us/",
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/brandgvacations/",
+      "instagramUrl": "https://www.instagram.com/brandgvacations/",
+      "youtubeUrl": "https://www.youtube.com/channel/UCGPdKkBCGsJSJpmEkm5AaqQ"
+    },
+    "cabinSellerIdentity": "Independent full-ship LGBTQ+ luxury river and small-ship charter operator (Brand g Vacations, processing reservations via brandg.rezmagic.com).",
+    "officialReservationPathSummary": "Travelers reserve online 24/7 via Brand g’s RezMagic booking portal (brandg.rezmagic.com), by phone (+1-952-405-9309), or through an accredited travel advisor.",
+    "cancellationAndParticipationPolicy": "Minimum guest age is strictly 21. Mandatory port charges and prepaid gratuities are itemized per departure; comprehensive cancellation terms and travel protection options are published on brandgvacations.com/reservations/.",
+    "officialPolicyUrl": "https://www.brandgvacations.com/reservations/",
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "Brand g Vacations Official Guest Testimonials",
+        "url": "https://www.brandgvacations.com/testimonials/",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Brand g Vacations, Amadeus River Cruises, or Atlas Ocean Voyages.",
+    "cabinBookingPolicyNote": "All Brand g departures are private full-vessel charters. Reserve your suite or stateroom directly with Brand g Vacations.",
+    "primarySourceUrl": "https://www.brandgvacations.com/",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": [
+      "source-journeys",
+      "vacaya",
+      "uniworld-out-on-the-rivers",
+      "kelligregg-travel"
+    ]
+  },
+  {
+    "organizerId": "hosted-organizer:the-cruise-la-demence",
+    "reputationEntityId": "rep:hosted-organizer:the-cruise-la-demence",
+    "organizerSlug": "the-cruise-la-demence",
+    "aliases": [
+      "lademence-cruise",
+      "the-cruise",
+      "la-demence-cruise"
+    ],
+    "knownBrandAliases": [
+      "The Cruise",
+      "The Cruise by La Démence",
+      "La Démence Cruise",
+      "BV SPLASH"
+    ],
+    "organizerName": "The Cruise powered by La Démence",
+    "shortName": "The Cruise (La Démence)",
+    "categoryLabel": "European Full-Ship Gay Festival Cruise Charter",
+    "organizerType": "independent_charter_operator",
+    "primaryClassification": "full_ship_charter",
+    "supportedClassifications": [
+      "full_ship_charter"
+    ],
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "music-cruises"
+    ],
+    "tagline": "Europe’s flagship full-ship gay summer cruise charter produced by Brussels club institution La Démence.",
+    "independentSummary": "Produced by Brussels-based BV SPLASH (the team behind La Démence), The Cruise charters an entire mainstream premium ocean ship—Celebrity Equinox for 9 nights in July 2027—combining Mediterranean port days with open-air sunrise DJ parties, sunset Tea Dances, cabaret shows, and an international European crowd.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "Primarily European and international gay men (strictly 18+), with lesbians, queer women, and allies warmly welcomed.",
+    "audienceFocusTags": [
+      "gay_men",
+      "all_lgbtq",
+      "clothing_optional_nude"
+    ],
+    "typicalHostedProgramming": "Afternoon poolside chill DJs, Sunset Tea Dances, open-air Night Parties until sunrise with resident & international DJs, indoor after-parties, nightly theater shows, Mister The Cruise & High Heels Run camp games, nudist sun deck, and 24-hour playroom.",
+    "generalAtmosphereSummary": "High-energy, multilingual European \"friendly village\" club & festival atmosphere blending sunny Mediterranean sightseeing with world-renowned Brussels house/techno/pop nightlife.",
+    "typicalCharterModel": "full_ship_charter",
+    "vesselTypeSummary": "Solstice-class premium ocean cruise liner (Celebrity Equinox)",
+    "approximateScaleSummary": "~2,852 passengers across 1,426 staterooms (100% full-ship charter)",
+    "publishedStartingPriceSummary": "From €1,499 EUR per person double occupancy (2027 9-night Western Mediterranean charter, including port taxes & cabin staff gratuities)",
+    "inclusionsSummary": "9-night stateroom, 24h dining (à-la-carte restaurant, extended & late-night buffets), basic non-alcoholic dining beverages, port taxes, cabin staff gratuities, and all onboard parties & shows",
+    "soloSupportSummary": "For 2027, the organizer discontinued blind single-share matching; instead, solo guests connect and pair directly in the official Facebook Roommate Group (facebook.com/groups/4150595788539836) with split payment, or book 200% single occupancy with the right to add a second guest free until June 30, 2027, plus hosted singles dinners onboard.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": null,
+    "officialAccessibilityUrl": null,
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "goodForTags": [
+      "Full-ship charter",
+      "European DJ nightlife",
+      "18+ adults only",
+      "Taxes & tips included"
+    ],
+    "heroVisualKey": "port-barcelona-port-vell",
+    "officialWebsiteUrl": "https://the-cruise.eu/",
+    "officialDomain": "the-cruise.eu",
+    "publicContactPageUrl": "https://the-cruise.eu/contact",
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/lademencecruise",
+      "instagramUrl": "https://www.instagram.com/thecruisebylademence/",
+      "youtubeUrl": "https://www.youtube.com/channel/UCq2J3v8EPhG7h0eWS0BFI6Q/videos"
+    },
+    "cabinSellerIdentity": "European full-ship gay charter operator (BV SPLASH, Brussels, VAT BE0469755459, member of the Belgian Travel Guarantee Fund).",
+    "officialReservationPathSummary": "Travelers book staterooms directly online at the-cruise.eu/book-now or contact BV SPLASH in Brussels (+32 3 232 96 88 / info@the-cruise.eu).",
+    "cancellationAndParticipationPolicy": "Strict minimum age 18 at boarding. Full charter passage contract and cancellation schedule are published at the-cruise.eu/downloads/passagecontract2027.pdf.",
+    "officialPolicyUrl": "https://the-cruise.eu/downloads/passagecontract2027.pdf",
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "The Cruise Official Guest Testimonials",
+        "url": "https://the-cruise.eu/discover/testimonials",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by BV SPLASH, La Démence, or Celebrity Cruises.",
+    "cabinBookingPolicyNote": "The Cruise is a private full-ship charter. Reserve your cabin directly on the-cruise.eu.",
+    "primarySourceUrl": "https://the-cruise.eu/",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": [
+      "atlantis-events",
+      "tryst-cruises",
+      "vacaya",
+      "tui-rainbow-cruise"
+    ]
+  },
+  {
+    "organizerId": "hosted-organizer:source-journeys",
+    "reputationEntityId": "rep:hosted-organizer:source-journeys",
+    "organizerSlug": "source-journeys",
+    "aliases": [
+      "source-events",
+      "sourceevents"
+    ],
+    "knownBrandAliases": [
+      "Source Events",
+      "Source Events, Inc.",
+      "Source Retreats"
+    ],
+    "organizerName": "Source Journeys",
+    "shortName": "Source Journeys",
+    "categoryLabel": "Boutique LGBTQ+ Luxury Yacht, Tall-Ship & Expedition Charters",
+    "organizerType": "small_ship_yacht_operator",
+    "primaryClassification": "small_ship_yacht_expedition",
+    "supportedClassifications": [
+      "small_ship_yacht_expedition",
+      "river_cruise",
+      "full_ship_charter",
+      "hosted_group_sailing"
+    ],
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [],
+    "tagline": "Intimate luxury LGBTQ+ tall-ship charters, Amazon & Nile riverboats, and polar/Galápagos expeditions since 2001.",
+    "independentSummary": "Founded in Miami Beach in 2001 as Source Events, Source Journeys curates boutique LGBTQ+ full-yacht charters and small-group expeditions—ranging from 20-guest Galápagos and 22-guest Amazon vessels to 140-to-224-guest Windstar tall ships and all-suite yachts.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "Discerning adult LGBTQ+ luxury travelers, couples, and solo explorers seeking intimate small-ship destinations.",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "typicalHostedProgramming": "Private cultural feasts (such as Bora Bora motu fire-dancer celebrations), Source Enrichment Talks, sunset poolside T-dances, themed deck parties under the stars, watersports marina days, and naturalist-led expeditions.",
+    "generalAtmosphereSummary": "Intimate, refined, high-touch boutique yacht and expedition camaraderie combining bucket-list natural wonders with stylish evening socials.",
+    "typicalCharterModel": "mixed",
+    "vesselTypeSummary": "4-masted sailing & all-suite yachts (140–224 guests, Windstar), luxury Amazon/Nile riverboats (22–40 guests, A&K Sanctuary), Galápagos yachts (20 guests), and polar expedition ships (<200 guests)",
+    "approximateScaleSummary": "20–224 guests per vessel",
+    "publishedStartingPriceSummary": "From $5,669–$6,899 USD pp double on Windstar yacht charters; $13,995 USD pp on A&K Pure Amazon charter",
+    "inclusionsSummary": "All gourmet dining, complimentary premium spirits/wines/beers/specialty coffees, Starlink Wi-Fi on Windstar charters, naturalist excursions & gear on river/expedition voyages, and Source parties & enrichment programming",
+    "soloSupportSummary": "Welcomes solo travelers with dedicated $0-supplement Single Cabins on Pure Amazon ($13,995 pp matching double rate) and reduced 175%–190% single supplements on select Windstar suite categories.",
+    "soloFriendly": true,
+    "familyPolicy": "not_verified",
+    "accessibilitySummary": "Per the Source Travel Contract, travelers with disabilities are welcome only if accompanied at all times by a non-discounted, paid companion providing all required assistance; guests must notify Source at booking and note that international yachts/expedition vessels may not be wheelchair accessible.",
+    "officialAccessibilityUrl": "https://sourcejourneys.com/terms-and-conditions-2/",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "goodForTags": [
+      "Boutique yachts",
+      "All-inclusive spirits & Wi-Fi",
+      "Bucket-list expeditions",
+      "Intimate scale"
+    ],
+    "heroVisualKey": "port-galapagos-bartolome-island",
+    "officialWebsiteUrl": "https://sourcejourneys.com/",
+    "officialDomain": "sourcejourneys.com",
+    "reservationPortalDomain": "sourceevents.rezmagic.com",
+    "publicContactPageUrl": "https://sourcejourneys.com/about-us/",
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/SourceJourneys/",
+      "instagramUrl": "https://instagram.com/sourcejourneys/"
+    },
+    "cabinSellerIdentity": "Boutique LGBTQ+ luxury yacht charter and expedition tour operator (Source Events, Inc. d/b/a Source Journeys, Florida Seller of Travel ST36420).",
+    "officialReservationPathSummary": "Travelers reserve suites online via Source Journeys’ RezMagic portal (sourceevents.rezmagic.com) or by calling +1-305-672-9779.",
+    "cancellationAndParticipationPolicy": "Detailed deposit, cancellation, and physical-readiness terms are published in the Source Travel Contract at sourcejourneys.com/terms-and-conditions-2/.",
+    "officialPolicyUrl": "https://sourcejourneys.com/terms-and-conditions-2/",
+    "publicReviewProfileLinks": [],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Source Journeys, Windstar Cruises, or Abercrombie & Kent.",
+    "cabinBookingPolicyNote": "Reserve suites directly through Source Journeys on sourcejourneys.com.",
+    "primarySourceUrl": "https://sourcejourneys.com/",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": [
+      "brand-g-vacations",
+      "gaysail",
+      "kelligregg-travel",
+      "vacaya"
+    ]
+  },
+  {
+    "organizerId": "hosted-organizer:gaysail",
+    "reputationEntityId": "rep:hosted-organizer:gaysail",
+    "organizerSlug": "gaysail",
+    "aliases": [
+      "gaynudesail",
+      "gay-nude-sail",
+      "gay-sail",
+      "adonisgaysailing",
+      "adonis-gay-sailing"
+    ],
+    "knownBrandAliases": [
+      "GaySail",
+      "GaySail Exclusive",
+      "GaySail Special",
+      "GayNudeSail",
+      "GayNudeSail Exclusive",
+      "GayNudeSail Special"
+    ],
+    "organizerName": "GaySail",
+    "shortName": "GaySail",
+    "categoryLabel": "Gay Sailing Catamaran & Yacht Charters (incl. GayNudeSail Sub-Brand)",
+    "organizerType": "small_ship_yacht_operator",
+    "primaryClassification": "small_ship_yacht_expedition",
+    "supportedClassifications": [
+      "small_ship_yacht_expedition"
+    ],
+    "subBrands": [
+      {
+        "subBrandSlug": "gaynudesail",
+        "subBrandName": "GayNudeSail",
+        "officialUrl": "https://gaysail.com/info/labels",
+        "relationshipSummary": "Official all-nude sailing program & sub-brand operated directly by GaySail (Amsterdam) under the same skippers, cooks, and registration system on gaysail.com/program.",
+        "intendedAudience": "Adult gay men (ages 18–72) seeking a dedicated naturist / all-day nude island-hopping catamaran sailing week.",
+        "atmosphereAndPolicySummary": "Nude all day onboard (breakfast, lunch, sailing, and secluded bay anchorages) with strict respect & photo-privacy rules (\"no dicks on pics\") and zero onboard circuit/drug parties."
+      }
+    ],
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "wellness"
+    ],
+    "tagline": "Gay-skippered island-hopping catamaran and sailing yacht flotillas—including the official GayNudeSail naturist sub-brand—for 30+ years.",
+    "independentSummary": "Headquartered in Amsterdam and operating for over 30 years with gay skippers and gay cooks, GaySail runs intimate 8-to-30-guest sailing catamaran and monohull yacht voyages across Greece, Croatia, Thailand, the British Virgin Islands, St. Martin, Côte d’Azur, and Tahiti—including dedicated naturist weeks under its official GayNudeSail program/sub-brand.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "Adult gay men ages 18–72 (core 30–55; ~60–70% solo travelers, international English-speaking crew & guests).",
+    "audienceFocusTags": [
+      "gay_men",
+      "solo_friendly",
+      "clothing_optional_nude"
+    ],
+    "typicalHostedProgramming": "Active daytime sailing between turquoise island anchorages, swimming/snorkeling off the catamaran, freshly cooked onboard breakfasts & lunches by a gay cook, sunset bay cocktails, and relaxed harbor town dinners ashore.",
+    "generalAtmosphereSummary": "Sporty, camaraderie-driven small-group sailing holiday (explicitly zero circuit/drug parties). Standard GaySail weeks are clothing-optional in secluded bays; GayNudeSail sub-brand weeks are nude all day onboard.",
+    "typicalCharterModel": "full_ship_charter",
+    "vesselTypeSummary": "38–52 ft cruising catamarans (Lagoon 420/450/520, Bali, Fountaine Pajot) and 51–53 ft monohull sailing yachts",
+    "approximateScaleSummary": "8–14 gay men per yacht (small flotillas of 1–3 yachts, 10–30 guests total)",
+    "publishedStartingPriceSummary": "From €1,595–€1,795 EUR (single bow crew cabin, 30% discount) or €2,195–€2,495 EUR pp (shared double/bunk cabin)",
+    "inclusionsSummary": "7 nights yacht berth, gay skipper & gay cook, daily breakfast & lunch, soft drinks, harbor/mooring fees, local taxes, fuel, and end cleaning (evening dinners ashore & shared alcohol handled via ~€40–€55/day guest Kitty)",
+    "soloSupportSummary": "60–70% sail solo with NO mandatory single supplement: solos pair in bunk cabins or double cabins with separate sheets, book 30%-discounted single bow crew cabins, or opt for a private double cabin (+50% to +80%).",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": "Explicitly not wheelchair or mobility accessible: guests must be in good physical health (strict maximum age 72 at departure) able to move safely on heeling decks and board small dinghies; no 220V AC power overnight at anchor (CPAP users require battery packs and private cabins if solo).",
+    "officialAccessibilityUrl": "https://gaysail.com/contact-faq",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "goodForTags": [
+      "Sailing catamarans",
+      "60–70% solo travelers",
+      "GayNudeSail program",
+      "Intimate 8–14 guest yachts"
+    ],
+    "heroVisualKey": "port-hydra-harbor-sailboats",
+    "officialWebsiteUrl": "https://gaysail.com/",
+    "officialDomain": "gaysail.com",
+    "publicContactPageUrl": "https://gaysail.com/contact-faq",
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/groups/302395024002381/"
+    },
+    "cabinSellerIdentity": "Gay-owned sailing yacht & catamaran operator (GaySail / GayNudeSail, Amstel 18, Amsterdam, directed by Mark van den Eshof).",
+    "officialReservationPathSummary": "Travelers register per berth or cabin directly on gaysail.com/program using each departure’s online Individual Registration form (50% deposit).",
+    "cancellationAndParticipationPolicy": "Adult gay men ages 18–72 only; strict zero-drugs policy onboard. Full booking, cabin-share, and cancellation terms are published on gaysail.com/contact-faq.",
+    "officialPolicyUrl": "https://gaysail.com/contact-faq",
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_guestbook",
+        "label": "GaySail & GayNudeSail Official Sailor Guestbook",
+        "url": "https://gaysail.com/info/guestbook",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by GaySail or GayNudeSail.",
+    "cabinBookingPolicyNote": "Reserve berths and cabins directly on gaysail.com/program.",
+    "primarySourceUrl": "https://gaysail.com/program",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": [
+      "source-journeys",
+      "brand-g-vacations",
+      "the-cruise-la-demence",
+      "daddy-cruises"
+    ]
+  },
+  {
+    "organizerId": "hosted-organizer:tryst-cruises",
+    "reputationEntityId": "rep:hosted-organizer:tryst-cruises",
+    "organizerSlug": "tryst-cruises",
+    "aliases": [
+      "the-tryst-cruises",
+      "tryst"
+    ],
+    "knownBrandAliases": [
+      "The Tryst Cruises",
+      "Tryst Hospitality Cruises",
+      "An Affair at Sea"
+    ],
+    "organizerName": "Tryst Cruises",
+    "shortName": "Tryst Cruises",
+    "categoryLabel": "Luxury Full-Ship LGBTQ+ Nightlife & Resort Cruise Charters",
+    "organizerType": "independent_charter_operator",
+    "primaryClassification": "full_ship_charter",
+    "supportedClassifications": [
+      "full_ship_charter"
+    ],
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "music-cruises"
+    ],
+    "tagline": "Full-ship luxury LGBTQ+ ocean charters created by Tryst Hospitality—the group behind The Abbey, Fire Island’s Pavilion, and Tryst Hotels.",
+    "independentSummary": "Launched by Tristan Schukraft’s Tryst Hospitality (CST #217376-50), Tryst Cruises operates 100% full-ship adults-only LGBTQ+ ocean charters aboard flagship vessels including Celebrity Beyond (Halloween 2027) and Wonder of the Seas (Winter 2028), pairing luxury resort hospitality with signature Tryst Drag Brunch, Tea Dances, Masterbeat DJs, and private beach club festivals.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "LGBTQ+ adults (strictly adults-only; gay men, queer revelers, couples, solo travelers, and chosen family).",
+    "audienceFocusTags": [
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "typicalHostedProgramming": "Inaugural Halloween Costume Sail-Away Party, Daddy Issues pool party, Masterbeat DJs, STAMP, World Famous Tryst Drag Brunch, poolside Tea Dances, after-dark Meat Rack Rooftop Garden takeover, and private all-inclusive Nassau Beach Club Festival.",
+    "generalAtmosphereSummary": "High-production, luxury LGBTQ+ boutique-hospitality and nightlife festival at sea—strictly adults-only (\"no kids, no chaos you didn’t ask for\").",
+    "typicalCharterModel": "full_ship_charter",
+    "vesselTypeSummary": "Contemporary luxury & mega ocean cruise liners (Celebrity Beyond & Royal Caribbean Wonder of the Seas)",
+    "approximateScaleSummary": "~3,260–5,826 guests (100% full-ship charters)",
+    "publishedStartingPriceSummary": null,
+    "inclusionsSummary": "Full-ship charter stateroom, complimentary ship dining & buffet, all Tryst Cruises parties/drag brunches/DJ programming, and private Day 6 Nassau Beach Club Festival (admission, food, alcohol & Wi-Fi at beach club included on Oct 2027 charter)",
+    "soloSupportSummary": "Offers dedicated Edge Single Staterooms with Infinite Veranda (Category ES on Celebrity Beyond) plus \"Sailor Match,\" an official cabinmate-matching program launching alongside reservations.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": null,
+    "officialAccessibilityUrl": null,
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "goodForTags": [
+      "Full-ship charter",
+      "Adults-only",
+      "Tryst Drag Brunch & DJs",
+      "Sailor Match solos"
+    ],
+    "heroVisualKey": "port-provincetown-harbor",
+    "officialWebsiteUrl": "https://trystcruises.com/",
+    "officialDomain": "trystcruises.com",
+    "publicContactPageUrl": "https://trystcruises.com/faq/",
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/trystcruises/"
+    },
+    "cabinSellerIdentity": "Full-ship LGBTQ+ cruise charter operator (Tryst Hospitality, CST #217376-50).",
+    "officialReservationPathSummary": "Travelers register for Founder Rates and book directly on trystcruises.com/staterooms-fares/ ($99/person down monthly payment plans announced).",
+    "cancellationAndParticipationPolicy": "Strictly adults-only full-ship charters. Pre-departure boarding, accessibility contact, and full fare rules publish on trystcruises.com ahead of reservations.",
+    "officialPolicyUrl": "https://trystcruises.com/faq/",
+    "publicReviewProfileLinks": [],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Tryst Cruises, Tryst Hospitality, Celebrity Cruises, or Royal Caribbean International.",
+    "cabinBookingPolicyNote": "All Tryst Cruises sailings are private full-ship charters. Book directly on trystcruises.com.",
+    "primarySourceUrl": "https://trystcruises.com/",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": [
+      "atlantis-events",
+      "vacaya",
+      "the-cruise-la-demence",
+      "big-gay-cruise"
+    ]
+  },
+  {
+    "organizerId": "hosted-organizer:big-gay-cruise",
+    "reputationEntityId": "rep:hosted-organizer:big-gay-cruise",
+    "organizerSlug": "big-gay-cruise",
+    "aliases": [
+      "bgc",
+      "the-big-gay-cruise"
+    ],
+    "knownBrandAliases": [
+      "BGC",
+      "The Big Gay Cruise",
+      "BGC Group Cruises"
+    ],
+    "organizerName": "Big Gay Cruise",
+    "shortName": "Big Gay Cruise",
+    "categoryLabel": "High-Energy Drag & Nightlife Hosted LGBTQ+ Group Cruises",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [],
+    "tagline": "Accessible drag-and-dance hosted LGBTQ+ group takeovers aboard Royal Caribbean and Virgin Voyages.",
+    "independentSummary": "Fulfilled through partner agency CruiseHelp (ARC #10504292), Big Gay Cruise organizes large hosted LGBTQ+ group blocks on commercial Royal Caribbean and Virgin Voyages sailings—delivering 40+ hours of private drag shows, RuPaul’s Drag Race headliners, Rainbow Mixers, and DJ parties via a required BGC All Access Pass.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "LGBTQ+ travelers, drag fans, couples, solo cruisers, and straight allies/friends.",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "lgbtq_families",
+      "solo_friendly"
+    ],
+    "typicalHostedProgramming": "40+ hours of private wristbanded events led by Elliott with 2 Ts and Bentley Balenciaga: RuPaul’s Drag Race queens, daily drag shows, Star Dinner with performers, Game Frenzy, nightly Rainbow Mixers, DJ dance parties, and themed nights.",
+    "generalAtmosphereSummary": "High-energy, budget-accessible drag and party takeover inside a mainstream mega-ship (colloquially marketed by BGC as a \"half-ship charter\" group block rather than a full-ship buyout).",
+    "typicalCharterModel": "hosted_group_block",
+    "vesselTypeSummary": "Mainstream mega ocean ships (Royal Caribbean Freedom & Oasis class, Virgin Voyages Lady class)",
+    "approximateScaleSummary": "Large hosted LGBTQ+ group block aboard ~3,600–5,800-guest commercial ships",
+    "publishedStartingPriceSummary": "From $739 USD pp double ($1,585 solo) incl. port taxes on 9-night Jan 2027 Southern Caribbean + mandatory $169/pp BGC All Access Pass",
+    "inclusionsSummary": "Cruise fare, port taxes & fees, shipboard dining & shows, plus private BGC shows/mixers/parties via mandatory BGC All Access Pass ($169/pp Standard or $299/pp VIP10)",
+    "soloSupportSummary": "Publishes explicit Solo Occupancy cabin rates on every sailing and allows pre-matched roommates to split cabin deposits and Entertainment Fees separately on the booking form (\"I will be splitting fees with my roommate\"); stranger roommate matching is not disclosed.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
+    "accessibilitySummary": null,
+    "officialAccessibilityUrl": null,
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "goodForTags": [
+      "Drag Race performers",
+      "Budget-friendly group rates",
+      "Solo rates published",
+      "40+ hrs private events"
+    ],
+    "heroVisualKey": "port-aruba-eagle-beach",
+    "officialWebsiteUrl": "https://biggaycruise.com/",
+    "officialDomain": "biggaycruise.com",
+    "publicContactPageUrl": "https://biggaycruise.com/bgc-events/",
+    "officialSocialLinks": {
+      "instagramUrl": "https://www.instagram.com/biggaycruise/",
+      "facebookUrl": "https://www.facebook.com/biggaycruise/"
+    },
+    "cabinSellerIdentity": "LGBTQ+ hosted cruise group producer fulfilled via CruiseHelp (lead agent Peter Enns, ARC #10504292).",
+    "officialReservationPathSummary": "Travelers submit sailing-specific booking forms directly on biggaycruise.com (e.g. /freedom-booking-form/) so cabins link to the official BGC group block and mandatory BGC All Access Pass.",
+    "cancellationAndParticipationPolicy": "Cabins require non-refundable deposits ($200–$500 per cabin by sailing length) plus mandatory BGC All Access Pass ($169/pp Standard or $299/pp VIP10) for entry to private BGC events.",
+    "officialPolicyUrl": "https://biggaycruise.com/bgc-all-access-pass/",
+    "publicReviewProfileLinks": [],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Big Gay Cruise, CruiseHelp, or Royal Caribbean International.",
+    "cabinBookingPolicyNote": "Book directly on biggaycruise.com so your cabin includes official group eligibility for the BGC All Access Pass.",
+    "primarySourceUrl": "https://biggaycruise.com/bgc-events/",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": [
+      "traveling-gays-getaways",
+      "aquafest-cruises",
+      "tryst-cruises",
+      "atlantis-events"
+    ]
+  },
+  {
+    "organizerId": "hosted-organizer:bearcruise",
+    "reputationEntityId": "rep:hosted-organizer:bearcruise",
+    "organizerSlug": "bearcruise",
+    "aliases": [
+      "bearcruise-com",
+      "dan-howell-bearcruise"
+    ],
+    "knownBrandAliases": [
+      "BearCruise.com",
+      "BearCruise Vacations",
+      "Dan Howell Travel / BearCruise.com"
+    ],
+    "organizerName": "BearCruise",
+    "shortName": "BearCruise",
+    "categoryLabel": "Hosted Bear, Cub & Friends Group Cruises (\"The Friendliest Bears Afloat\")",
+    "organizerType": "travel_agency_hosted_brand",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "primaryTheme": "bear-cruises",
+    "secondaryThemes": [
+      "lgbtq-cruises"
+    ],
+    "tagline": "\"The friendliest bears afloat\" — 100-to-400-guest hosted bear group voyages organized by Dan Howell Travel.",
+    "independentSummary": "Operated by Dan Howell Travel (completely independent of Arno’s Bear Cruises), BearCruise.com hosts 100-to-400-guest bear, cub, chub, otter, and admirer group blocks aboard Norwegian, Celebrity, and Virgin Voyages ships—complete with daily hot-tub takeovers, nightly cocktail hours, reserved group dining, interest-free monthly payment plans, and a self-vetted Solo Travelers Facebook matching program.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "Gay bears, cubs, chubs, otters, admirers, solo travelers (~25% of guests), couples, and friends.",
+    "audienceFocusTags": [
+      "bears_cubs",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "typicalHostedProgramming": "Pre-cruise host-hotel bon voyage party, daily late-afternoon pool & hot-tub takeovers, nightly cocktail hours, reserved BearCruise main dining room section, private BearCruise shore excursions (e.g. chartered St. Thomas catamaran), tea dances, games, and \"Bearoke.\"",
+    "generalAtmosphereSummary": "Warm, social, down-to-earth bear brotherhood where ~25% sail solo and daily poolside/cocktail rituals make meeting shipmates effortless.",
+    "typicalCharterModel": "hosted_group_block",
+    "vesselTypeSummary": "Mainstream & modern 18+ ocean ships (Norwegian Star, Celebrity Summit, Virgin Voyages Scarlet/Valiant Lady)",
+    "approximateScaleSummary": "100–400 BearCruise group guests aboard ~2,100–2,770-guest ocean ships",
+    "publishedStartingPriceSummary": "From $1,089 USD pp double ($2,029 solo) on 9N Oct 2027 Boston–San Juan; from $2,110 USD pp double ($3,820 solo) on 10N Aug 2027 British Isles (taxes & port fees included)",
+    "inclusionsSummary": "Cruise fare, all port taxes & fees, main dining, and BearCruise Extras (nightly cocktail hours, hot-tub takeovers, reserved group dining & private excursion access; optional Free at Sea / Celebrity perks tiers available)",
+    "soloSupportSummary": "Publishes explicit Solo Cabin fares on every departure plus an official Singles Share Program (bearcruise.com/singles-share-program/) where solo bears self-match in the BearCruise Solo Travelers Facebook Group and split reservations 50/50.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
+    "accessibilitySummary": null,
+    "officialAccessibilityUrl": null,
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "goodForTags": [
+      "100–400 bears onboard",
+      "Taxes included in quotes",
+      "Singles Share Program",
+      "Payment plans"
+    ],
+    "heroVisualKey": "port-flam-aurlandsfjord-norway",
+    "officialWebsiteUrl": "https://www.bearcruise.com/",
+    "officialDomain": "bearcruise.com",
+    "publicContactPageUrl": "https://www.bearcruise.com/bear-benefits/",
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/BearCruising",
+      "youtubeUrl": "https://youtu.be/qOeNs39AG7M"
+    },
+    "cabinSellerIdentity": "LGBTQ+ affinity travel agency & bear group cruise organizer (Dan Howell Travel / BearCruise.com, 1-866-541-2187).",
+    "officialReservationPathSummary": "Travelers reserve via sailing-specific JotForm registration links on bearcruise.com or by contacting Dan Howell directly (Dan@danhowelltravel.com / 1-866-541-2187).",
+    "cancellationAndParticipationPolicy": "BearCruise Extras are exclusive to guests booked inside the official Dan Howell Travel group block; refundable-deposit tiers ($150/pp up to ~120 days out) and interest-free monthly payment plans are offered.",
+    "officialPolicyUrl": "https://www.bearcruise.com/payment-plan/",
+    "publicReviewProfileLinks": [],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by BearCruise.com, Dan Howell Travel, Norwegian Cruise Line, or Celebrity Cruises.",
+    "cabinBookingPolicyNote": "Book directly through BearCruise.com so your reservation includes official BearCruise Extras and group dining.",
+    "primarySourceUrl": "https://www.bearcruise.com/",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": [
+      "arnos-bear-cruises",
+      "adventure-bears",
+      "daddy-cruises",
+      "silver-fox-cruisers"
+    ]
+  },
+  {
+    "organizerId": "hosted-organizer:adventure-bears",
+    "reputationEntityId": "rep:hosted-organizer:adventure-bears",
+    "organizerSlug": "adventure-bears",
+    "aliases": [
+      "adventurebears"
+    ],
+    "knownBrandAliases": [
+      "Adventure Bears, LLC",
+      "Adventure Bears Cruise"
+    ],
+    "organizerName": "Adventure Bears",
+    "shortName": "Adventure Bears",
+    "categoryLabel": "Destination-Driven Hosted Bear & Friends Cruises",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "primaryTheme": "bear-cruises",
+    "secondaryThemes": [
+      "lgbtq-cruises"
+    ],
+    "tagline": "Destination-focused hosted bear group cruises across Alaska, the Greek Isles, and the Mediterranean.",
+    "independentSummary": "Based in Wilton Manors, Florida and personally hosted by Laz Cabrera (Adventure Bears, LLC in partnership with Galaxy Travel & Cruises, LLC), Adventure Bears curates hosted bear, cub, otter, and admirer group sailings aboard Princess Cruises and 18+ Virgin Voyages—pairing scenic bucket-list itineraries like Alaska/Denali and the Greek Isles with nightly group dinners, private socials, and transparent all-in pricing.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "Gay bears, cubs, otters, admirers, solo travelers, couples, and inclusive LGBTQ+ friends.",
+    "audienceFocusTags": [
+      "bears_cubs",
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "typicalHostedProgramming": "Personal hosting by Laz Cabrera, reserved nightly group dining (or hosted group dinners on Virgin Voyages), private private group gatherings & cocktail meetups, collectible Adventure Bears T-shirt, and optional curated private shore excursions.",
+    "generalAtmosphereSummary": "Community-driven, destination-rich, relaxed bear group atmosphere explicitly structured as an intimate hosted group rather than a mega charter.",
+    "typicalCharterModel": "hosted_group_block",
+    "vesselTypeSummary": "Modern 18+ & premium mainstream ocean ships (Virgin Voyages Scarlet Lady, Princess Cruises Discovery Princess & Sun Princess)",
+    "approximateScaleSummary": "Intimate hosted bear group block aboard ~2,770–4,300-guest ocean ships",
+    "publishedStartingPriceSummary": "From $1,493 USD pp double ($2,281 single) w/ Princess Plus & taxes on May 2027 Alaska; from $1,673 USD pp + $100 group fee on Oct 2027 Greek Isles",
+    "inclusionsSummary": "Port taxes & fees, line beverage/Wi-Fi/gratuity bundles (Princess Plus included on Alaska; Virgin Always Included + Sailor Loot on Greek Isles), nightly/hosted group dining, private socials & collectible T-shirt",
+    "soloSupportSummary": "Publishes transparent Single Occupancy fares across every cabin category (including dedicated Interior Single studio cabins on select ships) and connects solo travelers via the official Adventure Bears Facebook group.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
+    "accessibilitySummary": null,
+    "officialAccessibilityUrl": null,
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "goodForTags": [
+      "Alaska & Greek Isles",
+      "All-in transparent fares",
+      "Published solo fares",
+      "Hosted by Laz Cabrera"
+    ],
+    "heroVisualKey": "port-positano-amalfi-coast",
+    "officialWebsiteUrl": "https://www.adventurebears.com/",
+    "officialDomain": "adventurebears.com",
+    "publicContactPageUrl": "https://www.adventurebears.com/contact",
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/groups/Adventurebears",
+      "instagramUrl": "https://www.instagram.com/Adventurebearscruise/"
+    },
+    "cabinSellerIdentity": "Hosted bear cruise organizer (Adventure Bears, LLC in partnership with Galaxy Travel & Cruises, LLC, Wilton Manors, FL).",
+    "officialReservationPathSummary": "Travelers complete sailing-specific online booking forms directly on adventurebears.com or contact Laz Cabrera (+1-954-646-2803 / info@adventurebears.com).",
+    "cancellationAndParticipationPolicy": "Adventure Bears explicitly notes it is not a full-ship charter and that private group dinners, socials, and perks are exclusive to guests who book directly through Adventure Bears.",
+    "officialPolicyUrl": "https://www.adventurebears.com/about",
+    "publicReviewProfileLinks": [],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Adventure Bears, LLC, Princess Cruises, or Virgin Voyages.",
+    "cabinBookingPolicyNote": "Book directly on adventurebears.com so your stateroom includes private Adventure Bears events and group perks.",
+    "primarySourceUrl": "https://www.adventurebears.com/cruises",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": [
+      "arnos-bear-cruises",
+      "bearcruise",
+      "daddy-cruises",
+      "silver-fox-cruisers"
+    ]
+  },
+  {
+    "organizerId": "hosted-organizer:daddy-cruises",
+    "reputationEntityId": "rep:hosted-organizer:daddy-cruises",
+    "organizerSlug": "daddy-cruises",
+    "aliases": [
+      "daddycruises",
+      "lets-cruise-away",
+      "letscruiseaway"
+    ],
+    "knownBrandAliases": [
+      "Daddy Cruises®",
+      "Working Solutions, Inc."
+    ],
+    "organizerName": "Daddy Cruises",
+    "shortName": "Daddy Cruises",
+    "categoryLabel": "Cross-Generational Gay Men, Daddies, Bears & Friends Group Cruises",
+    "organizerType": "travel_agency_hosted_brand",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing",
+      "river_cruise",
+      "small_ship_yacht_expedition"
+    ],
+    "primaryTheme": "bear-cruises",
+    "secondaryThemes": [
+      "lgbtq-cruises"
+    ],
+    "tagline": "\"Helping Guys of All Ages Enjoy Vacations—Together!\" — friendly hosted gay group cruises with >40% solo travelers.",
+    "independentSummary": "Organized and personally hosted by Brian Cole Miller and crew (Working Solutions, Inc. via Cruise Planners), Daddy Cruises® brings 20-to-100+ gay men of all ages, daddies, bears, admirers, solo travelers (>40% of guests), and allies together aboard Norwegian, Princess, Holland America, Cunard, and European river/yacht voyages—including an optional philanthropic \"Day of Service\" ashore.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "Gay men of all ages, sizes, and backgrounds—daddies, bears, boys, admirers, mature men, solo travelers (>40%), couples, and welcoming allies.",
+    "audienceFocusTags": [
+      "daddies_silver_fox",
+      "bears_cubs",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "typicalHostedProgramming": "Pre-cruise virtual meetups, Day 1 Welcome Aboard party with complimentary drinks & custom lanyards/swag, nightly reserved group dining tables, trivia/card games/happy hours, evening Friends of Dorothy socials, private shore tours, and optional philanthropic Day of Service.",
+    "generalAtmosphereSummary": "Friendly, conversational, community-first atmosphere explicitly described as \"not a floating bathhouse\"—built around genuine friendships, cross-generational connection, and giving back in port.",
+    "typicalCharterModel": "hosted_group_block",
+    "vesselTypeSummary": "Mainstream & premium ocean ships (Norwegian Pearl, Sky Princess, Oosterdam, Queen Mary 2) plus select Danube riverboats and Adriatic yachts",
+    "approximateScaleSummary": "20–100+ Daddy Cruises guests aboard ~2,000–3,660-guest ocean ships",
+    "publishedStartingPriceSummary": "From $1,319 USD pp double w/ Unlimited Beverage Package & 2 Specialty Dinners on Apr 2027 Bermuda (taxes & mandatory fees included)",
+    "inclusionsSummary": "Cabin fare, port taxes & mandatory fees, sailing-specific line perks (e.g., Unlimited Beverage Package & 2 Specialty Dinners on NCL Bermuda), Welcome Aboard open-bar party, custom lanyard/gifts, and nightly hosted dining",
+    "soloSupportSummary": "Over 40% sail solo: offers negotiated low single-occupancy full-sized cabins on its Annual Gay Singles & Friends Cruise, \"First Fares\" early solo pricing, and the private Daddy Cruises® Roommate Finder Facebook group + personal host matching.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
+    "accessibilitySummary": "No global standalone accessibility page, but Daddy Cruises proactively flags non-wheelchair-accessible international river/expedition trips directly on its trip cards while accommodating mobility needs per ocean cruise line.",
+    "officialAccessibilityUrl": null,
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "goodForTags": [
+      ">40% solo travelers",
+      "Daddies, bears & admirers",
+      "Day of Service philanthropy",
+      "Taxes included in quotes"
+    ],
+    "heroVisualKey": "port-nile-aswan-feluccas",
+    "officialWebsiteUrl": "https://www.daddycruises.com/",
+    "officialDomain": "daddycruises.com",
+    "publicContactPageUrl": "https://www.daddycruises.com/#us",
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/Daddy-Cruise-921672714564523/"
+    },
+    "cabinSellerIdentity": "LGBTQ+ hosted cruise group brand (Daddy Cruises® / Working Solutions, Inc., hosted by Brian Cole Miller via Cruise Planners, 614-799-1390).",
+    "officialReservationPathSummary": "Travelers review trip sheets on daddycruises.com and reserve inside the official group block through Brian Cole Miller (bmiller@cruiseplanners.com / 614-799-1390).",
+    "cancellationAndParticipationPolicy": "Group dining, private Welcome Aboard open-bar party, and Daddy Cruises shore events require booking inside the official Daddy Cruises group block.",
+    "officialPolicyUrl": "https://www.daddycruises.com/#singles",
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "Daddy Cruises® Named Guest Testimonials",
+        "url": "https://www.daddycruises.com/#testimonials",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Daddy Cruises®, Working Solutions, Inc., or Norwegian Cruise Line.",
+    "cabinBookingPolicyNote": "Reserve directly through Daddy Cruises (daddycruises.com) so your stateroom is linked to the official hosted group.",
+    "primarySourceUrl": "https://www.daddycruises.com/",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": [
+      "silver-fox-cruisers",
+      "arnos-bear-cruises",
+      "bearcruise",
+      "adventure-bears"
+    ]
+  },
+  {
+    "organizerId": "hosted-organizer:silver-fox-cruisers",
+    "reputationEntityId": "rep:hosted-organizer:silver-fox-cruisers",
+    "organizerSlug": "silver-fox-cruisers",
+    "aliases": [
+      "silverfoxcruisers",
+      "primetimers-cruises"
+    ],
+    "knownBrandAliases": [
+      "Silver Fox Cruisers",
+      "PrimeTimers of the Desert Cruise Group"
+    ],
+    "organizerName": "Silver Fox Cruisers",
+    "shortName": "Silver Fox Cruisers",
+    "categoryLabel": "Sophisticated Hosted Cruises for Senior & Mature Gay Men",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "bear-cruises"
+    ],
+    "tagline": "\"Sophisticated cruise experiences designed for senior gay men — This Is Our Time.\"",
+    "independentSummary": "Coordinated by Lonnie Dean in Palm Springs, California in partnership with PrimeTimers of the Desert, Silver Fox Cruisers hosts welcoming ocean cruises for mature and senior gay men, solo travelers, couples, and admirers aboard Celebrity, Holland America, and Azamara—featuring daily 4:00 PM PrimeTimers private cocktail receptions, group dinners, and complimentary round-trip motorcoach transfers between Palm Springs and Southern California cruise piers.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "Senior and mature gay men (\"silver foxes\"), PrimeTimers members, solo travelers, couples, and adult friends (21+).",
+    "audienceFocusTags": [
+      "daddies_silver_fox",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "typicalHostedProgramming": "Daily 4:00 PM PrimeTimers cocktail hour mixers, hosted group dinners, complimentary Silver Fox Cruisers T-shirt, select complimentary group shore excursions, and free round-trip Palm Springs charter coach bus to San Pedro / San Diego piers.",
+    "generalAtmosphereSummary": "Relaxed, refined, conversational camaraderie tailored specifically to senior and mature gay men—prioritizing easy logistics, afternoon cocktail socials, and shared dining.",
+    "typicalCharterModel": "hosted_group_block",
+    "vesselTypeSummary": "Premium & boutique ocean ships (Celebrity Summit, Holland America MS Koningsdam, Azamara Quest)",
+    "approximateScaleSummary": "Hosted community group block aboard ~700–2,650-guest premium ocean ships",
+    "publishedStartingPriceSummary": "From $1,075 USD pp double ($2,170 solo) incl. port charges & free Palm Springs–San Pedro charter bus on May 2027 Pacific Coastal",
+    "inclusionsSummary": "Cruise fare, port charges & government fees, main dining, daily 4:00 PM private cocktail receptions, Silver Fox T-shirt, and complimentary Palm Springs coach transfer on Southern California departures",
+    "soloSupportSummary": "\"Solo Travelers Welcome!\" — publishes transparent single-occupancy pricing across all stateroom categories on every sailing and connects solo guests in dedicated trip Facebook communities.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": null,
+    "officialAccessibilityUrl": null,
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "goodForTags": [
+      "Senior & mature gay men",
+      "Free Palm Springs pier bus",
+      "Published solo pricing",
+      "Daily 4pm mixers"
+    ],
+    "heroVisualKey": "port-san-diego-bay-skyline",
+    "officialWebsiteUrl": "https://silverfoxcruisers.com/",
+    "officialDomain": "silverfoxcruisers.com",
+    "publicContactPageUrl": "https://silverfoxcruisers.com/vip",
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/groups/silverfoxcruisers/"
+    },
+    "cabinSellerIdentity": "Mature gay men’s hosted cruise group coordinator (Silver Fox Cruisers / Lonnie Dean, Palm Springs, CA, 562-746-6235).",
+    "officialReservationPathSummary": "Travelers inquire and book directly via silverfoxcruisers.com sailing pages or with coordinator Lonnie Dean (info@silverfoxcruisers.com / 562-746-6235).",
+    "cancellationAndParticipationPolicy": "Adult 21+ participation waiver applies to private Silver Fox Cruisers group events and motorcoach transfers (silverfoxcruisers.com/liability-waiver).",
+    "officialPolicyUrl": "https://silverfoxcruisers.com/liability-waiver",
+    "publicReviewProfileLinks": [],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Silver Fox Cruisers, PrimeTimers of the Desert, or Celebrity Cruises.",
+    "cabinBookingPolicyNote": "Reserve directly through Silver Fox Cruisers to receive group private cocktail reception access and Palm Springs coach transfers.",
+    "primarySourceUrl": "https://silverfoxcruisers.com/",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": [
+      "daddy-cruises",
+      "pied-piper-travel",
+      "arnos-bear-cruises",
+      "bearcruise"
+    ]
+  },
+  {
+    "organizerId": "hosted-organizer:traveling-gays-getaways",
+    "reputationEntityId": "rep:hosted-organizer:traveling-gays-getaways",
+    "organizerSlug": "traveling-gays-getaways",
+    "aliases": [
+      "traveling-gays",
+      "gay-cruise-takeover",
+      "tgg"
+    ],
+    "knownBrandAliases": [
+      "TGG",
+      "Traveling Gays",
+      "TGG Gay Cruise Takeover",
+      "Gay Cruise Takeover"
+    ],
+    "organizerName": "Traveling Gays Getaways",
+    "shortName": "Traveling Gays",
+    "categoryLabel": "Zero-Markup LGBTQIA+ Hosted Cruise Takeovers & Family/Adult Groups",
+    "organizerType": "travel_agency_hosted_brand",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "family-reunions"
+    ],
+    "tagline": "\"An affordable alternative to chartered gay cruises\" — 25-to-400-cabin LGBTQIA+ group takeovers since 2004.",
+    "independentSummary": "Founded in 2004 in Arvada, Colorado and led by Executive Director Jayson Remillard (IGLTA member), Traveling Gays Getaways (also operating GayCruiseTakeover.com) organizes 25-to-400-cabin LGBTQIA+ hosted group blocks aboard Virgin Voyages, Royal Caribbean, Holland America, and Explora Journeys—charging zero cabin markup while adding 25–36+ hours of private mixers, group dinners, 2 complimentary adult drinks, and a $75/person Solo Cruiser Pairing program.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "Inclusive LGBTQIA+ travelers—offering dedicated 18+ gay-men-focused takeovers alongside all-ages LGBTQIA+ family-welcome voyages.",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "lgbtq_families",
+      "solo_friendly"
+    ],
+    "typicalHostedProgramming": "25–36+ hours of private TGG mixers, pool & hot-tub gatherings, 2 complimentary adult beverages at TGG events, TGG swag bag, reserved group dinners, and a private cruiser chat app.",
+    "generalAtmosphereSummary": "Relaxed, social, connection-driven LGBTQIA+ group takeover offering charter-scale camaraderie without charter-level cabin pricing.",
+    "typicalCharterModel": "hosted_group_block",
+    "vesselTypeSummary": "Modern 18+, mega-resort, and premium ocean ships (Virgin Scarlet Lady, RCI Star of the Seas, HAL Oosterdam, Explora IV)",
+    "approximateScaleSummary": "25–400 group cabins aboard ~922–5,610-guest ocean ships",
+    "publishedStartingPriceSummary": "From $903 USD pp double ($1,333 solo) on Apr 2027 Scarlet Lady; from $1,302 USD pp double on Feb 2027 Star of the Seas",
+    "inclusionsSummary": "Cruise-line inclusions + zero TGG cabin markup, onboard credit/Bar Tab perks on qualifying cabins, 25–36+ hours of private TGG mixers, 2 free adult drinks, and TGG swag bag",
+    "soloSupportSummary": "Dedicated Solo Cruiser Pairing service (travelinggays.com/solo-cruiser-pairing) matching solo LGBTQ+ travelers by preference for $75 per person ($150 split fee), backed by the TGG Solos Facebook Group and single-occupancy cabin quotes.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
+    "accessibilitySummary": null,
+    "officialAccessibilityUrl": null,
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "goodForTags": [
+      "Zero cabin markup",
+      "$75 Solo Cruiser Pairing",
+      "18+ & Family-welcome options",
+      "300+ cabin takeovers"
+    ],
+    "heroVisualKey": "port-miami",
+    "officialWebsiteUrl": "https://www.travelinggays.com/",
+    "officialDomain": "travelinggays.com",
+    "publicContactPageUrl": "https://www.travelinggays.com/gay-group-cruises-lesbian-charters-cruises",
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/groups/2673257106372634"
+    },
+    "cabinSellerIdentity": "Gay-owned IGLTA travel agency & hosted cruise producer (Traveling Gays Getaways / Gay Cruise Takeover, Arvada, CO, 303-616-5429).",
+    "officialReservationPathSummary": "Travelers book directly via TGG’s official Cruise Brothers / Virgin Voyages First Mate booking links on travelinggays.com so cabins automatically link to the TGG group block.",
+    "cancellationAndParticipationPolicy": "Standard cruise-line deposit and cancellation schedules apply; outside bookings may inquire about a separate TGG Add-On Member Package where permitted.",
+    "officialPolicyUrl": "https://www.travelinggays.com/solo-cruiser-pairing",
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_testimonials",
+        "label": "Traveling Gays Getaways Guest Reviews",
+        "url": "https://www.gaycruisetakeover.com/",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Traveling Gays Getaways, Royal Caribbean International, or Virgin Voyages.",
+    "cabinBookingPolicyNote": "Reserve via the official booking links on travelinggays.com so your cabin receives TGG group perks and event access.",
+    "primarySourceUrl": "https://www.travelinggays.com/gay-group-cruises-lesbian-charters-cruises",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": [
+      "big-gay-cruise",
+      "aquafest-cruises",
+      "kelligregg-travel",
+      "pied-piper-travel"
+    ]
+  },
+  {
+    "organizerId": "hosted-organizer:kelligregg-travel",
+    "reputationEntityId": "rep:hosted-organizer:kelligregg-travel",
+    "organizerSlug": "kelligregg-travel",
+    "aliases": [
+      "r-family-vacations",
+      "rfamilyvacations",
+      "kelli-gregg-travel"
+    ],
+    "knownBrandAliases": [
+      "R Family Vacations",
+      "KelliGregg Travel",
+      "R Family Adult Vacations",
+      "RFV"
+    ],
+    "organizerName": "KelliGregg Travel / R Family Vacations",
+    "shortName": "KelliGregg / R Family",
+    "categoryLabel": "LGBTQ+ Family Summer Cruises & Adult Luxury River, Ocean & Expedition Voyages",
+    "organizerType": "travel_agency_hosted_brand",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing",
+      "river_cruise",
+      "small_ship_yacht_expedition"
+    ],
+    "subBrands": [
+      {
+        "subBrandSlug": "r-family-vacations",
+        "subBrandName": "R Family Vacations",
+        "officialUrl": "https://www.kelligreggtravel.com/summer-beach-adventure-cruise",
+        "relationshipSummary": "Flagship LGBTQ+ family-friendly cruise brand co-founded in 2003 by Kelli Carpenter and Gregg Kaminsky (rfamilyvacations.com permanently 301-redirects to kelligreggtravel.com).",
+        "intendedAudience": "LGBTQ+ parents, kids & youth (ages 4–17), grandparents, extended families, couples, solos, and allies (\"kids welcome, not required!\").",
+        "atmosphereAndPolicySummary": "All-ages family-inclusive summer celebration featuring dedicated R Family Kids/Youth programming alongside Broadway cabaret, comedy, Tea Dances, and family/adult mixers."
+      }
+    ],
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "family-reunions"
+    ],
+    "tagline": "Co-founded by Kelli Carpenter & Gregg Kaminsky—home of R Family Vacations’ signature LGBTQ+ family summer cruise and adult luxury river & expedition voyages.",
+    "independentSummary": "Co-founded in 2003 as R Family Vacations (featured in HBO’s Emmy-nominated documentary All Aboard!) by Kelli Carpenter and Gregg Kaminsky and expanded under umbrella brand KelliGregg Travel (a branch of Travel 100 Group), this lesbian-and-gay-led host team welcomes 20,000+ past guests across its flagship all-ages R Family Summer Cruise as well as adult-oriented Uniworld river cruises, boutique ocean groups, and Atlas polar expeditions.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "Gender-balanced pan-LGBTQ+ community—multi-generational families & allies on the July R Family cruise, and LGBTQ+ adults, couples & solos on KelliGregg ocean/river/expedition departures.",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "lgbtq_families",
+      "lesbian_queer_women",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "typicalHostedProgramming": "Broadway & cabaret headliners (e.g., Anne Steele, Seth Rudetsky, Jessica Kirson, William TN Hall), welcome cocktail parties, hosted group dinners, Tea Dances, games, theme nights, and youth programming on R Family summer departures.",
+    "generalAtmosphereSummary": "Warm, reunion-style, Broadway-and-cabaret community atmosphere with hands-on hosting by Kelli & Gregg and less emphasis on all-night circuit clubbing.",
+    "typicalCharterModel": "mixed",
+    "vesselTypeSummary": "Contemporary & boutique ocean ships (Celebrity Beyond, Azamara Onward), luxury river ships (Uniworld S.S. Elisabeth), and expedition yachts (Atlas World Navigator)",
+    "approximateScaleSummary": "Hosted LGBTQ+ community groups & river/yacht charters across 110-to-3,260-guest vessels",
+    "publishedStartingPriceSummary": null,
+    "inclusionsSummary": "Varies by voyage: Celebrity Beyond R Family group fares bundle Classic Beverage Package + Basic Wi-Fi + R Family events; Uniworld Rhine voyage bundles 7N all-inclusive river cruise (open bar, gratuities, Wi-Fi, 8 days excursions) + 2N 5-star Amsterdam hotel",
+    "soloSupportSummary": "Warmly welcomes solo travelers (\"solo travelers feel instantly connected on our trips\") with hosted group dining and mixers; single-occupancy quotes handled directly with Kelli & Gregg (automated stranger roommate matching not disclosed).",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
+    "accessibilitySummary": null,
+    "officialAccessibilityUrl": null,
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "goodForTags": [
+      "LGBTQ+ families & kids",
+      "Broadway & cabaret",
+      "Gender-balanced community",
+      "Luxury river & ocean"
+    ],
+    "heroVisualKey": "port-porto-douro-ribeira",
+    "officialWebsiteUrl": "https://www.kelligreggtravel.com/",
+    "officialDomain": "kelligreggtravel.com",
+    "publicContactPageUrl": "https://www.kelligreggtravel.com/about-us",
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/rfamilyvacations",
+      "instagramUrl": "https://www.instagram.com/kelligreggtravel/"
+    },
+    "cabinSellerIdentity": "LGBTQ+ hosted cruise & charter producer (KelliGregg Travel / R Family Vacations, a branch of Travel 100 Group / Signature Travel Network, 917-522-0985).",
+    "officialReservationPathSummary": "Travelers submit trip-specific reservation forms directly on kelligreggtravel.com or contact Gregg Kaminsky & Kelli Carpenter (gregg@kelligreggtravel.com / 917-522-0985).",
+    "cancellationAndParticipationPolicy": "R Family Summer Cruise welcomes ages 6 months+ (dedicated Youth Programming ages 4–17); KelliGregg river, boutique ocean, and expedition departures are adult-oriented.",
+    "officialPolicyUrl": "https://www.kelligreggtravel.com/vacations",
+    "publicReviewProfileLinks": [
+      {
+        "platform": "official_press_and_community",
+        "label": "KelliGregg / R Family Community & Press Archive",
+        "url": "https://www.kelligreggtravel.com/community",
+        "authorizationBasis": "official_site_linked"
+      }
+    ],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by KelliGregg Travel, R Family Vacations, Celebrity Cruises, or Uniworld.",
+    "cabinBookingPolicyNote": "Book directly on kelligreggtravel.com so your family or party is registered inside the official KelliGregg / R Family group.",
+    "primarySourceUrl": "https://www.kelligreggtravel.com/vacations",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": [
+      "vacaya",
+      "olivia-travel",
+      "brand-g-vacations",
+      "uniworld-out-on-the-rivers"
+    ]
+  },
+  {
+    "organizerId": "hosted-organizer:tui-rainbow-cruise",
+    "reputationEntityId": "rep:hosted-organizer:tui-rainbow-cruise",
+    "organizerSlug": "tui-rainbow-cruise",
+    "aliases": [
+      "meinschiff-rainbow-cruise",
+      "rainbow-cruise",
+      "tui-cruises-rainbow-cruise"
+    ],
+    "knownBrandAliases": [
+      "Mein Schiff® Rainbow Cruise",
+      "TUI’s Rainbow Cruise",
+      "Rainbow Cruise: the next chapter",
+      "Bunte Horizonte"
+    ],
+    "organizerName": "Mein Schiff® Rainbow Cruise (TUI Cruises)",
+    "shortName": "TUI Rainbow Cruise",
+    "categoryLabel": "Cruise-Line-Produced LGBTQ+ Sailing (TUI Cruises / Mein Schiff®)",
+    "organizerType": "cruise_line_themed_program",
+    "primaryClassification": "cruise_line_produced_lgbtq",
+    "supportedClassifications": [
+      "cruise_line_produced_lgbtq"
+    ],
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "music-cruises"
+    ],
+    "tagline": "Official cruise-line-produced LGBTQIA+ Mediterranean Eventreise operated directly in-house by TUI Cruises aboard Mein Schiff 2.",
+    "independentSummary": "Unlike third-party charter companies, the Mein Schiff® Rainbow Cruise is a cruise-line-produced LGBTQ+ themed sailing (\"Eventreise\") created, marketed, and sold directly by TUI Cruises GmbH. Sailing round-trip from Palma de Mallorca in September–October 2027 aboard Mein Schiff 2, it combines Mein Schiff’s Premium Inclusive drinks & dining with queer headliners Conchita Wurst and Lucy Diakovska, drag artists, Cologne/Berlin queer club nights, talks, and barrier-free & family-inclusive ship amenities.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "LGBTQIA+ community, friends, families, and allies (primarily German-speaking and European travelers, with full English & German booking support).",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "lesbian_queer_women",
+      "lgbtq_families"
+    ],
+    "typicalHostedProgramming": "Live concerts by Conchita Wurst and Lucy Diakovska, drag & cabaret showcases (Katy Bähm, Miss Ivanka T., Pam Pengco, Gina de l’Amore), queer club parties (PiepShow, SEXY PARTY COLOGNE), queer DJs, community talks (Nomadic Boys, Couple of Men, Lucas Krzikalla), and sports.",
+    "generalAtmosphereSummary": "Vibrant European queer festival and safe space produced directly by TUI Cruises—pairing late-night deck parties and drag shows with Mein Schiff’s sauna/spa wellness culture and family-inclusive hospitality.",
+    "typicalCharterModel": "cruise_line_themed_sailing",
+    "vesselTypeSummary": "Large German premium resort ocean ship (Mein Schiff 2, built 2019)",
+    "approximateScaleSummary": "2,894 passengers across 1,447 staterooms & suites (official TUI Cruises Eventreise)",
+    "publishedStartingPriceSummary": "From €999 EUR pp in PLUS Inside tariff (€1,099 PRO Inside / €1,349 PRO Balcony; double occupancy)",
+    "inclusionsSummary": "Mein Schiff® Premium Inclusive Benefits: multiple à-la-carte & buffet restaurants, 100+ brand-name alcoholic & non-alcoholic drinks, onboard tips/gratuities, all Rainbow Cruise concerts/parties/talks, sauna & fitness, and childcare",
+    "soloSupportSummary": "Single-occupancy staterooms bookable directly with TUI Cruises subject to standard single supplement; cruise-line roommate matching is not offered, though daytime talks and mixers welcome solo travelers.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
+    "accessibilitySummary": "Comprehensive fleet barrier-free program (meinschiff.com/en/customer-service/barrier-free-travel): Mein Schiff 2 offers dedicated wheelchair-accessible cabins, barrier-free public decks/theaters/restaurants, electric wheelchair/scooter approval via spezialservice@tuicruises.com, and barrier-free airport transfers with TUI flight packages.",
+    "officialAccessibilityUrl": "https://www.meinschiff.com/en/customer-service/barrier-free-travel",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "goodForTags": [
+      "Cruise-line-produced",
+      "100+ drinks & tips included",
+      "Conchita Wurst headliner",
+      "Barrier-free cabins"
+    ],
+    "heroVisualKey": "port-marseille-vieux-port",
+    "officialWebsiteUrl": "https://www.meinschiff.com/en/event-travel/rainbow-cruise",
+    "officialDomain": "meinschiff.com",
+    "reservationPortalDomain": "buchung.meinschiff.com",
+    "publicContactPageUrl": "https://www.meinschiff.com/en/contact",
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/MeinSchiff",
+      "instagramUrl": "https://instagram.com/meinschiffofficial/",
+      "youtubeUrl": "https://www.youtube.com/c/meinschiff",
+      "linkedinUrl": "https://www.linkedin.com/company/tui-cruises-gmbh/"
+    },
+    "cabinSellerIdentity": "TUI Cruises GmbH (Mein Schiff®)",
+    "officialReservationPathSummary": "Travelers book directly with TUI Cruises online at meinschiff.com / buchung.meinschiff.com (trip code ZWO2732SEE) or through European travel agencies.",
+    "cancellationAndParticipationPolicy": "Governed directly by TUI Cruises General Terms & Conditions (meinschiff.com/en/gtc) under PLUS and PRO fare tariffs; open to families with onboard childcare services.",
+    "officialPolicyUrl": "https://www.meinschiff.com/en/gtc",
+    "publicReviewProfileLinks": [],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by TUI Cruises GmbH or Mein Schiff®.",
+    "cabinBookingPolicyNote": "Rainbow Cruise is produced and sold directly by TUI Cruises (meinschiff.com), not an independent third-party charter host.",
+    "primarySourceUrl": "https://www.meinschiff.com/en/event-travel/rainbow-cruise",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": [
+      "the-cruise-la-demence",
+      "atlantis-events",
+      "vacaya",
+      "uniworld-out-on-the-rivers"
+    ]
+  },
+  {
+    "organizerId": "hosted-organizer:uniworld-out-on-the-rivers",
+    "reputationEntityId": "rep:hosted-organizer:uniworld-out-on-the-rivers",
+    "organizerSlug": "uniworld-out-on-the-rivers",
+    "aliases": [
+      "out-on-the-rivers",
+      "uniworld-lgbtq"
+    ],
+    "knownBrandAliases": [
+      "OUT on the Rivers",
+      "Uniworld Boutique River Cruises LGBTQ+ Series"
+    ],
+    "organizerName": "Uniworld OUT on the Rivers",
+    "shortName": "Uniworld OUT on the Rivers",
+    "categoryLabel": "Cruise-Line LGBTQ+ Boutique Luxury River Program",
+    "organizerType": "river_cruise_operator_program",
+    "primaryClassification": "river_cruise",
+    "supportedClassifications": [
+      "river_cruise",
+      "cruise_line_produced_lgbtq"
+    ],
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "food-and-wine"
+    ],
+    "tagline": "All-inclusive boutique LGBTQ+ European river cruise series by Uniworld Boutique River Cruises—currently awaiting next departure announcement.",
+    "independentSummary": "Produced by Uniworld Boutique River Cruises and co-hosted by LGBTQ+ travel pioneers Gregg Kaminsky and Kelli Carpenter, OUT on the Rivers transforms Uniworld’s 110-to-150-guest European floating boutique hotels into LGBTQ+ community celebrations with cabaret performers, themed dance nights, and all-inclusive dining, fine wines, spirits, gratuities, and excursions. As of November 16, 2026, Uniworld has no currently announced future departure.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "LGBTQ+ travelers, couples, solo travelers, friends, family (ages 4–5+ accompanied by an adult 21+), and allies seeking ultra-luxury river cruising.",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "lesbian_queer_women",
+      "lgbtq_families",
+      "solo_friendly"
+    ],
+    "typicalHostedProgramming": "LGBTQ+ cabaret & comedy guest performers, themed riverboat dance parties, welcome & sunset private cocktail receptions, co-hosting by Gregg Kaminsky & Kelli Carpenter, and daily curated shore excursions.",
+    "generalAtmosphereSummary": "Lavish floating-boutique-hotel elegance (antiques, original art, butler-style service) blended with warm, celebratory LGBTQ+ community entertainment.",
+    "typicalCharterModel": "cruise_line_themed_sailing",
+    "vesselTypeSummary": "Boutique luxury European river cruise ships / Super Ships (e.g., River Duchess, ~110–150 guests)",
+    "approximateScaleSummary": "~110–150 guests per boutique river vessel",
+    "publishedStartingPriceSummary": null,
+    "inclusionsSummary": "Program standard includes all farm-to-table onboard meals, unlimited premium spirits/fine wines/craft beers, daily curated shore excursions, onboard gratuities, ship-wide Wi-Fi, bicycles/Nordic walking sticks, and OUT on the Rivers LGBTQ+ entertainment",
+    "soloSupportSummary": "Welcomes solo travelers with periodic waived or reduced single supplements on select Uniworld departures; formal roommate matching is not yet verified.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
+    "accessibilitySummary": "River vessels have narrow gangways, stairs, variable river dockings, and motorized scooter restrictions; guests with mobility limitations should travel with an assisting companion and consult Uniworld prior to booking.",
+    "officialAccessibilityUrl": "https://www.uniworld.com/us/terms-and-conditions",
+    "departureAnnouncementStatus": "no_currently_announced_departure",
+    "goodForTags": [
+      "All-inclusive boutique river",
+      "Cruise-line LGBTQ+ series",
+      "No currently announced departure"
+    ],
+    "heroVisualKey": "ship-uniworld-ss-maria-theresa",
+    "officialWebsiteUrl": "https://www.uniworld.com/us/themed-cruises/out-on-the-rivers",
+    "officialDomain": "uniworld.com",
+    "publicContactPageUrl": "https://www.uniworld.com/us/contact-us",
+    "officialSocialLinks": {
+      "facebookUrl": "https://www.facebook.com/uniworldcruises",
+      "instagramUrl": "https://www.instagram.com/uniworldcruises",
+      "youtubeUrl": "https://www.youtube.com/user/UniworldCruises"
+    },
+    "cabinSellerIdentity": "Luxury river cruise line program (Uniworld Boutique River Cruises — OUT on the Rivers themed series).",
+    "officialReservationPathSummary": "When departures are announced, staterooms book directly through Uniworld Boutique River Cruises (uniworld.com/us/themed-cruises/out-on-the-rivers / +1-800-257-2407) or travel advisors.",
+    "cancellationAndParticipationPolicy": "Standard Uniworld terms & conditions apply (uniworld.com/us/terms-and-conditions); minimum guest age 4–5 in Europe accompanied by an adult 21+.",
+    "officialPolicyUrl": "https://www.uniworld.com/us/terms-and-conditions",
+    "publicReviewProfileLinks": [],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Uniworld Boutique River Cruises.",
+    "cabinBookingPolicyNote": "No currently announced departure. Cruise Promenade never invents dates or availability—monitor uniworld.com/us/themed-cruises/out-on-the-rivers for official future announcements.",
+    "primarySourceUrl": "https://www.uniworld.com/us/themed-cruises/out-on-the-rivers",
+    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "no_announced_departure",
+    "comparableOrganizerSlugs": [
+      "brand-g-vacations",
+      "kelligregg-travel",
+      "source-journeys",
+      "tui-rainbow-cruise"
+    ]
   }
 ];
 
@@ -2127,8 +3702,24 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Couples & friends"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:arnos-bear-cruises:symphony-of-the-seas-2027-01-31"
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:arnos-bear-cruises:symphony-of-the-seas-2027-01-31",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "vesselType": "Oasis-class ocean ship",
+    "approximateVesselScale": "Hosted bear group block aboard ~5,518-guest ship",
+    "publishedPriceDisplay": null,
+    "inclusionsSummary": "Cruise fare, taxes, Royal Caribbean main dining, Mrs. Roper Bar Crawl, Arno’s bear group meetups, and no-cost 10-payment plan ($18.50/day pp gratuities added)",
+    "accessibilitySummary": "Accessible staterooms available upon request via bearcruiseusa.com reservation form.",
+    "audienceFocusTags": [
+      "bears_cubs",
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "primarySourceUrl": "https://bearcruiseusa.com/ArnosCruiseReservationForm.asp?CruiseID=96",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:arnos-bear-cruises:rccl:rhapsody-of-the-seas:2027-09-03",
@@ -2172,8 +3763,23 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Bucket-list ports"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:arnos-bear-cruises:rhapsody-of-the-seas-2027-09-03"
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:arnos-bear-cruises:rhapsody-of-the-seas-2027-09-03",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "vesselType": "Vision-class ocean ship",
+    "approximateVesselScale": "Hosted bear group block aboard ~2,416-guest ship",
+    "inclusionsSummary": "Group cabin rate, main dining, and private Arno’s Bear Cruises onboard meetups and group dining",
+    "accessibilitySummary": "Accessible staterooms available upon request via bearcruiseusa.com reservation form.",
+    "audienceFocusTags": [
+      "bears_cubs",
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "primarySourceUrl": "https://www.arnoscruises.com/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:arnos-bear-cruises:rccl:navigator-of-the-seas:2028-01-28",
@@ -2217,8 +3823,23 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Puerto Vallarta & Cabo"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:arnos-bear-cruises:navigator-of-the-seas-2028-01-28"
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:arnos-bear-cruises:navigator-of-the-seas-2028-01-28",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "vesselType": "Voyager-class ocean ship",
+    "approximateVesselScale": "Hosted bear group block aboard ~3,386-guest ship",
+    "inclusionsSummary": "Group cabin rate, main dining, and private Arno’s Bear Cruises onboard meetups and group dining",
+    "accessibilitySummary": "Accessible staterooms available upon request via bearcruiseusa.com reservation form.",
+    "audienceFocusTags": [
+      "bears_cubs",
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "primarySourceUrl": "https://www.arnoscruises.com/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:arnos-bear-cruises:cel:celebrity-edge:2028-10-17",
@@ -2262,8 +3883,23 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Celebrity Edge"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:arnos-bear-cruises:celebrity-edge-2028-10-17"
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:arnos-bear-cruises:celebrity-edge-2028-10-17",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "vesselType": "Edge-class contemporary ocean ship",
+    "approximateVesselScale": "Hosted bear group block aboard ~2,918-guest ship",
+    "inclusionsSummary": "Group cabin rate, main dining, and private Arno’s Bear Cruises Transpacific group events",
+    "accessibilitySummary": "Accessible staterooms available upon request via bearcruiseusa.com reservation form.",
+    "audienceFocusTags": [
+      "bears_cubs",
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "primarySourceUrl": "https://www.arnoscruises.com/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:atlantis-events:vv:valiant-lady:2027-03-27",
@@ -2285,10 +3921,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "officialReservationFormUrl": "https://res.atlantisevents.com/Booking/",
     "cabinSellerLabel": "Atlantis Events",
     "cabinBookingCtaLabel": "Book with Atlantis Events ↗",
-    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityStatus": "limited",
     "cabinAvailabilityNote": "Full-ship private charter booked directly through Atlantis Events.",
-    "verifiedStartingPriceUsd": null,
-    "verifiedPriceNote": null,
+    "verifiedStartingPriceUsd": 1199,
+    "verifiedPriceNote": "Published starting fare $1,199 pp double ($1,299 lowest open double; $3,099 Solo Terrace open) + $360 pp port fees & $20/day service charge.",
     "approximateGroupSizeLabel": "Full-ship charter (~2,700 ship capacity)",
     "fullShipCharter": true,
     "typicalAudience": "LGBTQ+ adults (18+), solo travelers, couples, and friend groups.",
@@ -2304,8 +3940,23 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Southern Caribbean"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:atlantis-events:valiant-lady-2027-03-27"
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:atlantis-events:valiant-lady-2027-03-27",
+    "organizerType": "independent_charter_operator",
+    "experienceClassification": "full_ship_charter",
+    "vesselType": "Lady-class 18+ ocean ship",
+    "approximateVesselScale": "~2,770 guests (100% full-ship charter)",
+    "publishedPriceDisplay": "From $1,199 USD pp double (Social Insider sold out; $1,299 Insider open) + $360 port fees",
+    "inclusionsSummary": "20+ Virgin eateries, basic Wi-Fi, non-alcoholic drinks, fitness classes, and full-ship Atlantis parties, DJs & cabaret",
+    "accessibilitySummary": "ADA Compliance Coordinator via Guest Special Needs Form (notify 60+ days prior).",
+    "audienceFocusTags": [
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "primarySourceUrl": "https://atlantisevents.com/vacation/exotic-southern-caribbean-2027/pricing",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:atlantis-events:rccl:allure-of-the-seas:2027-03-07",
@@ -2329,8 +3980,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "cabinBookingCtaLabel": "Book with Atlantis Events ↗",
     "cabinAvailabilityStatus": "available",
     "cabinAvailabilityNote": "Full-ship private charter booked directly through Atlantis Events.",
-    "verifiedStartingPriceUsd": null,
-    "verifiedPriceNote": null,
+    "verifiedStartingPriceUsd": 1499,
+    "verifiedPriceNote": "Published starting fare $1,499 pp double occupancy before port fees, taxes, and gratuities.",
     "approximateGroupSizeLabel": "Full-ship charter (~5,400 ship capacity)",
     "fullShipCharter": true,
     "typicalAudience": "LGBTQ+ adults (18+), solo travelers, couples, and friend groups.",
@@ -2346,8 +3997,23 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Oasis-class ship"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:atlantis-events:allure-of-the-seas-2027-03-07"
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:atlantis-events:allure-of-the-seas-2027-03-07",
+    "organizerType": "independent_charter_operator",
+    "experienceClassification": "full_ship_charter",
+    "vesselType": "Oasis-class mega ocean ship",
+    "approximateVesselScale": "~5,484 guests (100% full-ship charter)",
+    "publishedPriceDisplay": "From $1,499 USD pp double + port fees & gratuities",
+    "inclusionsSummary": "Full-ship Atlantis concerts/shows/T-dances PLUS 2 all-inclusive Nassau Paradise Beach Club Day Passes, 21 beverage vouchers & 2 Specialty Dinners per cabin",
+    "accessibilitySummary": "ADA Compliance Coordinator via Guest Special Needs Form (notify 60+ days prior).",
+    "audienceFocusTags": [
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "primarySourceUrl": "https://atlantisevents.com/vacation/epic-allure-caribbean-cruise",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:atlantis-events:vv:resilient-lady:2027-08-08",
@@ -2371,8 +4037,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "cabinBookingCtaLabel": "Book with Atlantis Events ↗",
     "cabinAvailabilityStatus": "available",
     "cabinAvailabilityNote": "Full-ship private charter booked directly through Atlantis Events.",
-    "verifiedStartingPriceUsd": null,
-    "verifiedPriceNote": null,
+    "verifiedStartingPriceUsd": 1799,
+    "verifiedPriceNote": "Published starting fare $1,799 pp double occupancy before port fees and taxes.",
     "approximateGroupSizeLabel": "Full-ship charter (~2,700 ship capacity)",
     "fullShipCharter": true,
     "typicalAudience": "LGBTQ+ adults (18+), solo travelers, couples, and friend groups.",
@@ -2388,8 +4054,23 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Mediterranean"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:atlantis-events:resilient-lady-2027-08-08"
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:atlantis-events:resilient-lady-2027-08-08",
+    "organizerType": "independent_charter_operator",
+    "experienceClassification": "full_ship_charter",
+    "vesselType": "Lady-class 18+ ocean ship",
+    "approximateVesselScale": "~2,770 guests (100% full-ship charter)",
+    "publishedPriceDisplay": "From $1,799 USD pp double + port fees",
+    "inclusionsSummary": "20+ Virgin eateries, basic Wi-Fi, non-alcoholic drinks, fitness classes, and full-ship Atlantis Mediterranean entertainment",
+    "accessibilitySummary": "ADA Compliance Coordinator via Guest Special Needs Form (notify 60+ days prior).",
+    "audienceFocusTags": [
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "primarySourceUrl": "https://atlantisevents.com/vacation/2027-bcntorom-cruise",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:atlantis-events:vv:scarlet-lady:2027-08-22",
@@ -2413,8 +4094,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "cabinBookingCtaLabel": "Book with Atlantis Events ↗",
     "cabinAvailabilityStatus": "available",
     "cabinAvailabilityNote": "Full-ship private charter booked directly through Atlantis Events.",
-    "verifiedStartingPriceUsd": null,
-    "verifiedPriceNote": null,
+    "verifiedStartingPriceUsd": 1299,
+    "verifiedPriceNote": "Published starting fare $1,299 pp double occupancy before port fees and taxes.",
     "approximateGroupSizeLabel": "Full-ship charter (~2,700 ship capacity)",
     "fullShipCharter": true,
     "typicalAudience": "LGBTQ+ adults (18+), solo travelers, couples, and friend groups.",
@@ -2430,8 +4111,23 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Solo travelers"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:atlantis-events:scarlet-lady-2027-08-22"
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:atlantis-events:scarlet-lady-2027-08-22",
+    "organizerType": "independent_charter_operator",
+    "experienceClassification": "full_ship_charter",
+    "vesselType": "Lady-class 18+ ocean ship",
+    "approximateVesselScale": "~2,770 guests (100% full-ship charter)",
+    "publishedPriceDisplay": "From $1,299 USD pp double + port fees",
+    "inclusionsSummary": "20+ Virgin eateries, basic Wi-Fi, non-alcoholic drinks, fitness classes, and full-ship Atlantis Greek Isles parties & entertainment",
+    "accessibilitySummary": "ADA Compliance Coordinator via Guest Special Needs Form (notify 60+ days prior).",
+    "audienceFocusTags": [
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "primarySourceUrl": "https://atlantisevents.com/vacation/2027-greekisles",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:vacaya:cel:celebrity-beyond:2027-02-14",
@@ -2453,10 +4149,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "officialReservationFormUrl": "https://myvacaya.rezmagic.com/",
     "cabinSellerLabel": "VACAYA",
     "cabinBookingCtaLabel": "Book with VACAYA ↗",
-    "cabinAvailabilityStatus": "available",
-    "cabinAvailabilityNote": "Full-ship private charter booked directly through VACAYA.",
-    "verifiedStartingPriceUsd": null,
-    "verifiedPriceNote": null,
+    "cabinAvailabilityStatus": "waitlist",
+    "cabinAvailabilityNote": "Officially Sold Out on myvacaya.com with Waitlist open; join Waitlist directly with VACAYA.",
+    "verifiedStartingPriceUsd": 1648,
+    "verifiedPriceNote": "Deluxe Interior from $1,648 pp double ($3,295 solo) + $347 pp port/admin fees + $147–$177 pp prepaid gratuities.",
     "approximateGroupSizeLabel": "Full-ship charter (~3,260 ship capacity)",
     "fullShipCharter": true,
     "typicalAudience": "Adults (18+) across the entire LGBTQIA+ spectrum, solo travelers, couples, and allies.",
@@ -2473,8 +4169,24 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "First-timers"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:vacaya:celebrity-beyond-2027-02-14"
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:vacaya:celebrity-beyond-2027-02-14",
+    "organizerType": "independent_charter_operator",
+    "experienceClassification": "full_ship_charter",
+    "vesselType": "Edge-class luxury ocean ship",
+    "approximateVesselScale": "~3,260 guests (100% full-ship charter)",
+    "publishedPriceDisplay": "From $1,648 USD pp double ($3,295 Solo) + $347 port taxes & gratuities (Waitlist)",
+    "inclusionsSummary": "7-night full-ship charter, complimentary dining & room service, All-Star VACAYA entertainment, V-Dances, Nude Sun Deck, and complimentary US-port ASL interpreter access",
+    "accessibilitySummary": "Complimentary ASL interpreters on US-port big-ship charters; wheelchair-accessible cabins & adapted tours via VACAYA Accessibility Specialist (notify 90+ days prior).",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "lesbian_queer_women",
+      "solo_friendly"
+    ],
+    "primarySourceUrl": "https://www.myvacaya.com/trip/caribbean-cruise-2027/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:olivia-travel:hal:eurodam:2027-02-13",
@@ -2496,10 +4208,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "officialReservationFormUrl": "https://olivia.rezmagic.com/",
     "cabinSellerLabel": "Olivia Travel",
     "cabinBookingCtaLabel": "Book with Olivia Travel ↗",
-    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityStatus": "waitlist",
     "cabinAvailabilityNote": "Full-ship private charter booked directly through Olivia Travel.",
-    "verifiedStartingPriceUsd": null,
-    "verifiedPriceNote": null,
+    "verifiedStartingPriceUsd": 999,
+    "verifiedPriceNote": "Standard Interior Cat N from $999 pp double occupancy plus NDA fees (includes shipboard gratuities).",
     "approximateGroupSizeLabel": "Full-ship charter (~2,100 ship capacity)",
     "fullShipCharter": true,
     "typicalAudience": "Lesbian, queer, bisexual, and trans women (21+), couples, and solo travelers.",
@@ -2515,8 +4227,23 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Full-ship charter"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:olivia-travel:eurodam-2027-02-13"
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:olivia-travel:eurodam-2027-02-13",
+    "organizerType": "independent_charter_operator",
+    "experienceClassification": "full_ship_charter",
+    "vesselType": "Signature-class premium ocean ship",
+    "approximateVesselScale": "~2,104 guests (100% full-ship women’s charter)",
+    "publishedPriceDisplay": "From $999 USD pp double + NDA fees (Waitlist)",
+    "inclusionsSummary": "7 nights aboard ms Eurodam, main dining & room service, shipboard gratuities (in NDA fees), Olivia concerts/comedy/workshops, and Solos Coordinator events",
+    "accessibilitySummary": "Onboard Specific Needs Coordinators & ASL interpreters at nightly shows upon request (notify 90+ days prior).",
+    "audienceFocusTags": [
+      "lesbian_queer_women",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "primarySourceUrl": "https://www.olivia.com/explore-trips/2027-xoxo-caribbean-cruise",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:olivia-travel:hal:eurodam:2028-01-29",
@@ -2557,8 +4284,22 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Solo travelers"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:olivia-travel:eurodam-2028-01-29"
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:olivia-travel:eurodam-2028-01-29",
+    "organizerType": "independent_charter_operator",
+    "experienceClassification": "full_ship_charter",
+    "vesselType": "Signature-class premium ocean ship",
+    "approximateVesselScale": "~2,104 guests (100% full-ship women’s charter)",
+    "inclusionsSummary": "Full-ship Olivia women’s charter stateroom, main dining & room service, gratuities (in NDA fees), concerts, comedy & Solos Coordinator programming",
+    "accessibilitySummary": "Onboard Specific Needs Coordinators & ASL interpreters at nightly shows upon request (notify 90+ days prior).",
+    "audienceFocusTags": [
+      "lesbian_queer_women",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "primarySourceUrl": "https://www.olivia.com/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:bond-and-beyond-network:ncl:norwegian-escape:2027-04-16",
@@ -2599,7 +4340,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:bond-and-beyond-network:norwegian-escape-2027-04-16"
+    "reputationSailingEntityId": "rep:hosted-sailing:bond-and-beyond-network:norwegian-escape-2027-04-16",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://bondandbeyondnetwork.com/events/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:hr-conference-cruise:rccl:oasis-of-the-seas:2027-04-23",
@@ -2640,7 +4386,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:hr-conference-cruise:oasis-of-the-seas-2027-04-23"
+    "reputationSailingEntityId": "rep:hosted-sailing:hr-conference-cruise:oasis-of-the-seas-2027-04-23",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://hrcruise.com/2027/cruise2/index.cfm",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:national-reia:rccl:icon-of-the-seas:2027-02-20",
@@ -2681,7 +4432,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:national-reia:icon-of-the-seas-2027-02-20"
+    "reputationSailingEntityId": "rep:hosted-sailing:national-reia:icon-of-the-seas-2027-02-20",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://nationalreiacruise.com/itinerary/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:sea-day-cle:cel:celebrity-solstice:2027-07-23",
@@ -2722,7 +4478,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:sea-day-cle:celebrity-solstice-2027-07-23"
+    "reputationSailingEntityId": "rep:hosted-sailing:sea-day-cle:celebrity-solstice-2027-07-23",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://clecruise.com/cruises/summer-2027",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:debusk-travels:msc:msc-world-america:2027-07-10",
@@ -2764,7 +4525,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
     "reputationSailingEntityId": "rep:hosted-sailing:debusk-travels:msc-world-america-2027-07-10",
-    "scheduleHoldReason": "MSC Cruises first-party itinerary portal (msccruisesusa.com) blocks automated schedule verification and official July 2027 port-authority berth clock hours are not yet published for Miami, Puerto Plata, San Juan, and Ocean Cay."
+    "scheduleHoldReason": "MSC Cruises first-party itinerary portal (msccruisesusa.com) blocks automated schedule verification and official July 2027 port-authority berth clock hours are not yet published for Miami, Puerto Plata, San Juan, and Ocean Cay.",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.debusktravels.com/GroupRegistrations/view/142382",
+    "verificationState": "schedule_hold",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:pied-piper-travel:vv:brilliant-lady:2027-08-24",
@@ -2804,8 +4570,21 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Alaska & Inside Passage"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:pied-piper-travel:brilliant-lady-2027-08-24"
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:pied-piper-travel:brilliant-lady-2027-08-24",
+    "organizerType": "travel_agency_hosted_brand",
+    "experienceClassification": "hosted_group_sailing",
+    "vesselType": "Lady-class 18+ ocean ship",
+    "approximateVesselScale": "Hosted LGBTQ+ group block aboard ~2,770-guest ship",
+    "inclusionsSummary": "Virgin Voyages inclusions (20+ eateries, Wi-Fi, basic drinks, fitness) plus Pied Piper hosted group receptions and group dining (subject to minimum group size)",
+    "accessibilitySummary": null,
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men"
+    ],
+    "primarySourceUrl": "https://www.piedpipertravel.com/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:financial-connextion-cruise:rccl:mariner-of-the-seas:2027-02-13",
@@ -2846,7 +4625,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:financial-connextion-cruise:mariner-of-the-seas-2027-02-13"
+    "reputationSailingEntityId": "rep:hosted-sailing:financial-connextion-cruise:mariner-of-the-seas-2027-02-13",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.financialconnextioncruise.com/cruise",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:dance-fun:pcl:ruby-princess:2027-05-21",
@@ -2887,7 +4671,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:dance-fun:ruby-princess-2027-05-21"
+    "reputationSailingEntityId": "rep:hosted-sailing:dance-fun:ruby-princess-2027-05-21",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://dancefun.com/west-coast-swing-dance-cruise-alaska-2020/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:wine-masters-cruises:cel:celebrity-ascent:2027-01-25",
@@ -2928,7 +4717,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:wine-masters-cruises:celebrity-ascent-2027-01-25"
+    "reputationSailingEntityId": "rep:hosted-sailing:wine-masters-cruises:celebrity-ascent-2027-01-25",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.winemasterscruises.com/2027-01-tipsy-ascent",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:stitchin-heaven:rccl:independence-of-the-seas:2027-04-11",
@@ -2969,7 +4763,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:stitchin-heaven:independence-of-the-seas-2027-04-11"
+    "reputationSailingEntityId": "rep:hosted-sailing:stitchin-heaven:independence-of-the-seas-2027-04-11",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://stitchinheaven.com/products/2027-riley-blake-quilting-cruise",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:cmmc-at-sea:cel:celebrity-beyond:2027-01-17",
@@ -3010,7 +4809,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:cmmc-at-sea:celebrity-beyond-2027-01-17"
+    "reputationSailingEntityId": "rep:hosted-sailing:cmmc-at-sea:celebrity-beyond-2027-01-17",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://cmmcatsea.com/registration/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:vet-tech-life:rccl:voyager-of-the-seas:2027-01-29",
@@ -3051,7 +4855,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:vet-tech-life:voyager-of-the-seas-2027-01-29"
+    "reputationSailingEntityId": "rep:hosted-sailing:vet-tech-life:voyager-of-the-seas-2027-01-29",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://vettechlife.com/ce-on-the-sea-mexico-2027",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:michigan-wisconsin-dental-associations:rccl:harmony-of-the-seas:2027-01-16",
@@ -3092,7 +4901,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:michigan-wisconsin-dental-associations:harmony-of-the-seas-2027-01-16"
+    "reputationSailingEntityId": "rep:hosted-sailing:michigan-wisconsin-dental-associations:harmony-of-the-seas-2027-01-16",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.dentalcruiseadventure.com/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:cu-conferences:cel:celebrity-edge:2027-06-11",
@@ -3133,7 +4947,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:cu-conferences:celebrity-edge-2027-06-11"
+    "reputationSailingEntityId": "rep:hosted-sailing:cu-conferences:celebrity-edge-2027-06-11",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.cuconferences.com/alaskan-cruise",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:travel-partners-in-dublin:cel:celebrity-solstice:2027-08-06",
@@ -3176,7 +4995,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:travel-partners-in-dublin:celebrity-solstice-2027-08-06"
+    "reputationSailingEntityId": "rep:hosted-sailing:travel-partners-in-dublin:celebrity-solstice-2027-08-06",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.travelpartnersindublin.com/travel-with-us/alaskan-wonders/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:singlescruise:ncl:norwegian-breakaway:2027-02-14",
@@ -3217,7 +5041,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:singlescruise:norwegian-breakaway-2027-02-14"
+    "reputationSailingEntityId": "rep:hosted-sailing:singlescruise:norwegian-breakaway-2027-02-14",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.singlescruise.com/cruises/caribbean-valentines-day/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:pickleball-at-sea:rccl:adventure-of-the-seas:2027-02-21",
@@ -3260,7 +5089,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:pickleball-at-sea:adventure-of-the-seas-2027-02-21"
+    "reputationSailingEntityId": "rep:hosted-sailing:pickleball-at-sea:adventure-of-the-seas-2027-02-21",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.pickleballatseagroupcruise.com/pages/february-21st-27th-2027",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:cruise-and-crop:hal:nieuw-statendam:2027-02-14",
@@ -3301,7 +5135,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:cruise-and-crop:nieuw-statendam-2027-02-14"
+    "reputationSailingEntityId": "rep:hosted-sailing:cruise-and-crop:nieuw-statendam-2027-02-14",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.cruiseandcrop.com/StampinAtSea2027.html",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:krouse-travel:ncl:norwegian-luna:2027-06-05",
@@ -3344,7 +5183,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:krouse-travel:norwegian-luna-2027-06-05"
+    "reputationSailingEntityId": "rep:hosted-sailing:krouse-travel:norwegian-luna-2027-06-05",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://krousetravel.com/groups/view/?groupid=190",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:bribeck-travel:rccl:symphony-of-the-seas:2027-03-28",
@@ -3385,7 +5229,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:bribeck-travel:symphony-of-the-seas-2027-03-28"
+    "reputationSailingEntityId": "rep:hosted-sailing:bribeck-travel:symphony-of-the-seas-2027-03-28",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.bribecktravel.com/GroupRegistrations/view/139004",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:welcome-home-rgv:rccl:symphony-of-the-seas:2027-01-31",
@@ -3426,7 +5275,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:welcome-home-rgv:symphony-of-the-seas-2027-01-31"
+    "reputationSailingEntityId": "rep:hosted-sailing:welcome-home-rgv:symphony-of-the-seas-2027-01-31",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://welcomehomergv.com/tours-travel/cruise-vacations/cruisewithkristi/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:quick-quick-slow-travel:ncl:norwegian-epic:2027-10-17",
@@ -3467,7 +5321,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:quick-quick-slow-travel:norwegian-epic-2027-10-17"
+    "reputationSailingEntityId": "rep:hosted-sailing:quick-quick-slow-travel:norwegian-epic-2027-10-17",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.quickquickslowtravel.com/dancecruises",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:alice-travel-bridge-cruises:rccl:symphony-of-the-seas:2027-04-11",
@@ -3508,7 +5367,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:alice-travel-bridge-cruises:symphony-of-the-seas-2027-04-11"
+    "reputationSailingEntityId": "rep:hosted-sailing:alice-travel-bridge-cruises:symphony-of-the-seas-2027-04-11",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://alicetravelbridgecruises.com/bridge-cruises/cruise-the-caribbean-from-texas-play-bridge-all-week",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:travel-with-donna:cel:celebrity-apex:2027-05-15",
@@ -3549,7 +5413,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:travel-with-donna:celebrity-apex-2027-05-15"
+    "reputationSailingEntityId": "rep:hosted-sailing:travel-with-donna:celebrity-apex-2027-05-15",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.travelwithdonna.vip/hosted-cruises",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:moody-radio:hal:eurodam:2027-06-05",
@@ -3592,7 +5461,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:moody-radio:eurodam-2027-06-05"
+    "reputationSailingEntityId": "rep:hosted-sailing:moody-radio:eurodam-2027-06-05",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.moodyradio.org/landing-pages/cruise/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:templeton-tours:ccl:carnival-glory:2027-01-25",
@@ -3636,7 +5510,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
     "reputationSailingEntityId": "rep:hosted-sailing:templeton-tours:carnival-glory-2027-01-25",
-    "scheduleHoldReason": "Private full-ship charter omitted from Carnival retail schedule; Port Canaveral confirms turnaround hours, while organizer pages list conflicting Day 3 Bahamas port calls (Princess Cays vs. Half Moon Cay) pending official confirmation."
+    "scheduleHoldReason": "Private full-ship charter omitted from Carnival retail schedule; Port Canaveral confirms turnaround hours, while organizer pages list conflicting Day 3 Bahamas port calls (Princess Cays vs. Half Moon Cay) pending official confirmation.",
+    "organizerType": "independent_charter_operator",
+    "experienceClassification": "full_ship_charter",
+    "primarySourceUrl": "https://templetontours.com/singingatsea/",
+    "verificationState": "schedule_hold",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:craft-cruises:hal:westerdam:2027-04-11",
@@ -3677,7 +5556,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:craft-cruises:westerdam-2027-04-11"
+    "reputationSailingEntityId": "rep:hosted-sailing:craft-cruises:westerdam-2027-04-11",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.craftcruises.com/cruise.php?brand=Knitting%20Cruises&cruise_name=Circle%20Japan&cruise_line=Holland%20America%20Line&cruise_ship=ms%20Westerdam&dep_date=2027-04-11&cruise=231",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:aquafest-cruises:cel:celebrity-constellation:2027-10-29",
@@ -3703,8 +5587,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "cabinBookingCtaLabel": "Book with Aquafest Cruises ↗",
     "cabinAvailabilityStatus": "available",
     "cabinAvailabilityNote": "Reserve directly through Aquafest Cruises to ensure inclusion in the hosted group.",
-    "verifiedStartingPriceUsd": null,
-    "verifiedPriceNote": null,
+    "verifiedStartingPriceUsd": 903,
+    "verifiedPriceNote": "Cruise-only NRD rates from $903–$2,606 pp double (headline group tier from $1,460 pp) + port taxes, $100 pp Aquafest Private Group Fee & $50/booking fee.",
     "approximateGroupSizeLabel": null,
     "fullShipCharter": false,
     "typicalAudience": "Flagship annual hosted LGBTQ+ & friends Halloween group sailing Rome to Tampa",
@@ -3719,8 +5603,23 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Transatlantic (Mediterranean & Morocco to Florida)"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:aquafest-cruises:celebrity-constellation-2027-10-29"
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:aquafest-cruises:celebrity-constellation-2027-10-29",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "vesselType": "Millennium-class premium ocean ship",
+    "approximateVesselScale": "Hosted LGBTQ+ group block aboard ~2,170-guest ship",
+    "publishedPriceDisplay": "From $903 USD pp cruise-only ($1,460 pp featured group tier) + taxes & $100 pp group fee",
+    "inclusionsSummary": "17-night transatlantic cruise, main dining, $50/cabin OBC, and Aquafest cocktail parties, games, 26th Annual Halloween Contest & group dining",
+    "accessibilitySummary": null,
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "primarySourceUrl": "https://aquafestcruises.com/cruise/52/17-nights-halloween-constellation-transatlantic-cruise-",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:living-passages:cel:celebrity-equinox:2027-10-16",
@@ -3761,7 +5660,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:living-passages:celebrity-equinox-2027-10-16"
+    "reputationSailingEntityId": "rep:hosted-sailing:living-passages:celebrity-equinox-2027-10-16",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://livingpassages.com/cruise/malta-greece-turkey-italy-footsteps-of-paul-cruise/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:lesbians-aboard:vv:scarlet-lady:2027-02-15",
@@ -3801,8 +5705,22 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:lesbians-aboard:scarlet-lady-2027-02-15"
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "reputationSailingEntityId": "rep:hosted-sailing:lesbians-aboard:scarlet-lady-2027-02-15",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "vesselType": "Lady-class 18+ ocean ship",
+    "approximateVesselScale": "Hosted queer-women group aboard ~2,770-guest ship",
+    "inclusionsSummary": "Virgin Voyages inclusions (20+ eateries, Wi-Fi, non-alcoholic drinks, fitness) + $0-fee Lesbians Aboard group dinners, meetups, private chat & swag bag",
+    "accessibilitySummary": null,
+    "audienceFocusTags": [
+      "lesbian_queer_women",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "primarySourceUrl": "https://lesbiansaboard.com/sisters-at-sea-2027",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:fintalks:rccl:icon-of-the-seas:2027-01-16",
@@ -3843,7 +5761,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:fintalks:icon-of-the-seas-2027-01-16"
+    "reputationSailingEntityId": "rep:hosted-sailing:fintalks:icon-of-the-seas-2027-01-16",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://www.amberlygrant.com/caribbean-cruise-icon",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:acquisition-lab:vv:brilliant-lady:2027-01-21",
@@ -3884,7 +5807,12 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:acquisition-lab:brilliant-lady-2027-01-21"
+    "reputationSailingEntityId": "rep:hosted-sailing:acquisition-lab:brilliant-lady-2027-01-21",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://acquisitionlab.com/events/annual-summit-2027",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   },
   {
     "hostedSailingId": "hosted-sailing:marketers-cruise:ccl:carnival-venezia:2027-01-31",
@@ -3925,7 +5853,1463 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "reputationSailingEntityId": "rep:hosted-sailing:marketers-cruise:carnival-venezia-2027-01-31"
+    "reputationSailingEntityId": "rep:hosted-sailing:marketers-cruise:carnival-venezia-2027-01-31",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "primarySourceUrl": "https://marketerscruise.com/",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:brand-g-vacations:amadeus:amadeus-aurea:2027-06-08",
+    "reputationSailingEntityId": "rep:hosted-sailing:brand-g-vacations:amadeus-aurea-2027-06-08",
+    "organizerSlug": "brand-g-vacations",
+    "sailingSlug": "amadeus-aurea-2027-06-08",
+    "organizerType": "independent_charter_operator",
+    "experienceClassification": "river_cruise",
+    "physicalSailingId": "sailing:amadeus:amadeus-aurea:2027-06-08",
+    "canonicalLineCode": "amadeus",
+    "canonicalShipSlug": "amadeus-aurea",
+    "canonicalSailDate": "2027-06-08",
+    "sailingTitle": "2027 Castles of the Rhine River Cruise",
+    "shortHeadline": "All-LGBT+ Full-Ship Rhine & Moselle River Charter",
+    "editionSubtitle": "Amadeus Aurea · Jun 8–15, 2027 (7N Amsterdam to Basel)",
+    "anticipationHook": "Sail from Amsterdam’s canals through Cologne, the Moselle’s Cochem vineyards, the UNESCO Rhine Gorge, Heidelberg, and Strasbourg to Basel on a 158-guest all-inclusive Brand g riverboat charter.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "food-and-wine"
+    ],
+    "visualKey": "port-cologne-rhine-panorama",
+    "regionLabel": "European Rivers (Rhine & Moselle)",
+    "vesselType": "Deluxe European riverboat (Amadeus Aurea)",
+    "approximateVesselScale": "158 guests (12 balcony suites + 67 panoramic cabins; full-ship charter)",
+    "officialSailingPageUrl": "https://www.brandgvacations.com/trip/2027-castles-of-the-rhine-river-cruise/",
+    "officialReservationFormUrl": "https://brandg.rezmagic.com/Booking/Reservation/Start?tripID=9294",
+    "officialCruiseId": "9294",
+    "cabinSellerLabel": "Brand g Vacations",
+    "cabinBookingCtaLabel": "Reserve with Brand g ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Book directly on Brand g’s RezMagic portal (tripID=9294). Mandatory $200 port charges + $190 prepaid gratuities pp.",
+    "verifiedStartingPriceUsd": 4899,
+    "publishedPriceDisplay": "From $4,899 USD pp double ($7,399 dedicated Single Cabin) + $390 fees/tips",
+    "verifiedPriceNote": "C-1 Haydn Deck from $4,899 pp double; dedicated C-4 Single Cabin $7,399; +$200 port charges & +$190 prepaid gratuities pp.",
+    "inclusionsSummary": "AMS arrival & BSL departure airport transfers, all onboard meals, unlimited beer/wine/select spirits/soft drinks, daily guided excursions with wireless headsets, and Brand g Signature entertainment",
+    "approximateGroupSizeLabel": "Full-ship charter (~158 LGBT+ guests)",
+    "fullShipCharter": true,
+    "typicalAudience": "LGBT+ adults (strictly 21+) and allies.",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "lesbian_queer_women",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Nightly Brand g Signature cabaret/comedy/music performers, welcome reception, themed deck parties, and daily guided Rhine & Moselle excursions.",
+    "programmingSourceUrl": "https://www.brandgvacations.com/trip/2027-castles-of-the-rhine-river-cruise/",
+    "soloSupport": "Dedicated C-4 Single Occupancy cabins ($7,399), +$2,500 single supplement in C-1 to A-1, and Brand g CARE TO SHARE Facebook roommate group.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": "Limited mobility access: no wheel-on/wheel-off access at river ports; written notice at booking and able-bodied companion required if needing assistance.",
+    "communityAtmosphereSummary": "Upscale, relaxed 4.5-star sightseeing & social river charter.",
+    "goodForTags": [
+      "River cruise charter",
+      "Drinks & excursions included",
+      "Dedicated single cabins",
+      "21+ adults only"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.brandgvacations.com/trip/2027-castles-of-the-rhine-river-cruise/",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:brand-g-vacations:atlas:world-traveller:2027-09-12",
+    "reputationSailingEntityId": "rep:hosted-sailing:brand-g-vacations:world-traveller-2027-09-12",
+    "organizerSlug": "brand-g-vacations",
+    "sailingSlug": "world-traveller-2027-09-12",
+    "organizerType": "independent_charter_operator",
+    "experienceClassification": "small_ship_yacht_expedition",
+    "physicalSailingId": "sailing:atlas:world-traveller:2027-09-12",
+    "canonicalLineCode": "atlas",
+    "canonicalShipSlug": "world-traveller",
+    "canonicalSailDate": "2027-09-12",
+    "sailingTitle": "2027 Luxury Greek Isles Cruise",
+    "shortHeadline": "11-Night Small-Ship Aegean Superyacht Charter",
+    "editionSubtitle": "World Traveller · Sep 12–23, 2027 (11N RT Athens)",
+    "anticipationHook": "Explore overnight Mykonos, Milos, Monemvasia, Chania, Santorini, Patmos, overnight Rhodes, Symi, and car-free Hydra aboard a 190-guest all-inclusive Atlas Ocean Voyages yacht charter.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [],
+    "visualKey": "port-rhodes-lindos",
+    "regionLabel": "Mediterranean & Greek Isles",
+    "vesselType": "Polar-class luxury expedition yacht (Atlas World Traveller, built 2022)",
+    "approximateVesselScale": "~190 Brand g guests (max 198; 98 suites/staterooms; full-ship charter)",
+    "officialSailingPageUrl": "https://www.brandgvacations.com/trip/2027-luxury-greek-isles-cruise/",
+    "officialReservationFormUrl": "https://brandg.rezmagic.com/Booking/Reservation/Start?tripID=9655",
+    "officialCruiseId": "9655",
+    "cabinSellerLabel": "Brand g Vacations",
+    "cabinBookingCtaLabel": "Reserve with Brand g ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Reserve directly via Brand g RezMagic (tripID=9655). Mandatory $275 port charges + $305 prepaid gratuities pp.",
+    "verifiedStartingPriceUsd": 8499,
+    "publishedPriceDisplay": "From $8,499 USD pp double ($11,999 solo C1) + $580 port/gratuity fees",
+    "verifiedPriceNote": "Adventure Oceanview C1 from $8,499 pp double; reduced +$3,500 solo supplement in C1/A2/B2; +$275 port charges & +$305 gratuities pp.",
+    "inclusionsSummary": "ATH arrival/departure transfers, 5 dining venues + 24h room service + stocked minibar, unlimited wines/craft cocktails/spirits/beer, 1 guided excursion per port, and Brand g Signature entertainers",
+    "approximateGroupSizeLabel": "Full-ship small-yacht charter (~190 LGBT+ guests)",
+    "fullShipCharter": true,
+    "typicalAudience": "LGBT+ adults (strictly 21+) and allies.",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "lesbian_queer_women",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Nightly Brand g Signature performers, welcome party, Aegean T-Dance, quiz shows, and included cultural/adventure excursion in every Greek port.",
+    "programmingSourceUrl": "https://www.brandgvacations.com/trip/2027-luxury-greek-isles-cruise/",
+    "soloSupport": "Reduced +$3,500 solo supplement in categories C1 ($11,999 solo), A2, and B2 (port/gratuity fees charged once) + CARE TO SHARE roommate Facebook group.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": "Limited mobility access: tender/small-harbor Greek ports do not support wheel-on/wheel-off boarding; written notice at booking required.",
+    "communityAtmosphereSummary": "5-star boutique superyacht camaraderie calling at intimate Aegean islands unreachable by mega-ships.",
+    "goodForTags": [
+      "190-guest superyacht",
+      "All-inclusive drinks & tours",
+      "Overnight Mykonos & Rhodes",
+      "21+ adults only"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.brandgvacations.com/trip/2027-luxury-greek-isles-cruise/",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:brand-g-vacations:atlas:world-traveller:2028-09-06",
+    "reputationSailingEntityId": "rep:hosted-sailing:brand-g-vacations:world-traveller-2028-09-06",
+    "organizerSlug": "brand-g-vacations",
+    "sailingSlug": "world-traveller-2028-09-06",
+    "organizerType": "independent_charter_operator",
+    "experienceClassification": "small_ship_yacht_expedition",
+    "physicalSailingId": "sailing:atlas:world-traveller:2028-09-06",
+    "canonicalLineCode": "atlas",
+    "canonicalShipSlug": "world-traveller",
+    "canonicalSailDate": "2028-09-06",
+    "sailingTitle": "2028 Dubrovnik to Venice Luxury Cruise",
+    "shortHeadline": "7-Night Adriatic & Dalmatian Superyacht Charter",
+    "editionSubtitle": "World Traveller · Sep 6–13, 2028 (7N Dubrovnik to Venice)",
+    "anticipationHook": "Cruise the Dalmatian and Istrian coast from Dubrovnik through Kotor, Vis, Hvar, Šibenik, Rovinj, and Piran to an overnight stay in Venice aboard Brand g’s 190-guest luxury yacht charter.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [],
+    "visualKey": "port-hvar-harbor-dalmatia",
+    "regionLabel": "Mediterranean & Adriatic",
+    "vesselType": "Polar-class luxury expedition yacht (Atlas World Traveller)",
+    "approximateVesselScale": "~190 Brand g guests (max 198; full-ship charter)",
+    "officialSailingPageUrl": "https://www.brandgvacations.com/trip/2028-dubrovnik-to-venice-luxury-cruise/",
+    "officialReservationFormUrl": "https://brandg.rezmagic.com/Booking/Reservation/Start?tripID=10175",
+    "officialCruiseId": "10175",
+    "cabinSellerLabel": "Brand g Vacations",
+    "cabinBookingCtaLabel": "Reserve with Brand g ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Early-booking promo live on Brand g RezMagic (tripID=10175). Mandatory $275 port charges + $305 prepaid gratuities pp.",
+    "verifiedStartingPriceUsd": 7499,
+    "publishedPriceDisplay": "From $7,499 USD pp early-booking promo ($7,999 brochure) + $580 port/gratuity fees",
+    "verifiedPriceNote": "Early-booking promo from $7,499 pp double in C1 ($7,999 brochure rate); +$5,000 reduced solo supplement in C1/A2/B2.",
+    "inclusionsSummary": "DBV arrival & VCE departure transfers, all dining + 24h room service + minibar, unlimited premium beverages, 1 guided excursion per port, and Brand g entertainment",
+    "approximateGroupSizeLabel": "Full-ship small-yacht charter (~190 LGBT+ guests)",
+    "fullShipCharter": true,
+    "typicalAudience": "LGBT+ adults (strictly 21+) and allies.",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "lesbian_queer_women",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Nightly Brand g Signature entertainment, Adriatic deck socials, and included guided excursions from Kotor to Venice.",
+    "programmingSourceUrl": "https://www.brandgvacations.com/trip/2028-dubrovnik-to-venice-luxury-cruise/",
+    "soloSupport": "Reduced +$5,000 solo supplement in categories C1, A2, and B2 + CARE TO SHARE Facebook roommate group.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": "Limited mobility access: no wheel-on/wheel-off access at Adriatic ports; written notice at booking required.",
+    "communityAtmosphereSummary": "Intimate 5-star Adriatic yachting ending with an overnight stay in Venice.",
+    "goodForTags": [
+      "Adriatic & Croatia",
+      "Overnight in Venice",
+      "All-inclusive luxury yacht",
+      "21+ adults only"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.brandgvacations.com/trip/2028-dubrovnik-to-venice-luxury-cruise/",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:the-cruise-la-demence:cel:celebrity-equinox:2027-07-15",
+    "reputationSailingEntityId": "rep:hosted-sailing:the-cruise-la-demence:celebrity-equinox-2027-07-15",
+    "organizerSlug": "the-cruise-la-demence",
+    "sailingSlug": "celebrity-equinox-2027-07-15",
+    "organizerType": "independent_charter_operator",
+    "experienceClassification": "full_ship_charter",
+    "physicalSailingId": "sailing:cel:celebrity-equinox:2027-07-15",
+    "canonicalLineCode": "cel",
+    "canonicalShipSlug": "celebrity-equinox",
+    "canonicalSailDate": "2027-07-15",
+    "sailingTitle": "Jewels of the Western Mediterranean — The Cruise 2027",
+    "shortHeadline": "9-Night European Full-Ship Gay Festival Charter",
+    "editionSubtitle": "Celebrity Equinox · Jul 15–24, 2027 (9N RT Barcelona)",
+    "anticipationHook": "Extended to 9 nights for the first time in 15 years—sail round-trip from Barcelona to the French Riviera, Portofino, Naples, Malta, Sicily, and Sardinia with La Démence’s legendary open-air sunrise DJ parties.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "music-cruises"
+    ],
+    "visualKey": "port-valletta-panorama",
+    "regionLabel": "Western Mediterranean",
+    "vesselType": "Solstice-class premium ocean liner (Celebrity Equinox)",
+    "approximateVesselScale": "2,852 passengers across 1,426 staterooms (100% full-ship charter)",
+    "officialSailingPageUrl": "https://the-cruise.eu/destinations/2027-western-med",
+    "officialReservationFormUrl": "https://the-cruise.eu/book-now",
+    "cabinSellerLabel": "BV SPLASH (The Cruise by La Démence)",
+    "cabinBookingCtaLabel": "Book on the-cruise.eu ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Book directly on the-cruise.eu/book-now. Published €1,499+ EUR fares already include port taxes and cabin staff gratuities.",
+    "verifiedStartingPriceUsd": 1620,
+    "publishedPriceDisplay": "From €1,499 EUR (~$1,620 USD) pp double (port taxes & cabin gratuities included)",
+    "verifiedPriceNote": "Interior from €1,499 EUR pp double; Exterior €2,229; Balcony €2,429; Junior Suite €4,999 (port taxes & cabin staff gratuities included).",
+    "inclusionsSummary": "9 nights accommodation, 24h dining (à-la-carte + extended/late-night buffets), port taxes, cabin staff gratuities, and all La Démence parties, shows & entertainment",
+    "approximateGroupSizeLabel": "Full-ship charter (~2,852 guests)",
+    "fullShipCharter": true,
+    "typicalAudience": "European & international gay men (strictly 18+), welcoming lesbians, queer women & allies.",
+    "audienceFocusTags": [
+      "gay_men",
+      "all_lgbtq",
+      "clothing_optional_nude"
+    ],
+    "announcedHostedProgramming": "Poolside chill DJs, Sunset Tea Dances, open-air Night Parties until sunrise, indoor after-parties, nightly theater shows, Mister The Cruise & High Heels Run, nudist deck, and 24h playroom.",
+    "programmingSourceUrl": "https://the-cruise.eu/destinations/2027-western-med",
+    "soloSupport": "Blind single-share program discontinued for 2027; solo guests self-match via official Facebook Roommate Group with split billing, or book 200% single occupancy and add a 2nd guest free until Jun 30, 2027.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": null,
+    "communityAtmosphereSummary": "High-energy multilingual European festival & \"friendly village\" club atmosphere.",
+    "goodForTags": [
+      "Full-ship charter",
+      "9-night Mediterranean",
+      "Taxes & tips included",
+      "18+ adults only"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://the-cruise.eu/destinations/2027-western-med/itinerary",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:source-journeys:windstar:wind-star:2027-10-11",
+    "reputationSailingEntityId": "rep:hosted-sailing:source-journeys:wind-star-2027-10-11",
+    "organizerSlug": "source-journeys",
+    "sailingSlug": "wind-star-2027-10-11",
+    "organizerType": "small_ship_yacht_operator",
+    "experienceClassification": "small_ship_yacht_expedition",
+    "physicalSailingId": "sailing:windstar:wind-star:2027-10-11",
+    "canonicalLineCode": "windstar",
+    "canonicalShipSlug": "wind-star",
+    "canonicalSailDate": "2027-10-11",
+    "sailingTitle": "Dreams of Tahiti Cruise 2027",
+    "shortHeadline": "140-Guest 4-Masted Sailing Yacht Charter in French Polynesia",
+    "editionSubtitle": "Wind Star · Oct 11–18, 2027 (7N RT Papeete, Tahiti)",
+    "anticipationHook": "Sail under billowing white canvas through Raiatea, Taha’a, an overnight Bora Bora lagoon feast with fire dancers, Huahine, and Moorea on Source Journeys’ 140-guest private Wind Star charter.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [],
+    "visualKey": "port-bora-bora-lagoon-polynesia",
+    "regionLabel": "South Pacific & Tahiti",
+    "vesselType": "4-masted motor-sailing yacht (Windstar Wind Star)",
+    "approximateVesselScale": "140 guests (100% private yacht charter)",
+    "officialSailingPageUrl": "https://sourcejourneys.com/dreams-of-tahiti-cruise-2027/",
+    "officialReservationFormUrl": "https://sourceevents.rezmagic.com/Booking/Reservation/Start?tripID=5362",
+    "officialCruiseId": "5362",
+    "cabinSellerLabel": "Source Journeys",
+    "cabinBookingCtaLabel": "Join Official Waitlist ↗",
+    "cabinAvailabilityStatus": "waitlist",
+    "cabinAvailabilityNote": "Currently Sold Out with official Waitlist open via Source Journeys RezMagic (tripID=5362).",
+    "verifiedStartingPriceUsd": 5669,
+    "publishedPriceDisplay": "From $5,669 USD pp double + $590 port/gratuity fees (Waitlist)",
+    "verifiedPriceNote": "Category B from $5,669 pp double up to Owner’s Suite $7,899 + $395 port fees & $195 gratuities pp.",
+    "inclusionsSummary": "All meals + 24h room service, complimentary premium spirits/wines/beers/espresso, unlimited Starlink Wi-Fi, aft watersports marina, private Bora Bora Fire Dancer Feast, and poolside T-dances",
+    "approximateGroupSizeLabel": "Full-yacht charter (~140 LGBTQ+ guests)",
+    "fullShipCharter": true,
+    "typicalAudience": "Adult LGBTQ+ luxury travelers, couples, and solo explorers.",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Private Taha’a motu beach club BBQ, Bora Bora Celebration Feast with Fire Dancers, poolside T-dances, theme parties, and aft marina watersports.",
+    "programmingSourceUrl": "https://sourcejourneys.com/dreams-of-tahiti-cruise-2027/",
+    "soloSupport": "Solo travelers welcomed; contact Source Journeys for single-occupancy availability on waitlist.",
+    "soloFriendly": true,
+    "familyPolicy": "not_verified",
+    "accessibilitySummary": "Tender/motu landings and sailing yacht gangways; travelers requiring assistance must sail with a non-discounted companion per Source Travel Contract.",
+    "communityAtmosphereSummary": "Intimate barefoot-luxury South Pacific sailing yacht celebration.",
+    "goodForTags": [
+      "4-masted sailing yacht",
+      "Open bar & Starlink Wi-Fi",
+      "Overnight Bora Bora",
+      "140 guests"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://sourcejourneys.com/dreams-of-tahiti-cruise-2027/",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:source-journeys:ak:pure-amazon:2028-04-01",
+    "reputationSailingEntityId": "rep:hosted-sailing:source-journeys:pure-amazon-2028-04-01",
+    "organizerSlug": "source-journeys",
+    "sailingSlug": "pure-amazon-2028-04-01",
+    "organizerType": "small_ship_yacht_operator",
+    "experienceClassification": "river_cruise",
+    "physicalSailingId": "sailing:ak:pure-amazon:2028-04-01",
+    "canonicalLineCode": "ak",
+    "canonicalShipSlug": "pure-amazon",
+    "canonicalSailDate": "2028-04-01",
+    "sailingTitle": "Spirit of the Amazon — Luxury Riverboat Charter",
+    "shortHeadline": "22-Guest A&K Pure Amazon Private Expedition Riverboat",
+    "editionSubtitle": "Pure Amazon · Apr 1–8, 2028 (7N Amazon + Mar 31 Belmond Lima Pre-Night)",
+    "anticipationHook": "Explore Peru’s Pacaya-Samiria Reserve by skiff and kayak for pink river dolphins and blackwater mirror lagoons aboard Abercrombie & Kent’s brand-new 22-guest Pure Amazon—including dedicated $0-supplement single suites.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [],
+    "visualKey": "port-amazon-pacaya-samiria",
+    "regionLabel": "South America & Amazon River",
+    "vesselType": "Boutique luxury expedition riverboat (Abercrombie & Kent Pure Amazon, launched 2025)",
+    "approximateVesselScale": "22 guests maximum (10 Double Suites + 2 Single Cabins; full-vessel charter)",
+    "officialSailingPageUrl": "https://sourcejourneys.com/spirit-of-the-amazon/",
+    "officialReservationFormUrl": "https://sourceevents.rezmagic.com/Booking/Reservation/Start?tripID=5545",
+    "officialCruiseId": "5545",
+    "cabinSellerLabel": "Source Journeys",
+    "cabinBookingCtaLabel": "Reserve with Source Journeys ↗",
+    "cabinAvailabilityStatus": "limited",
+    "cabinAvailabilityNote": "1 dedicated $0-supplement Single Cabin open on Mar 31/Apr 1 departure (companion Mar 24 departure also open on sourcejourneys.com).",
+    "verifiedStartingPriceUsd": 13995,
+    "publishedPriceDisplay": "From $13,995 USD pp (Double Suites & $0-supplement Single Cabins) + $375 tips",
+    "verifiedPriceNote": "Published $13,995 pp for both Double Suites and dedicated 215 sq ft Single Cabins + $375 gratuities & internal Lima–Iquitos flight.",
+    "inclusionsSummary": "1 pre-night Belmond Miraflores Park Lima + welcome dinner, 7 nights aboard Pure Amazon, all meals, house wines/local spirits/beer, daily naturalist skiff/kayak excursions, Wi-Fi, laundry & reserve fees",
+    "approximateGroupSizeLabel": "Full-riverboat charter (22 LGBTQ+ guests)",
+    "fullShipCharter": true,
+    "typicalAudience": "Adult LGBTQ+ luxury adventure & wildlife travelers.",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Lima Belmond welcome dinner, sunrise & night caiman skiff safaris, Pacaya-Samiria kayaking, rainforest village visits, and naturalist lectures.",
+    "programmingSourceUrl": "https://sourcejourneys.com/spirit-of-the-amazon/",
+    "soloSupport": "Two dedicated 215 sq. ft. Single Cabins priced at $13,995 pp ($0 single supplement over double-occupancy per-person fare).",
+    "soloFriendly": true,
+    "familyPolicy": "not_verified",
+    "accessibilitySummary": "Skiff/expedition boarding in remote rainforest channels; assisting companion required for travelers with disabilities per Source Travel Contract.",
+    "communityAtmosphereSummary": "Ultra-intimate 22-guest luxury wildlife expedition with A&K service.",
+    "goodForTags": [
+      "22-guest luxury riverboat",
+      "$0-supplement single suites",
+      "Belmond Lima night included",
+      "Amazon wildlife"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://sourcejourneys.com/spirit-of-the-amazon/",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:source-journeys:windstar:star-explorer:2028-09-10",
+    "reputationSailingEntityId": "rep:hosted-sailing:source-journeys:star-explorer-2028-09-10",
+    "organizerSlug": "source-journeys",
+    "sailingSlug": "star-explorer-2028-09-10",
+    "organizerType": "small_ship_yacht_operator",
+    "experienceClassification": "small_ship_yacht_expedition",
+    "physicalSailingId": "sailing:windstar:star-explorer:2028-09-10",
+    "canonicalLineCode": "windstar",
+    "canonicalShipSlug": "star-explorer",
+    "canonicalSailDate": "2028-09-10",
+    "sailingTitle": "Mediterranean Nights — Lisbon to Barcelona 2028",
+    "shortHeadline": "8-Night All-Suite Yacht Charter w/ Overnight Ibiza",
+    "editionSubtitle": "Star Explorer · Sep 10–18, 2028 (8N Lisbon to Barcelona)",
+    "anticipationHook": "Sail aboard Windstar’s newest 224-guest all-suite yacht Star Explorer from Lisbon through Cádiz, Tangier, Málaga, an overnight in Ibiza, and Palma de Mallorca to Barcelona.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [],
+    "visualKey": "port-ibiza-dalt-vila-harbor",
+    "regionLabel": "Iberia, Morocco & Balearic Islands",
+    "vesselType": "All-suite luxury motor yacht (Windstar Star Explorer, christened 2027)",
+    "approximateVesselScale": "224 guests across 112 suites (100% private yacht charter)",
+    "officialSailingPageUrl": "https://sourcejourneys.com/mediterranean-nights-lisbon-to-barcelona-cruise/",
+    "officialReservationFormUrl": "https://sourceevents.rezmagic.com/Booking/Reservation/Start?tripID=5491",
+    "officialCruiseId": "5491",
+    "cabinSellerLabel": "Source Journeys",
+    "cabinBookingCtaLabel": "Reserve with Source Journeys ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Open for booking on Source Journeys RezMagic (tripID=5491). Mandatory $399 port fees + $195 gratuities pp.",
+    "verifiedStartingPriceUsd": 6899,
+    "publishedPriceDisplay": "From $6,899 USD pp double + $594 port/gratuity fees",
+    "verifiedPriceNote": "Oceanview Suite OV from $6,899 pp double; Veranda VS $7,698; reduced 175%–190% solo supplements in OV/Deck 5 VS.",
+    "inclusionsSummary": "All-suite accommodations, free-flowing premium spirits/wines/beers/cocktails/specialty coffees, unlimited Starlink Wi-Fi, 5 James Beard–inspired dining venues, watersports marina & Source T-dances/parties",
+    "approximateGroupSizeLabel": "Full-yacht charter (~224 LGBTQ+ guests)",
+    "fullShipCharter": true,
+    "typicalAudience": "Adult LGBTQ+ luxury yacht travelers, couples & solo explorers.",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Source Enrichment Talks, opening starlight theme party, overnight Ibiza nightlife & Deck BBQ under the stars, poolside T-dances, and aft watersports marina.",
+    "programmingSourceUrl": "https://sourcejourneys.com/mediterranean-nights-lisbon-to-barcelona-cruise/",
+    "soloSupport": "Reduced single supplements of 175% in Oceanview Suites (OV) and 190% in Deck 5 Veranda Suites.",
+    "soloFriendly": true,
+    "familyPolicy": "not_verified",
+    "accessibilitySummary": "Travelers requiring mobility/personal assistance must travel with a non-discounted companion per Source Travel Contract.",
+    "communityAtmosphereSummary": "Sophisticated 224-guest all-suite yacht atmosphere with overnight Balearic energy in Ibiza.",
+    "goodForTags": [
+      "All-suite 224-guest yacht",
+      "Overnight Ibiza",
+      "Open bar & Starlink Wi-Fi",
+      "Reduced solo supplements"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://sourcejourneys.com/mediterranean-nights-lisbon-to-barcelona-cruise/",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:gaysail:gaysail:lagoon-520-catamaran-phuket:2027-03-20",
+    "reputationSailingEntityId": "rep:hosted-sailing:gaysail:lagoon-520-phuket-2027-03-20",
+    "organizerSlug": "gaysail",
+    "sailingSlug": "lagoon-520-phuket-2027-03-20",
+    "organizerType": "small_ship_yacht_operator",
+    "experienceClassification": "small_ship_yacht_expedition",
+    "physicalSailingId": "sailing:gaysail:lagoon-520-catamaran-phuket:2027-03-20",
+    "canonicalLineCode": "gaysail",
+    "canonicalShipSlug": "lagoon-520-catamaran-phuket",
+    "canonicalSailDate": "2027-03-20",
+    "sailingTitle": "GaySail Exclusive Thailand 2027",
+    "shortHeadline": "52-ft Catamaran Island-Hopping Across Phang-nga Bay, Krabi & Phi Phi",
+    "editionSubtitle": "Lagoon 520 Catamaran · Mar 20–27, 2027 (7N Phuket Marina to Patong)",
+    "anticipationHook": "Island-hop across Koh Yao Yai, Railay Beach, Koh Jum, Koh Phi Phi Don, and Koh Racha Yai with 12–14 gay men, Skipper Mark, and Cook Larry aboard a 52-foot Lagoon catamaran.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "wellness"
+    ],
+    "visualKey": "port-krabi-railay-thailand",
+    "regionLabel": "Southeast Asia (Andaman Sea, Thailand)",
+    "vesselType": "52-ft cruising sailing catamaran (Lagoon 520)",
+    "approximateVesselScale": "12–14 gay men (5 double cabins + 1 bunk cabin + 2 single bow crew cabins)",
+    "officialSailingPageUrl": "https://gaysail.com/program/gaynudesail-exclusive/44-gaysail-exclusive-thailand-2027",
+    "officialReservationFormUrl": "https://gaysail.com/program/44-gaysail-exclusive-thailand-2027/individual-registration",
+    "cabinSellerLabel": "GaySail",
+    "cabinBookingCtaLabel": "Register on GaySail.com ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Register per berth or cabin on gaysail.com (€1,595 bow single cabin / €2,295 pp shared cabin; 50% deposit).",
+    "verifiedStartingPriceUsd": 1725,
+    "publishedPriceDisplay": "From €1,595 EUR (~$1,725 USD) single bow cabin / €2,295 EUR pp cabin share",
+    "verifiedPriceNote": "€1,595 EUR single bow crew cabin (30% discount) or €2,295 EUR pp shared double/bunk cabin (+80% private double cabin).",
+    "inclusionsSummary": "7 nights catamaran berth, gay skipper & gay cook, daily breakfast & lunch, soft drinks, harbor fees, local taxes, fuel, and end cleaning",
+    "approximateGroupSizeLabel": "12–14 gay men aboard 52-ft catamaran",
+    "fullShipCharter": true,
+    "typicalAudience": "Adult gay men ages 18–72 (~60–70% solo travelers).",
+    "audienceFocusTags": [
+      "gay_men",
+      "solo_friendly",
+      "clothing_optional_nude"
+    ],
+    "announcedHostedProgramming": "Daily island sailing, coral-reef snorkeling, clothing-optional secluded bay swims, freshly cooked breakfasts & lunches onboard, and Patong finale night out.",
+    "programmingSourceUrl": "https://gaysail.com/program/gaynudesail-exclusive/44-gaysail-exclusive-thailand-2027",
+    "soloSupport": "No mandatory single supplement (paired cabin share with separate linens) or €1,595 discounted single bow crew cabin.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": "Not wheelchair accessible: sporty sailing yacht requiring dinghy boarding and physical agility (max age 72).",
+    "communityAtmosphereSummary": "Active, friendly small-yacht camaraderie—clothing-optional in secluded bays.",
+    "goodForTags": [
+      "12–14 guest catamaran",
+      "No mandatory solo supplement",
+      "Gay skipper & cook",
+      "Thailand islands"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://gaysail.com/program/gaynudesail-exclusive/44-gaysail-exclusive-thailand-2027",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:gaysail:gaysail:lagoon-520-catamaran-phuket:2027-03-27",
+    "reputationSailingEntityId": "rep:hosted-sailing:gaysail:lagoon-520-phuket-2027-03-27",
+    "organizerSlug": "gaysail",
+    "sailingSlug": "lagoon-520-phuket-2027-03-27",
+    "subBrandSlug": "gaynudesail",
+    "subBrandName": "GayNudeSail",
+    "organizerType": "small_ship_yacht_operator",
+    "experienceClassification": "small_ship_yacht_expedition",
+    "physicalSailingId": "sailing:gaysail:lagoon-520-catamaran-phuket:2027-03-27",
+    "canonicalLineCode": "gaysail",
+    "canonicalShipSlug": "lagoon-520-catamaran-phuket",
+    "canonicalSailDate": "2027-03-27",
+    "sailingTitle": "GayNudeSail Exclusive Thailand 2027",
+    "shortHeadline": "Dedicated All-Nude Andaman Sea Catamaran Week (GayNudeSail Sub-Brand)",
+    "editionSubtitle": "Lagoon 520 Catamaran · Mar 27 – Apr 3, 2027 (7N Patong to Phuket Yacht Haven)",
+    "anticipationHook": "Operated under GaySail’s official GayNudeSail naturist sub-brand—sail nude all week across Nai Harn, Koh Phi Phi North, Ao Nang, Koh Hong’s hidden lagoons, and Koh Panyee.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "wellness"
+    ],
+    "visualKey": "yacht-sailing-catamaran-greece",
+    "regionLabel": "Southeast Asia (Andaman Sea, Thailand)",
+    "vesselType": "52-ft cruising sailing catamaran (Lagoon 520)",
+    "approximateVesselScale": "12–14 gay men (official GayNudeSail naturist catamaran week)",
+    "officialSailingPageUrl": "https://gaysail.com/program/gaynudesail-exclusive/45-gaynudesail-exclusive-thailand-2027",
+    "officialReservationFormUrl": "https://gaysail.com/program/45-gaynudesail-exclusive-thailand-2027/individual-registration",
+    "cabinSellerLabel": "GaySail (GayNudeSail Program)",
+    "cabinBookingCtaLabel": "Register GayNudeSail Berth ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Official GayNudeSail sub-brand departure booked directly on gaysail.com (€1,595 bow single / €2,295 pp share).",
+    "verifiedStartingPriceUsd": 1725,
+    "publishedPriceDisplay": "From €1,595 EUR (~$1,725 USD) single bow cabin / €2,295 EUR pp cabin share",
+    "verifiedPriceNote": "€1,595 EUR single bow crew cabin or €2,295 EUR pp shared double/bunk cabin.",
+    "inclusionsSummary": "7 nights catamaran berth, nude gay skipper & nude gay cook, daily breakfast & lunch, soft drinks, harbor fees, local taxes, fuel, and end cleaning",
+    "approximateGroupSizeLabel": "12–14 gay men (GayNudeSail naturist charter)",
+    "fullShipCharter": true,
+    "typicalAudience": "Adult naturist gay men ages 18–72.",
+    "audienceFocusTags": [
+      "gay_men",
+      "solo_friendly",
+      "clothing_optional_nude"
+    ],
+    "announcedHostedProgramming": "All-day naturist sailing, hidden Koh Hong limestone lagoon dinghy exploration, snorkeling, onboard meals, and ashore village/beach dinners.",
+    "programmingSourceUrl": "https://gaysail.com/program/gaynudesail-exclusive/45-gaynudesail-exclusive-thailand-2027",
+    "soloSupport": "Shared cabin pairing with separate linens (€0 solo surcharge) or €1,595 single bow crew cabin.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": "Not wheelchair accessible: active sailing catamaran requiring dinghy transfers (max age 72).",
+    "communityAtmosphereSummary": "Relaxed, body-positive all-day naturist sailing week with strict photo-privacy respect.",
+    "goodForTags": [
+      "GayNudeSail sub-brand",
+      "All-day naturist",
+      "No mandatory solo supplement",
+      "12–14 guests"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://gaysail.com/program/gaynudesail-exclusive/45-gaynudesail-exclusive-thailand-2027",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:gaysail:gaysail:lagoon-420-catamaran-dalmatia:2027-06-19",
+    "reputationSailingEntityId": "rep:hosted-sailing:gaysail:lagoon-420-split-2027-06-19",
+    "organizerSlug": "gaysail",
+    "sailingSlug": "lagoon-420-split-2027-06-19",
+    "organizerType": "small_ship_yacht_operator",
+    "experienceClassification": "small_ship_yacht_expedition",
+    "physicalSailingId": "sailing:gaysail:lagoon-420-catamaran-dalmatia:2027-06-19",
+    "canonicalLineCode": "gaysail",
+    "canonicalShipSlug": "lagoon-420-catamaran-dalmatia",
+    "canonicalSailDate": "2027-06-19",
+    "sailingTitle": "GaySail Exclusive Split–Hvar–Dubrovnik 2027",
+    "shortHeadline": "7-Night Dalmatian Islands Catamaran Flotilla",
+    "editionSubtitle": "Lagoon 420 Catamaran · Jun 19–26, 2027 (7N Trogir/Split to Dubrovnik)",
+    "anticipationHook": "Sail Croatia’s Dalmatian islands from Trogir (Split) through Brač, Hvar, Korčula, Lastovo, and Mljet National Park to Dubrovnik’s walled Old Town with Skipper Frans and Cook William.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "wellness"
+    ],
+    "visualKey": "port-dubrovnik-old-port",
+    "regionLabel": "Mediterranean & Adriatic (Croatia)",
+    "vesselType": "42-ft cruising sailing catamaran(s) (Lagoon 420)",
+    "approximateVesselScale": "8–20 gay men across 1–2 catamarans",
+    "officialSailingPageUrl": "https://gaysail.com/program/gaysail-exclusive/51-gaysail-exclusive-split-hvar-dubrovnik-2027",
+    "officialReservationFormUrl": "https://gaysail.com/program/51-gaysail-exclusive-split-hvar-dubrovnik-2027/individual-registration",
+    "cabinSellerLabel": "GaySail",
+    "cabinBookingCtaLabel": "Register on GaySail.com ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Register directly on gaysail.com (€1,695 bow single cabin / €2,395 pp shared double cabin).",
+    "verifiedStartingPriceUsd": 1830,
+    "publishedPriceDisplay": "From €1,695 EUR (~$1,830 USD) single bow cabin / €2,395 EUR pp cabin share",
+    "verifiedPriceNote": "€1,695 EUR bow single crew cabin or €2,395 EUR pp shared double cabin.",
+    "inclusionsSummary": "7 nights catamaran berth, gay skipper & gay cook, daily breakfast & lunch, soft drinks, harbor/mooring fees, local taxes, fuel, and end cleaning",
+    "approximateGroupSizeLabel": "8–20 gay men (1–2 catamarans)",
+    "fullShipCharter": true,
+    "typicalAudience": "Adult gay men ages 18–72 (~60–70% solo travelers).",
+    "audienceFocusTags": [
+      "gay_men",
+      "solo_friendly",
+      "clothing_optional_nude"
+    ],
+    "announcedHostedProgramming": "Dalmatian island sailing, clothing-optional bay swims, Korčula onboard dinner, Mljet National Park anchorage, and Dubrovnik Old Town finale dinner.",
+    "programmingSourceUrl": "https://gaysail.com/program/gaysail-exclusive/51-gaysail-exclusive-split-hvar-dubrovnik-2027",
+    "soloSupport": "Shared cabin pairing with separate sheets (€0 solo surcharge) or €1,695 discounted single bow cabin.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": "Not wheelchair accessible: sporty sailing catamaran requiring physical agility and dinghy transfers (max age 72).",
+    "communityAtmosphereSummary": "Sunny, active Adriatic island-hopping yachting with 8–20 shipmates.",
+    "goodForTags": [
+      "Croatia island-hopping",
+      "8–20 guest catamaran",
+      "No mandatory solo supplement",
+      "Split to Dubrovnik"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://gaysail.com/program/gaysail-exclusive/51-gaysail-exclusive-split-hvar-dubrovnik-2027",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:tryst-cruises:cel:celebrity-beyond:2027-10-31",
+    "reputationSailingEntityId": "rep:hosted-sailing:tryst-cruises:celebrity-beyond-2027-10-31",
+    "organizerSlug": "tryst-cruises",
+    "sailingSlug": "celebrity-beyond-2027-10-31",
+    "organizerType": "independent_charter_operator",
+    "experienceClassification": "full_ship_charter",
+    "physicalSailingId": "sailing:cel:celebrity-beyond:2027-10-31",
+    "canonicalLineCode": "cel",
+    "canonicalShipSlug": "celebrity-beyond",
+    "canonicalSailDate": "2027-10-31",
+    "sailingTitle": "Tryst Cruises Maiden Voyage — Halloween 2027",
+    "shortHeadline": "Inaugural Full-Ship Luxury LGBTQ+ Halloween Charter",
+    "editionSubtitle": "Celebrity Beyond · Oct 31 – Nov 6, 2027 (6N RT Fort Lauderdale)",
+    "anticipationHook": "Sail out of Fort Lauderdale on Halloween night aboard Celebrity Beyond for Tryst Cruises’ maiden full-ship charter calling at Puerto Plata, Samaná, and an all-inclusive Private Nassau Beach Club Festival.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "music-cruises"
+    ],
+    "visualKey": "port-fort-lauderdale-las-olas",
+    "regionLabel": "Caribbean & Bahamas",
+    "vesselType": "Edge-class contemporary luxury ocean ship (Celebrity Beyond)",
+    "approximateVesselScale": "3,260 guests double occupancy (100% full-ship charter)",
+    "officialSailingPageUrl": "https://trystcruises.com/voyage-landing-page/",
+    "officialReservationFormUrl": "https://trystcruises.com/staterooms-fares/",
+    "cabinSellerLabel": "Tryst Cruises (Tryst Hospitality)",
+    "cabinBookingCtaLabel": "Check Official Fares & Pre-Sale ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Confirmed full-ship charter; Founder Rates & $99/pp down payment plans launch on trystcruises.com/staterooms-fares/.",
+    "verifiedStartingPriceUsd": null,
+    "publishedPriceDisplay": null,
+    "verifiedPriceNote": "Not disclosed yet on trystcruises.com (pre-sale $X,XXX fare table pending Founder Rates launch).",
+    "inclusionsSummary": "Stateroom, main dining & buffet, all Tryst Cruises parties/Tryst Drag Brunch/Masterbeat DJs, and Day 6 Private Nassau Beach Club Festival (admission, food, alcohol & Wi-Fi at beach club included)",
+    "approximateGroupSizeLabel": "Full-ship charter (~3,260 guests)",
+    "fullShipCharter": true,
+    "typicalAudience": "Adults-only LGBTQ+ travelers, nightlife fans, couples & solo sailors.",
+    "audienceFocusTags": [
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Halloween Costume Sail-Away Party, Daddy Issues pool party, Masterbeat DJs, STAMP, World Famous Tryst Drag Brunch, Tea Dances, Meat Rack Rooftop takeover, and Nassau Beach Club Festival.",
+    "programmingSourceUrl": "https://trystcruises.com/itinerary/",
+    "soloSupport": "Dedicated Edge Single Infinite Veranda staterooms (Cat ES) plus official \"Sailor Match\" cabinmate-matching program.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": null,
+    "communityAtmosphereSummary": "Stylish, high-production luxury LGBTQ+ Halloween & beach-club festival at sea.",
+    "goodForTags": [
+      "Maiden Halloween charter",
+      "Private Nassau Beach Festival",
+      "Sailor Match solos",
+      "Adults-only"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://trystcruises.com/itinerary/",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:tryst-cruises:rccl:wonder-of-the-seas:2028-02-04",
+    "reputationSailingEntityId": "rep:hosted-sailing:tryst-cruises:wonder-of-the-seas-2028-02-04",
+    "organizerSlug": "tryst-cruises",
+    "sailingSlug": "wonder-of-the-seas-2028-02-04",
+    "organizerType": "independent_charter_operator",
+    "experienceClassification": "full_ship_charter",
+    "physicalSailingId": "sailing:rccl:wonder-of-the-seas:2028-02-04",
+    "canonicalLineCode": "rccl",
+    "canonicalShipSlug": "wonder-of-the-seas",
+    "canonicalSailDate": "2028-02-04",
+    "sailingTitle": "Tryst Cruises Winter 2028 Mega-Ship Charter",
+    "shortHeadline": "Full-Ship Wonder of the Seas Eastern Caribbean Charter",
+    "editionSubtitle": "Wonder of the Seas · Feb 4–11, 2028 (7N RT Miami)",
+    "anticipationHook": "Tryst Cruises’ supersized second full-ship charter takes over Royal Caribbean’s 5,826-guest Wonder of the Seas round-trip from Miami to Samaná, San Juan, and St. Maarten.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "music-cruises"
+    ],
+    "visualKey": "ship-wonder-of-the-seas",
+    "regionLabel": "Eastern Caribbean",
+    "vesselType": "Oasis-class mega ocean ship (Wonder of the Seas)",
+    "approximateVesselScale": "5,826 guests (100% full-ship charter)",
+    "officialSailingPageUrl": "https://trystcruises.com/",
+    "officialReservationFormUrl": "https://trystcruises.com/",
+    "cabinSellerLabel": "Tryst Cruises (Tryst Hospitality)",
+    "cabinBookingCtaLabel": "Register Interest on TrystCruises.com ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Confirmed Feb 4–11, 2028 full-ship charter (\"ON SALE 2027\" on trystcruises.com).",
+    "verifiedStartingPriceUsd": null,
+    "publishedPriceDisplay": null,
+    "verifiedPriceNote": "Not disclosed yet on trystcruises.com (goes on sale in 2027).",
+    "inclusionsSummary": "7-night full-ship charter stateroom, complimentary ship dining, and full-ship Tryst Cruises nightlife, drag brunches & DJ programming",
+    "approximateGroupSizeLabel": "Full-ship charter (~5,826 guests)",
+    "fullShipCharter": true,
+    "typicalAudience": "Adults-only LGBTQ+ travelers, couples, friends & solo sailors.",
+    "audienceFocusTags": [
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Full-ship Tryst Hospitality parties, Tea Dances, Tryst Drag Brunch, and international DJ takeovers across Wonder of the Seas neighborhoods.",
+    "programmingSourceUrl": "https://trystcruises.com/",
+    "soloSupport": "Sailor Match cabinmate program & solo stateroom options announced at on-sale.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": null,
+    "communityAtmosphereSummary": "Mega-ship winter Caribbean full-charter festival atmosphere.",
+    "goodForTags": [
+      "5,826-guest mega charter",
+      "Miami, San Juan & St. Maarten",
+      "Adults-only",
+      "Tryst nightlife"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://trystcruises.com/",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:big-gay-cruise:rccl:freedom-of-the-seas:2027-01-28",
+    "reputationSailingEntityId": "rep:hosted-sailing:big-gay-cruise:freedom-of-the-seas-2027-01-28",
+    "organizerSlug": "big-gay-cruise",
+    "sailingSlug": "freedom-of-the-seas-2027-01-28",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "physicalSailingId": "sailing:rccl:freedom-of-the-seas:2027-01-28",
+    "canonicalLineCode": "rccl",
+    "canonicalShipSlug": "freedom-of-the-seas",
+    "canonicalSailDate": "2027-01-28",
+    "sailingTitle": "Big Gay Cruise — 9-Night Southern Caribbean",
+    "shortHeadline": "40+ Hours of Drag & DJ Events to Curaçao, Aruba, Cabo Rojo & CocoCay",
+    "editionSubtitle": "Freedom of the Seas · Jan 28 – Feb 6, 2027 (9N RT Miami)",
+    "anticipationHook": "Escape winter for 9 nights from Miami to Curaçao, Aruba, Cabo Rojo, and Perfect Day at CocoCay with Big Gay Cruise’s Drag Race performers, nightly Rainbow Mixers, and dance parties.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [],
+    "visualKey": "port-curacao",
+    "regionLabel": "Southern Caribbean & Bahamas",
+    "vesselType": "Freedom-class ocean ship (Freedom of the Seas)",
+    "approximateVesselScale": "Hosted LGBTQ+ group block aboard ~3,900-guest ship",
+    "officialSailingPageUrl": "https://biggaycruise.com/9-nights-southern-caribbean/",
+    "officialReservationFormUrl": "https://biggaycruise.com/freedom-booking-form/",
+    "cabinSellerLabel": "Big Gay Cruise (via CruiseHelp)",
+    "cabinBookingCtaLabel": "Book on BigGayCruise.com ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Reserve via biggaycruise.com/freedom-booking-form/ ($500 cabin deposit + mandatory $169/pp Standard or $299/pp VIP10 BGC All Access Pass).",
+    "verifiedStartingPriceUsd": 739,
+    "publishedPriceDisplay": "From $738.50 USD pp double ($1,477 for 2 / $1,585 Solo) incl. taxes + $169/pp BGC Pass",
+    "verifiedPriceNote": "Interior $1,477 total for 2 ($738.50/pp) or $1,585 Solo; Balcony $2,470 for 2 / $2,290 Solo (taxes & port fees included) + $169/pp BGC All Access Pass.",
+    "inclusionsSummary": "9-night cabin fare, taxes & port fees, RCI complimentary dining & shows, plus 40+ hours of private BGC drag shows, Star Dinner, Game Frenzy & DJ parties with mandatory BGC All Access Pass",
+    "approximateGroupSizeLabel": "Large hosted LGBTQ+ group block",
+    "fullShipCharter": false,
+    "typicalAudience": "LGBTQ+ travelers, drag & nightlife fans, couples, solo cruisers, and allies/families.",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "lgbtq_families",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "RuPaul’s Drag Race headliners, Cruise Directors Elliott with 2 Ts & Bentley Balenciaga, daily drag shows, Star Dinner, Game Frenzy, nightly Rainbow Mixers, and DJ parties.",
+    "programmingSourceUrl": "https://biggaycruise.com/9-nights-southern-caribbean/",
+    "soloSupport": "Explicit Solo Occupancy rates ($1,585 Interior / $2,290 Balcony) and roommate fee-splitting option on official booking form.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
+    "accessibilitySummary": null,
+    "communityAtmosphereSummary": "High-energy drag-and-party group block aboard an all-ages Royal Caribbean Southern Caribbean voyage.",
+    "goodForTags": [
+      "9-night ABC Islands",
+      "From $739 pp + pass",
+      "Drag Race shows",
+      "Published solo fares"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://biggaycruise.com/9-nights-southern-caribbean/",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:bearcruise:ncl:norwegian-star:2027-08-05",
+    "reputationSailingEntityId": "rep:hosted-sailing:bearcruise:norwegian-star-2027-08-05",
+    "organizerSlug": "bearcruise",
+    "sailingSlug": "norwegian-star-2027-08-05",
+    "organizerType": "travel_agency_hosted_brand",
+    "experienceClassification": "hosted_group_sailing",
+    "physicalSailingId": "sailing:ncl:norwegian-star:2027-08-05",
+    "canonicalLineCode": "ncl",
+    "canonicalShipSlug": "norwegian-star",
+    "canonicalSailDate": "2027-08-05",
+    "sailingTitle": "British Isles 2027 BearCruise",
+    "shortHeadline": "10-Night England, Ireland, Northern Ireland & Scotland Bear Group Voyage",
+    "editionSubtitle": "Norwegian Star · Aug 5–15, 2027 (10N RT Southampton)",
+    "anticipationHook": "Circle the British Isles from Southampton to Portland, Cork, Liverpool, Belfast, Dublin, Inverness, and Edinburgh with BearCruise.com’s nightly cocktail hours, hot-tub takeovers, and group dinners.",
+    "primaryTheme": "bear-cruises",
+    "secondaryThemes": [
+      "lgbtq-cruises"
+    ],
+    "visualKey": "port-edinburgh-calton-hill",
+    "regionLabel": "Northern Europe & British Isles",
+    "vesselType": "Dawn-class mainstream ocean ship (Norwegian Star)",
+    "approximateVesselScale": "100–400 BearCruise guests aboard ~2,348-guest ship",
+    "officialSailingPageUrl": "https://www.bearcruise.com/british_isles_2027/",
+    "officialReservationFormUrl": "https://form.jotform.com/260685981312159",
+    "cabinSellerLabel": "BearCruise.com (Dan Howell Travel)",
+    "cabinBookingCtaLabel": "Reserve with BearCruise ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "$150/pp refundable deposit up to 120 days prior; published rates include all port taxes & fees.",
+    "verifiedStartingPriceUsd": 2110,
+    "publishedPriceDisplay": "From $2,110 USD pp double ($3,820 Solo) incl. port taxes & fees",
+    "verifiedPriceNote": "Inside $2,110.05 pp double ($2,475.05 w/ Free at Sea open bar & 4 specialty meals); Solo Inside $3,820.10 ($4,299.10 w/ perks); taxes & fees included.",
+    "inclusionsSummary": "Cruise fare, all taxes & port fees, main dining, and BearCruise Extras (nightly cocktail hours, pool/hot-tub takeovers, group dining & private shore tour access; optional Free at Sea open bar/dining tier)",
+    "approximateGroupSizeLabel": "100–400 BearCruise group guests",
+    "fullShipCharter": false,
+    "typicalAudience": "Gay bears, cubs, chubs, otters, admirers, solo travelers & couples.",
+    "audienceFocusTags": [
+      "bears_cubs",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Pre-cruise host-hotel bon voyage party, daily pool & hot-tub takeovers, nightly private cocktail receptions, reserved BearCruise dining room section, and private group excursions.",
+    "programmingSourceUrl": "https://www.bearcruise.com/british_isles_2027/",
+    "soloSupport": "Published Solo Inside/Oceanview/Balcony fares plus Singles Share Program via BearCruise Solo Travelers Facebook Group (50/50 split billing).",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
+    "accessibilitySummary": null,
+    "communityAtmosphereSummary": "Warm, friendly 10-night British Isles bear group voyage.",
+    "goodForTags": [
+      "British Isles & Ireland",
+      "Taxes included",
+      "Singles Share Program",
+      "Refundable $150 deposit"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.bearcruise.com/british_isles_2027/",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:bearcruise:cel:celebrity-summit:2027-10-20",
+    "reputationSailingEntityId": "rep:hosted-sailing:bearcruise:celebrity-summit-2027-10-20",
+    "organizerSlug": "bearcruise",
+    "sailingSlug": "celebrity-summit-2027-10-20",
+    "organizerType": "travel_agency_hosted_brand",
+    "experienceClassification": "hosted_group_sailing",
+    "physicalSailingId": "sailing:cel:celebrity-summit:2027-10-20",
+    "canonicalLineCode": "cel",
+    "canonicalShipSlug": "celebrity-summit",
+    "canonicalSailDate": "2027-10-20",
+    "sailingTitle": "15th Anniversary Boston to San Juan BearCruise",
+    "shortHeadline": "9-Night Repositioning Bear Cruise to Dominican Republic, USVI, Antigua & BVI",
+    "editionSubtitle": "Celebrity Summit · Oct 20–29, 2027 (9N Boston to San Juan)",
+    "anticipationHook": "Celebrate BearCruise.com’s 15th Anniversary sailing south from autumn Boston into warm Caribbean waters—calling at Puerto Plata, Samaná, St. Thomas, Antigua, and Tortola before finishing in Old San Juan.",
+    "primaryTheme": "bear-cruises",
+    "secondaryThemes": [
+      "lgbtq-cruises"
+    ],
+    "visualKey": "port-virgin-islands-white-bay-catamarans",
+    "regionLabel": "Eastern Caribbean (Boston to San Juan)",
+    "vesselType": "Millennium-class premium ocean ship (Celebrity Summit)",
+    "approximateVesselScale": "100–400 BearCruise guests aboard ~2,218-guest ship",
+    "officialSailingPageUrl": "https://www.bearcruise.com/boston2sanjuan2027/",
+    "officialReservationFormUrl": "https://form.jotform.com/262925383929168",
+    "cabinSellerLabel": "BearCruise.com (Dan Howell Travel)",
+    "cabinBookingCtaLabel": "Reserve with BearCruise ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Reserve via official JotForm on bearcruise.com/boston2sanjuan2027/; both NRD and Refundable + Perks fares published.",
+    "verifiedStartingPriceUsd": 1089,
+    "publishedPriceDisplay": "From $1,089 USD pp double ($2,029 Solo) incl. port taxes & fees",
+    "verifiedPriceNote": "Inside $1,089 pp NRD ($1,552 RD w/ Classic Beverage + Basic Wi-Fi); Veranda $1,661 NRD; Solo Inside $2,029 NRD (taxes & fees included).",
+    "inclusionsSummary": "Cruise fare, taxes & port fees, main dining, and BearCruise Extras (Martini Bar cocktail hours, hot-tub takeovers, Cosmopolitan Dining Room group seating & private St. Thomas catamaran access)",
+    "approximateGroupSizeLabel": "100–400 BearCruise group guests",
+    "fullShipCharter": false,
+    "typicalAudience": "Gay bears, cubs, chubs, otters, admirers, solos & couples.",
+    "audienceFocusTags": [
+      "bears_cubs",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "15th Anniversary celebrations, Martini Bar nightly cocktail hours, hot-tub takeovers, reserved Cosmopolitan Dining Room section, and chartered St. Thomas snorkel/open-bar catamaran.",
+    "programmingSourceUrl": "https://www.bearcruise.com/boston2sanjuan2027/",
+    "soloSupport": "Published Solo fares across all categories ($2,029–$3,022) + Singles Share Program (50/50 split reservations).",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
+    "accessibilitySummary": null,
+    "communityAtmosphereSummary": "Festive 15th-anniversary bear group voyage combining 3 relaxing sea days with 5 sun-drenched island ports.",
+    "goodForTags": [
+      "15th Anniversary",
+      "From $1,089 pp incl. taxes",
+      "Boston to San Juan",
+      "Singles Share Program"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.bearcruise.com/boston2sanjuan2027/",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:adventure-bears:pcl:discovery-princess:2027-05-15",
+    "reputationSailingEntityId": "rep:hosted-sailing:adventure-bears:discovery-princess-2027-05-15",
+    "organizerSlug": "adventure-bears",
+    "sailingSlug": "discovery-princess-2027-05-15",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "physicalSailingId": "sailing:pcl:discovery-princess:2027-05-15",
+    "canonicalLineCode": "pcl",
+    "canonicalShipSlug": "discovery-princess",
+    "canonicalSailDate": "2027-05-15",
+    "sailingTitle": "Alaska Denali Explorer 2027",
+    "shortHeadline": "Northbound Voyage of the Glaciers w/ Princess Plus Included",
+    "editionSubtitle": "Discovery Princess · May 15–22, 2027 (7N Cruise + Optional 3N Denali Land Tour)",
+    "anticipationHook": "Sail northbound from Vancouver to Ketchikan, Juneau, Skagway, Glacier Bay National Park, and College Fjord with Adventure Bears—with Princess Plus drinks, Wi-Fi, gratuities, and port taxes all bundled in.",
+    "primaryTheme": "bear-cruises",
+    "secondaryThemes": [
+      "lgbtq-cruises"
+    ],
+    "visualKey": "ship-discovery-princess",
+    "regionLabel": "Alaska & Glacier Bay",
+    "vesselType": "Royal-class ocean ship (Discovery Princess)",
+    "approximateVesselScale": "Hosted bear group block aboard ~3,660-guest ship",
+    "officialSailingPageUrl": "https://www.adventurebears.com/alaska-denali-explorer-2027",
+    "officialReservationFormUrl": "https://www.adventurebears.com/2027-alaska-denali-explorer-form",
+    "cabinSellerLabel": "Adventure Bears",
+    "cabinBookingCtaLabel": "Book with Adventure Bears ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "$300/pp deposit via adventurebears.com; optional 10-night Denali Rail & Wilderness Lodge Cruisetour ($2,929+ pp) also available.",
+    "verifiedStartingPriceUsd": 1493,
+    "publishedPriceDisplay": "From $1,493 USD pp double ($2,281 Single) w/ Princess Plus, taxes & tips INCLUDED",
+    "verifiedPriceNote": "Cruise-Only Interior $1,493 pp double / $2,281 single; Balcony $2,454 pp double / $4,203 single (includes Princess Plus, port taxes & crew appreciation).",
+    "inclusionsSummary": "Port taxes & fees, Princess Plus (beverage package up to $15/drink, Wi-Fi, prepaid Crew Appreciation gratuities, casual dining), nightly reserved Adventure Bears group dining, private socials & collectible T-shirt",
+    "approximateGroupSizeLabel": "Hosted Adventure Bears group block",
+    "fullShipCharter": false,
+    "typicalAudience": "Gay bears, cubs, otters, admirers, solos, couples & LGBTQ+ friends.",
+    "audienceFocusTags": [
+      "bears_cubs",
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Hosted by Laz Cabrera: nightly reserved group dining, private cocktail socials, Glacier Bay deck gathering, collectible T-shirt, and optional 3-night Denali Wilderness Lodge rail extension.",
+    "programmingSourceUrl": "https://www.adventurebears.com/alaska-denali-explorer-2027",
+    "soloSupport": "Explicit single-occupancy fares published across all categories ($2,281 Interior / $4,203 Balcony) + Adventure Bears Facebook community.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
+    "accessibilitySummary": null,
+    "communityAtmosphereSummary": "Scenic, relaxed Alaska bear group voyage with drinks, Wi-Fi, and tips included upfront.",
+    "goodForTags": [
+      "Glacier Bay National Park",
+      "Princess Plus & tips included",
+      "Optional Denali rail tour",
+      "Published solo fares"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.adventurebears.com/alaska-denali-explorer-2027",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:adventure-bears:vv:scarlet-lady:2027-10-03",
+    "reputationSailingEntityId": "rep:hosted-sailing:adventure-bears:scarlet-lady-2027-10-03",
+    "organizerSlug": "adventure-bears",
+    "sailingSlug": "scarlet-lady-2027-10-03",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "physicalSailingId": "sailing:vv:scarlet-lady:2027-10-03",
+    "canonicalLineCode": "vv",
+    "canonicalShipSlug": "scarlet-lady",
+    "canonicalSailDate": "2027-10-03",
+    "sailingTitle": "Greek Isles Odyssey 2027",
+    "shortHeadline": "18+ Adults-Only Aegean & Overnight Mykonos Bear Cruise",
+    "editionSubtitle": "Scarlet Lady · Oct 3–10, 2027 (7N RT Athens / Piraeus)",
+    "anticipationHook": "Sail round-trip from Athens to Santorini, Chania (Crete), Ephesus (Kusadasi), and an overnight stay in Mykonos aboard 18+ Scarlet Lady with Adventure Bears group dinners, Sailor Loot, and private socials.",
+    "primaryTheme": "bear-cruises",
+    "secondaryThemes": [
+      "lgbtq-cruises"
+    ],
+    "visualKey": "port-santorini-oia",
+    "regionLabel": "Mediterranean & Greek Isles",
+    "vesselType": "Lady-class 18+ adults-only ocean ship (Scarlet Lady)",
+    "approximateVesselScale": "Hosted bear group block aboard ~2,770-guest 18+ ship",
+    "officialSailingPageUrl": "https://www.adventurebears.com/greek-isles-odyssey-2027",
+    "officialReservationFormUrl": "https://www.adventurebears.com/greek-isles-odyssey-2027-book-now",
+    "cabinSellerLabel": "Adventure Bears",
+    "cabinBookingCtaLabel": "Book with Adventure Bears ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Published fares include port taxes & prepaid gratuities; add $100/pp Adventure Bears Hosted Experience Fee.",
+    "verifiedStartingPriceUsd": 1673,
+    "publishedPriceDisplay": "From $1,673 USD pp (Sea Terrace) incl. taxes & tips + $100/pp Hosted Fee",
+    "verifiedPriceNote": "Sea Terrace from $1,673 pp; Insider $1,715; Sea View $2,030 (port taxes & prepaid gratuities included) + $100/pp Adventure Bears Hosted Experience Fee.",
+    "inclusionsSummary": "20+ Virgin eateries, Classic Wi-Fi, port taxes & prepaid gratuities, $100 Bar Tab + $100 Sailor Loot per qualifying Sea Terrace cabin, hosted Adventure Bears dinners, private gatherings & T-shirt",
+    "approximateGroupSizeLabel": "Hosted Adventure Bears group block",
+    "fullShipCharter": false,
+    "typicalAudience": "18+ gay bears, cubs, otters, admirers, solos & couples.",
+    "audienceFocusTags": [
+      "bears_cubs",
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Personal hosting by Laz Cabrera, hosted group dinners across Virgin eateries, private cocktail gatherings, overnight Mykonos group meetup, and collectible T-shirt.",
+    "programmingSourceUrl": "https://www.adventurebears.com/greek-isles-odyssey-2027",
+    "soloSupport": "Single-occupancy Virgin cabins available + Adventure Bears Facebook group connection.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": null,
+    "communityAtmosphereSummary": "Modern 18+ adults-only Aegean island voyage with an overnight in Mykonos.",
+    "goodForTags": [
+      "18+ Virgin Voyages",
+      "Overnight Mykonos",
+      "$200/cabin Sailor Loot",
+      "Santorini & Crete"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.adventurebears.com/greek-isles-odyssey-2027",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:daddy-cruises:ncl:norwegian-pearl:2027-04-29",
+    "reputationSailingEntityId": "rep:hosted-sailing:daddy-cruises:norwegian-pearl-2027-04-29",
+    "organizerSlug": "daddy-cruises",
+    "sailingSlug": "norwegian-pearl-2027-04-29",
+    "organizerType": "travel_agency_hosted_brand",
+    "experienceClassification": "hosted_group_sailing",
+    "physicalSailingId": "sailing:ncl:norwegian-pearl:2027-04-29",
+    "canonicalLineCode": "ncl",
+    "canonicalShipSlug": "norwegian-pearl",
+    "canonicalSailDate": "2027-04-29",
+    "sailingTitle": "Daddy Cruises® Bermuda 2027",
+    "shortHeadline": "7-Night Overnight Bermuda & Virginia Voyage w/ Open Bar & Specialty Dinners",
+    "editionSubtitle": "Norwegian Pearl · Apr 29 – May 6, 2027 (7N RT Philadelphia)",
+    "anticipationHook": "Sail round-trip from Philadelphia for an overnight dockside stay in Bermuda plus Norfolk, Virginia—with Unlimited Beverage Package, two specialty dinners, nightly Daddy Cruises dining, and optional Day of Service.",
+    "primaryTheme": "bear-cruises",
+    "secondaryThemes": [
+      "lgbtq-cruises"
+    ],
+    "visualKey": "ship-norwegian-pearl",
+    "regionLabel": "Bermuda & East Coast",
+    "vesselType": "Jewel-class ocean ship (Norwegian Pearl)",
+    "approximateVesselScale": "20–100+ Daddy Cruises guests aboard ~2,394-guest ship",
+    "officialSailingPageUrl": "https://www.daddycruises.com/trips/bermuda2027.php",
+    "officialReservationFormUrl": "https://www.daddycruises.com/trips/bermuda2027.php",
+    "cabinSellerLabel": "Daddy Cruises® (Brian Cole Miller / Cruise Planners)",
+    "cabinBookingCtaLabel": "Reserve with Daddy Cruises ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Contact Brian Cole Miller via daddycruises.com (bmiller@cruiseplanners.com / 614-799-1390); taxes & mandatory fees included.",
+    "verifiedStartingPriceUsd": 1319,
+    "publishedPriceDisplay": "From $1,319 USD pp double (Balcony $2,039) incl. taxes, Open Bar & 2 Specialty Dinners",
+    "verifiedPriceNote": "Inside from $1,319* pp double; Balcony from $2,039* pp double (includes taxes, mandatory fees, Unlimited Beverage Package w/ bar gratuities & 2 Specialty Dinners).",
+    "inclusionsSummary": "Cabin fare, taxes & mandatory fees, Unlimited Beverage Package (incl. bar gratuities), 2 Specialty Dinners (incl. restaurant gratuities), 150-min Wi-Fi (Balcony+), Welcome Aboard free-drinks party, swag & nightly group dining",
+    "approximateGroupSizeLabel": "20–100+ Daddy Cruises guests",
+    "fullShipCharter": false,
+    "typicalAudience": "Gay men of all ages—daddies, bears, admirers, solo travelers (>40%) & welcoming friends.",
+    "audienceFocusTags": [
+      "daddies_silver_fox",
+      "bears_cubs",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Day 1 Welcome Aboard open-bar party & custom lanyard/gifts, nightly reserved group dining, card/trivia happy hours, Friends of Dorothy socials, and optional philanthropic Day of Service.",
+    "programmingSourceUrl": "https://www.daddycruises.com/",
+    "soloSupport": "Daddy Cruises® Roommate Finder Facebook group + personal host matching and negotiated solo cabin quotes.",
+    "soloFriendly": true,
+    "familyPolicy": "mixed_group",
+    "accessibilitySummary": null,
+    "communityAtmosphereSummary": "Warm, conversational cross-generational camaraderie with overnight time ashore in Bermuda.",
+    "goodForTags": [
+      "Overnight in Bermuda",
+      "Open Bar & 2 dinners included",
+      ">40% solo travelers",
+      "Day of Service option"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.daddycruises.com/",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:silver-fox-cruisers:cel:celebrity-summit:2027-05-03",
+    "reputationSailingEntityId": "rep:hosted-sailing:silver-fox-cruisers:celebrity-summit-2027-05-03",
+    "organizerSlug": "silver-fox-cruisers",
+    "sailingSlug": "celebrity-summit-2027-05-03",
+    "organizerType": "hosted_group_organizer",
+    "experienceClassification": "hosted_group_sailing",
+    "physicalSailingId": "sailing:cel:celebrity-summit:2027-05-03",
+    "canonicalLineCode": "cel",
+    "canonicalShipSlug": "celebrity-summit",
+    "canonicalSailDate": "2027-05-03",
+    "sailingTitle": "Pacific Coastal Cruise 2027",
+    "shortHeadline": "6-Night California, Oregon, Seattle & Victoria Voyage for Mature Gay Men",
+    "editionSubtitle": "Celebrity Summit · May 3–9, 2027 (6N Los Angeles to Vancouver)",
+    "anticipationHook": "Board a complimentary Silver Fox Cruisers charter coach in Palm Springs straight to San Pedro, then sail up the Pacific Coast to Astoria, Seattle, Victoria, and Vancouver with daily 4:00 PM PrimeTimers private cocktail receptions.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "bear-cruises"
+    ],
+    "visualKey": "ship-celebrity-summit",
+    "regionLabel": "Pacific Coast & Pacific Northwest",
+    "vesselType": "Millennium-class premium ocean ship (Celebrity Summit)",
+    "approximateVesselScale": "Hosted senior/mature gay men’s group aboard ~2,218-guest ship",
+    "officialSailingPageUrl": "https://silverfoxcruisers.com/cruises/pacific-coastal-2027",
+    "officialReservationFormUrl": "https://silverfoxcruisers.com/cruises/pacific-coastal-2027",
+    "cabinSellerLabel": "Silver Fox Cruisers",
+    "cabinBookingCtaLabel": "Inquire on SilverFoxCruisers.com ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "6-night cruise open for booking (note: optional post-cruise Rocky Mountaineer rail extension is Sold Out / Waitlist).",
+    "verifiedStartingPriceUsd": 1075,
+    "publishedPriceDisplay": "From $1,075 USD pp double ($2,170 Solo) incl. port charges & Palm Springs bus",
+    "verifiedPriceNote": "Ocean View from $1,075 pp double ($2,170 solo); Interior $1,212 ($2,370 solo); Balcony $2,191 ($4,844 solo); includes port charges & government fees.",
+    "inclusionsSummary": "Complimentary charter coach bus from Palm Springs to San Pedro pier, 6 nights aboard Celebrity Summit, port charges & government fees, main dining, daily 4:00 PM PrimeTimers mixers, and Silver Fox T-shirt",
+    "approximateGroupSizeLabel": "Hosted Silver Fox Cruisers / PrimeTimers group",
+    "fullShipCharter": false,
+    "typicalAudience": "Senior & mature gay men (\"silver foxes\"), PrimeTimers members, solo travelers & couples (21+).",
+    "audienceFocusTags": [
+      "daddies_silver_fox",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Palm Springs charter coach transfer, daily 4:00 PM cocktail hour mixers, hosted group dinners, and complimentary Silver Fox Cruisers T-shirt.",
+    "programmingSourceUrl": "https://silverfoxcruisers.com/cruises/pacific-coastal-2027",
+    "soloSupport": "Transparent solo pricing published across Ocean View ($2,170), Interior ($2,370), and Balcony ($4,844) + dedicated Facebook cruise community.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": null,
+    "communityAtmosphereSummary": "Sophisticated, unhurried coastal cruise camaraderie tailored to senior gay men.",
+    "goodForTags": [
+      "Senior & mature gay men",
+      "Free Palm Springs coach",
+      "From $1,075 pp incl. fees",
+      "Published solo fares"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://silverfoxcruisers.com/cruises/pacific-coastal-2027",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:traveling-gays-getaways:rccl:star-of-the-seas:2027-02-21",
+    "reputationSailingEntityId": "rep:hosted-sailing:traveling-gays-getaways:star-of-the-seas-2027-02-21",
+    "organizerSlug": "traveling-gays-getaways",
+    "sailingSlug": "star-of-the-seas-2027-02-21",
+    "organizerType": "travel_agency_hosted_brand",
+    "experienceClassification": "hosted_group_sailing",
+    "physicalSailingId": "sailing:rccl:star-of-the-seas:2027-02-21",
+    "canonicalLineCode": "rccl",
+    "canonicalShipSlug": "star-of-the-seas",
+    "canonicalSailDate": "2027-02-21",
+    "sailingTitle": "2027 TGG Exclusive Waterslide Adventure Gay Cruise Group",
+    "shortHeadline": "All-Ages LGBTQIA+ & Family-Welcome Icon-Class Eastern Caribbean Takeover",
+    "editionSubtitle": "Star of the Seas · Feb 21–28, 2027 (7N RT Port Canaveral)",
+    "anticipationHook": "Experience Royal Caribbean’s Icon-class Star of the Seas from Port Canaveral to CocoCay, St. Thomas, and St. Maarten with 25+ hours of Traveling Gays Getaways mixers, $50 OBC, and all-ages LGBTQIA+ family hospitality.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "family-reunions"
+    ],
+    "visualKey": "port-cocoa-beach-pier",
+    "regionLabel": "Eastern Caribbean & Bahamas",
+    "vesselType": "Icon-class mega resort ship (Star of the Seas)",
+    "approximateVesselScale": "Hosted LGBTQIA+ group block aboard ~5,610-guest ship",
+    "officialSailingPageUrl": "https://www.travelinggays.com/2027-tgg-waterslide-adventure-gay-cruise-group-caribbean",
+    "officialReservationFormUrl": "https://bookings.cbagenttools.com/swift/cruise/package/1556873--7-night-eastern-caribbean---perfect-day?siid=1366657&lang=1",
+    "cabinSellerLabel": "Traveling Gays Getaways",
+    "cabinBookingCtaLabel": "Book TGG Group Cabin ↗",
+    "cabinAvailabilityStatus": "limited",
+    "cabinAvailabilityNote": "Limited group-rate cabins remaining with $50 OBC via official TGG booking link.",
+    "verifiedStartingPriceUsd": 1302,
+    "publishedPriceDisplay": "From $1,302 USD pp double ($1,377 via $75 Solo Cruiser Pairing)",
+    "verifiedPriceNote": "Interior double from $1,302 pp ($1,377 pp when matched via TGG’s $75/person Solo Cruiser Pairing service).",
+    "inclusionsSummary": "Zero TGG cabin markup, Royal Caribbean dining & waterpark/entertainment, $50 group OBC on remaining block cabins, 25+ hours of private TGG mixers, and 2 free adult drinks",
+    "approximateGroupSizeLabel": "Hosted TGG LGBTQIA+ group block",
+    "fullShipCharter": false,
+    "typicalAudience": "All-ages LGBTQIA+ men, women, couples, solos & families (\"Men, Women & kids Welcome\").",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "lgbtq_families",
+      "gay_men",
+      "lesbian_queer_women",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "25+ hours of private TGG mixers, Category 6 waterpark & pool meetups, 2 complimentary adult beverages, group dining, and private cruiser chat app.",
+    "programmingSourceUrl": "https://www.travelinggays.com/2027-tgg-waterslide-adventure-gay-cruise-group-caribbean",
+    "soloSupport": "$75/person Solo Cruiser Pairing roommate matching + TGG Solos Facebook Group.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
+    "accessibilitySummary": null,
+    "communityAtmosphereSummary": "Playful, all-ages LGBTQIA+ & family-friendly resort adventure aboard Star of the Seas.",
+    "goodForTags": [
+      "Icon-class Star of the Seas",
+      "Men, Women & kids welcome",
+      "$75 solo pairing",
+      "Zero cabin markup"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.travelinggays.com/2027-tgg-waterslide-adventure-gay-cruise-group-caribbean",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:traveling-gays-getaways:vv:scarlet-lady:2027-04-17",
+    "reputationSailingEntityId": "rep:hosted-sailing:traveling-gays-getaways:scarlet-lady-2027-04-17",
+    "organizerSlug": "traveling-gays-getaways",
+    "sailingSlug": "scarlet-lady-2027-04-17",
+    "organizerType": "travel_agency_hosted_brand",
+    "experienceClassification": "hosted_group_sailing",
+    "physicalSailingId": "sailing:vv:scarlet-lady:2027-04-17",
+    "canonicalLineCode": "vv",
+    "canonicalShipSlug": "scarlet-lady",
+    "canonicalSailDate": "2027-04-17",
+    "sailingTitle": "2027 TGG Caribbean \"Gays for Days\" Takeover",
+    "shortHeadline": "300–400 Cabin 18+ Gay Cruise Takeover on Scarlet Lady",
+    "editionSubtitle": "Scarlet Lady · Apr 17–24, 2027 (7N RT Miami · SC2704177NPD)",
+    "anticipationHook": "Join Traveling Gays Getaways’ flagship 300-to-400-cabin \"Gays for Days\" takeover from Miami to San Juan, Puerto Plata, and Bimini Beach Club with 36+ hours of hosted mixers and zero charter markup.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [],
+    "visualKey": "port-bimini-alice-town",
+    "regionLabel": "Eastern Caribbean & Bahamas",
+    "vesselType": "Lady-class 18+ adults-only ocean ship (Scarlet Lady)",
+    "approximateVesselScale": "300–400 TGG group cabins aboard ~2,770-guest 18+ ship",
+    "officialSailingPageUrl": "https://www.travelinggays.com/2027-tgg-gays-for-days-cruise",
+    "officialReservationFormUrl": "https://www.virginvoyages.com/book/voyage-planner/pre-checkout?agencyId=450&agentId=263668&bookingChannel=FMLINK&cabins=1&currencyCode=USD&dateFrom=2027-04-01&dateTo=2027-04-30&packageCode=7NPD&voyageId=SC2704177NPD",
+    "officialCruiseId": "SC2704177NPD",
+    "cabinSellerLabel": "Traveling Gays Getaways (Virgin First Mate Link)",
+    "cabinBookingCtaLabel": "Book via Official TGG Virgin Link ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Sea Terrace & Rockstar group blocks open with $100 Bar Tab / up to $400 Loot + 2 reserved group dinners (Insider group perks block sold out; standard Virgin Insiders bookable).",
+    "verifiedStartingPriceUsd": 903,
+    "publishedPriceDisplay": "From $903–$963 USD pp Insider ($1,363 Sea Terrace / $1,333 Solo)",
+    "verifiedPriceNote": "Published from $903–$963 pp Insider double ($1,333 solo; $1,363 pp Sea Terrace Balcony w/ $100 Bar Tab).",
+    "inclusionsSummary": "20+ Virgin eateries, Wi-Fi, gratuities, sodas & fitness + $100 Bar Tab on group Sea Terrace cabins, 2 reserved group dinners, 36+ hours of TGG events, swag bag & 2 free adult drinks",
+    "approximateGroupSizeLabel": "300–400 cabin hosted takeover",
+    "fullShipCharter": false,
+    "typicalAudience": "Strictly 18+ gay men & LGBTQIA+ adults.",
+    "audienceFocusTags": [
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "36+ hours of gay-men-focused TGG pool/social events, 2 reserved group dinners, Bimini Beach Club group day, swag bag, and 2 complimentary adult beverages.",
+    "programmingSourceUrl": "https://www.gaycruisetakeover.com/",
+    "soloSupport": "$1,333 published solo Insider fare OR $75/person Solo Cruiser Pairing roommate match.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": null,
+    "communityAtmosphereSummary": "Large-scale 300+ cabin gay social takeover at mainstream Virgin Voyages prices.",
+    "goodForTags": [
+      "300–400 cabin takeover",
+      "From $903 pp",
+      "18+ Virgin Voyages",
+      "$75 solo pairing"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.travelinggays.com/2027-tgg-gays-for-days-cruise",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:kelligregg-travel:cel:celebrity-beyond:2027-07-25",
+    "reputationSailingEntityId": "rep:hosted-sailing:kelligregg-travel:celebrity-beyond-2027-07-25",
+    "organizerSlug": "kelligregg-travel",
+    "sailingSlug": "celebrity-beyond-2027-07-25",
+    "subBrandSlug": "r-family-vacations",
+    "subBrandName": "R Family Vacations",
+    "organizerType": "travel_agency_hosted_brand",
+    "experienceClassification": "hosted_group_sailing",
+    "physicalSailingId": "sailing:cel:celebrity-beyond:2027-07-25",
+    "canonicalLineCode": "cel",
+    "canonicalShipSlug": "celebrity-beyond",
+    "canonicalSailDate": "2027-07-25",
+    "sailingTitle": "R Family Vacations — 2027 Summer Beach Adventure",
+    "shortHeadline": "Signature All-Ages LGBTQ+ Family, Friends & Allies Summer Cruise",
+    "editionSubtitle": "Celebrity Beyond · Jul 25–31, 2027 (6N RT Miami)",
+    "anticipationHook": "Sail round-trip from Miami to Perfect Day at CocoCay, Puerto Plata, and Grand Turk with Kelli Carpenter & Gregg Kaminsky on R Family Vacations’ signature multi-generational LGBTQ+ family and adult summer celebration.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "family-reunions"
+    ],
+    "visualKey": "port-puerto-plata",
+    "regionLabel": "Caribbean, Bahamas & Turks and Caicos",
+    "vesselType": "Edge-class contemporary luxury ocean ship (Celebrity Beyond)",
+    "approximateVesselScale": "Hosted R Family community group aboard ~3,260-guest ship",
+    "officialSailingPageUrl": "https://www.kelligreggtravel.com/summer-beach-adventure-cruise",
+    "officialReservationFormUrl": "https://www.kelligreggtravel.com/event-details/2027-summer-beach-adventure/form",
+    "cabinSellerLabel": "KelliGregg Travel / R Family Vacations",
+    "cabinBookingCtaLabel": "Request Cabin w/ Kelli & Gregg ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Submit official registration form on kelligreggtravel.com; double-occupancy group fares bundle Classic Beverage Package & Basic Wi-Fi.",
+    "verifiedStartingPriceUsd": null,
+    "publishedPriceDisplay": null,
+    "verifiedPriceNote": "Not yet verified in static HTML (rate table loads via client-side widget on kelligreggtravel.com/summer-beach-adventure-itinerary).",
+    "inclusionsSummary": "Celebrity Beyond stateroom & dining, Classic Beverage Package & Basic Wi-Fi on double-occupancy group fares, R Family Kids/Youth programming (ages 4–17), Welcome Cocktail Party, Hosted Group Dinners, Theme Parties, Games & Tea Dance",
+    "approximateGroupSizeLabel": "Hosted R Family community group",
+    "fullShipCharter": false,
+    "typicalAudience": "LGBTQ+ families, parents, kids/teens, grandparents, couples, solos & allies (\"kids welcome, not required!\").",
+    "audienceFocusTags": [
+      "lgbtq_families",
+      "all_lgbtq",
+      "lesbian_queer_women",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Broadway/cabaret & comedy showcases, dedicated R Family Youth/Kids programming, Welcome Cocktail Party, Hosted Group Dinners, Tea Dance, family games, and theme nights.",
+    "programmingSourceUrl": "https://www.kelligreggtravel.com/summer-beach-adventure-cruise",
+    "soloSupport": "Solo travelers warmly welcomed with hosted group dining tables; request single-occupancy cabin quotes directly via Kelli & Gregg.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
+    "accessibilitySummary": null,
+    "communityAtmosphereSummary": "Joyful, multi-generational LGBTQ+ family & chosen-family summer reunion at sea.",
+    "goodForTags": [
+      "R Family Vacations flagship",
+      "Family-friendly (ages 6m+)",
+      "Drinks & Wi-Fi included",
+      "CocoCay & Grand Turk"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.kelligreggtravel.com/summer-beach-adventure-cruise",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:kelligregg-travel:uniworld:ss-elisabeth:2027-08-08",
+    "reputationSailingEntityId": "rep:hosted-sailing:kelligregg-travel:ss-elisabeth-2027-08-08",
+    "organizerSlug": "kelligregg-travel",
+    "sailingSlug": "ss-elisabeth-2027-08-08",
+    "organizerType": "travel_agency_hosted_brand",
+    "experienceClassification": "river_cruise",
+    "physicalSailingId": "sailing:uniworld:ss-elisabeth:2027-08-08",
+    "canonicalLineCode": "uniworld",
+    "canonicalShipSlug": "ss-elisabeth",
+    "canonicalSailDate": "2027-08-08",
+    "sailingTitle": "Castles Along the Rhine & Amsterdam!",
+    "shortHeadline": "All-Inclusive Uniworld Rhine River Cruise + 2-Night 5-Star Amsterdam Stay",
+    "editionSubtitle": "S.S. Elisabeth · Aug 8–15, 2027 Cruise (+ Aug 15–17 Amsterdam Hotel)",
+    "anticipationHook": "Glide from Basel through Strasbourg, Rüdesheim’s Rhine Gorge castles, Koblenz, and Cologne to a 2-night 5-star Amsterdam finale aboard Uniworld’s 110-guest Super Ship S.S. Elisabeth with Kelli & Gregg’s signature Broadway cabaret.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "food-and-wine"
+    ],
+    "visualKey": "port-rhine-gorge-lorelei",
+    "regionLabel": "European Rivers (Rhine & Amsterdam)",
+    "vesselType": "Boutique luxury Super Ship riverboat (Uniworld S.S. Elisabeth)",
+    "approximateVesselScale": "110 guests across 55 staterooms & suites",
+    "officialSailingPageUrl": "https://www.kelligreggtravel.com/rhine-castles-overview",
+    "officialReservationFormUrl": "https://www.kelligreggtravel.com/event-details/rhine-castles-amsterdam/form",
+    "cabinSellerLabel": "KelliGregg Travel",
+    "cabinBookingCtaLabel": "Reserve w/ KelliGregg Travel ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "9-night package (7N Rhine river cruise Aug 8–15 + 2N 5-star Amsterdam hotel Aug 15–17); reserve via official KelliGregg form.",
+    "verifiedStartingPriceUsd": null,
+    "publishedPriceDisplay": null,
+    "verifiedPriceNote": "Not yet verified in static HTML (rate table loads via client-side Wix widget on kelligreggtravel.com).",
+    "inclusionsSummary": "7-night river-view stateroom + 2-night 5-star Amsterdam hotel, unlimited onboard fine wine/beer/spirits, prepaid gratuities, free Wi-Fi, 8 days of excursions (incl. Nights Out castle event), and KelliGregg Signature Entertainment",
+    "approximateGroupSizeLabel": "Hosted LGBTQ+ adult luxury river voyage",
+    "fullShipCharter": null,
+    "typicalAudience": "LGBTQ+ adults, couples, solo travelers & allies.",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "lesbian_queer_women",
+      "gay_men",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "KelliGregg Signature Broadway/cabaret entertainment, theme party, private Nights Out Rhine castle evening, and 2-night hosted Amsterdam finale.",
+    "programmingSourceUrl": "https://www.kelligreggtravel.com/rhine-castles-overview",
+    "soloSupport": "Solo travelers welcomed with hosted group dining; request solo river stateroom quotes via Kelli & Gregg.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": "Deck plan confirms passenger elevator between Cologne and Basel decks on S.S. Elisabeth; river gangways vary by water level.",
+    "communityAtmosphereSummary": "Intimate 5-star boutique river cruising with Broadway cabaret and hosted Dutch finale.",
+    "goodForTags": [
+      "Uniworld Super Ship",
+      "Open bar, tips & tours included",
+      "2N 5-star Amsterdam included",
+      "Adult-oriented"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.kelligreggtravel.com/rhine-castles-overview",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:tui-rainbow-cruise:tui:mein-schiff-2:2027-09-28",
+    "reputationSailingEntityId": "rep:hosted-sailing:tui-rainbow-cruise:mein-schiff-2-2027-09-28",
+    "organizerSlug": "tui-rainbow-cruise",
+    "sailingSlug": "mein-schiff-2-2027-09-28",
+    "organizerType": "cruise_line_themed_program",
+    "experienceClassification": "cruise_line_produced_lgbtq",
+    "physicalSailingId": "sailing:tui:mein-schiff-2:2027-09-28",
+    "canonicalLineCode": "tui",
+    "canonicalShipSlug": "mein-schiff-2",
+    "canonicalSailDate": "2027-09-28",
+    "sailingTitle": "Mein Schiff® Rainbow Cruise: the next chapter – A future of unity",
+    "shortHeadline": "Cruise-Line-Produced LGBTQIA+ Mediterranean Eventreise w/ Conchita Wurst",
+    "editionSubtitle": "Mein Schiff 2 · Sep 28 – Oct 3, 2027 (5N RT Palma de Mallorca · ZWO2732SEE)",
+    "anticipationHook": "Produced directly in-house by TUI Cruises aboard Mein Schiff 2—sail round-trip from Palma de Mallorca to Palermo and Cagliari with headliners Conchita Wurst & Lucy Diakovska, Cologne/Berlin queer club nights, and 100+ brand-name drinks & tips included.",
+    "primaryTheme": "lgbtq-cruises",
+    "secondaryThemes": [
+      "music-cruises"
+    ],
+    "visualKey": "port-palma-de-mallorca-cathedral",
+    "regionLabel": "Western Mediterranean (Mallorca, Sicily & Sardinia)",
+    "vesselType": "German premium resort ocean ship (Mein Schiff 2, built 2019)",
+    "approximateVesselScale": "2,894 passengers across 1,447 cabins/suites (cruise-line-produced Eventreise)",
+    "officialSailingPageUrl": "https://www.meinschiff.com/en/trips/5-nights-rainbow-cruise-the-next-chapter-fromto-palma-ZWO2732SEE",
+    "officialReservationFormUrl": "https://buchung.meinschiff.com/?locale=en&tripCode=ZWO2732SEE",
+    "officialCruiseId": "ZWO2732SEE",
+    "cabinSellerLabel": "TUI Cruises GmbH (Mein Schiff® Direct)",
+    "cabinBookingCtaLabel": "Book Direct on MeinSchiff.com ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Official cruise-line-produced Eventreise sold directly by TUI Cruises (tripCode=ZWO2732SEE).",
+    "verifiedStartingPriceUsd": 1080,
+    "publishedPriceDisplay": "From €999 EUR (~$1,080 USD) pp PLUS Inside (€1,099 PRO Inside / €1,349 Balcony)",
+    "verifiedPriceNote": "PLUS Inside from €999 EUR pp double (€1,459 pp w/ flights); PRO Inside €1,099 EUR; PRO Balcony €1,349 EUR (100+ drinks & onboard tips included).",
+    "inclusionsSummary": "Mein Schiff® Premium Inclusive: à-la-carte & buffet dining, 100+ brand-name alcoholic & non-alcoholic drinks, onboard tips/gratuities, all Rainbow Cruise concerts/parties/talks, sauna/fitness & childcare",
+    "approximateGroupSizeLabel": "Cruise-line-produced full Eventreise (~2,894 guests)",
+    "fullShipCharter": false,
+    "typicalAudience": "LGBTQIA+ community, friends, families & allies.",
+    "audienceFocusTags": [
+      "all_lgbtq",
+      "gay_men",
+      "lesbian_queer_women",
+      "lgbtq_families"
+    ],
+    "announcedHostedProgramming": "Headliners Conchita Wurst & Lucy Diakovska, drag artists Katy Bähm, Miss Ivanka T., Pam Pengco & Gina de l’Amore, PiepShow & SEXY PARTY COLOGNE club nights, queer DJs, and talks by Nomadic Boys, Couple of Men & Lucas Krzikalla.",
+    "programmingSourceUrl": "https://www.meinschiff.com/en/event-travel/rainbow-cruise",
+    "soloSupport": "Single-occupancy staterooms bookable directly with TUI Cruises; daytime community talks, sports & mixers welcome solo guests.",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
+    "accessibilitySummary": "Dedicated barrier-free wheelchair cabins, accessible public venues/sun decks, electric mobility approval via spezialservice@tuicruises.com, and barrier-free TUI flight transfers.",
+    "communityAtmosphereSummary": "Inclusive European queer festival & wellness resort voyage produced directly by TUI Cruises.",
+    "goodForTags": [
+      "Cruise-line-produced",
+      "From €999 w/ drinks & tips",
+      "Conchita Wurst live",
+      "Barrier-free cabins"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.meinschiff.com/en/trips/5-nights-rainbow-cruise-the-next-chapter-fromto-palma-ZWO2732SEE",
+    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
   }
 ];
 
@@ -3961,6 +7345,127 @@ export const DCC_RECENT_CATALOG_CHANGE_EVENTS: ReadonlyArray<CanonicalHostedCata
     "entityId": "hosted-organizer:arnos-bear-cruises",
     "summary": "Completed portfolio-wide visual relevance upgrade, Reputation Graph entity ID assignment, and primary-source verification across all 37 organizers and 44 hosted sailings (42 indexable, 2 held noindex).",
     "preservesCommunityIdentity": true
+  },
+  {
+    "eventId": "dcc-hc-evt-2026-11-16-005",
+    "occurredAt": "2026-11-16T08:30:00Z",
+    "entityType": "hosted_organizer",
+    "entityId": "hosted-organizer:brand-g-vacations",
+    "summary": "Expanded LGBTQ+ market catalog from 7 to 21 verified organizers/programs across 5 classifications (Full-ship charter, Hosted group on regular sailing, River cruise, Small-ship/yacht/expedition charter, and Cruise-line-produced LGBTQ+ sailing), modeling GayNudeSail as a GaySail sub-brand, TUI Rainbow Cruise as cruise-line-produced, and Uniworld OUT on the Rivers with \"No currently announced departure\".",
+    "preservesCommunityIdentity": true
+  }
+];
+
+export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHostedEvidenceRecord> = [
+  {
+    "holdId": "dcc-hold-uniworld-out-2027",
+    "organizerSlug": "uniworld-out-on-the-rivers",
+    "organizerName": "Uniworld OUT on the Rivers",
+    "candidateTitle": "Future 2027/2028 OUT on the Rivers Departure",
+    "candidateDatesOrVessel": "TBA (\"to be announced soon\" following Dec 8, 2025 River Duchess sailing)",
+    "checkedSourceUrl": "https://www.uniworld.com/us/themed-cruises/out-on-the-rivers",
+    "checkedAt": "2026-11-16T08:30:00Z",
+    "holdReason": "Organizer profile published with \"No currently announced departure\" because Uniworld has not yet published a verifiable future departure date on or after 2026-11-16."
+  },
+  {
+    "holdId": "dcc-hold-brandg-mekong-2027",
+    "organizerSlug": "brand-g-vacations",
+    "organizerName": "Brand g Vacations",
+    "candidateTitle": "Coming Soon: 2027 Vietnam & Cambodia Mekong Symphony River Cruise II",
+    "candidateDatesOrVessel": "2027 Mekong River (coming-soon URL slug)",
+    "checkedSourceUrl": "https://www.brandgvacations.com/trip/coming-soon-2027-vietnam-cambodia-mekong-symphony-river-cruise-ii/",
+    "checkedAt": "2026-11-16T08:30:00Z",
+    "holdReason": "Held from sailing-page generation: official URL remains marked \"coming-soon\" without finalized live booking release."
+  },
+  {
+    "holdId": "dcc-hold-lademence-2028",
+    "organizerSlug": "the-cruise-la-demence",
+    "organizerName": "The Cruise powered by La Démence",
+    "candidateTitle": "The Cruise 2028 Edition",
+    "candidateDatesOrVessel": "Summer 2028 (Unannounced)",
+    "checkedSourceUrl": "https://the-cruise.eu/",
+    "checkedAt": "2026-11-16T08:30:00Z",
+    "holdReason": "Held: no 2028 vessel, dates, or itinerary published on the-cruise.eu as of 2026-11-16."
+  },
+  {
+    "holdId": "dcc-hold-bgc-voyager-2027-04-09",
+    "organizerSlug": "big-gay-cruise",
+    "organizerName": "Big Gay Cruise",
+    "candidateTitle": "Big Gay Cruise — Los Angeles / Mexico (Voyager of the Seas)",
+    "candidateDatesOrVessel": "Apr 9–15, 2027 · Voyager of the Seas",
+    "checkedSourceUrl": "https://biggaycruise.com/bgc-events/",
+    "checkedAt": "2026-11-16T08:30:00Z",
+    "holdReason": "Held: navigation links (/5-nights-mexico/ and /6-night-mexico/) have conflicting durations and both return HTTP 404 Not Found on biggaycruise.com."
+  },
+  {
+    "holdId": "dcc-hold-bgc-wonder-2027-05-03",
+    "organizerSlug": "big-gay-cruise",
+    "organizerName": "Big Gay Cruise",
+    "candidateTitle": "4 Nights Bahamas Wonder 2027 (Pre-Pride Cruise)",
+    "candidateDatesOrVessel": "May 3–7, 2027 · Wonder of the Seas",
+    "checkedSourceUrl": "https://biggaycruise.com/4-nights-bahamas-wonder-2027/",
+    "checkedAt": "2026-11-16T08:30:00Z",
+    "holdReason": "Held: top itinerary header lists Miami > Nassau, while lower page body retains pasted Costa Maya & Cozumel port copy."
+  },
+  {
+    "holdId": "dcc-hold-bgc-liberty-2027-10-30",
+    "organizerSlug": "big-gay-cruise",
+    "organizerName": "Big Gay Cruise",
+    "candidateTitle": "5 Nights Western Caribbean Halloween Cruise 2027",
+    "candidateDatesOrVessel": "Oct 30 – Nov 4, 2027 · Liberty of the Seas",
+    "checkedSourceUrl": "https://biggaycruise.com/5-nights-western-caribbean-2027/",
+    "checkedAt": "2026-11-16T08:30:00Z",
+    "holdReason": "Held: organizer page lists Costa Maya -> Cozumel port sequence whereas Royal Caribbean schedule lists Cozumel (Day 3) -> Costa Maya (Day 4); held pending port-order reconciliation."
+  },
+  {
+    "holdId": "dcc-hold-bearcruise-valiant-nye-2027",
+    "organizerSlug": "bearcruise",
+    "organizerName": "BearCruise",
+    "candidateTitle": "Valiant New Year’s Bear Cruise Ahoy 2027/28",
+    "candidateDatesOrVessel": "Dec 30, 2027 – Jan 3, 2028 · Valiant Lady",
+    "checkedSourceUrl": "https://www.bearcruise.com/valiant-new-years-bear-cruise-ahoy/",
+    "checkedAt": "2026-11-16T08:30:00Z",
+    "holdReason": "Held: page header states 4 nights Dec 30, 2027 – Jan 3, 2028 (Key West & Bimini), while lower port list retains 2025/26 5-night Cozumel copy."
+  },
+  {
+    "holdId": "dcc-hold-tgg-explora-2027-09-06",
+    "organizerSlug": "traveling-gays-getaways",
+    "organizerName": "Traveling Gays Getaways",
+    "candidateTitle": "2027 TGG Exclusive Singles Gay Luxury Cruise",
+    "candidateDatesOrVessel": "Sep 6–13, 2027 · Explora I (Barcelona to Rome)",
+    "checkedSourceUrl": "https://www.travelinggays.com/2027-singles-gay-luxury-cruise",
+    "checkedAt": "2026-11-16T08:30:00Z",
+    "holdReason": "Held: unlinked draft page contains cloned 2026 Holland America Alaska/Juneau text and points booking buttons to an Alaska package."
+  },
+  {
+    "holdId": "dcc-hold-kelligregg-italy-60th-2027-05-16",
+    "organizerSlug": "kelligregg-travel",
+    "organizerName": "KelliGregg Travel / R Family Vacations",
+    "candidateTitle": "Out in Italy: Kelli & Gregg’s 60th Birthday Celebration",
+    "candidateDatesOrVessel": "May 16–27, 2027 · Azamara Onward",
+    "checkedSourceUrl": "https://www.kelligreggtravel.com/italy-60th-itinerary",
+    "checkedAt": "2026-11-16T08:30:00Z",
+    "holdReason": "Held: organizer uploaded route map graphic depicts earlier Ravenna/Ancona Days 2–3 calls whereas Azamara’s updated published schedule calls at Piran & Šibenik; held until route graphic is reconciled."
+  },
+  {
+    "holdId": "dcc-hold-daddy-iceland-2027-06-26",
+    "organizerSlug": "daddy-cruises",
+    "organizerName": "Daddy Cruises",
+    "candidateTitle": "Iceland & Norway 2027 / Annual Gay Singles Cruise 2027",
+    "candidateDatesOrVessel": "Jun 26 – Jul 10, 2027 & Dec 5–12, 2027 · Sky Princess",
+    "checkedSourceUrl": "https://www.daddycruises.com/",
+    "checkedAt": "2026-11-16T08:30:00Z",
+    "holdReason": "Held from standalone sailing-page indexation: /trips/*.php subpages block automated schedule verification (HTTP 406 WAF) and homepage summary cards omit daily port arrival/departure clock windows."
+  },
+  {
+    "holdId": "dcc-hold-sfc-panama-koningsdam-2027",
+    "organizerSlug": "silver-fox-cruisers",
+    "organizerName": "Silver Fox Cruisers",
+    "candidateTitle": "Panama Canal Adventure (May 2027) & Christmas/NYE 2027–28",
+    "candidateDatesOrVessel": "May 24, 2027 (Azamara Quest) & Dec 23/30, 2027 (MS Koningsdam)",
+    "checkedSourceUrl": "https://silverfoxcruisers.com/",
+    "checkedAt": "2026-11-16T08:30:00Z",
+    "holdReason": "Held from standalone sailing-page indexation: official pages publish summary dates/fares without day-by-day port dates and arrival/departure clock windows."
   }
 ];
 
@@ -3977,10 +7482,11 @@ export function getDccCanonicalHostedCatalogSnapshot(options?: {
     includeHeld ? true : !s.scheduleHoldReason,
   );
 
+  let canonicalOrgSlug = orgFilter;
   if (orgFilter) {
     const matchedOrg = resolveDccHostedOrganizerBySlugOrAlias(orgFilter);
-    const canonicalSlug = matchedOrg ? matchedOrg.organizerSlug : orgFilter;
-    sailings = sailings.filter((s) => s.organizerSlug === canonicalSlug);
+    canonicalOrgSlug = matchedOrg ? matchedOrg.organizerSlug : orgFilter;
+    sailings = sailings.filter((s) => s.organizerSlug === canonicalOrgSlug);
   }
 
   if (themeFilter) {
@@ -3990,9 +7496,15 @@ export function getDccCanonicalHostedCatalogSnapshot(options?: {
   }
 
   const activeOrgSlugs = new Set(sailings.map((s) => s.organizerSlug));
-  const organizersList =
-    orgFilter || themeFilter
-      ? DCC_CANONICAL_HOSTED_ORGANIZERS.filter((o) => activeOrgSlugs.has(o.organizerSlug))
+  const organizersList = orgFilter
+    ? DCC_CANONICAL_HOSTED_ORGANIZERS.filter((o) => o.organizerSlug === canonicalOrgSlug)
+    : themeFilter
+      ? DCC_CANONICAL_HOSTED_ORGANIZERS.filter(
+          (o) =>
+            activeOrgSlugs.has(o.organizerSlug) ||
+            o.primaryTheme === themeFilter ||
+            o.secondaryThemes.includes(themeFilter),
+        )
       : DCC_CANONICAL_HOSTED_ORGANIZERS;
 
   return {
@@ -4005,6 +7517,7 @@ export function getDccCanonicalHostedCatalogSnapshot(options?: {
     organizers: organizersList,
     hostedSailings: sailings,
     recentChangeEvents: DCC_RECENT_CATALOG_CHANGE_EVENTS,
+    heldInsufficientEvidenceItems: DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS,
   };
 }
 

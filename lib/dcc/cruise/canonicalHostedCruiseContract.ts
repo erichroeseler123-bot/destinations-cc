@@ -38,7 +38,17 @@ export type CanonicalCruiseLineCode =
   | "hal"
   | "msc"
   | "dcl"
-  | "vv";
+  | "vv"
+  | "tui"
+  | "uniworld"
+  | "amadeus"
+  | "atlas"
+  | "windstar"
+  | "ak"
+  | "gaysail"
+  | "azamara"
+  | "ponant"
+  | "explora";
 
 const LINE_CODE_ALIASES: Record<string, CanonicalCruiseLineCode> = {
   rccl: "rccl",
@@ -71,6 +81,30 @@ const LINE_CODE_ALIASES: Record<string, CanonicalCruiseLineCode> = {
   virgin: "vv",
   "virgin-voyages": "vv",
   "virgin voyages": "vv",
+  tui: "tui",
+  "tui-cruises": "tui",
+  "tui cruises": "tui",
+  "mein-schiff": "tui",
+  "mein schiff": "tui",
+  uniworld: "uniworld",
+  "uniworld boutique river cruises": "uniworld",
+  "uniworld boutique river cruise collection": "uniworld",
+  amadeus: "amadeus",
+  "amadeus river cruises": "amadeus",
+  atlas: "atlas",
+  "atlas ocean voyages": "atlas",
+  windstar: "windstar",
+  "windstar cruises": "windstar",
+  ak: "ak",
+  "abercrombie & kent": "ak",
+  "abercrombie and kent": "ak",
+  gaysail: "gaysail",
+  "gaysail fleet": "gaysail",
+  azamara: "azamara",
+  "azamara cruises": "azamara",
+  ponant: "ponant",
+  explora: "explora",
+  "explora journeys": "explora",
 };
 
 export function normalizeCanonicalCruiseLineCode(raw: string): CanonicalCruiseLineCode {
@@ -286,6 +320,49 @@ export const HOSTED_VISUAL_KEYS = [
   "ship-valiant-lady",
   "ship-voyager-of-the-seas",
   "ship-westerdam",
+  "ship-uniworld-ss-maria-theresa",
+  "ship-amadeus-riva-budapest",
+  "port-budapest-parliament-danube",
+  "port-cologne-rhine-panorama",
+  "port-passau-danube-old-town",
+  "port-porto-douro-ribeira",
+  "yacht-sailing-catamaran-greece",
+  "port-hvar-harbor-dalmatia",
+  "port-hydra-harbor-sailboats",
+  "ship-star-clippers-royal-clipper",
+  "port-bora-bora-lagoon-polynesia",
+  "port-virgin-islands-white-bay-catamarans",
+  "ship-ponant-le-champlain",
+  "port-antarctica-paradise-bay-glaciers",
+  "ship-azamara-journey",
+  "port-galapagos-bartolome-island",
+  "port-nile-aswan-feluccas",
+  "ship-mein-schiff-1",
+  "ship-mein-schiff-6-lisbon",
+  "ship-explorer-of-the-seas",
+  "ship-wonder-of-the-seas",
+  "ship-celebrity-reflection-santorini",
+  "ship-celebrity-summit",
+  "ship-norwegian-prima",
+  "ship-norwegian-pearl",
+  "ship-majestic-princess",
+  "ship-discovery-princess",
+  "port-barcelona-port-vell",
+  "port-palma-de-mallorca-cathedral",
+  "port-ibiza-dalt-vila-harbor",
+  "port-marseille-vieux-port",
+  "port-lisbon-belem-tagus",
+  "port-positano-amalfi-coast",
+  "port-puerto-vallarta-los-muertos",
+  "port-aruba-eagle-beach",
+  "port-san-diego-bay-skyline",
+  "port-provincetown-harbor",
+  "port-flam-aurlandsfjord-norway",
+  "port-amazon-pacaya-samiria",
+  "port-krabi-railay-thailand",
+  "port-dubrovnik-old-port",
+  "port-rhine-gorge-lorelei",
+  "port-edinburgh-calton-hill",
 ] as const;
 
 export type HostedVisualKey = (typeof HOSTED_VISUAL_KEYS)[number];
@@ -445,6 +522,119 @@ export type HostedCabinAvailabilityStatus =
 
 export type HostedSailingLifecycleStatus = "upcoming" | "completed" | "cancelled";
 
+export const HOSTED_EXPERIENCE_CLASSIFICATION_SLUGS = [
+  "full_ship_charter",
+  "hosted_group_sailing",
+  "river_cruise",
+  "small_ship_yacht_expedition",
+  "cruise_line_produced_lgbtq",
+] as const;
+
+export type HostedExperienceClassification =
+  (typeof HOSTED_EXPERIENCE_CLASSIFICATION_SLUGS)[number];
+
+export interface HostedExperienceClassificationDefinition {
+  classification: HostedExperienceClassification;
+  label: string;
+  shortLabel: string;
+  description: string;
+}
+
+export const HOSTED_EXPERIENCE_CLASSIFICATIONS: ReadonlyArray<HostedExperienceClassificationDefinition> = [
+  {
+    classification: "full_ship_charter",
+    label: "Full-ship charter",
+    shortLabel: "Full-Ship Charter",
+    description:
+      "Private full-vessel ocean buyout operated by an independent charterer with custom ship-wide entertainment, open dining, and dedicated community programming.",
+  },
+  {
+    classification: "hosted_group_sailing",
+    label: "Hosted group on a regular sailing",
+    shortLabel: "Hosted Group Sailing",
+    description:
+      "Contracted group cabin block aboard a scheduled commercial ocean cruise with private group hosts, mixers, group dining, and credentialed access to host events.",
+  },
+  {
+    classification: "river_cruise",
+    label: "River cruise",
+    shortLabel: "River Cruise",
+    description:
+      "European, Mekong, Amazon, or Nile boutique riverboat charter or hosted river program docking in historic riverfront city centers.",
+  },
+  {
+    classification: "small_ship_yacht_expedition",
+    label: "Small-ship, yacht, or expedition charter",
+    shortLabel: "Small-Ship / Yacht / Expedition",
+    description:
+      "Intimate sailing catamarans, tall-masted yachts, luxury superyachts, or polar/island expedition vessels (~10 to ~225 guests).",
+  },
+  {
+    classification: "cruise_line_produced_lgbtq",
+    label: "Cruise-line-produced LGBTQ+ sailing",
+    shortLabel: "Cruise-Line LGBTQ+ Sailing",
+    description:
+      "Official LGBTQ+ themed voyage produced, marketed, and sold directly in-house by the cruise line itself rather than an independent third-party charter company.",
+  },
+];
+
+export type HostedOrganizerType =
+  | "independent_charter_operator"
+  | "hosted_group_organizer"
+  | "travel_agency_hosted_brand"
+  | "small_ship_yacht_operator"
+  | "river_cruise_operator_program"
+  | "cruise_line_themed_program";
+
+export type HostedTypicalCharterModel =
+  | "full_ship_charter"
+  | "hosted_group_block"
+  | "mixed"
+  | "cruise_line_themed_sailing"
+  | "not_verified";
+
+export type HostedDepartureAnnouncementStatus =
+  | "active_upcoming_departures"
+  | "no_currently_announced_departure"
+  | "not_yet_verified";
+
+export type HostedRecordVerificationState =
+  | "verified"
+  | "no_announced_departure"
+  | "schedule_hold"
+  | "not_yet_verified"
+  | "held_insufficient_evidence";
+
+export interface HostedProgramSubBrand {
+  subBrandSlug: string;
+  subBrandName: string;
+  officialUrl: string;
+  relationshipSummary: string;
+  intendedAudience: string;
+  atmosphereAndPolicySummary: string;
+}
+
+export interface CanonicalHeldHostedEvidenceRecord {
+  holdId: string;
+  organizerSlug: string;
+  organizerName: string;
+  candidateTitle: string;
+  candidateDatesOrVessel: string;
+  checkedSourceUrl: string;
+  checkedAt: string;
+  holdReason: string;
+}
+
+export const CURATED_HOSTED_COMPARISON_SLUGS = [
+  "lgbtq-cruise-market-guide",
+  "full-ship-lgbtq-charters",
+  "bear-daddy-and-silver-fox-cruises",
+  "lgbtq-river-and-small-ship-cruises",
+  "hosted-lgbtq-groups-and-family-sailings",
+] as const;
+
+export type CuratedHostedComparisonSlug = (typeof CURATED_HOSTED_COMPARISON_SLUGS)[number];
+
 export interface HostedOfficialSocialLinks {
   instagramUrl?: string;
   facebookUrl?: string;
@@ -470,17 +660,30 @@ export interface CanonicalHostedOrganizerFactRecord {
   organizerName: string;
   shortName: string;
   categoryLabel: string;
+  organizerType?: HostedOrganizerType;
+  primaryClassification?: HostedExperienceClassification;
+  supportedClassifications?: HostedExperienceClassification[];
+  subBrands?: HostedProgramSubBrand[];
   primaryTheme: HostedCruiseThemeSlug;
   secondaryThemes: HostedCruiseThemeSlug[];
   tagline: string;
   independentSummary: string;
   organizerProvidedDescription: string | null;
   designedForAudience: string;
-  typicalHostedProgramming: string | null; // null -> "Not verified"
-  typicalCharterModel: "full_ship_charter" | "hosted_group_block" | "mixed" | "not_verified";
+  audienceFocusTags?: string[];
+  typicalHostedProgramming: string | null;
+  generalAtmosphereSummary?: string | null;
+  typicalCharterModel: HostedTypicalCharterModel;
+  vesselTypeSummary?: string | null;
+  approximateScaleSummary?: string | null;
+  publishedStartingPriceSummary?: string | null;
+  inclusionsSummary?: string | null;
   soloSupportSummary: string | null;
   soloFriendly: boolean | null;
   familyPolicy: HostedFamilyPolicy;
+  accessibilitySummary?: string | null;
+  officialAccessibilityUrl?: string | null;
+  departureAnnouncementStatus?: HostedDepartureAnnouncementStatus;
   goodForTags: string[];
   heroVisualKey: HostedVisualKey;
   officialWebsiteUrl: string;
@@ -496,7 +699,9 @@ export interface CanonicalHostedOrganizerFactRecord {
   pinnedSailingSlugs?: string[];
   nonAffiliationNotice: string;
   cabinBookingPolicyNote: string;
+  primarySourceUrl?: string;
   verifiedSourceCheckedAt: string;
+  verificationState?: HostedRecordVerificationState;
   comparableOrganizerSlugs: string[];
 }
 
@@ -505,6 +710,11 @@ export interface CanonicalHostedSailingFactRecord {
   reputationSailingEntityId: string; // rep:hosted-sailing:<organizerSlug>:<sailingSlug>
   organizerSlug: string;
   sailingSlug: string;
+  sailingAliases?: string[];
+  subBrandSlug?: string | null;
+  subBrandName?: string | null;
+  organizerType?: HostedOrganizerType;
+  experienceClassification?: HostedExperienceClassification;
   physicalSailingId: string; // sailing:<lineCode>:<shipSlug>:<sailDate>
   canonicalLineCode: CanonicalCruiseLineCode;
   canonicalShipSlug: string;
@@ -517,6 +727,8 @@ export interface CanonicalHostedSailingFactRecord {
   secondaryThemes: HostedCruiseThemeSlug[];
   visualKey: HostedVisualKey;
   regionLabel: string;
+  vesselType?: string | null;
+  approximateVesselScale?: string | null;
   officialSailingPageUrl: string;
   officialReservationFormUrl: string;
   officialCruiseId?: string;
@@ -525,20 +737,28 @@ export interface CanonicalHostedSailingFactRecord {
   cabinAvailabilityStatus: HostedCabinAvailabilityStatus;
   cabinAvailabilityNote: string;
   verifiedStartingPriceUsd: number | null;
+  publishedPriceDisplay?: string | null;
   verifiedPriceNote: string | null;
-  approximateGroupSizeLabel: string | null; // null -> "Not verified"
-  fullShipCharter: boolean | null; // null -> "Not verified"
+  inclusionsSummary?: string | null;
+  approximateGroupSizeLabel: string | null;
+  fullShipCharter: boolean | null;
   typicalAudience: string;
-  announcedHostedProgramming: string | null; // null -> "Not verified"
+  audienceFocusTags?: string[];
+  announcedHostedProgramming: string | null;
   programmingSourceUrl: string | null;
-  soloSupport: string | null; // null -> "Not verified"
+  soloSupport: string | null;
   soloFriendly: boolean | null;
   familyPolicy: HostedFamilyPolicy;
-  communityAtmosphereSummary: string | null; // null -> "Not verified"
+  accessibilitySummary?: string | null;
+  communityAtmosphereSummary: string | null;
+  officialReviewSources?: HostedAuthorizedReviewProfileLink[];
   goodForTags: string[];
   lifecycleStatus: HostedSailingLifecycleStatus;
   cancelledReason?: string;
+  primarySourceUrl?: string;
   organizerSourceCheckedAt: string;
+  verificationState?: HostedRecordVerificationState;
+  portScheduleVerificationMode?: "clocked_port_windows" | "official_day_by_day_route";
   /**
    * Optional fail-closed hold reason: when non-empty, the hosted page stays
    * `noindex` and is excluded from sitemaps even if a vendor ship row exists.
@@ -565,6 +785,7 @@ export interface CanonicalHostedCatalogSnapshot {
   organizers: ReadonlyArray<CanonicalHostedOrganizerFactRecord>;
   hostedSailings: ReadonlyArray<CanonicalHostedSailingFactRecord>;
   recentChangeEvents: ReadonlyArray<CanonicalHostedCatalogChangeEvent>;
+  heldInsufficientEvidenceItems?: ReadonlyArray<CanonicalHeldHostedEvidenceRecord>;
 }
 
 /**
@@ -714,9 +935,21 @@ export interface HostedPublicQuestionRecord {
 /**
  * Published Zero-Commercial-Weight Organic Ranking
  */
+export type HostedVesselCategoryFilter =
+  | "ocean_ship"
+  | "river_ship"
+  | "small_ship_expedition"
+  | "yacht_catamaran";
+
 export interface HostedCatalogSearchCriteria {
   query?: string;
   theme?: HostedCruiseThemeSlug | "";
+  classification?: HostedExperienceClassification | "";
+  organizerType?: HostedOrganizerType | "";
+  vesselCategory?: HostedVesselCategoryFilter | "";
+  audienceFocus?: string;
+  subBrandSlug?: string;
+  hasDisclosedPriceOnly?: boolean;
   destination?: string;
   departureMonth?: string; // YYYY-MM
   departurePort?: string;
@@ -736,6 +969,13 @@ export interface RankableHostedSailingCandidate {
   organizerName: string;
   primaryTheme: HostedCruiseThemeSlug;
   secondaryThemes: HostedCruiseThemeSlug[];
+  experienceClassification?: HostedExperienceClassification;
+  organizerType?: HostedOrganizerType;
+  vesselCategory?: HostedVesselCategoryFilter;
+  audienceFocusTags?: string[];
+  subBrandSlug?: string | null;
+  subBrandName?: string | null;
+  hasDisclosedPrice?: boolean;
   regionLabel: string;
   itineraryPortsText: string;
   departurePort: string;
@@ -788,12 +1028,34 @@ export function filterAndRankHostedSailings<T extends RankableHostedSailingCandi
   const depPort = (criteria.departurePort || "").trim().toLowerCase();
   const orgFilter = (criteria.organizerSlug || "").trim().toLowerCase();
   const lineOrShip = (criteria.cruiseLineOrShip || "").trim().toLowerCase();
+  const audFocus = (criteria.audienceFocus || "").trim().toLowerCase();
+  const subBrand = (criteria.subBrandSlug || "").trim().toLowerCase();
 
   const filtered = candidates.filter((c) => {
     if (criteria.theme) {
       const matchesTheme =
         c.primaryTheme === criteria.theme || c.secondaryThemes.includes(criteria.theme);
       if (!matchesTheme) return false;
+    }
+    if (criteria.classification && c.experienceClassification !== criteria.classification) {
+      return false;
+    }
+    if (criteria.organizerType && c.organizerType !== criteria.organizerType) {
+      return false;
+    }
+    if (criteria.vesselCategory && c.vesselCategory !== criteria.vesselCategory) {
+      return false;
+    }
+    if (audFocus) {
+      const tags = (c.audienceFocusTags || []).map((t) => t.toLowerCase());
+      if (!tags.includes(audFocus)) return false;
+    }
+    if (subBrand) {
+      if ((c.subBrandSlug || "").toLowerCase() !== subBrand) return false;
+    }
+    if (criteria.hasDisclosedPriceOnly) {
+      const disclosed = c.hasDisclosedPrice ?? c.verifiedStartingPriceUsd !== null;
+      if (!disclosed) return false;
     }
     if (dest) {
       const hay = `${c.regionLabel} ${c.itineraryPortsText} ${c.departurePort}`.toLowerCase();
@@ -1157,14 +1419,28 @@ export function validateHostedCruiseRedundancySafeguards(
     }
   }
 
-  // 9. Filter, UTM, comparison query, planner code, or chat room URL entering a sitemap
+  // 9. Filter, UTM, dynamic comparison query, planner code, or chat room URL entering a sitemap
+  const allowedCuratedComparisonPaths = new Set<string>([
+    "/hosted-cruises/comparisons",
+    ...CURATED_HOSTED_COMPARISON_SLUGS.map((slug) => `/hosted-cruises/comparisons/${slug}`),
+  ]);
   for (const url of input.sitemapUrls || []) {
+    let pathname = "";
+    try {
+      pathname = new URL(url).pathname;
+    } catch {
+      pathname = url;
+    }
+    const isInvalidCuratedComparison =
+      /^\/hosted-cruises\/comparisons(\/|$)/i.test(pathname) &&
+      !allowedCuratedComparisonPaths.has(pathname.toLowerCase());
     if (
       url.includes("?") ||
       /utm_/i.test(url) ||
       /\/p\//i.test(url) ||
       /\/cruise\/group\//i.test(url) ||
-      /\/hosted-cruises\/compare\//i.test(url)
+      /\/hosted-cruises\/compare(\/|$)/i.test(pathname) ||
+      isInvalidCuratedComparison
     ) {
       violations.push({
         code: "FILTER_OR_PRIVATE_URL_IN_SITEMAP",
