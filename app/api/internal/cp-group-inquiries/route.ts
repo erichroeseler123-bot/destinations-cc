@@ -810,75 +810,26 @@ export async function POST(request: Request) {
     );
   }
 
-  // 3. First-time receipt owner email evaluation (never send to customer email!)
-  let notificationStatus: OperatorNotificationStatus;
-  let notificationChannel = "durable_storage_only";
+  // 3. Build initial durable write-ahead metadata BEFORE any Resend dispatch!
+  const initialStatus: OperatorNotificationStatus =
+    rawCpStatus === "delivered"
+      ? "delivered"
+      : rawCpStatus === "not_configured"
+        ? "not_configured"
+        : "durable_storage_only";
+  let notificationStatus = initialStatus as OperatorNotificationStatus;
+  let notificationChannel =
+    rawCpStatus === "delivered" ? "cp_upstream_email" : "durable_storage_only";
   let intendedDestination = "concierge@cruisepromenade.com";
   let emailError: string | null = null;
   let emailProviderId: string | null = null;
 
-  if (rawCpStatus === "delivered") {
-    notificationStatus = "delivered";
-    notificationChannel = "cp_upstream_email";
-  } else if (!suppressOwnerEmail) {
-    const emailAttempt = await maybeSendOwnerAlertEmailOnFirstIngest({
-      inquiryId,
-      submittedAt,
-      organizerName,
-      customerEmail: email,
-      customerPhone: phone,
-      ship,
-      sailDate,
-      portsText: portsParsed.text,
-      travelerCount,
-      desiredActivitiesText: activitiesParsed.text,
-      mobilityNeeds,
-      sourcePage,
-      paymentStructure,
-      privateTransport,
-      negotiatedRates,
-      notes,
-      upstreamDestinationInbox: normalizeTextField(body.destinationInbox, 160),
-    });
-    intendedDestination = emailAttempt.destination;
-    if (emailAttempt.delivered) {
-      notificationStatus = "delivered";
-      notificationChannel = "dcc_resend_email";
-      emailProviderId = emailAttempt.providerMessageId;
-    } else if (emailAttempt.attempted) {
-      notificationStatus = "failed";
-      notificationChannel = "dcc_resend_email";
-      emailError = emailAttempt.error || "Owner alert email delivery failed.";
-    } else if (rawCpStatus === "failed") {
-      notificationStatus = "failed";
-      notificationChannel = "cp_upstream_email";
-      emailError =
-        normalizeTextField(body.cpNotificationError, 200) ||
-        "Cruise Promenade upstream owner email delivery failed.";
-    } else if (rawCpStatus === "not_configured") {
-      notificationStatus = "not_configured";
-      notificationChannel = "none";
-      emailError =
-        "Outbound owner email provider is not configured on Cruise Promenade or DCC; inquiry preserved in durable owner inbox.";
-    } else {
-      notificationStatus = "durable_storage_only";
-      notificationChannel = "durable_storage_only";
-    }
-  } else {
-    // Test / synthetic probe: email intentionally suppressed; durably stored in owner inbox
-    notificationStatus =
-      rawCpStatus === "not_configured"
-        ? "not_configured"
-        : "durable_storage_only";
-    notificationChannel = "durable_storage_only";
-  }
-
   const sailingLabel = `${ship} (${sailDate})`;
   const summaryNote = `CP Group Inquiry ${inquiryId}: ${sailingLabel} · ${travelerCount} guests`;
-
   const qaCleanupToken = normalizeTextField(body.qaCleanupToken, 120);
+  const persistedBeforeEmailAt = new Date().toISOString();
 
-  const normalizedMetadata: Record<string, unknown> = {
+  const buildMetadataRecord = (): Record<string, unknown> => ({
     id: inquiryId,
     inquiryId,
     submissionId: inquiryId,
@@ -890,6 +841,7 @@ export async function POST(request: Request) {
     environment: namespace,
     submittedAt,
     createdAt: submittedAt,
+    persistedBeforeEmailAt,
     organizerName,
     contactName: organizerName,
     name: organizerName,
@@ -929,13 +881,65 @@ export async function POST(request: Request) {
     emailSent: notificationStatus === "delivered",
     emailProviderId,
     emailError,
+  });
+
+  const evaluatePostPersistOwnerEmail = async (): Promise<void> => {
+    if (rawCpStatus === "delivered" || suppressOwnerEmail) {
+      return;
+    }
+    const emailAttempt = await maybeSendOwnerAlertEmailOnFirstIngest({
+      inquiryId,
+      submittedAt,
+      organizerName,
+      customerEmail: email,
+      customerPhone: phone,
+      ship,
+      sailDate,
+      portsText: portsParsed.text,
+      travelerCount,
+      desiredActivitiesText: activitiesParsed.text,
+      mobilityNeeds,
+      sourcePage,
+      paymentStructure,
+      privateTransport,
+      negotiatedRates,
+      notes,
+      upstreamDestinationInbox: normalizeTextField(body.destinationInbox, 160),
+    });
+    intendedDestination = emailAttempt.destination;
+    if (emailAttempt.delivered) {
+      notificationStatus = "delivered";
+      notificationChannel = "dcc_resend_email";
+      emailProviderId = emailAttempt.providerMessageId;
+      emailError = null;
+    } else if (emailAttempt.attempted) {
+      notificationStatus = "failed";
+      notificationChannel = "dcc_resend_email";
+      emailError = emailAttempt.error || "Owner alert email delivery failed.";
+    } else if (rawCpStatus === "failed") {
+      notificationStatus = "failed";
+      notificationChannel = "cp_upstream_email";
+      emailError =
+        normalizeTextField(body.cpNotificationError, 200) ||
+        "Cruise Promenade upstream owner email delivery failed.";
+    } else if (rawCpStatus === "not_configured") {
+      notificationStatus = "not_configured";
+      notificationChannel = "none";
+      emailError =
+        "Outbound owner email provider is not configured on Cruise Promenade or DCC; inquiry preserved in durable owner inbox.";
+    } else {
+      notificationStatus = "durable_storage_only";
+      notificationChannel = "durable_storage_only";
+    }
   };
 
-  // 4. Atomic persistence into earthos_control_map_findings (ON CONFLICT DO NOTHING)
+  let normalizedMetadata = buildMetadataRecord();
+
+  // 4. Write-ahead atomic persistence into earthos_control_map_findings STRICTLY BEFORE Resend dispatch
   if (dbUrl) {
     try {
       const sql = neon(dbUrl);
-      const metadataJson = JSON.stringify(normalizedMetadata);
+      const initialMetadataJson = JSON.stringify(normalizedMetadata);
       const inserted = (await sql`
         INSERT INTO earthos_control_map_findings (
           finding_id,
@@ -953,7 +957,7 @@ export async function POST(request: Request) {
           ${"watch"},
           ${"dcc:cp-group-inquiry"},
           ${summaryNote},
-          ${metadataJson}::jsonb,
+          ${initialMetadataJson}::jsonb,
           ${submittedAt}::timestamptz,
           ${submittedAt}::timestamptz
         )
@@ -962,7 +966,7 @@ export async function POST(request: Request) {
       `) as Array<{ finding_id: string }>;
 
       if (!Array.isArray(inserted) || inserted.length === 0) {
-        // Concurrent duplicate raced in; fetch existing truthful status without inserting twice
+        // Concurrent duplicate raced in; fetch existing truthful status without inserting or emailing twice
         const existingRace = await lookupExistingCpFinding(
           findingId,
           inquiryId,
@@ -980,6 +984,26 @@ export async function POST(request: Request) {
           { status: 200, headers: NO_STORE_HEADERS },
         );
       }
+
+      // Record durable state immediately before attempting outbound convenience email
+      setInMemoryTransactionalSubmission(
+        "cp-group-inquiry",
+        inquiryId,
+        normalizedMetadata,
+      );
+
+      // 5. Attempt Resend dispatch ONLY after durable INSERT succeeded, then update notification metadata
+      await evaluatePostPersistOwnerEmail();
+      normalizedMetadata = buildMetadataRecord();
+      const finalSeverity = notificationStatus === "failed" ? "high" : "watch";
+      const updatedMetadataJson = JSON.stringify(normalizedMetadata);
+      await sql`
+        UPDATE earthos_control_map_findings
+        SET severity = ${finalSeverity},
+            metadata = ${updatedMetadataJson}::jsonb,
+            updated_at = now()
+        WHERE finding_id = ${findingId}
+      `.catch(() => undefined);
 
       setInMemoryTransactionalSubmission(
         "cp-group-inquiry",
@@ -1021,7 +1045,23 @@ export async function POST(request: Request) {
     }
   }
 
-  // Non-serverless local dev / isolated unit test fallback
+  // Non-serverless local dev / isolated unit test fallback: persist durably BEFORE Resend dispatch!
+  inProcessCpIdempotencyGuard.set(inquiryId, {
+    findingId,
+    inquiryId,
+    itemKey,
+    notificationStatus,
+    metadata: normalizedMetadata,
+  });
+  setInMemoryTransactionalSubmission(
+    "cp-group-inquiry",
+    inquiryId,
+    normalizedMetadata,
+  );
+
+  await evaluatePostPersistOwnerEmail();
+  normalizedMetadata = buildMetadataRecord();
+
   inProcessCpIdempotencyGuard.set(inquiryId, {
     findingId,
     inquiryId,
