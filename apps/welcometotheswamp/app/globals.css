@@ -2725,3 +2725,23 @@ body {
   }
 }
 
+/* Preserve readable light typography inside dark swamp guide/comparison cards */
+.hero-card,
+.panel,
+.info-card {
+  color: #f7f0e3;
+}
+
+.hero-card h1,
+.panel h2,
+.info-card h2,
+.info-card strong {
+  color: #f7f0e3 !important;
+}
+
+.hero-card .lede,
+.info-card .muted {
+  color: rgba(247, 240, 227, 0.84) !important;
+}
+
+

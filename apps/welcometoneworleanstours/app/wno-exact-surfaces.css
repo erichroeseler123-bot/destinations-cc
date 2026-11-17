@@ -783,5 +783,73 @@ article[class*="bg-[#151515]"] a[class*="border"] {
   border-color: rgba(212, 175, 55, 0.45) !important;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Canonical New Orleans Areas & Operators Directory Surfaces (`directory-dark`) */
+/* -------------------------------------------------------------------------- */
+main:has([data-wno-surface="directory-dark"]),
+[data-wno-surface="directory-dark"] {
+  background: #080708 !important;
+  background-color: #080708 !important;
+  color: #fdfbf7 !important;
+}
+
+[data-wno-surface="directory-dark"] h1,
+[data-wno-surface="directory-dark"] h2,
+[data-wno-surface="directory-dark"] h3 {
+  color: #fdfbf7 !important;
+  -webkit-text-fill-color: #fdfbf7 !important;
+  text-shadow: none !important;
+}
+
+[data-wno-surface="directory-dark"] p,
+[data-wno-surface="directory-dark"] li {
+  color: rgba(253, 251, 247, 0.86) !important;
+  -webkit-text-fill-color: rgba(253, 251, 247, 0.86) !important;
+}
+
+[data-wno-surface="directory-dark"] a.rounded-xl,
+[data-wno-surface="directory-dark"] a.rounded-lg,
+[data-wno-surface="directory-dark"] div.rounded-xl,
+[data-wno-surface="directory-dark"] section.rounded-xl,
+[data-wno-surface="directory-dark"] article:not([class*="productCard"]) {
+  border-radius: 14px !important;
+}
+
+[data-wno-surface="directory-dark"] a.rounded-xl,
+[data-wno-surface="directory-dark"] a.rounded-lg,
+[data-wno-surface="directory-dark"] article:not([class*="productCard"]) {
+  background: #121016 !important;
+  background-color: #121016 !important;
+  color: #fdfbf7 !important;
+  border: 1px solid rgba(212, 175, 55, 0.28) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45) !important;
+}
+
+[data-wno-surface="directory-dark"] a.rounded-xl:hover,
+[data-wno-surface="directory-dark"] a.rounded-lg:hover {
+  border-color: #d4af37 !important;
+}
+
+[data-wno-surface="directory-dark"] a.bg-\[\#d4af37\],
+[data-wno-surface="directory-dark"] button.bg-\[\#d4af37\] {
+  background: #d4af37 !important;
+  color: #080708 !important;
+  -webkit-text-fill-color: #080708 !important;
+  border-radius: 8px !important;
+}
+
+[data-wno-surface="directory-dark"] [class*="productCard"] h3,
+[data-wno-surface="directory-dark"] [class*="productCardTitle"] {
+  color: #211c17 !important;
+  -webkit-text-fill-color: #211c17 !important;
+}
+
+[data-wno-surface="directory-dark"] [class*="productCard"] p,
+[data-wno-surface="directory-dark"] [class*="productCardDescription"] {
+  color: #5b5147 !important;
+  -webkit-text-fill-color: #5b5147 !important;
+}
+
+
 
 

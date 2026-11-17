@@ -108,7 +108,7 @@ export default async function OperatorPage({
   // Held operators render with explicit noindex status, hold rationale, and claim invitation
   if (!gate.indexable) {
     return (
-      <main className="min-h-screen bg-[#080708] px-6 py-14 text-[#fdfbf7]">
+      <div data-wno-surface="directory-dark" className="min-h-screen bg-[#080708] px-6 py-14 text-[#fdfbf7]">
         <div className="mx-auto max-w-4xl">
           <Link href="/operators" className="text-sm text-[#d4af37] underline">
             ← All Verified New Orleans Tour Operators
@@ -153,7 +153,7 @@ export default async function OperatorPage({
             directCheckoutConnected={directConnected}
           />
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -170,7 +170,7 @@ export default async function OperatorPage({
     .filter((o): o is NonNullable<typeof o> => Boolean(o));
 
   return (
-    <main className="min-h-screen bg-[#080708] text-[#fdfbf7]">
+    <div data-wno-surface="directory-dark" className="min-h-screen bg-[#080708] text-[#fdfbf7]">
       {/* HERO & GOVERNANCE HEADER */}
       <section className="border-b border-[#d4af37]/20 bg-[#110e14] px-6 py-14 md:py-18">
         <div className="mx-auto max-w-6xl">
@@ -603,6 +603,6 @@ export default async function OperatorPage({
           directCheckoutConnected={directConnected}
         />
       </div>
-    </main>
+    </div>
   );
 }

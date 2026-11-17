@@ -93,7 +93,7 @@ export default function AirboatVsCoveredBoatPage() {
           <p className="eyebrow">New Orleans swamp tour comparison</p>
           <div className="intent-pill">Airboat vs covered boat</div>
         </div>
-        <h1>Airboat vs covered swamp boat: which New Orleans tour fits you?</h1>
+        <h1 style={{ color: "#f7f0e3" }}>Airboat vs covered swamp boat: which New Orleans tour fits you?</h1>
         <p className="lede">
           Choose the airboat when the faster, louder, open-air ride is part of the reason you are going. Choose the covered boat when you want a calmer, more sheltered swamp experience that is easier for a mixed group. Then compare the actual operator rules, pickup, duration, and weather terms before booking.
         </p>
@@ -153,7 +153,7 @@ export default function AirboatVsCoveredBoatPage() {
       <section className="panel" data-testid="wts-airboat-vs-boat-canonical-wno-links">
         <p className="eyebrow">Canonical operator &amp; basin profiles</p>
         <article className="info-card">
-          <h2>Compare verified swamp operators on Welcome to New Orleans Tours.</h2>
+          <h2 style={{ color: "#f7f0e3" }}>Compare verified swamp operators on Welcome to New Orleans Tours.</h2>
           <p className="muted">
             Once you choose between an open airboat and a shaded covered swamp boat, check the exact
             dock address, pickup rules, and separate company identity on our canonical New Orleans

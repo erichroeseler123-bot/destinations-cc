@@ -40,7 +40,7 @@ export default function NewOrleansAreasDirectoryPage() {
   );
 
   return (
-    <main className="min-h-screen bg-[#080708] px-6 py-14 text-[#fdfbf7]">
+    <div data-wno-surface="directory-dark" className="min-h-screen bg-[#080708] px-6 py-14 text-[#fdfbf7]">
       <div className="mx-auto max-w-6xl">
         <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#d4af37]">
           Greater New Orleans Canonical Place Directory
@@ -259,6 +259,6 @@ export default function NewOrleansAreasDirectoryPage() {
           </section>
         )}
       </div>
-    </main>
+    </div>
   );
 }

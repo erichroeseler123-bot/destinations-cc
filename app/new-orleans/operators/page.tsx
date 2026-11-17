@@ -32,7 +32,7 @@ export default function OperatorsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#080708] px-6 py-14 text-[#fdfbf7]">
+    <div data-wno-surface="directory-dark" className="min-h-screen bg-[#080708] px-6 py-14 text-[#fdfbf7]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -179,6 +179,6 @@ export default function OperatorsPage() {
           </Link>
         </p>
       </div>
-    </main>
+    </div>
   );
 }

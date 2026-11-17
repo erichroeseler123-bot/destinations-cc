@@ -79,7 +79,7 @@ export default async function AreaCategoryComparisonPage({
     );
 
   return (
-    <main className="min-h-screen bg-[#080708] px-6 py-14 text-[#fdfbf7]">
+    <div data-wno-surface="directory-dark" className="min-h-screen bg-[#080708] px-6 py-14 text-[#fdfbf7]">
       <div className="mx-auto max-w-5xl">
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-xs text-white/60">
           <Link href="/areas" className="hover:text-[#d4af37]">
@@ -180,6 +180,6 @@ export default async function AreaCategoryComparisonPage({
           ))}
         </div>
       </div>
-    </main>
+    </div>
   );
 }

@@ -82,7 +82,7 @@ export default async function AreaPage({
   // Held draft areas render cleanly with explicit noindex status and helpful navigation to verified areas
   if (!gate.indexable) {
     return (
-      <main className="min-h-screen bg-[#080708] px-6 py-14 text-[#fdfbf7]">
+      <div data-wno-surface="directory-dark" className="min-h-screen bg-[#080708] px-6 py-14 text-[#fdfbf7]">
         <div className="mx-auto max-w-4xl">
           <Link href="/areas" className="text-sm text-[#d4af37] underline">
             ← All Verified New Orleans Areas &amp; Basins
@@ -121,7 +121,7 @@ export default async function AreaPage({
             </div>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -152,6 +152,7 @@ export default async function AreaPage({
 
   const canonicalAppendix = (
     <section
+      data-wno-surface="directory-dark"
       data-testid="canonical-area-directory-section"
       className="bg-[#080708] px-6 py-14 text-[#fdfbf7]"
     >
