@@ -38,6 +38,7 @@ export * from "./opaqueAttributionLedger";
 export * from "./wtaAffiliateEnrollment";
 export * from "./affiliateOwnershipLedger";
 export * from "./directOperatorActivationKit";
+export * from "./operatorMorSettlementLedger";
 
 export type CommercialProvider =
   | "viator"
@@ -306,6 +307,7 @@ export interface CommercialOutcomeRecord {
   estimatedCommission: MonetaryAmountOrNull;
   paidCommission: MonetaryAmountOrNull;
   cancellationReason: string | null;
+  rawPayload?: Record<string, unknown> | null;
   altersPublishedEvidenceOrRules: false;
   approvedClaimStatus: "not_a_claim_outcome_only";
   traceparent: string | null;
@@ -2794,6 +2796,7 @@ export async function recordCommercialOutcome(
           : input.paidCommissionCurrency ?? null,
     },
     cancellationReason: input.cancellationReason ?? null,
+    rawPayload: input.rawPayload ?? null,
     altersPublishedEvidenceOrRules: false,
     approvedClaimStatus: "not_a_claim_outcome_only",
     traceparent: input.traceparent ?? null,
@@ -3390,6 +3393,7 @@ export async function listCommercialOutcomes(options?: {
         paid_commission_amount: string | number | null;
         paid_commission_currency: string | null;
         cancellation_reason: string | null;
+        raw_payload_json?: Record<string, unknown> | null;
         traceparent: string | null;
       }>(
         `SELECT * FROM dcc_commercial_outcomes ${whereSql} ORDER BY dcc_recorded_at ASC LIMIT $${values.length}`,
@@ -3458,6 +3462,7 @@ export async function listCommercialOutcomes(options?: {
             currency: row.paid_commission_currency,
           },
           cancellationReason: row.cancellation_reason,
+          rawPayload: row.raw_payload_json ?? null,
           altersPublishedEvidenceOrRules: false,
           approvedClaimStatus: "not_a_claim_outcome_only",
           traceparent: row.traceparent,

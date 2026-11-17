@@ -106,10 +106,14 @@ export default function CommissionReconcilePanel({
             Reconcile Partner Payout Exports (Viator · GetYourGuide · FareHarbor · Direct)
           </h2>
           <p className="mt-1 max-w-3xl text-xs leading-relaxed text-zinc-300">
-            Paste partner CSV or JSON settlement exports to record authenticated commercial outcomes durably via{" "}
-            <code>recordCommercialOutcome</code>. Deterministic{" "}
-            <code>reconcile:&#123;provider&#125;:&#123;booking_ref&#125;</code> idempotency prevents double-counting on repeat imports, and rows carrying a{" "}
-            <code>share_code</code> automatically trigger non-blocking Cruise Promenade planner sync.
+            <strong>Provider-Report / API Reconciliation (No Automatic Real-Time Outcome Claim · No Auto-Invoicing):</strong>{" "}
+            Paste partner CSV or JSON settlement exports (including Rezgo{" "}
+            <code>refid=dccjuneau10</code>) to record authenticated commercial outcomes durably via{" "}
+            <code>recordCommercialOutcome</code>. Outbound clicks remain $0, pre-sail{" "}
+            <code>confirmed</code> rows remain non-invoiceable until <code>completed</code>,
+            refunds/cancellations/disputes/chargebacks adjust or reverse commission,{" "}
+            <code>reconcile:&#123;provider&#125;:&#123;booking_ref&#125;</code> idempotency blocks duplicate charges,
+            and zero invoices or operator messages are ever dispatched automatically.
           </p>
         </div>
 

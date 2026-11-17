@@ -750,7 +750,31 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
   const settledReconciliationsByClickId = new Map<string, OpaqueClickReconciledOutcome[]>();
   const unmatchedReconciliationRecords: OpaqueClickReconciledOutcome[] = [];
 
+  // Track any booking references revoked by cancellation or refund so they never inflate confirmed/settled totals
+  const cancelledOrRefundedRefs = new Set<string>();
   for (const rec of reconciliationsInWindow) {
+    if (rec.eventType === "BOOKING_CANCELLED" || rec.eventType === "BOOKING_REFUNDED") {
+      cancelledOrRefundedRefs.add(`${rec.provider}:${rec.providerBookingRef.trim().toLowerCase()}`);
+    }
+  }
+  for (const click of clicksInWindow) {
+    if (!Array.isArray(click.reconciledOutcomes)) continue;
+    for (const inlineRec of click.reconciledOutcomes) {
+      if (
+        inlineRec.eventType === "BOOKING_CANCELLED" ||
+        inlineRec.eventType === "BOOKING_REFUNDED"
+      ) {
+        cancelledOrRefundedRefs.add(
+          `${inlineRec.provider}:${inlineRec.providerBookingRef.trim().toLowerCase()}`,
+        );
+      }
+    }
+  }
+
+  for (const rec of reconciliationsInWindow) {
+    if (cancelledOrRefundedRefs.has(`${rec.provider}:${rec.providerBookingRef.trim().toLowerCase()}`)) {
+      continue;
+    }
     const clickExists = Boolean(ledgerState.opaqueClicksById?.[rec.clickId]);
     const isBookingConfirmed = rec.eventType === "BOOKING_CONFIRMED";
     const isConfirmedSettlement =
@@ -783,6 +807,13 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
     for (const inlineRec of click.reconciledOutcomes) {
       if (isSyntheticSeedOrTestOutcome(inlineRec)) {
         recordExcludedSeedIfApplicable(inlineRec);
+        continue;
+      }
+      if (
+        cancelledOrRefundedRefs.has(
+          `${inlineRec.provider}:${inlineRec.providerBookingRef.trim().toLowerCase()}`,
+        )
+      ) {
         continue;
       }
       if (

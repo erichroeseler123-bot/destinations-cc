@@ -3,6 +3,8 @@
 import { useState } from "react";
 import {
   DIRECT_OPERATOR_ONBOARDING_URL,
+  JUNEAU_TOURS_ONBOARDING_REFERENCE,
+  SOUTHEAST_ALASKA_OPERATOR_ONBOARDING_KITS,
   THREE_MARKET_DIRECT_OPERATOR_PITCH_KITS,
 } from "@/lib/dcc/commerce/directOperatorActivationKit";
 
@@ -64,6 +66,36 @@ export default function DirectOperatorPitchPanel() {
           >
             Preview Portal ↗
           </a>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-xs text-zinc-200">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-emerald-300">
+              Live Onboarding Proof Point · {JUNEAU_TOURS_ONBOARDING_REFERENCE.operatorName}
+            </span>
+            <p className="mt-1 text-zinc-300">
+              All Southeast Alaska operator templates below cite our live{" "}
+              <strong>{JUNEAU_TOURS_ONBOARDING_REFERENCE.operatorName}</strong> Rezgo
+              integration (Operator MoR, supplier-hosted checkout, 10% completed
+              non-refunded invoicing, $0 weather/refund fee).
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              copyText(
+                "jt-example-url",
+                JUNEAU_TOURS_ONBOARDING_REFERENCE.canonicalProfileUrl,
+              )
+            }
+            className="rounded-lg border border-emerald-400/40 bg-emerald-500/20 px-3 py-1.5 font-bold text-emerald-100 hover:bg-emerald-500/30"
+          >
+            {copiedKey === "jt-example-url"
+              ? "Copied Juneau Tours Link!"
+              : "Copy Juneau Tours Example URL"}
+          </button>
         </div>
       </div>
 
@@ -133,6 +165,57 @@ export default function DirectOperatorPitchPanel() {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="space-y-3 border-t border-white/10 pt-5">
+        <div className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">
+          Southeast Alaska Canonical Profile + Direct Onboarding Templates ({SOUTHEAST_ALASKA_OPERATOR_ONBOARDING_KITS.length} Copy-Only Drafts)
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {SOUTHEAST_ALASKA_OPERATOR_ONBOARDING_KITS.map((kit) => (
+            <div
+              key={kit.id}
+              className="flex flex-col justify-between rounded-2xl border border-white/10 bg-black/40 p-5"
+            >
+              <div className="space-y-1.5">
+                <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-cyan-300">
+                  {kit.portsLabel} · {kit.bookingPlatform}
+                </div>
+                <h3 className="text-base font-black text-white">{kit.operatorName}</h3>
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5 text-[11px] text-zinc-300">
+                  <div className="font-bold text-zinc-200">Subject:</div>
+                  <div className="mt-0.5 font-mono text-[11px] text-cyan-200">
+                    {kit.emailSubject}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    copyText(
+                      `${kit.id}-full`,
+                      `Subject: ${kit.emailSubject}\n\n${kit.emailBody}`,
+                    )
+                  }
+                  className="rounded-lg border border-cyan-400/40 bg-cyan-500/15 px-3 py-1.5 text-xs font-bold text-cyan-100 hover:bg-cyan-500/25"
+                >
+                  {copiedKey === `${kit.id}-full`
+                    ? "Copied Subject + Body!"
+                    : "Copy Full Pitch"}
+                </button>
+                <a
+                  href={kit.canonicalProfileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-zinc-200 hover:bg-white/10"
+                >
+                  Profile ↗
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

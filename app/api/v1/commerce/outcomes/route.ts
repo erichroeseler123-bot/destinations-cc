@@ -35,6 +35,7 @@ function redactOutcomePii<T>(item: T): T {
     "customerName",
     "traveler",
     "notes",
+    "rawPayload",
   ]) {
     if (piiKey in clone) {
       delete clone[piiKey];
@@ -109,9 +110,7 @@ export async function GET(request: Request) {
     provider,
   });
   const checkpoint = await getPollerCheckpoint(pollerId);
-  const sanitizedOutcomes = isAdminCaller
-    ? outcomes
-    : outcomes.map((outcome) => redactOutcomePii(outcome));
+  const sanitizedOutcomes = outcomes.map((outcome) => redactOutcomePii(outcome));
 
   return buildMachineJsonResponse(
     {

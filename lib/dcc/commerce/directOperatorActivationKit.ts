@@ -15,6 +15,29 @@ export const AUTO_OUTREACH_DISPATCH_ENABLED = false as const;
 export const DIRECT_OPERATOR_ONBOARDING_URL =
   "https://www.destinationcommandcenter.com/partners/direct-operators";
 
+export const JUNEAU_TOURS_ONBOARDING_REFERENCE = {
+  operatorId: "operator:juneau-tours-and-whale-watch",
+  operatorName: "Juneau Tours & Whale Watch",
+  canonicalProfileUrl:
+    "https://www.lastfrontiershoreexcursions.com/operators/juneau-tours-and-whale-watch",
+  canonicalSampleTourUrl:
+    "https://www.lastfrontiershoreexcursions.com/tours/juneau-tours-and-whale-watch/auke-bay-whale-watch",
+  bookingPlatform: "Rezgo (Read-Only XML Availability + Supplier-Hosted Checkout)",
+  merchantOfRecord: "operator" as const,
+  customerFundsCapturedByDcc: false as const,
+  directCommissionPercent: 10 as const,
+  machineOrPlannerCommissionPercent: 5 as const,
+  settlementTrigger: "completed_non_refunded_bookings_only" as const,
+  setupAndMonthlyFeeUsd: 0 as const,
+  weatherAndCancellationFeePercent: 0 as const,
+  operationalHighlights: [
+    "Permanent $0 canonical operator profile and tour pages live on Last Frontier Shore Excursions.",
+    "Read-only availability checks party-size fit and 2-hour gangway return buffers without exposing raw seat counts.",
+    "Traveler clicks straight into Juneau Tours' own Rezgo checkout — Juneau Tours stays Merchant of Record and captures 100% of customer payment directly.",
+    "10% commission invoiced only after completed, non-refunded tours ($0 owed on cancellations, refunds, or weather groundings).",
+  ],
+} as const;
+
 export type DirectOperatorTargetMarket =
   | "Juneau, AK"
   | "New Orleans, LA"
@@ -72,7 +95,10 @@ Right now, many cruise guests book your Icefield Walk and Herbert Glacier Dog Sl
 • Coastal Helicopters remains Merchant of Record on your hosted checkout — guests pay Coastal directly under your published weight and weather policies.
 • Commission-neutral fit engine: safety and ship-return buffers always govern what we recommend.
 
-If you're open to connecting a tracked FareHarbor ASN or direct partner booking code for the 2027 Alaska cruise season, you can review our 1-page terms or drop your preferred checkout details here:
+You can see this exact setup live today with Juneau Tours & Whale Watch on Last Frontier Shore Excursions (live port-day availability + direct supplier-hosted checkout where the operator stays Merchant of Record):
+${JUNEAU_TOURS_ONBOARDING_REFERENCE.canonicalProfileUrl}
+
+Your $0 Coastal Helicopters company profile is already live at https://www.lastfrontiershoreexcursions.com/operators/coastal-helicopters — and if you're open to connecting a tracked FareHarbor ASN or direct partner booking code for the 2027 Alaska cruise season, you can review our 1-page terms here:
 ${DIRECT_OPERATOR_ONBOARDING_URL}
 
 Best regards,
@@ -109,7 +135,10 @@ We are opening direct 2027 partner referrals for Juneau aviation operators as a 
 • NorthStar remains Merchant of Record on your own checkout and confirmation workflow.
 • Fit and timing safety remain 100% independent of commission.
 
-You can view our direct operator overview and share your preferred tracking parameter or reservation contact in 60 seconds here:
+You can preview how this exact direct model works live today on our Juneau Tours & Whale Watch integration (read-only schedule fit + direct supplier-hosted checkout):
+${JUNEAU_TOURS_ONBOARDING_REFERENCE.canonicalProfileUrl}
+
+Your permanent $0 NorthStar Trekking profile is live at https://www.lastfrontiershoreexcursions.com/operators/northstar-trekking, and you can review the 1-page direct operator overview or share your preferred tracking setup here:
 ${DIRECT_OPERATOR_ONBOARDING_URL}
 
 Warm regards,
@@ -236,6 +265,145 @@ Founder, Destination Command Center`,
 export function listDirectOperatorPitchKits(): readonly DirectOperatorPitchKit[] {
   return FLAGSHIP_DIRECT_OPERATOR_PITCH_KITS;
 }
+
+export interface SoutheastAlaskaOperatorOnboardingPitch {
+  id: string;
+  operatorSlug: string;
+  operatorName: string;
+  portsLabel: string;
+  bookingPlatform: string;
+  canonicalProfileUrl: string;
+  referenceExampleUrl: string;
+  emailSubject: string;
+  emailBody: string;
+  autoSendForbidden: true;
+}
+
+export const SOUTHEAST_ALASKA_OPERATOR_ONBOARDING_KITS: readonly SoutheastAlaskaOperatorOnboardingPitch[] =
+  [
+    {
+      id: "seak-harv-and-marvs",
+      operatorSlug: "harv-and-marvs",
+      operatorName: "Harv & Marv's Outback Alaska",
+      portsLabel: "Juneau (Auke Bay Small-Boat Whale Watching)",
+      bookingPlatform: "FareHarbor",
+      canonicalProfileUrl:
+        "https://www.lastfrontiershoreexcursions.com/operators/harv-and-marvs",
+      referenceExampleUrl: JUNEAU_TOURS_ONBOARDING_REFERENCE.canonicalProfileUrl,
+      emailSubject:
+        "Harv & Marv's Free Company Profile on Last Frontier + Optional 10% Direct Checkout (Juneau Tours Example)",
+      emailBody: `Hi Harv & Marv's Team,
+
+We published your free, source-backed company profile on Last Frontier Shore Excursions so cruise guests can check your 6- and 18-passenger boat options, Goldbelt Tramway pickup rules, and 2-hour all-aboard return buffers in one place:
+https://www.lastfrontiershoreexcursions.com/operators/harv-and-marvs
+
+Claiming and updating your profile is permanently $0. If you'd ever like to connect live FareHarbor availability and direct supplier-hosted checkout (instead of 20%–30% OTA commissions), you can see how our live integration works today with Juneau Tours & Whale Watch:
+${JUNEAU_TOURS_ONBOARDING_REFERENCE.canonicalProfileUrl}
+
+How the optional direct connection works:
+• Guests book and pay directly on your own FareHarbor checkout — Harv & Marv's stays Merchant of Record and keeps 100% of customer funds at booking.
+• 10% commission invoiced only after completed, non-refunded tours ($0 setup, $0 monthly, and 0% on cancellations, weather scrubs, or refunds).
+• Raw seat counts stay hidden publicly while cruise timing buffers protect your dockside schedule.
+
+You can claim your free profile on the page above or review the optional 10% direct connection details here:
+${DIRECT_OPERATOR_ONBOARDING_URL}
+
+Best regards,
+Erich Roeseler
+Last Frontier Shore Excursions & Destination Command Center`,
+      autoSendForbidden: true,
+    },
+    {
+      id: "seak-allen-marine-tours",
+      operatorSlug: "allen-marine-tours",
+      operatorName: "Allen Marine Tours",
+      portsLabel: "Sitka & Ketchikan",
+      bookingPlatform: "Direct / OCTO / API",
+      canonicalProfileUrl:
+        "https://www.lastfrontiershoreexcursions.com/operators/allen-marine-tours",
+      referenceExampleUrl: JUNEAU_TOURS_ONBOARDING_REFERENCE.canonicalProfileUrl,
+      emailSubject:
+        "Allen Marine's Free Southeast Alaska Profile + Direct Supplier-Hosted Checkout Example",
+      emailBody: `Hi Allen Marine Partnerships Team,
+
+We maintain a permanent $0 company profile for Allen Marine Tours across Sitka and Ketchikan on Last Frontier Shore Excursions — highlighting your Alaskan-built catamarans, Sitka Sound and Ward Cove shuttle buffers, and ADA cabin accessibility:
+https://www.lastfrontiershoreexcursions.com/operators/allen-marine-tours
+
+Your profile is free to claim and verify anytime. When you're evaluating direct distribution alternatives to 20%–30% OTA marketplaces for independent cruise guests, you can inspect our live direct setup with Juneau Tours & Whale Watch here:
+${JUNEAU_TOURS_ONBOARDING_REFERENCE.canonicalProfileUrl}
+
+• Allen Marine remains Merchant of Record on your own hosted checkout and captures customer payment directly.
+• 10% referral fee strictly on completed, non-refunded excursions (5% on Cruise Promenade group-planner referrals; $0 on cancellations or missed port calls).
+
+Overview & optional direct intake:
+${DIRECT_OPERATOR_ONBOARDING_URL}
+
+Warm regards,
+Erich Roeseler
+Last Frontier Shore Excursions & Destination Command Center`,
+      autoSendForbidden: true,
+    },
+    {
+      id: "seak-alaska-x",
+      operatorSlug: "alaska-x",
+      operatorName: "Alaska X (Alaska Excursions)",
+      portsLabel: "Skagway, Juneau & Haines",
+      bookingPlatform: "Direct Reservations / API",
+      canonicalProfileUrl:
+        "https://www.lastfrontiershoreexcursions.com/operators/alaska-x",
+      referenceExampleUrl: JUNEAU_TOURS_ONBOARDING_REFERENCE.canonicalProfileUrl,
+      emailSubject:
+        "Alaska X Free Operator Profile (Skagway, Juneau & Haines) + Live Direct Checkout Example",
+      emailBody: `Hi Alaska X Partnerships Team,
+
+We published your free, primary-source verified operator profile covering Skagway, Juneau, and Haines on Last Frontier Shore Excursions (including Skagway dock pickup logistics and 2-hour ship return buffers):
+https://www.lastfrontiershoreexcursions.com/operators/alaska-x
+
+Claiming and keeping your company profile updated is 100% free ($0). If you'd also like to connect read-only live availability and supplier-hosted direct checkout on simple 10% completed-booking terms, here is our live working example with Juneau Tours & Whale Watch:
+${JUNEAU_TOURS_ONBOARDING_REFERENCE.canonicalProfileUrl}
+
+• Alaska X stays Merchant of Record and collects guest payment directly.
+• 10% invoiced post-completion on fulfilled, non-refunded bookings only ($0 on weather cancellations or refunds).
+
+Details are available anytime at:
+${DIRECT_OPERATOR_ONBOARDING_URL}
+
+Best regards,
+Erich Roeseler
+Last Frontier Shore Excursions & Destination Command Center`,
+      autoSendForbidden: true,
+    },
+    {
+      id: "seak-taquan-air",
+      operatorSlug: "taquan-air",
+      operatorName: "Taquan Air",
+      portsLabel: "Ketchikan (Misty Fjords Floatplanes)",
+      bookingPlatform: "Direct / FareHarbor",
+      canonicalProfileUrl:
+        "https://www.lastfrontiershoreexcursions.com/operators/taquan-air",
+      referenceExampleUrl: JUNEAU_TOURS_ONBOARDING_REFERENCE.canonicalProfileUrl,
+      emailSubject:
+        "Taquan Air Free Ketchikan Operator Profile + $0-Weather-Fee Direct Referral Option",
+      emailBody: `Hi Taquan Air Reservations & Partnerships Team,
+
+Your permanent $0 company profile is live on Last Frontier Shore Excursions — documenting your Downtown Ketchikan Harbor floatplane base, Ward Cove 30-minute shuttle margin, and Misty Fjords flightseeing logistics:
+https://www.lastfrontiershoreexcursions.com/operators/taquan-air
+
+You can claim and verify your profile at no cost anytime. If you're open to connecting direct cruise-timed referrals where Taquan Air stays Merchant of Record and pays 0% on weather groundings, you can see our live integration model on Juneau Tours & Whale Watch here:
+${JUNEAU_TOURS_ONBOARDING_REFERENCE.canonicalProfileUrl}
+
+• 10% commission strictly on completed, flown bookings ($0 setup, $0 monthly, $0 on ceiling/weather cancellations or refunds).
+• Guests pay Taquan Air directly on your hosted checkout.
+
+More details here whenever helpful:
+${DIRECT_OPERATOR_ONBOARDING_URL}
+
+Best regards,
+Erich Roeseler
+Last Frontier Shore Excursions & Destination Command Center`,
+      autoSendForbidden: true,
+    },
+  ] as const;
 
 export function listThreeMarketDirectOperatorPitchKits(): readonly DirectOperatorPitchKit[] {
   return THREE_MARKET_DIRECT_OPERATOR_PITCH_KITS;

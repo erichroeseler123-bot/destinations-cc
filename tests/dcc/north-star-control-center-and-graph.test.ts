@@ -255,7 +255,7 @@ describe("North Star Slice 3: Canonical Fit/Ledger/Partner Modules, Travel-Graph
     assert.equal(getTransactionRouteModel("dcc_sourced_direct_10pct").targetTakeRateBps, 1000);
     assert.equal(
       getTransactionRouteModel("dcc_sourced_direct_10pct").liveAuthorizedExternalSupplierCount,
-      0,
+      1,
     );
     assert.equal(getTransactionRouteModel("machine_distributed_5pct").targetTakeRateBps, 500);
     assert.equal(

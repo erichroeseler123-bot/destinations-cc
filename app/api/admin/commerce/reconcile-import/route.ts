@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { authorizeControlCenterCaller } from "@/lib/adminAccess";
 import {
+  OPERATOR_MOR_RECONCILIATION_GOVERNANCE,
+  classifyOperatorMorStatus,
+  evaluateOperatorMorSettlementLedger,
   getCommercialHandoffById,
   isDccInternalArtifactNotProviderConfirmation,
   listCommercialOutcomes,
   recordCommercialOutcome,
+  type CommercialOutcomeRecord,
   type CommercialProvider,
 } from "@/lib/dcc/commerce";
 import { syncAuthorizedBookingToCruisePromenade } from "@/lib/dcc/commerce/directOperatorActivationKit";
@@ -147,7 +151,7 @@ function normalizeProvider(
   if (lower.includes("fareharbor") || lower === "fh") return "fareharbor";
   if (lower.includes("rezdy")) return "rezdy";
   if (lower.includes("square")) return "square";
-  if (lower.includes("direct")) return "direct";
+  if (lower.includes("rezgo") || lower.includes("direct")) return "direct";
   if (ALLOWED_PROVIDERS.has(lower as SupportedImportProvider)) {
     return lower as SupportedImportProvider;
   }
@@ -157,10 +161,27 @@ function normalizeProvider(
 function mapStatusToEventType(
   rawStatus: string,
   paidCommissionAmount: number | null,
+  provider?: CommercialProvider,
 ): string {
+  if (provider === "direct") {
+    return classifyOperatorMorStatus(rawStatus).mappedCommerceEventType;
+  }
   const s = rawStatus.trim().toLowerCase();
-  if (s.includes("cancel")) return "BOOKING_CANCELLED";
-  if (s.includes("refund")) return "BOOKING_REFUNDED";
+  if (
+    s.includes("cancel") ||
+    s.includes("weather") ||
+    s.includes("ground") ||
+    s.includes("missed_port")
+  ) {
+    return "BOOKING_CANCELLED";
+  }
+  if (
+    s.includes("refund") ||
+    s.includes("chargeback") ||
+    s.includes("disput")
+  ) {
+    return "BOOKING_REFUNDED";
+  }
   if (s.includes("amend")) return "BOOKING_AMENDED";
   if (s.includes("pend")) return "BOOKING_PENDING";
   if (
@@ -171,10 +192,69 @@ function mapStatusToEventType(
   ) {
     return "COMMISSION_RECONCILED";
   }
-  if (s.includes("fulfill") || s.includes("complet") || s.includes("flown")) {
+  if (s.includes("fulfill") || s.includes("complet") || s.includes("flown") || s.includes("sailed")) {
     return "BOOKING_FULFILLED";
   }
   return "BOOKING_CONFIRMED";
+}
+
+function sanitizeOpaqueTokenNoPii(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  if (trimmed.includes("@") || /\s/.test(trimmed)) return null;
+  if (/^\+?\d[\d\s().-]{6,}$/.test(trimmed)) return null;
+  if (!/^[A-Za-z0-9_:-]{2,128}$/.test(trimmed)) return null;
+  return trimmed;
+}
+
+function buildOperatorMorLedgerFromDirectOutcomes(
+  outcomes: readonly CommercialOutcomeRecord[],
+) {
+  return evaluateOperatorMorSettlementLedger({
+    operatorId: "operator:juneau-tours-and-whale-watch",
+    operatorName: "Juneau Tours & Whale Watch",
+    events: outcomes
+      .filter((o) => o.provider === "direct")
+      .map((o) => {
+        const rawPayload = (o.rawPayload ?? {}) as Record<string, unknown>;
+        const rawStatus =
+          typeof rawPayload.rawStatus === "string" && rawPayload.rawStatus.trim()
+            ? rawPayload.rawStatus
+            : o.eventType;
+        const importFormat =
+          typeof rawPayload.importFormat === "string"
+            ? rawPayload.importFormat
+            : null;
+        const refundedUsd =
+          typeof rawPayload.refundedUsd === "number"
+            ? rawPayload.refundedUsd
+            : null;
+        const shareCode =
+          typeof rawPayload.shareCode === "string" ? rawPayload.shareCode.trim() : "";
+        return {
+          outcomeId: o.outcomeId,
+          sourceProvenance: o.reporterProvenance,
+          reporterClientId: o.reporterClientId,
+          importFormat,
+          providerEventTime: o.providerEventTime,
+          providerBookingRef: o.providerBookingRef,
+          operatorId: "operator:juneau-tours-and-whale-watch",
+          operatorName: "Juneau Tours & Whale Watch",
+          providerAccountOrRefId: o.providerAccount,
+          handoffId: o.handoffId,
+          productCode: o.bookedProductCode,
+          serviceDate: o.bookedDate,
+          rawStatusOrEventType: rawStatus,
+          grossAmountUsd: o.bookingValue.amount,
+          refundedAmountUsd: refundedUsd,
+          paidCommissionAmountUsd: o.paidCommission.amount,
+          distributionRoute: shareCode
+            ? ("machine_or_planner_5pct" as const)
+            : ("dcc_direct_10pct" as const),
+          recordedAt: o.dccRecordedAt,
+        };
+      }),
+  });
 }
 
 function buildWebhookReadinessSummary() {
@@ -209,11 +289,21 @@ export async function GET(request: Request) {
     );
   }
 
+  await syncDurableLedgerWithPostgres();
+  const directOutcomes = await listCommercialOutcomes({
+    provider: "direct",
+    limit: 100,
+    excludeQa: true,
+  });
+
   return NextResponse.json(
     {
       ok: true,
+      reconciliationGovernance: OPERATOR_MOR_RECONCILIATION_GOVERNANCE,
       readiness: buildWebhookReadinessSummary(),
       sampleCsv: SAMPLE_RECONCILE_CSV,
+      operatorMorSettlementSummary:
+        buildOperatorMorLedgerFromDirectOutcomes(directOutcomes),
     },
     { status: 200, headers: NO_STORE_HEADERS },
   );
@@ -382,6 +472,8 @@ export async function POST(request: Request) {
       "booking_id",
       "transaction_ref",
       "external_order_id",
+      "trans_num",
+      "rezgo_trans_num",
     ]);
     const provider = normalizeProvider(
       pickField(normalizedRow, ["provider", "source", "network", "platform"]),
@@ -415,14 +507,17 @@ export async function POST(request: Request) {
       continue;
     }
 
-    const handoffHint = pickField(normalizedRow, [
-      "handoff_id",
-      "sub_id",
-      "utm_content",
-      "dcc_handoff_id",
-      "click_id",
-      "partner_booking_ref",
-    ]);
+    const handoffHint =
+      sanitizeOpaqueTokenNoPii(
+        pickField(normalizedRow, [
+          "handoff_id",
+          "sub_id",
+          "utm_content",
+          "dcc_handoff_id",
+          "click_id",
+          "partner_booking_ref",
+        ]),
+      ) || "";
     const grossUsd = parseMoneyAmount(
       pickField(normalizedRow, [
         "gross_usd",
@@ -459,14 +554,17 @@ export async function POST(request: Request) {
       "event_type",
     ]);
     const rowShareCode =
-      pickField(normalizedRow, [
-        "share_code",
-        "cp_share_code",
-        "planner_code",
-        "plan_code",
-      ]) || null;
-    const travelerId =
-      pickField(normalizedRow, ["traveler_id", "context_id", "ctx"]) || null;
+      sanitizeOpaqueTokenNoPii(
+        pickField(normalizedRow, [
+          "share_code",
+          "cp_share_code",
+          "planner_code",
+          "plan_code",
+        ]),
+      ) || null;
+    const travelerId = sanitizeOpaqueTokenNoPii(
+      pickField(normalizedRow, ["traveler_id", "context_id", "ctx"]),
+    );
     const bookedDate =
       pickField(normalizedRow, [
         "booked_date",
@@ -486,9 +584,25 @@ export async function POST(request: Request) {
         ? parsedPartySize
         : null;
 
-    const eventType = mapStatusToEventType(rawStatus, commissionUsd);
+    const refundUsd = parseMoneyAmount(
+      pickField(normalizedRow, [
+        "refunded_usd",
+        "refund_usd",
+        "refund_amount",
+        "refund",
+      ]),
+    );
+    const providerAccountHint =
+      pickField(normalizedRow, [
+        "refid",
+        "ref_id",
+        "referral_id",
+        "provider_account",
+      ]) || null;
+
+    const eventType = mapStatusToEventType(rawStatus, commissionUsd, provider);
     const idempotencyKey = `reconcile:${provider}:${bookingRef.trim().toLowerCase()}`;
-    const scopedEventKey = `${idempotencyKey}::${eventType}`;
+    const scopedEventKey = `${idempotencyKey}::${eventType}::${refundUsd ?? 0}`;
 
     if (
       seenIdempotencyKeys.has(scopedEventKey) ||
@@ -508,12 +622,48 @@ export async function POST(request: Request) {
 
     const isCancelledOrRefunded =
       eventType === "BOOKING_CANCELLED" || eventType === "BOOKING_REFUNDED";
-    const effectivePaidCommission = isCancelledOrRefunded ? 0 : commissionUsd;
+    const netRetainedGrossUsd =
+      grossUsd !== null
+        ? isCancelledOrRefunded
+          ? 0
+          : Number(Math.max(0, grossUsd - (refundUsd ?? 0)).toFixed(2))
+        : null;
+    const directRate = rowShareCode ? 0.05 : 0.1;
+    const computedDirectCommission =
+      netRetainedGrossUsd !== null
+        ? Number((netRetainedGrossUsd * directRate).toFixed(2))
+        : null;
+
+    // Operator-MoR Direct rule:
+    // - BOOKING_CONFIRMED / BOOKING_PENDING (pre-completion): estimated only, $0 invoiceable/paid.
+    // - BOOKING_FULFILLED / BOOKING_AMENDED (partial refund on completed): invoiceable, $0 paid until settled.
+    // - COMMISSION_RECONCILED: paid/settled.
+    // - BOOKING_CANCELLED / BOOKING_REFUNDED: $0 estimated & $0 paid.
+    const isDirectPreCompletion =
+      provider === "direct" &&
+      (eventType === "BOOKING_CONFIRMED" || eventType === "BOOKING_PENDING");
+    const effectiveEstimatedCommission = isCancelledOrRefunded
+      ? 0
+      : provider === "direct"
+        ? commissionUsd ?? computedDirectCommission
+        : commissionUsd;
+    const effectivePaidCommission = isCancelledOrRefunded
+      ? 0
+      : provider === "direct"
+        ? eventType === "COMMISSION_RECONCILED"
+          ? commissionUsd ?? computedDirectCommission ?? 0
+          : 0
+        : isDirectPreCompletion
+          ? 0
+          : commissionUsd;
 
     const outcome = await recordCommercialOutcome({
       reporterClientId: "admin:owner-control-center-reconcile-importer",
       reporterProvenance: "authorized_operational_evidence",
       provider,
+      providerAccount:
+        providerAccountHint ||
+        (provider === "direct" ? "dccjuneau10" : undefined),
       providerBookingRef: bookingRef.trim(),
       eventType,
       providerEventTime: null,
@@ -526,17 +676,17 @@ export async function POST(request: Request) {
       bookedPartySize,
       bookingValueAmount: grossUsd,
       bookingValueCurrency: grossUsd !== null ? "USD" : null,
-      estimatedCommissionAmount: effectivePaidCommission,
+      estimatedCommissionAmount: effectiveEstimatedCommission,
       estimatedCommissionCurrency:
-        effectivePaidCommission !== null ? "USD" : null,
+        effectiveEstimatedCommission !== null ? "USD" : null,
       paidCommissionAmount: effectivePaidCommission,
       paidCommissionCurrency: effectivePaidCommission !== null ? "USD" : null,
       rawPayload: {
         idempotencyKey,
         importFormat: format,
         rawStatus: rawStatus || "confirmed",
+        refundedUsd: refundUsd,
         shareCode: rowShareCode,
-        travelerId,
       },
     });
 
@@ -625,9 +775,16 @@ export async function POST(request: Request) {
     void Promise.allSettled(cpSyncDispatches);
   }
 
+  const updatedDirectOutcomes = await listCommercialOutcomes({
+    provider: "direct",
+    limit: 100,
+    excludeQa: false,
+  });
+
   return NextResponse.json(
     {
       ok: true,
+      reconciliationGovernance: OPERATOR_MOR_RECONCILIATION_GOVERNANCE,
       format,
       totalRows: rawRows.length,
       importedCount,
@@ -640,6 +797,8 @@ export async function POST(request: Request) {
       cpSyncTriggeredCount: cpSyncShareCodes.length,
       cpSyncShareCodes,
       readiness: buildWebhookReadinessSummary(),
+      operatorMorSettlementSummary:
+        buildOperatorMorLedgerFromDirectOutcomes(updatedDirectOutcomes),
       rows: rowResults,
     },
     { status: 200, headers: NO_STORE_HEADERS },

@@ -67,7 +67,7 @@ export const TRANSACTION_ROUTE_MODELS: readonly TransactionRouteModelDefinition[
     targetTakeRateBps: 1000,
     targetTakeRateDisplay: "10.0% (1000 bps) on completed bookings",
     triggerBasis: "completed_booking_only",
-    liveAuthorizedExternalSupplierCount: 0,
+    liveAuthorizedExternalSupplierCount: 1,
     participatingProperties: [
       "destinationcommandcenter.com",
       "welcometotheswamp.com",
@@ -79,9 +79,9 @@ export const TRANSACTION_ROUTE_MODELS: readonly TransactionRouteModelDefinition[
     providersOrChannels: ["direct_supplier_agreement", "authorized_operator_handoff"],
     influencesFitOrRanking: false,
     liabilityAndSettlementRule:
-      "Target 10% (1000 bps) earned on completed bookings ONLY when DCC or an owned specialist acquired the traveler and supplied the decision + direct transaction path. Currently 0 live_authorized external suppliers until a signed supplier agreement is active.",
+      "Target 10% (1000 bps) earned on completed, non-refunded bookings ONLY when DCC or an owned specialist acquired the traveler and supplied the decision + direct supplier-hosted transaction path (0% on cancelled, refunded, disputed, chargeback, weather-grounded, or unfulfilled bookings). Currently 1 live_authorized external supplier active: Juneau Tours & Whale Watch (operator:juneau-tours-and-whale-watch, Rezgo refid=dccjuneau10, supplier-hosted Operator MoR).",
     summary:
-      "Target 10% (1000 bps) on completed bookings only when DCC or an owned specialist acquired the traveler and supplied the decision + direct transaction path (0 live_authorized external suppliers until supplier agreement is signed).",
+      "Target 10% (1000 bps) on completed, non-refunded bookings only when DCC or an owned specialist acquired the traveler and supplied the decision + direct supplier-hosted checkout path (1 live_authorized external supplier active: Juneau Tours & Whale Watch, refid=dccjuneau10).",
   },
   {
     id: "machine_distributed_5pct",
