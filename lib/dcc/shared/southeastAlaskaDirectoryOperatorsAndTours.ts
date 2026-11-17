@@ -7,9 +7,12 @@
  */
 
 import {
+  ALASKA_DIRECTORY_EXTENSION_VERSION,
+  DIRECTORY_CORE_CONTRACT_VERSION,
   evaluateOperatorPublicationGate,
   evaluatePlacePublicationGate,
   evaluatePortCategoryPublicationGate,
+  normalizeProductDepartureSlots,
   UNCLAIMED_OPERATOR_PROFILE_NOTICE,
   type EntityPublicationGateEvaluation,
   type OperatorIntegrationApprovalState,
@@ -3393,6 +3396,8 @@ export interface SoutheastAlaskaHeldRecordEntry {
 
 export interface SoutheastAlaskaDirectorySnapshot {
   schemaVersion: "dcc.se-alaska.directory.v1";
+  coreContractVersion: typeof DIRECTORY_CORE_CONTRACT_VERSION;
+  extensionVersion: typeof ALASKA_DIRECTORY_EXTENSION_VERSION;
   generatedAt: string;
   region: {
     regionId: "region:southeast-alaska";
@@ -3435,13 +3440,26 @@ export interface SoutheastAlaskaDirectorySnapshot {
 export function getSoutheastAlaskaDirectorySnapshot(): SoutheastAlaskaDirectorySnapshot {
   assertMandatorySoutheastAlaskaInvariants();
 
+  const normalizedTours: SoutheastAlaskaTourProductRecord[] =
+    SOUTHEAST_ALASKA_TOURS.map((tour) => ({
+      ...tour,
+      departures:
+        tour.departures ??
+        normalizeProductDepartureSlots({
+          productId: tour.tourId,
+          typicalDepartureTimes: tour.typicalDepartureTimes,
+          durationMinutes: tour.durationMinutes,
+          pickupAvailable: tour.cruisePickupIncluded,
+        }),
+    }));
+
   const evaluatedPlaces = SOUTHEAST_ALASKA_PLACES.map((place) => ({
     place,
     gate: evaluatePlacePublicationGate(place),
   }));
 
   const evaluatedOperators = SOUTHEAST_ALASKA_OPERATORS.map((operator) => {
-    const tours = SOUTHEAST_ALASKA_TOURS.filter(
+    const tours = normalizedTours.filter(
       (t) => t.operatorId === operator.operatorId,
     );
     return {
@@ -3462,7 +3480,7 @@ export function getSoutheastAlaskaDirectorySnapshot(): SoutheastAlaskaDirectoryS
   for (const { place } of publicPlaces) {
     const portSlug = place.publicPortSlug!;
     for (const category of SOUTHEAST_ALASKA_CATEGORIES) {
-      const matchingTours = SOUTHEAST_ALASKA_TOURS.filter(
+      const matchingTours = normalizedTours.filter(
         (t) =>
           t.portSlug === portSlug &&
           (t.categorySlug === category.categorySlug ||
@@ -3573,6 +3591,8 @@ export function getSoutheastAlaskaDirectorySnapshot(): SoutheastAlaskaDirectoryS
 
   return {
     schemaVersion: "dcc.se-alaska.directory.v1",
+    coreContractVersion: DIRECTORY_CORE_CONTRACT_VERSION,
+    extensionVersion: ALASKA_DIRECTORY_EXTENSION_VERSION,
     generatedAt: "2026-11-17T11:00:00Z",
     region: {
       regionId: "region:southeast-alaska",
@@ -3596,7 +3616,7 @@ export function getSoutheastAlaskaDirectorySnapshot(): SoutheastAlaskaDirectoryS
         .length,
       liveAvailabilityConnectedOperators: 0,
       directCheckoutConnectedOperators: 0,
-      totalToursModeled: SOUTHEAST_ALASKA_TOURS.length,
+      totalToursModeled: normalizedTours.length,
       verifiedActiveTours: verifiedActiveTours.length,
       commerciallyHeldTours: commerciallyHeldTours.length,
       evaluatedPortCategoryIntersections: portCategories.length,
@@ -3608,7 +3628,7 @@ export function getSoutheastAlaskaDirectorySnapshot(): SoutheastAlaskaDirectoryS
     places: evaluatedPlaces,
     categories: SOUTHEAST_ALASKA_CATEGORIES,
     operators: evaluatedOperators,
-    tours: SOUTHEAST_ALASKA_TOURS,
+    tours: normalizedTours,
     portCategories,
     heldRecordsLedger,
   };

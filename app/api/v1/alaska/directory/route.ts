@@ -92,6 +92,8 @@ async function handleRequest(request: NextRequest, headOnly: boolean) {
   const payload = {
     ok: true,
     schemaVersion: snapshot.schemaVersion,
+    coreContractVersion: snapshot.coreContractVersion,
+    extensionVersion: snapshot.extensionVersion,
     generatedAt: snapshot.generatedAt,
     region: snapshot.region,
     counts: snapshot.counts,
