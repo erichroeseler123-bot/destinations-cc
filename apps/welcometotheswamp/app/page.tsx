@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
 };
 
-const WNO_BASE = "https://welcometoneworleanstours.com";
+const WNO_BASE = "https://www.welcometoneworleanstours.com";
 const WNO_UTM = "utm_source=welcometotheswamp&utm_medium=referral&utm_campaign=swamp_to_wno";
 
 export default async function HomePage({
@@ -314,12 +314,82 @@ export default async function HomePage({
       </section>
 
       <SwampStorefrontPage page={swampStorefrontConfig} />
-      <section className="border-t border-stone-800 bg-stone-950 px-6 py-10 text-stone-100">
+      <section
+        data-testid="wts-canonical-wno-operator-links"
+        className="border-t border-stone-800 bg-stone-950 px-6 py-10 text-stone-100"
+      >
         <div className="mx-auto max-w-5xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">Planning the rest of New Orleans?</p>
-          <h2 className="mt-3 text-2xl font-black">Put the swamp tour into the rest of your day.</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-300">If your real question is transportation, family fit, how much time you have, or what to do before or after a cruise, continue into the broader New Orleans tour-planning layer.</p>
-          <div className="mt-5 flex flex-wrap gap-3">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">
+            Canonical Operator Profiles &amp; Wetland Basins (on Welcome to New Orleans Tours)
+          </p>
+          <h2 className="mt-3 text-2xl font-black">
+            Inspect verified dock addresses, company profiles &amp; separate swamp basins.
+          </h2>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-300">
+            Welcome to the Swamp is our specialist boat-type comparison and departure-cutoff desk.
+            Permanent canonical operator profiles—keeping Ragin&apos; Cajun Airboat Tours (Luling)
+            and Airboat Adventures (Lafitte) strictly separate—and traffic-qualified wetland basin
+            guides live on Welcome to New Orleans Tours:
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2.5 text-xs">
+            <a
+              className="rounded-lg border border-amber-300/40 bg-stone-900 px-3.5 py-2.5 font-semibold text-amber-200"
+              href={`${WNO_BASE}/operators/ragin-cajun-tours?${WNO_UTM}`}
+            >
+              Ragin&apos; Cajun Airboat Tours (Luling) ↗
+            </a>
+            <a
+              className="rounded-lg border border-amber-300/40 bg-stone-900 px-3.5 py-2.5 font-semibold text-amber-200"
+              href={`${WNO_BASE}/operators/airboat-adventures?${WNO_UTM}`}
+            >
+              Airboat Adventures (Lafitte) ↗
+            </a>
+            <a
+              className="rounded-lg border border-white/15 bg-stone-900 px-3.5 py-2.5 font-semibold text-stone-100"
+              href={`${WNO_BASE}/operators/cajun-encounters?${WNO_UTM}`}
+            >
+              Cajun Encounters (Honey Island) ↗
+            </a>
+            <a
+              className="rounded-lg border border-white/15 bg-stone-900 px-3.5 py-2.5 font-semibold text-stone-100"
+              href={`${WNO_BASE}/operators/cajun-pride-swamp-tours?${WNO_UTM}`}
+            >
+              Cajun Pride Swamp Tours (Manchac) ↗
+            </a>
+            <a
+              className="rounded-lg border border-white/15 bg-stone-900 px-3.5 py-2.5 font-semibold text-stone-100"
+              href={`${WNO_BASE}/operators/louisiana-tour-company?${WNO_UTM}`}
+            >
+              Louisiana Tour Company (Marrero) ↗
+            </a>
+            <a
+              className="rounded-lg border border-white/15 bg-stone-900 px-3.5 py-2.5 font-semibold text-stone-100"
+              href={`${WNO_BASE}/operators/jean-lafitte-swamp-tours?${WNO_UTM}`}
+            >
+              Jean Lafitte Swamp Tour ↗
+            </a>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2.5 text-xs">
+            <a
+              className="rounded-lg border border-emerald-400/35 bg-stone-900 px-3.5 py-2 font-semibold text-emerald-200"
+              href={`${WNO_BASE}/areas/honey-island?${WNO_UTM}`}
+            >
+              Honey Island / Slidell Basin Guide ↗
+            </a>
+            <a
+              className="rounded-lg border border-emerald-400/35 bg-stone-900 px-3.5 py-2 font-semibold text-emerald-200"
+              href={`${WNO_BASE}/areas/jean-lafitte?${WNO_UTM}`}
+            >
+              Jean Lafitte / Barataria Basin Guide ↗
+            </a>
+            <a
+              className="rounded-lg border border-emerald-400/35 bg-stone-900 px-3.5 py-2 font-semibold text-emerald-200"
+              href={`${WNO_BASE}/areas/manchac?${WNO_UTM}`}
+            >
+              Manchac / LaPlace Basin Guide ↗
+            </a>
+          </div>
+          <div className="mt-6 flex flex-wrap gap-3 border-t border-stone-800 pt-5">
             <a className="rounded-xl border border-amber-300/40 px-4 py-3 text-sm font-bold" href={`${WNO_BASE}/guides/best-swamp-tour-with-transportation?${WNO_UTM}`}>Swamp tours with transportation ↗</a>
             <a className="rounded-xl border border-white/15 px-4 py-3 text-sm font-bold" href={`${WNO_BASE}/guides/new-orleans-plantation-and-swamp-tour?${WNO_UTM}`}>Plantation + swamp combinations ↗</a>
             <a className="rounded-xl border border-white/15 px-4 py-3 text-sm font-bold" href={`${WNO_BASE}/guides/plan-new-orleans-tours?${WNO_UTM}`}>Plan the rest of New Orleans ↗</a>

@@ -150,6 +150,50 @@ export default function AirboatVsCoveredBoatPage() {
         </article>
       </section>
 
+      <section className="panel" data-testid="wts-airboat-vs-boat-canonical-wno-links">
+        <p className="eyebrow">Canonical operator &amp; basin profiles</p>
+        <article className="info-card">
+          <h2>Compare verified swamp operators on Welcome to New Orleans Tours.</h2>
+          <p className="muted">
+            Once you choose between an open airboat and a shaded covered swamp boat, check the exact
+            dock address, pickup rules, and separate company identity on our canonical New Orleans
+            directory (we never duplicate operator profiles here):
+          </p>
+          <div className="cta-row" style={{ flexWrap: "wrap", gap: "8px", marginTop: "12px" }}>
+            <a
+              className="button-secondary"
+              href="https://www.welcometoneworleanstours.com/operators/ragin-cajun-tours?utm_source=welcometotheswamp&utm_medium=referral&utm_campaign=wts_airboat_vs_boat"
+            >
+              Ragin&apos; Cajun Airboat Tours (Luling) ↗
+            </a>
+            <a
+              className="button-secondary"
+              href="https://www.welcometoneworleanstours.com/operators/airboat-adventures?utm_source=welcometotheswamp&utm_medium=referral&utm_campaign=wts_airboat_vs_boat"
+            >
+              Airboat Adventures (Lafitte) ↗
+            </a>
+            <a
+              className="button-secondary"
+              href="https://www.welcometoneworleanstours.com/operators/cajun-encounters?utm_source=welcometotheswamp&utm_medium=referral&utm_campaign=wts_airboat_vs_boat"
+            >
+              Cajun Encounters (Honey Island) ↗
+            </a>
+            <a
+              className="button-secondary"
+              href="https://www.welcometoneworleanstours.com/operators/cajun-pride-swamp-tours?utm_source=welcometotheswamp&utm_medium=referral&utm_campaign=wts_airboat_vs_boat"
+            >
+              Cajun Pride (Manchac) ↗
+            </a>
+            <a
+              className="button-secondary"
+              href="https://www.welcometoneworleanstours.com/areas/jean-lafitte?utm_source=welcometotheswamp&utm_medium=referral&utm_campaign=wts_airboat_vs_boat"
+            >
+              Jean Lafitte / Barataria Basin ↗
+            </a>
+          </div>
+        </article>
+      </section>
+
       <section className="panel">
         <p className="eyebrow">Quick answers</p>
         <div className="stack-list">

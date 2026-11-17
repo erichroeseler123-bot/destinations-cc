@@ -148,6 +148,16 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
   const ctxQuery = carriedContext.contextId ? `?ctx=${encodeURIComponent(carriedContext.contextId)}` : "";
 
   const operatorLabel = product.companyShortname === "ragincajuntours" ? "Ragin Cajun Tours" : "Southern Style Tours";
+  const canonicalWnoOperatorSlug =
+    product.companyShortname === "ragincajuntours"
+      ? "ragin-cajun-tours"
+      : "southern-style-tours";
+  const canonicalWnoAreaSlug =
+    slug === "city-tour"
+      ? "french-quarter"
+      : slug === "plantation-tour"
+        ? "river-road"
+        : "jean-lafitte";
 
   return (
     <main className="wts-tour-detail-page">
@@ -207,6 +217,14 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
           },
         ]}
         crossSiteLinks={[
+          {
+            label: `Canonical ${operatorLabel} Profile on Welcome to New Orleans Tours`,
+            href: `https://www.welcometoneworleanstours.com/operators/${canonicalWnoOperatorSlug}${ctxQuery}`,
+          },
+          {
+            label: "Canonical Departure Area & Drive-Time Guide on WNO",
+            href: `https://www.welcometoneworleanstours.com/areas/${canonicalWnoAreaSlug}${ctxQuery}`,
+          },
           {
             label: "Compare New Orleans Tours on Welcome to New Orleans Tours",
             href: `https://www.welcometoneworleanstours.com/tours/small-airboat-swamp-adventure${ctxQuery}`,

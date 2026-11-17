@@ -267,6 +267,18 @@ export default function AirboatAdventuresPage() {
             >
               Compare New Orleans Airboat Tours →
             </a>
+            <Link
+              href="/operators/airboat-adventures"
+              className="inline-flex items-center justify-center rounded-lg border border-[#d4af37]/40 bg-[#d4af37]/10 px-5 py-4 text-xs font-semibold uppercase tracking-wider text-[#d4af37] hover:bg-[#d4af37]/20 transition-colors"
+            >
+              Canonical Operator Profile →
+            </Link>
+            <Link
+              href="/areas/jean-lafitte"
+              className="inline-flex items-center justify-center rounded-lg border border-white/20 bg-white/5 px-5 py-4 text-xs font-semibold uppercase tracking-wider text-white/90 hover:bg-white/10 transition-colors"
+            >
+              Jean Lafitte / Barataria Basin Guide →
+            </Link>
           </div>
 
           {/* Quick Trust Highlights Strip */}

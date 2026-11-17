@@ -277,7 +277,7 @@ export function getWtonotHostRewrite(request: NextRequest) {
   }
 
   // Areas
-  if (pathname.startsWith("/areas/")) {
+  if (pathname === "/areas" || pathname.startsWith("/areas/")) {
     url.pathname = `/new-orleans${pathname}`;
     return url;
   }
@@ -306,16 +306,7 @@ export function getWtonotHostRewrite(request: NextRequest) {
     return url;
   }
 
-  // Operators
-  if (pathname === "/operators/nola-ghost-riders") {
-    url.pathname = "/new-orleans/tours/nola-ghost-riders";
-    return url;
-  }
-  if (pathname === "/operators/airboat-adventures") {
-    url.pathname = "/new-orleans/tours/airboat-adventures";
-    return url;
-  }
-
+  // Operators (canonical /operators and /operators/[slug])
   if (pathname === "/operators" || pathname.startsWith("/operators/")) {
     url.pathname = `/new-orleans${pathname}`;
     return url;

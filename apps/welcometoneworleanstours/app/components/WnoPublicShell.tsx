@@ -6,8 +6,9 @@ import { usePathname } from "next/navigation";
 const NAV_ITEMS = [
   { href: "/swamp-tours", label: "Swamp Tours", cta: false },
   { href: "/city-tours", label: "French Quarter", cta: false },
-  { href: "/food-tours", label: "Food & Music", cta: false },
   { href: "/plantation-tours", label: "History", cta: false },
+  { href: "/areas", label: "Areas", cta: false },
+  { href: "/operators", label: "Operators", cta: false },
   { href: "/help-me-choose", label: "Help Me Choose", cta: true },
 ] as const;
 
@@ -90,7 +91,9 @@ export function WnoPublicFooter() {
             <Link href="/swamp-tours">Swamp Tours</Link>
             <Link href="/city-tours">French Quarter</Link>
             <Link href="/riverboat-cruises">Jazz Riverboats</Link>
-            <Link href="/plantation-tours">Plantations</Link>
+            <Link href="/plantation-tours">River Road History</Link>
+            <Link href="/areas">Areas &amp; Basins</Link>
+            <Link href="/operators">Operators</Link>
             <Link href="/tours">All Tours</Link>
             <Link href="/help-me-choose">Concierge Help</Link>
             <Link href="/about">About</Link>

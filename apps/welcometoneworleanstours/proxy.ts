@@ -58,11 +58,16 @@ export async function proxy(request: NextRequest) {
   if (request.nextUrl.pathname === "/new-orleans/restaurant-partners") {
     return NextResponse.redirect(new URL("/contact", request.url), 308);
   }
-  if (request.nextUrl.pathname === "/operators/nola-ghost-riders") {
-    return NextResponse.rewrite(new URL("/tours/nola-ghost-riders", request.url));
-  }
-  if (request.nextUrl.pathname === "/operators/airboat-adventures") {
-    return NextResponse.rewrite(new URL("/tours/airboat-adventures", request.url));
+  const legacyOperatorAliasRedirects: Record<string, string> = {
+    "/operators/steamboat-natchez": "/operators/new-orleans-steamboat-company",
+    "/operators/ragin-cajun-airboat-tours": "/operators/ragin-cajun-tours",
+    "/operators/gray-line-new-orleans": "/operators/gray-line",
+  };
+  const canonicalOpDest = legacyOperatorAliasRedirects[request.nextUrl.pathname];
+  if (canonicalOpDest) {
+    const targetUrl = new URL(canonicalOpDest, request.url);
+    targetUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(targetUrl, 308);
   }
 
   const edgeResponse = await handleSubAppEdgeContextAndPii(request, {

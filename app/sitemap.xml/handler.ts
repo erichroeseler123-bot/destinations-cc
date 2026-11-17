@@ -13,6 +13,7 @@ import { WNO_OPERATOR_ENTITIES } from "@/app/new-orleans/data/operatorRegistry";
 import { COMPARISON_OPPORTUNITIES } from "@/app/new-orleans/data/comparisonRegistry";
 import { INTENT_SEO_PAGES } from "@/app/new-orleans/data/intentSeoPages";
 import { AUDIENCE_INTENT_SEO_PAGES } from "@/app/new-orleans/data/audienceIntentSeoPages";
+import { getNewOrleansDirectorySnapshot } from "@/lib/dcc/shared/newOrleansDirectoryData";
 
 export const dynamic = "force-dynamic";
 export const WTONOT_ORIGIN = "https://www.welcometoneworleanstours.com";
@@ -127,13 +128,59 @@ export function buildDccSitemapXml(
 }
 
 export function buildWtonotSitemapPaths() {
+  const nolaSnapshot = getNewOrleansDirectorySnapshot();
+  const qualifiedAreaPaths = nolaSnapshot.places
+    .filter((entry) => entry.gate.indexable && Boolean(entry.gate.publicPath))
+    .map((entry) => entry.gate.publicPath!);
+  const qualifiedOperatorPaths = nolaSnapshot.operators
+    .filter((entry) => entry.gate.indexable && Boolean(entry.gate.publicPath))
+    .map((entry) => entry.gate.publicPath!);
+  const qualifiedAreaCategoryPaths = nolaSnapshot.areaCategories
+    .filter((entry) => entry.gate.indexable && Boolean(entry.gate.publicPath))
+    .map((entry) => entry.gate.publicPath!);
+  const heldDirectoryPaths = new Set(
+    nolaSnapshot.heldRecordsLedger
+      .map((entry) => entry.publicPath)
+      .filter((p): p is string => Boolean(p)),
+  );
+
   const intentPaths = INTENT_SEO_PAGES.map((page) => `/guides/${page.slug}`);
   const audienceIntentPaths = AUDIENCE_INTENT_SEO_PAGES.map((page) => `/guides/${page.slug}`);
-  const wtoPaths = ["/", "/tours", "/tours/airboat-adventures", "/tours/nola-ghost-riders", "/compare", "/help-me-choose", "/french-quarter-welcome-stop", ...WTONOT_HIGH_INTENT_PATHS, ...WTONOT_LIVE_CITY_PATHS, ...WTONOT_COMMERCIAL_CATEGORY_PATHS, ...WTONOT_OPERATOR_PATHS, ...intentPaths, ...audienceIntentPaths, ...WTONOT_DECISION_GUIDES, ...WTONOT_SUPPORT_PATHS];
-  ALL_PRODUCTS.forEach((product: any) => { if (product.status === "live" && product.isIndexable) wtoPaths.push(`/tours/${product.slug}`); });
-  Object.values(SEO_PAGES).forEach((page: any) => { if (page.status === "live" && page.isIndexable && !WTONOT_SUPERSEDED_SEO_PATHS.has(page.publicRoute)) wtoPaths.push(page.publicRoute); });
-  COMPARISON_OPPORTUNITIES.forEach((comparison) => { if (comparison.status === "READY_TO_PUBLISH") wtoPaths.push(`/compare/${comparison.slug}`); });
-  return Array.from(new Set(wtoPaths)).filter((path) => !WTONOT_NON_INDEXABLE_PATHS.has(path));
+  const wtoPaths = [
+    "/",
+    "/areas",
+    "/tours",
+    "/tours/airboat-adventures",
+    "/tours/nola-ghost-riders",
+    "/compare",
+    "/help-me-choose",
+    "/french-quarter-welcome-stop",
+    ...qualifiedAreaPaths,
+    ...qualifiedAreaCategoryPaths,
+    ...WTONOT_HIGH_INTENT_PATHS,
+    ...WTONOT_LIVE_CITY_PATHS,
+    ...WTONOT_COMMERCIAL_CATEGORY_PATHS,
+    ...WTONOT_OPERATOR_PATHS,
+    ...qualifiedOperatorPaths,
+    ...intentPaths,
+    ...audienceIntentPaths,
+    ...WTONOT_DECISION_GUIDES,
+    ...WTONOT_SUPPORT_PATHS,
+  ];
+  ALL_PRODUCTS.forEach((product: any) => {
+    if (product.status === "live" && product.isIndexable) wtoPaths.push(`/tours/${product.slug}`);
+  });
+  Object.values(SEO_PAGES).forEach((page: any) => {
+    if (page.status === "live" && page.isIndexable && !WTONOT_SUPERSEDED_SEO_PATHS.has(page.publicRoute)) {
+      wtoPaths.push(page.publicRoute);
+    }
+  });
+  COMPARISON_OPPORTUNITIES.forEach((comparison) => {
+    if (comparison.status === "READY_TO_PUBLISH") wtoPaths.push(`/compare/${comparison.slug}`);
+  });
+  return Array.from(new Set(wtoPaths)).filter(
+    (path) => !WTONOT_NON_INDEXABLE_PATHS.has(path) && !heldDirectoryPaths.has(path),
+  );
 }
 
 export async function GET() {

@@ -62,11 +62,18 @@ test("getWtonotHostRewrite - WTONOT host rules", async (t) => {
     assert.strictEqual(result.pathname, "/new-orleans/guides/weekend-trip");
   });
 
-  await t.test("rewrites /operators/airboat-adventures to the Airboat Adventures tour page", () => {
+  await t.test("rewrites /operators/airboat-adventures to its canonical operator profile", () => {
     const req = buildRequest("welcometoneworleanstours.com", "/operators/airboat-adventures");
     const result = getWtonotHostRewrite(req);
     assert.ok(result);
-    assert.strictEqual(result.pathname, "/new-orleans/tours/airboat-adventures");
+    assert.strictEqual(result.pathname, "/new-orleans/operators/airboat-adventures");
+  });
+
+  await t.test("rewrites /areas and /areas/[slug] to canonical New Orleans areas", () => {
+    const hubReq = buildRequest("welcometoneworleanstours.com", "/areas");
+    assert.strictEqual(getWtonotHostRewrite(hubReq)?.pathname, "/new-orleans/areas");
+    const basinReq = buildRequest("welcometoneworleanstours.com", "/areas/honey-island");
+    assert.strictEqual(getWtonotHostRewrite(basinReq)?.pathname, "/new-orleans/areas/honey-island");
   });
 
   await t.test("preserves /tours/airboat-adventures routing", () => {

@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import Link from "next/link";
 import TourDetailBookingAction from "./TourDetailBookingAction";
+import { operatorSlug } from "../../data/operatorRegistry";
+import { findNewOrleansCanonicalOperatorForProductSlug } from "@/lib/dcc/shared/newOrleansDirectoryData";
 import { cookies, headers } from "next/headers";
 import {
   STOREFRONT_PRODUCTS,
@@ -437,6 +440,15 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
 
   const firstBestFit = bestFit?.[0] || "Visitors comparing the right fit for their day";
   const secondBestFit = bestFit?.[1] || "Groups who want a curated New Orleans experience";
+  const canonicalGraphMatch = findNewOrleansCanonicalOperatorForProductSlug(slug);
+  const resolvedCanonicalOpSlug =
+    canonicalGraphMatch?.operator.slug || operatorSlug(product.operatorName);
+  const resolvedCanonicalAreaSlug =
+    canonicalGraphMatch?.primaryPlace?.publicPlaceSlug || null;
+  const canonicalOperatorHref = `${basePath}/operators/${resolvedCanonicalOpSlug}`;
+  const canonicalAreaHref = resolvedCanonicalAreaSlug
+    ? `${basePath}/areas/${resolvedCanonicalAreaSlug}`
+    : null;
 
   return (
     <div className={styles.page} data-tour-detail-surface="dark">
@@ -471,7 +483,54 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             <div className={styles.heroCopy}>
               <div className={styles.eyebrow}>{product.category} · Curated experience</div>
               <h1 className={styles.title}>{product.title}</h1>
-              <div className={styles.operator}>Operated by {product.operatorName}</div>
+              <div className={styles.operator}>
+                Operated by{" "}
+                <Link
+                  href={canonicalOperatorHref}
+                  data-testid="tour-canonical-operator-link"
+                  style={{ color: "#f5d97e", textDecoration: "underline" }}
+                >
+                  {product.operatorName}
+                </Link>
+                {canonicalAreaHref && canonicalGraphMatch?.primaryPlace ? (
+                  <>
+                    {" "}
+                    ·{" "}
+                    <Link
+                      href={canonicalAreaHref}
+                      data-testid="tour-canonical-area-link"
+                      style={{ color: "#e2d4b7", textDecoration: "underline" }}
+                    >
+                      {canonicalGraphMatch.primaryPlace.name}
+                    </Link>
+                  </>
+                ) : null}
+              </div>
+              {canonicalGraphMatch?.product?.boardingLocationResolution && (
+                <div
+                  data-testid="tour-boarding-wharf-resolution"
+                  style={{
+                    marginTop: 8,
+                    fontSize: "0.8rem",
+                    lineHeight: 1.5,
+                    color: "#f6f1e8",
+                    background: "rgba(18, 16, 22, 0.78)",
+                    border: "1px solid rgba(212, 175, 55, 0.35)",
+                    borderRadius: 8,
+                    padding: "8px 12px",
+                  }}
+                >
+                  <strong>Boarding / Check-In Resolution:</strong>{" "}
+                  {
+                    canonicalGraphMatch.product.boardingLocationResolution
+                      .primaryBoardingWharfOrDock
+                  }
+                  {canonicalGraphMatch.product.boardingLocationResolution
+                    .companionOrAlternateBoardingRule
+                    ? ` — ${canonicalGraphMatch.product.boardingLocationResolution.companionOrAlternateBoardingRule}`
+                    : ""}
+                </div>
+              )}
               <p className={styles.summary}>{product.detailSummary || product.description}</p>
               <div className={styles.heroActions}>{bookingActions(styles.bookingButton)}</div>
             </div>
