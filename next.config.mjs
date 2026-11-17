@@ -561,8 +561,8 @@ const nextConfig = {
   env: buildProvenanceEnv,
   serverExternalPackages: ["ws"],
   experimental: {
-    cpus: 2,
-    staticGenerationMaxConcurrency: 4,
+    cpus: 3,
+    staticGenerationMaxConcurrency: 2,
   },
   turbopack: {
     root: process.env.DCC_TURBOPACK_ROOT?.trim() || __dirname,
