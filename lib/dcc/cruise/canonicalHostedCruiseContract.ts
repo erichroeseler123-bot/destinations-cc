@@ -85,6 +85,7 @@ const LINE_CODE_ALIASES: Record<string, CanonicalCruiseLineCode> = {
   tui: "tui",
   "tui-cruises": "tui",
   "tui cruises": "tui",
+  "tui cruises (mein schiff)": "tui",
   "mein-schiff": "tui",
   "mein schiff": "tui",
   uniworld: "uniworld",
@@ -101,6 +102,7 @@ const LINE_CODE_ALIASES: Record<string, CanonicalCruiseLineCode> = {
   "abercrombie and kent": "ak",
   gaysail: "gaysail",
   "gaysail fleet": "gaysail",
+  "gaysail catamaran & yacht fleet": "gaysail",
   azamara: "azamara",
   "azamara cruises": "azamara",
   ponant: "ponant",
@@ -128,8 +130,30 @@ export function normalizeCanonicalCruiseLineCode(raw: string): CanonicalCruiseLi
 export interface DatedShipOperatorRegistryEntry {
   shipSlug: string;
   canonicalLineCode: CanonicalCruiseLineCode;
+  sourceUrl: string;
+  verifiedAtIso: string;
   effectiveFromIsoDate: string;
   effectiveThroughIsoDate?: string | null;
+}
+
+export function isValidDatedShipOperatorRegistryEntry(
+  entry: DatedShipOperatorRegistryEntry | null | undefined,
+): entry is DatedShipOperatorRegistryEntry {
+  if (!entry || typeof entry !== "object") return false;
+  const slug = typeof entry.shipSlug === "string" ? entry.shipSlug.trim().toLowerCase() : "";
+  if (!slug || !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(slug)) return false;
+  if (!tryNormalizeCanonicalCruiseLineCode(entry.canonicalLineCode)) return false;
+  const src = typeof entry.sourceUrl === "string" ? entry.sourceUrl.trim() : "";
+  if (!/^https:\/\/[^\s]+$/i.test(src)) return false;
+  const ver = typeof entry.verifiedAtIso === "string" ? entry.verifiedAtIso.trim() : "";
+  if (!/^\d{4}-\d{2}-\d{2}(?:T.+)?$/.test(ver) || !Number.isFinite(Date.parse(ver))) return false;
+  const from = typeof entry.effectiveFromIsoDate === "string" ? entry.effectiveFromIsoDate.trim() : "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(from)) return false;
+  if (entry.effectiveThroughIsoDate !== undefined && entry.effectiveThroughIsoDate !== null) {
+    const through = String(entry.effectiveThroughIsoDate).trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(through) || through < from) return false;
+  }
+  return true;
 }
 
 export type PhysicalSailingLineResolutionSource =
@@ -203,10 +227,11 @@ export function resolvePhysicalSailingIdStrict(input: {
     };
   }
 
-  // Step 3: Dated ship/operator registry ONLY when unambiguous for `sailDate`
+  // Step 3: Explicitly sourced dated ship/operator registry ONLY when exactly one assignment is effective on `sailDate`
   let ambiguousDatedMatch = false;
   if (Array.isArray(input.datedShipRegistry) && input.datedShipRegistry.length > 0) {
     const matches = input.datedShipRegistry.filter((entry) => {
+      if (!isValidDatedShipOperatorRegistryEntry(entry)) return false;
       if (entry.shipSlug.trim().toLowerCase() !== cleanShip) return false;
       if (cleanDate < entry.effectiveFromIsoDate) return false;
       if (entry.effectiveThroughIsoDate && cleanDate > entry.effectiveThroughIsoDate) {
@@ -214,9 +239,8 @@ export function resolvePhysicalSailingIdStrict(input: {
       }
       return true;
     });
-    const distinctLines = Array.from(new Set(matches.map((m) => m.canonicalLineCode)));
-    if (distinctLines.length === 1) {
-      const step3Line = distinctLines[0]!;
+    if (matches.length === 1) {
+      const step3Line = matches[0]!.canonicalLineCode;
       return {
         physicalSailingId: `sailing:${step3Line}:${cleanShip}:${cleanDate}`,
         lineCode: step3Line,
@@ -224,7 +248,7 @@ export function resolvePhysicalSailingIdStrict(input: {
         verificationFindingId: null,
       };
     }
-    if (distinctLines.length > 1) {
+    if (matches.length > 1) {
       ambiguousDatedMatch = true;
     }
   }

@@ -48,7 +48,7 @@ test("Track 1A DCC 1: 4-step lineCode resolution order & refusal to guess from s
   assert.equal(step2.physicalSailingId, "sailing:ncl:custom-charter-vessel:2027-03-15");
   assert.equal(step2.resolutionSource, "cruise_line_alias_resolver");
 
-  // Step 3: Dated ship/operator registry ONLY when unambiguous for sailDate
+  // Step 3: Explicitly sourced dated ship/operator registry ONLY when exactly one assignment is effective on sailDate
   const step3Unambiguous = resolveDccPhysicalSailingIdentity({
     shipSlug: "royal-princess",
     sailDate: "2027-06-10",
@@ -58,15 +58,29 @@ test("Track 1A DCC 1: 4-step lineCode resolution order & refusal to guess from s
       {
         shipSlug: "royal-princess",
         canonicalLineCode: "pcl",
-        effectiveFromIsoDate: "2013-06-01",
+        sourceUrl: "https://www.princess.com/ships-and-experience/ships/rp-royal-princess",
+        verifiedAtIso: "2026-11-17T00:00:00Z",
+        effectiveFromIsoDate: "2013-06-16",
         effectiveThroughIsoDate: null,
       },
     ],
     isSyntheticTest: true,
   });
-  // Crucial proof: "royal-princess" resolves to "pcl" from dated registry, NEVER "rccl" from "royal-" prefix
+  // Crucial proof: "royal-princess" resolves to "pcl" from sourced dated registry, NEVER "rccl" from "royal-" prefix
   assert.equal(step3Unambiguous.physicalSailingId, "sailing:pcl:royal-princess:2027-06-10");
   assert.equal(step3Unambiguous.resolutionSource, "dated_ship_operator_registry");
+
+  // Step 3 rejects debutYear/unsourced entries and NEVER infers operator history from current brand or debutYear
+  const noDebutYearInference = resolveDccPhysicalSailingIdentity({
+    shipSlug: "adventure-of-the-seas",
+    sailDate: "2028-04-12",
+    verifiedSailingCruiseLine: null,
+    cruiseLineInput: null,
+    isSyntheticTest: true,
+  });
+  assert.equal(noDebutYearInference.physicalSailingId, null);
+  assert.equal(noDebutYearInference.resolutionSource, "unresolved");
+  assert.ok(noDebutYearInference.verificationFindingId?.includes("unrecognized_or_missing_line_code"));
 
   // Step 3 ambiguous multi-operator date window -> falls through to Step 4 null + verification finding
   const step3Ambiguous = resolveDccPhysicalSailingIdentity({
@@ -78,12 +92,16 @@ test("Track 1A DCC 1: 4-step lineCode resolution order & refusal to guess from s
       {
         shipSlug: "transferred-ocean-ship",
         canonicalLineCode: "cel",
+        sourceUrl: "https://www.celebritycruises.com/cruise-ships",
+        verifiedAtIso: "2026-11-17T00:00:00Z",
         effectiveFromIsoDate: "2020-01-01",
         effectiveThroughIsoDate: "2027-12-31",
       },
       {
         shipSlug: "transferred-ocean-ship",
         canonicalLineCode: "tui",
+        sourceUrl: "https://www.meinschiff.com/",
+        verifiedAtIso: "2026-11-17T00:00:00Z",
         effectiveFromIsoDate: "2027-01-01",
         effectiveThroughIsoDate: null,
       },

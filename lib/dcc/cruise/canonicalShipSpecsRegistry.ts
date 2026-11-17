@@ -5,10 +5,7 @@
  * zero unlicensed deck plans or proprietary cruise-line media are stored or reproduced.
  */
 
-import {
-  tryNormalizeCanonicalCruiseLineCode,
-  type DatedShipOperatorRegistryEntry,
-} from "./canonicalHostedCruiseContract";
+import { type DatedShipOperatorRegistryEntry } from "./canonicalHostedCruiseContract";
 
 export interface CanonicalDccShipFieldProvenanceEntry {
   sourceAuthority: 'cruise_line_first_party' | 'dcc_editorial_synthesis' | 'licensed_visual_manifest';
@@ -4379,22 +4376,16 @@ export function getDccCanonicalShipBySlug(shipSlug: string): CanonicalDccShipRec
   return CANONICAL_DCC_SHIPS.find((s) => s.shipSlug === normalized) ?? null;
 }
 
+/**
+ * Explicitly sourced ship/operator tenure intervals only.
+ * Never derive `effectiveFromIsoDate` from vessel `debutYear`, current brand, ship name,
+ * or related-brand ownership. A ship's hull debut year does not establish continuous
+ * operation by the current cruise line.
+ */
+export const EXPLICIT_DATED_SHIP_OPERATOR_ASSIGNMENTS: readonly DatedShipOperatorRegistryEntry[] = [];
+
 export function buildDatedShipOperatorRegistry(): ReadonlyArray<DatedShipOperatorRegistryEntry> {
-  const entries: DatedShipOperatorRegistryEntry[] = [];
-  for (const ship of CANONICAL_DCC_SHIPS) {
-    if (!ship.isIndexable || ship.holdReasonCodes.length > 0 || ship.debutYear === null) {
-      continue;
-    }
-    const lineCode = tryNormalizeCanonicalCruiseLineCode(ship.canonicalLineCode);
-    if (!lineCode) continue;
-    entries.push({
-      shipSlug: ship.shipSlug,
-      canonicalLineCode: lineCode,
-      effectiveFromIsoDate: `${String(ship.debutYear).padStart(4, "0")}-01-01`,
-      effectiveThroughIsoDate: null,
-    });
-  }
-  return entries;
+  return EXPLICIT_DATED_SHIP_OPERATOR_ASSIGNMENTS;
 }
 
 export function getDccCanonicalShipsSummary() {
