@@ -451,6 +451,41 @@ export default async function HomePage({
               </Link>
             ))}
           </div>
+
+          <div
+            style={{
+              marginTop: 24,
+              padding: "18px 22px",
+              borderRadius: 14,
+              background: "#f4f9f9",
+              border: "1px solid var(--line)",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 14,
+            }}
+          >
+            <div>
+              <strong style={{ color: "var(--deep)", fontSize: 15.5 }}>
+                Explore the Full Southeast Alaska Knowledge Graph
+              </strong>
+              <p style={{ margin: "4px 0 0", fontSize: 14, color: "var(--muted)" }}>
+                Includes Hoonah, Haines, Wrangell, Petersburg, Klawock, Gustavus, Glacier Bay scenic cruising, and 21 verified local company profiles.
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <Link className="button small" href="/southeast-alaska">
+                Southeast Alaska Hub →
+              </Link>
+              <Link className="button small secondary" href="/ports">
+                All 12 Destinations
+              </Link>
+              <Link className="button small secondary" href="/operators">
+                Local Operators Directory
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 

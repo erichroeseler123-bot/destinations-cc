@@ -40,8 +40,42 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        // Hoonah and Icy Strait Point are separate canonical entities & pages.
+        // Never redirect /hoonah or /ports/hoonah into /ports/icy-strait-point.
         source: "/hoonah",
-        destination: "/ports/icy-strait-point",
+        destination: "/ports/hoonah",
+        permanent: true,
+      },
+      {
+        source: "/haines",
+        destination: "/ports/haines",
+        permanent: true,
+      },
+      {
+        source: "/wrangell",
+        destination: "/ports/wrangell",
+        permanent: true,
+      },
+      {
+        source: "/petersburg",
+        destination: "/ports/petersburg",
+        permanent: true,
+      },
+      {
+        source: "/klawock",
+        destination: "/ports/klawock",
+        permanent: true,
+      },
+      {
+        source: "/gustavus",
+        destination: "/ports/gustavus",
+        permanent: true,
+      },
+      {
+        // Glacier Bay and Gustavus are separate canonical entities & pages.
+        // Never redirect /glacier-bay or /ports/glacier-bay into /ports/gustavus.
+        source: "/glacier-bay",
+        destination: "/ports/glacier-bay",
         permanent: true,
       },
       {

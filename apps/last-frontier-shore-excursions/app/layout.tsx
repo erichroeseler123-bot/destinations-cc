@@ -97,8 +97,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <span className="lfse-brand-sub">Alaska Port-Window Excursion Guide</span>
             </Link>
             <nav className="lfse-nav" aria-label="Primary navigation">
-              <Link href="/#ports">Ports</Link>
-              <Link href="/#calculator">Port Window Check</Link>
+              <Link href="/southeast-alaska">Southeast Alaska</Link>
+              <Link href="/ports">Ports &amp; Towns</Link>
+              <Link href="/operators">Operators</Link>
               <Link href="/tours">All Excursions</Link>
               <Link href="/cruise-ships">Cruise Ships</Link>
               <Link className="lfse-nav-cta" href="/contact">Group &amp; Custom Help</Link>
@@ -116,6 +117,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </p>
               </div>
               <nav className="lfse-footer-links" aria-label="Footer navigation">
+                <Link href="/southeast-alaska">Southeast Alaska Hub</Link>
+                <Link href="/ports">Ports &amp; Communities</Link>
+                <Link href="/operators">Local Operators</Link>
                 <Link href="/cruise-ships">Ships &amp; Port Windows</Link>
                 <Link href="/tours">All Excursions</Link>
                 <Link href="/decision/excursions-safe-for-cruise-ship-window">2-Hour Return Buffer Rule</Link>
