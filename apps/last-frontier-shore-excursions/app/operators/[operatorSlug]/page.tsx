@@ -331,8 +331,8 @@ export default async function OperatorProfilePage({
                 Towns, Terminals &amp; Harbors Served
               </strong>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-                {servedPlaces.map(({ place }) =>
-                  place.publicPortSlug ? (
+                {servedPlaces.map(({ place, gate: placeGate }) =>
+                  place.publicPortSlug && placeGate.indexable ? (
                     <Link
                       key={place.placeId}
                       href={`/ports/${place.publicPortSlug}`}
@@ -363,11 +363,16 @@ export default async function OperatorProfilePage({
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
                 {operator.categorySlugs.map((catSlug) => {
                   const cat = categoryMap.get(catSlug);
-                  const primaryPort = operator.publicPortSlugs[0];
-                  return primaryPort ? (
+                  const qualifiedPc = snapshot.portCategories.find(
+                    (pc) =>
+                      operator.publicPortSlugs.includes(pc.portSlug) &&
+                      pc.category.categorySlug === catSlug &&
+                      pc.gate.indexable,
+                  );
+                  return qualifiedPc ? (
                     <Link
                       key={catSlug}
-                      href={`/ports/${primaryPort}/${catSlug}`}
+                      href={`/ports/${qualifiedPc.portSlug}/${catSlug}`}
                       className="chip"
                       style={{ fontWeight: 700, color: "var(--forest)" }}
                     >
@@ -509,19 +514,23 @@ export default async function OperatorProfilePage({
                         </Link>
                       </div>
                       <h3 style={{ marginTop: 4, marginBottom: 6 }}>
-                        <Link
-                          href={`/tours/${operator.slug}/${tour.tourSlug}`}
-                          style={{ color: "var(--deep)" }}
-                        >
-                          {tour.title}
-                        </Link>
+                        {!tour.isCommerciallyHeld ? (
+                          <Link
+                            href={`/tours/${operator.slug}/${tour.tourSlug}`}
+                            style={{ color: "var(--deep)" }}
+                          >
+                            {tour.title}
+                          </Link>
+                        ) : (
+                          <span>{tour.title}</span>
+                        )}
                       </h3>
                       <p style={{ fontSize: 14, color: "var(--muted)", marginBottom: 10 }}>
                         {tour.summary}
                       </p>
                       <p style={{ fontSize: 13, color: "var(--ink)", margin: "0 0 6px" }}>
                         <strong>Typical Departures:</strong>{" "}
-                        {tour.typicalDepartureTimes.join(", ")}
+                        {tour.typicalDepartureTimes.join(", ") || "Pending verification"}
                       </p>
                       <p style={{ fontSize: 13, color: "var(--ink)", margin: 0 }}>
                         <strong>Meeting Point:</strong> {tour.meetingPoint}
@@ -538,12 +547,14 @@ export default async function OperatorProfilePage({
                         flexWrap: "wrap",
                       }}
                     >
-                      <Link
-                        className="button small secondary"
-                        href={`/tours/${operator.slug}/${tour.tourSlug}`}
-                      >
-                        Full Tour &amp; Buffer Page
-                      </Link>
+                      {!tour.isCommerciallyHeld && (
+                        <Link
+                          className="button small secondary"
+                          href={`/tours/${operator.slug}/${tour.tourSlug}`}
+                        >
+                          Full Tour &amp; Buffer Page
+                        </Link>
+                      )}
                       {!tour.isCommerciallyHeld ? (
                         <a
                           className="button small"

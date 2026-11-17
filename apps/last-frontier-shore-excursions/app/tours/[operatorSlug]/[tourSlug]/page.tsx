@@ -268,9 +268,13 @@ export default async function TourDetailPage({
             <span>›</span>
             <Link href={`/ports/${tour.portSlug}`}>{portName}</Link>
             <span>›</span>
-            <Link href={`/ports/${tour.portSlug}/${tour.categorySlug}`}>
-              {categoryLabel}
-            </Link>
+            {portCategoryBundle?.gate.indexable ? (
+              <Link href={`/ports/${tour.portSlug}/${tour.categorySlug}`}>
+                {categoryLabel}
+              </Link>
+            ) : (
+              <span>{categoryLabel}</span>
+            )}
             <span>›</span>
             <Link href={`/operators/${tour.operatorSlug}`}>{tour.operatorName}</Link>
             <span>›</span>
@@ -438,7 +442,13 @@ export default async function TourDetailPage({
                 Category Comparison
               </span>
               <h2 style={{ fontSize: 18, margin: "8px 0 6px" }}>
-                <Link href={`/ports/${tour.portSlug}/${tour.categorySlug}`}>
+                <Link
+                  href={
+                    portCategoryBundle?.gate.indexable
+                      ? `/ports/${tour.portSlug}/${tour.categorySlug}`
+                      : tour.legacyPortActivityHref || `/ports/${tour.portSlug}#available-tours`
+                  }
+                >
                   {portName} {categoryLabel} →
                 </Link>
               </h2>

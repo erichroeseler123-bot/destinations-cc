@@ -284,12 +284,9 @@ export default function PortsDirectoryPage() {
                   <p style={{ fontSize: 13.5, color: "var(--muted)", margin: "6px 0 10px" }}>
                     {place.hook}
                   </p>
-                  <Link
-                    href={`/ports/${place.publicPortSlug}`}
-                    style={{ fontSize: 13, fontWeight: 700, color: "var(--forest)" }}
-                  >
-                    View unindexed research note →
-                  </Link>
+                  <span style={{ fontSize: 12.5, fontWeight: 600, color: "#7a4500" }}>
+                    Held unindexed pending dock &amp; local operator verification
+                  </span>
                 </div>
               ))}
             </div>
