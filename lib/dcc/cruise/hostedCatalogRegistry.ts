@@ -1,7 +1,9 @@
 import {
+  buildPrivateCommunityId,
   CANONICAL_HOSTED_CRUISE_CONTRACT_VERSION,
   computePhysicalSailingReuseMetrics,
   HOSTED_CRUISE_THEMES,
+  resolvePhysicalSailingIdStrict,
   validateHostedCruiseRedundancySafeguards,
   type CanonicalHeldHostedEvidenceRecord,
   type CanonicalHostedCatalogChangeEvent,
@@ -9,8 +11,12 @@ import {
   type CanonicalHostedFranchiseFactRecord,
   type CanonicalHostedOrganizerFactRecord,
   type CanonicalHostedSailingFactRecord,
+  type DatedShipOperatorRegistryEntry,
   type HostedCruiseThemeSlug,
+  type PhysicalSailingIdResolutionResult,
 } from "./canonicalHostedCruiseContract";
+import { buildDatedShipOperatorRegistry } from "./canonicalShipSpecsRegistry";
+import { recordUnresolvedPhysicalSailingLineFinding } from "./canonicalLocationsAndRoutePatterns";
 
 import {
   FOUNDING_PILOT_FRANCHISES,
@@ -14300,10 +14306,49 @@ export function getDccCanonicalHostedCatalogSnapshot(options?: {
     themes: HOSTED_CRUISE_THEMES,
     organizers: organizersList,
     franchises: franchisesList,
-    hostedSailings: sailings,
+    hostedSailings: sailings.map((s) => ({
+      ...s,
+      communityId:
+        s.communityId ??
+        buildPrivateCommunityId(s.organizerSlug, s.canonicalShipSlug, s.canonicalSailDate),
+    })),
     recentChangeEvents: DCC_RECENT_CATALOG_CHANGE_EVENTS,
     heldInsufficientEvidenceItems: DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS,
   };
+}
+
+export function resolveDccPhysicalSailingIdentity(input: {
+  shipSlug: string;
+  sailDate: string;
+  verifiedSailingCruiseLine?: string | null;
+  cruiseLineInput?: string | null;
+  datedShipRegistryOverride?: ReadonlyArray<DatedShipOperatorRegistryEntry>;
+  sourceContext?: string;
+  isSyntheticTest?: boolean;
+}): PhysicalSailingIdResolutionResult {
+  const cleanShip = input.shipSlug.trim().toLowerCase();
+  const cleanDate = input.sailDate.trim();
+  const catalogHostedMatch = DCC_CANONICAL_HOSTED_SAILINGS.find(
+    (s) =>
+      !s.scheduleHoldReason &&
+      s.canonicalShipSlug === cleanShip &&
+      s.canonicalSailDate === cleanDate,
+  );
+  const verifiedRecordLine =
+    input.verifiedSailingCruiseLine !== undefined
+      ? input.verifiedSailingCruiseLine
+      : catalogHostedMatch?.canonicalLineCode ?? null;
+
+  return resolvePhysicalSailingIdStrict({
+    shipSlug: cleanShip,
+    sailDate: cleanDate,
+    verifiedSailingCruiseLine: verifiedRecordLine,
+    cruiseLineInput: input.cruiseLineInput ?? null,
+    datedShipRegistry: input.datedShipRegistryOverride ?? buildDatedShipOperatorRegistry(),
+    sourceContext: input.sourceContext ?? "dcc:resolveDccPhysicalSailingIdentity",
+    isSyntheticTest: input.isSyntheticTest,
+    onUnresolvedFinding: (ctx) => recordUnresolvedPhysicalSailingLineFinding(ctx).verificationId,
+  });
 }
 
 export function resolveDccHostedOrganizerBySlugOrAlias(

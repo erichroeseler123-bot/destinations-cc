@@ -629,6 +629,40 @@ export function listDccFactVerificationQueue(options?: {
   return runtimeVerificationQueue.filter((q) => includeSynthetic || !q.isSyntheticTest);
 }
 
+export function recordUnresolvedPhysicalSailingLineFinding(params: {
+  shipSlug: string;
+  sailDate: string;
+  verifiedSailingCruiseLine?: string | null;
+  cruiseLineInput?: string | null;
+  reason: "unrecognized_or_missing_line_code" | "ambiguous_dated_ship_operator";
+  sourceContext?: string;
+  isSyntheticTest?: boolean;
+}): DccFactVerificationQueueItem {
+  const cleanShip = params.shipSlug.trim().toLowerCase();
+  const cleanDate = params.sailDate.trim();
+  const verificationId = `vf_phys_line_${cleanShip}_${cleanDate}_${params.reason}`;
+  return enqueueDccFactVerificationItem({
+    verificationId,
+    entityType: "physical_sailing",
+    entityId: `unresolved-sailing:${cleanShip}:${cleanDate}`,
+    fieldPath: "physicalSailingId.lineCode",
+    currentVerifiedValue: null,
+    proposedOrConflictingValue: {
+      verifiedSailingCruiseLine: params.verifiedSailingCruiseLine ?? null,
+      cruiseLineInput: params.cruiseLineInput ?? null,
+      reason: params.reason,
+    },
+    submittedByRole: "dcc_source_audit",
+    submittedByActor: params.sourceContext || "dcc:physical-sailing-line-resolver",
+    sourceUrl: null,
+    conflictSummary:
+      params.reason === "ambiguous_dated_ship_operator"
+        ? `Ambiguous dated ship/operator window for "${cleanShip}" on ${cleanDate}; refusing to synthesize physicalSailingId without verified cruise line.`
+        : `Missing or unrecognized cruise line for "${cleanShip}" on ${cleanDate}; refusing to guess lineCode from ship name alone.`,
+    isSyntheticTest: Boolean(params.isSyntheticTest),
+  });
+}
+
 export function getCanonicalLocationsSummary() {
   return {
     totalLocations: CANONICAL_PORT_LOCATIONS.length,

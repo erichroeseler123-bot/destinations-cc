@@ -108,13 +108,149 @@ const LINE_CODE_ALIASES: Record<string, CanonicalCruiseLineCode> = {
   "explora journeys": "explora",
 };
 
-export function normalizeCanonicalCruiseLineCode(raw: string): CanonicalCruiseLineCode {
+export function tryNormalizeCanonicalCruiseLineCode(
+  raw: string | null | undefined,
+): CanonicalCruiseLineCode | null {
+  if (typeof raw !== "string") return null;
   const key = raw.trim().toLowerCase();
-  const mapped = LINE_CODE_ALIASES[key];
+  if (!key) return null;
+  return LINE_CODE_ALIASES[key] ?? null;
+}
+
+export function normalizeCanonicalCruiseLineCode(raw: string): CanonicalCruiseLineCode {
+  const mapped = tryNormalizeCanonicalCruiseLineCode(raw);
   if (!mapped) {
     throw new Error(`Unsupported canonical cruise line identifier: "${raw}"`);
   }
   return mapped;
+}
+
+export interface DatedShipOperatorRegistryEntry {
+  shipSlug: string;
+  canonicalLineCode: CanonicalCruiseLineCode;
+  effectiveFromIsoDate: string;
+  effectiveThroughIsoDate?: string | null;
+}
+
+export type PhysicalSailingLineResolutionSource =
+  | "verified_sailing_record"
+  | "cruise_line_alias_resolver"
+  | "dated_ship_operator_registry"
+  | "unresolved";
+
+export interface UnresolvedPhysicalSailingFindingContext {
+  shipSlug: string;
+  sailDate: string;
+  verifiedSailingCruiseLine?: string | null;
+  cruiseLineInput?: string | null;
+  reason: "unrecognized_or_missing_line_code" | "ambiguous_dated_ship_operator";
+  sourceContext?: string;
+  isSyntheticTest?: boolean;
+}
+
+export interface PhysicalSailingIdResolutionResult {
+  physicalSailingId: string | null;
+  lineCode: CanonicalCruiseLineCode | null;
+  resolutionSource: PhysicalSailingLineResolutionSource;
+  verificationFindingId: string | null;
+}
+
+/**
+ * Resolves canonical `physicalSailingId` (`sailing:<lineCode>:<shipSlug>:<YYYY-MM-DD>`)
+ * strictly in the approved 4-step order:
+ *   1. Verified physical-sailing record's canonical cruise-line field.
+ *   2. DCC's existing cruise-line alias/canonicalization resolver.
+ *   3. Dated ship/operator registry ONLY when unambiguous (`matches.length === 1`) for `sailDate`.
+ *   4. Otherwise return `physicalSailingId: null` and record a verification finding.
+ *
+ * Never infers `lineCode` from `shipSlug` or ship name alone.
+ */
+export function resolvePhysicalSailingIdStrict(input: {
+  shipSlug: string;
+  sailDate: string;
+  verifiedSailingCruiseLine?: string | null;
+  cruiseLineInput?: string | null;
+  datedShipRegistry?: ReadonlyArray<DatedShipOperatorRegistryEntry>;
+  sourceContext?: string;
+  isSyntheticTest?: boolean;
+  onUnresolvedFinding?: (ctx: UnresolvedPhysicalSailingFindingContext) => string | null;
+}): PhysicalSailingIdResolutionResult {
+  const cleanShip = String(input.shipSlug || "").trim().toLowerCase();
+  const cleanDate = String(input.sailDate || "").trim();
+  if (!cleanShip || !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(cleanShip) || !/^\d{4}-\d{2}-\d{2}$/.test(cleanDate)) {
+    throw new Error(`Invalid physical sailing components: ship="${input.shipSlug}", date="${input.sailDate}"`);
+  }
+
+  // Step 1: Verified physical-sailing record's canonical cruise-line field
+  const step1Line = tryNormalizeCanonicalCruiseLineCode(input.verifiedSailingCruiseLine);
+  if (step1Line) {
+    return {
+      physicalSailingId: `sailing:${step1Line}:${cleanShip}:${cleanDate}`,
+      lineCode: step1Line,
+      resolutionSource: "verified_sailing_record",
+      verificationFindingId: null,
+    };
+  }
+
+  // Step 2: DCC's existing cruise-line alias/canonicalization resolver
+  const step2Line = tryNormalizeCanonicalCruiseLineCode(input.cruiseLineInput);
+  if (step2Line) {
+    return {
+      physicalSailingId: `sailing:${step2Line}:${cleanShip}:${cleanDate}`,
+      lineCode: step2Line,
+      resolutionSource: "cruise_line_alias_resolver",
+      verificationFindingId: null,
+    };
+  }
+
+  // Step 3: Dated ship/operator registry ONLY when unambiguous for `sailDate`
+  let ambiguousDatedMatch = false;
+  if (Array.isArray(input.datedShipRegistry) && input.datedShipRegistry.length > 0) {
+    const matches = input.datedShipRegistry.filter((entry) => {
+      if (entry.shipSlug.trim().toLowerCase() !== cleanShip) return false;
+      if (cleanDate < entry.effectiveFromIsoDate) return false;
+      if (entry.effectiveThroughIsoDate && cleanDate > entry.effectiveThroughIsoDate) {
+        return false;
+      }
+      return true;
+    });
+    const distinctLines = Array.from(new Set(matches.map((m) => m.canonicalLineCode)));
+    if (distinctLines.length === 1) {
+      const step3Line = distinctLines[0]!;
+      return {
+        physicalSailingId: `sailing:${step3Line}:${cleanShip}:${cleanDate}`,
+        lineCode: step3Line,
+        resolutionSource: "dated_ship_operator_registry",
+        verificationFindingId: null,
+      };
+    }
+    if (distinctLines.length > 1) {
+      ambiguousDatedMatch = true;
+    }
+  }
+
+  // Step 4: Return null and record a verification finding (never guess from ship name)
+  const reason = ambiguousDatedMatch
+    ? "ambiguous_dated_ship_operator"
+    : "unrecognized_or_missing_line_code";
+  const verificationFindingId = input.onUnresolvedFinding
+    ? input.onUnresolvedFinding({
+        shipSlug: cleanShip,
+        sailDate: cleanDate,
+        verifiedSailingCruiseLine: input.verifiedSailingCruiseLine ?? null,
+        cruiseLineInput: input.cruiseLineInput ?? null,
+        reason,
+        sourceContext: input.sourceContext,
+        isSyntheticTest: input.isSyntheticTest,
+      })
+    : null;
+
+  return {
+    physicalSailingId: null,
+    lineCode: null,
+    resolutionSource: "unresolved",
+    verificationFindingId,
+  };
 }
 
 export function buildPhysicalSailingId(
@@ -208,6 +344,7 @@ export function buildReputationHostedSailingEntityId(
 
 export interface CanonicalTravelerPlanReference {
   sailingId: string;
+  physicalSailingId?: string;
   hostedSailingId?: string;
   communityId: string;
 }
@@ -217,18 +354,21 @@ export function buildTravelerPlanReference(input: {
   shipSlug: string;
   sailDate: string;
   organizerSlug?: string | null;
+  includePhysicalSailingId?: boolean;
 }): CanonicalTravelerPlanReference {
-  const sailingId = buildPhysicalSailingId(input.lineInput, input.shipSlug, input.sailDate);
+  const physicalSailingId = buildPhysicalSailingId(input.lineInput, input.shipSlug, input.sailDate);
   if (input.organizerSlug && input.organizerSlug.trim()) {
     const org = input.organizerSlug.trim().toLowerCase();
     return {
-      sailingId,
+      sailingId: physicalSailingId,
+      ...(input.includePhysicalSailingId ? { physicalSailingId } : {}),
       hostedSailingId: buildHostedSailingId(org, input.lineInput, input.shipSlug, input.sailDate),
       communityId: buildPrivateCommunityId(org, input.shipSlug, input.sailDate),
     };
   }
   return {
-    sailingId,
+    sailingId: physicalSailingId,
+    ...(input.includePhysicalSailingId ? { physicalSailingId } : {}),
     communityId: buildPrivateCommunityId("independent", input.shipSlug, input.sailDate),
   };
 }
@@ -861,6 +1001,7 @@ export interface CanonicalHostedSailingFactRecord {
   organizerType?: HostedOrganizerType;
   experienceClassification?: HostedExperienceClassification;
   physicalSailingId: string; // sailing:<lineCode>:<shipSlug>:<sailDate>
+  communityId?: string; // community:<organizerSlug>:<shipSlug>:<sailDate>
   canonicalLineCode: CanonicalCruiseLineCode;
   canonicalShipSlug: string;
   canonicalSailDate: string;
