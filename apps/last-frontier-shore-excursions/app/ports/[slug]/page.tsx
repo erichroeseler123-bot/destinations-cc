@@ -100,7 +100,7 @@ export async function generateMetadata({
   if (!entry) return {};
 
   const { place, gate } = entry;
-  const isScenicOnly = !place.largeCruiseShipDisembarkationAllowed;
+  const isScenicOnly = place.placeType === "scenic_cruise_destination";
 
   const title = isScenicOnly
     ? `${place.name} Cruise Guide | Scenic Cruising Rules, Rangers & Gateway Access`
@@ -282,9 +282,9 @@ export default async function PortPage({
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
                 <span
                   className={`badge ${
-                    place.largeCruiseShipDisembarkationAllowed
-                      ? "badge-safety"
-                      : "badge-warning"
+                    place.placeType === "scenic_cruise_destination"
+                      ? "badge-warning"
+                      : "badge-safety"
                   }`}
                 >
                   {PLACE_TYPE_LABELS[place.placeType] || place.placeType}
@@ -298,9 +298,9 @@ export default async function PortPage({
               </div>
 
               <h1 style={{ marginTop: 6, marginBottom: 12 }}>
-                {place.largeCruiseShipDisembarkationAllowed
-                  ? `${place.name} Shore Excursions & Local Port Directory`
-                  : `${place.name} Scenic Cruising & National Park Guide`}
+                {place.placeType === "scenic_cruise_destination"
+                  ? `${place.name} Scenic Cruising & National Park Guide`
+                  : `${place.name} Shore Excursions & Local Port Directory`}
               </h1>
               <p
                 className="lead"
@@ -319,9 +319,9 @@ export default async function PortPage({
                   </a>
                 )}
                 <a className="button secondary" href="#dock-and-pickup-guide">
-                  {place.largeCruiseShipDisembarkationAllowed
-                    ? "Docks & pickup rules"
-                    : "Scenic cruising rules"}
+                  {place.placeType === "scenic_cruise_destination"
+                    ? "Scenic cruising rules"
+                    : "Docks & pickup rules"}
                 </a>
                 {canonicalPortTours.length > 0 && (
                   <a className="button secondary" href="#sailing-timing-fit">
@@ -378,8 +378,8 @@ export default async function PortPage({
         </div>
       </section>
 
-      {/* Non-Disembarkation Alert (Mandatory for Glacier Bay) */}
-      {!place.largeCruiseShipDisembarkationAllowed && (
+      {/* Non-Disembarkation Alert (Mandatory for Glacier Bay) & Community Harbor Berth Explanation (Hoonah / Gustavus) */}
+      {place.placeType === "scenic_cruise_destination" ? (
         <section
           data-testid="scenic-non-disembarkation-alert"
           style={{
@@ -401,7 +401,26 @@ export default async function PortPage({
             </p>
           </div>
         </section>
-      )}
+      ) : !place.largeCruiseShipDisembarkationAllowed ? (
+        <section
+          data-testid="community-terminal-separation-note"
+          style={{
+            background: "#eef8f5",
+            borderTop: "1px solid #b7dfd2",
+            borderBottom: "1px solid #b7dfd2",
+            padding: "20px 0",
+          }}
+        >
+          <div className="shell">
+            <span className="badge badge-safety">
+              Community Harbor &amp; Cruise Access Note
+            </span>
+            <p style={{ margin: "8px 0 0", fontSize: 15, color: "var(--ink)", maxWidth: 900 }}>
+              {place.disembarkationExplanation}
+            </p>
+          </div>
+        </section>
+      ) : null}
 
       {/* Related Distinct Places Cross-Links (Hoonah <-> ISP, Gustavus <-> Glacier Bay, Haines <-> Skagway, etc.) */}
       {place.relatedPlaces.length > 0 && (

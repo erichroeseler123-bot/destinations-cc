@@ -223,9 +223,9 @@ export default function PortsDirectoryPage() {
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
                       <span
                         className={`badge ${
-                          place.largeCruiseShipDisembarkationAllowed
-                            ? "badge-safety"
-                            : "badge-warning"
+                          place.placeType === "scenic_cruise_destination"
+                            ? "badge-warning"
+                            : "badge-safety"
                         }`}
                       >
                         {PLACE_TYPE_BADGES[place.placeType] || place.placeType}
