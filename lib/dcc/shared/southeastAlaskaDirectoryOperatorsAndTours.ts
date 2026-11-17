@@ -8,10 +8,13 @@
 
 import {
   ALASKA_DIRECTORY_EXTENSION_VERSION,
+  buildAuthorizedSupplierDirectWrapperHref,
   DIRECTORY_CORE_CONTRACT_VERSION,
   evaluateOperatorPublicationGate,
   evaluatePlacePublicationGate,
   evaluatePortCategoryPublicationGate,
+  isOperatorDirectCheckoutConnected,
+  isOperatorLiveAvailabilityConnected,
   normalizeProductDepartureSlots,
   UNCLAIMED_OPERATOR_PROFILE_NOTICE,
   type EntityPublicationGateEvaluation,
@@ -106,11 +109,11 @@ export const SOUTHEAST_ALASKA_OPERATORS: readonly SoutheastAlaskaOperatorRecord[
     lastModifiedAt: "2026-11-17",
   },
 
-  // 2. JUNEAU TOURS & WHALE WATCH (Juneau)
+  // 2. JUNEAU TOURS & WHALE WATCH (Juneau — Authorized Live Rezgo Availability + Supplier-Hosted Direct Checkout)
   {
     operatorId: "operator:juneau-tours-and-whale-watch",
     slug: "juneau-tours-and-whale-watch",
-    legacyCompanyAliases: ["juneau-tours-whale-watch", "dolphintours"],
+    legacyCompanyAliases: ["juneau-tours-whale-watch"],
     name: "Juneau Tours & Whale Watch",
     tagline: "Alaskan-owned operator offering dock-to-dock Auke Bay whale watching, permitted Mendenhall Glacier shuttles, and combo tours from Goldbelt Tramway.",
     headquartersCommunityId: "place:community:juneau",
@@ -137,7 +140,7 @@ export const SOUTHEAST_ALASKA_OPERATORS: readonly SoutheastAlaskaOperatorRecord[
       facebook: "https://www.facebook.com/JuneauToursAndWhaleWatch/",
     },
     bookingPlatform: "Rezgo",
-    rezgoDomain: "juneautours.rezgo.com",
+    rezgoDomain: "juneauwhalewatch.rezgo.com",
     dockPickupRules: [
       {
         placeId: "place:community:juneau",
@@ -155,12 +158,31 @@ export const SOUTHEAST_ALASKA_OPERATORS: readonly SoutheastAlaskaOperatorRecord[
     heroImageAlt: "Mendenhall Glacier Visitor Center overlook in Juneau",
     heroImageCredit: "Public domain · U.S. Forest Service",
     claimStatus: "unclaimed",
-    integrationApproval: DEFAULT_UNCONNECTED_INTEGRATION,
+    integrationApproval: {
+      connectionRequestStatus: "approved_live",
+      liveAvailabilityApprovedByOwner: true,
+      directCheckoutApprovedByOwner: true,
+      commercialTermsSigned10Pct: true,
+      settlementMode: "operator_mor_platform_invoices_commission",
+      commissionEarnedOn: "completed_non_refunded_bookings",
+      publicAttributionParam: "refid=dccjuneau10",
+      liveFeedVerificationStatus: "verified_live_feed",
+      approvedAt: "2026-11-17",
+      approvedBy: "owner:erich",
+      notes:
+        "Authorized read-only Rezgo XML availability + supplier-hosted Rezgo direct checkout (juneauwhalewatch.rezgo.com, refid=dccjuneau10). Juneau Tours remains merchant of record and collects customer payment directly; 10% commission invoiced post-completion on fulfilled non-refunded bookings only.",
+    },
     operatorReviews: [],
     sources: [
       {
         label: "Juneau Tours & Whale Watch — Official Company & FAQs",
         url: "https://www.juneautours.com/f-a-q/",
+        sourceKind: "official_operator",
+        checkedAt: "2026-11-17",
+      },
+      {
+        label: "Juneau Tours & Whale Watch — Authorized Rezgo Booking Portal",
+        url: "https://juneauwhalewatch.rezgo.com/",
         sourceKind: "official_operator",
         checkedAt: "2026-11-17",
       },
@@ -1665,6 +1687,10 @@ export const SOUTHEAST_ALASKA_TOURS: readonly SoutheastAlaskaTourProductRecord[]
   {
     tourId: "tour:juneau-tours-and-whale-watch:auke-bay-whale-watch",
     tourSlug: "auke-bay-whale-watch",
+    legacyRouteAliases: [
+      { company: "juneau-tours-whale-watch", item: "5857P23" },
+      { company: "juneau-tours-whale-watch", item: "31703" },
+    ],
     operatorId: "operator:juneau-tours-and-whale-watch",
     operatorSlug: "juneau-tours-and-whale-watch",
     operatorName: "Juneau Tours & Whale Watch",
@@ -1677,7 +1703,7 @@ export const SOUTHEAST_ALASKA_TOURS: readonly SoutheastAlaskaTourProductRecord[]
       "3.5-hour dock-to-dock excursion (2 hours on the water in Auke Bay & Favorite Channel + narrated transfers from 492 S. Franklin St) aboard heated custom viewing boats with 100% whale sighting guarantee.",
     durationLabel: "3.5 hours dock-to-dock",
     durationMinutes: 210,
-    typicalDepartureTimes: ["09:00 AM", "11:30 AM", "02:00 PM"],
+    typicalDepartureTimes: ["08:30 AM", "09:30 AM", "11:30 AM", "01:30 PM"],
     fromPriceUsd: 155,
     priceDisplayLabel: "From $155 / person",
     meetingPoint: "Goldbelt Tramway Plaza (492 S. Franklin St)",
@@ -1691,7 +1717,29 @@ export const SOUTHEAST_ALASKA_TOURS: readonly SoutheastAlaskaTourProductRecord[]
     image: "/images/alaska/juneau-whale.jpg",
     imageAlt: "Auke Bay whale watching cruise",
     imageCredit: "Public domain · NPS",
-    bookingChannel: "official_operator_website",
+    bookingChannel: "supplier_direct_facilitator_10pct",
+    authorizedSupplierBinding: {
+      provider: "Rezgo",
+      supplierOperatorKey: "juneau-tours-whale-watch",
+      supplierItemCode: "31703",
+      supplierDefaultOptionUid: "31703",
+      supplierHostedSeoSlug: "juneau-whale-watch-tour",
+      normalizedFeedTourId: "dcc:rezgo:juneau-tours:31703",
+      matchedPartnerProductCode: "5857P23",
+      supplierHostedDomain: "juneauwhalewatch.rezgo.com",
+      publicRefId: "dccjuneau10",
+      surfaceName: "dcc_juneau_rezgo_direct_checkout",
+      trackingTagPrefix: "dcc_juneau_rezgo_direct",
+      liveAvailabilityConnected: true,
+      directCheckoutConnected: true,
+      merchantOfRecord: "operator",
+      customerFundsCapturedByPlatform: false,
+      settlementMode: "operator_mor_platform_invoices_commission",
+      commissionPercent: 10,
+      commissionEarnedOn: "completed_non_refunded_bookings",
+    },
+    viatorProductCode: "5857P23",
+    viatorOfficialUrl: "https://www.viator.com/tours/Juneau/Juneau-Whale-Watching-Tour/d941-5857P23",
     officialProductUrl: "https://www.juneautours.com/juneau-whale-watch-tour/",
     attributionCampaign: "seak-juneau-tours-whale",
     tourReviews: [],
@@ -1701,7 +1749,10 @@ export const SOUTHEAST_ALASKA_TOURS: readonly SoutheastAlaskaTourProductRecord[]
   {
     tourId: "tour:juneau-tours-and-whale-watch:mendenhall-and-whale-combo",
     tourSlug: "mendenhall-and-whale-combo",
-    legacyRouteAliases: [{ company: "dolphintours", item: "466119P3" }],
+    legacyRouteAliases: [
+      { company: "juneau-tours-whale-watch", item: "5857P22" },
+      { company: "juneau-tours-whale-watch", item: "32329" },
+    ],
     operatorId: "operator:juneau-tours-and-whale-watch",
     operatorSlug: "juneau-tours-and-whale-watch",
     operatorName: "Juneau Tours & Whale Watch",
@@ -1729,7 +1780,29 @@ export const SOUTHEAST_ALASKA_TOURS: readonly SoutheastAlaskaTourProductRecord[]
     image: "/images/alaska/mendenhall-glacier.jpg",
     imageAlt: "Mendenhall Glacier and Nugget Falls near Juneau",
     imageCredit: "CC BY-SA 4.0 · Gillfoto",
-    bookingChannel: "official_operator_website",
+    bookingChannel: "supplier_direct_facilitator_10pct",
+    authorizedSupplierBinding: {
+      provider: "Rezgo",
+      supplierOperatorKey: "juneau-tours-whale-watch",
+      supplierItemCode: "32329",
+      supplierDefaultOptionUid: "32329",
+      supplierHostedSeoSlug: "mendenhall-glacier-juneau-whale-watching-combo-tour",
+      normalizedFeedTourId: "dcc:rezgo:juneau-tours:32329",
+      matchedPartnerProductCode: "5857P22",
+      supplierHostedDomain: "juneauwhalewatch.rezgo.com",
+      publicRefId: "dccjuneau10",
+      surfaceName: "dcc_juneau_rezgo_direct_checkout",
+      trackingTagPrefix: "dcc_juneau_rezgo_direct",
+      liveAvailabilityConnected: true,
+      directCheckoutConnected: true,
+      merchantOfRecord: "operator",
+      customerFundsCapturedByPlatform: false,
+      settlementMode: "operator_mor_platform_invoices_commission",
+      commissionPercent: 10,
+      commissionEarnedOn: "completed_non_refunded_bookings",
+    },
+    viatorProductCode: "5857P22",
+    viatorOfficialUrl: "https://www.viator.com/tours/Juneau/Whale-Watch-and-Mendenhall-Glacier-Combo-Tour/d941-5857P22",
     officialProductUrl: "https://www.juneautours.com/mendenhall-glacier-juneau-whale-watching-combo-tour/",
     attributionCampaign: "seak-juneau-tours-combo",
     tourReviews: [],
@@ -1739,6 +1812,10 @@ export const SOUTHEAST_ALASKA_TOURS: readonly SoutheastAlaskaTourProductRecord[]
   {
     tourId: "tour:juneau-tours-and-whale-watch:mendenhall-glacier-shuttle",
     tourSlug: "mendenhall-glacier-shuttle",
+    legacyRouteAliases: [
+      { company: "juneau-tours-whale-watch", item: "5857SHUTTLE" },
+      { company: "juneau-tours-whale-watch", item: "344494" },
+    ],
     operatorId: "operator:juneau-tours-and-whale-watch",
     operatorSlug: "juneau-tours-and-whale-watch",
     operatorName: "Juneau Tours & Whale Watch",
@@ -1765,7 +1842,27 @@ export const SOUTHEAST_ALASKA_TOURS: readonly SoutheastAlaskaTourProductRecord[]
     image: "/images/alaska/mendenhall-visitor-center.jpg",
     imageAlt: "Mendenhall Glacier Visitor Center",
     imageCredit: "Public domain · USFS",
-    bookingChannel: "viator_exact_product",
+    bookingChannel: "supplier_direct_facilitator_10pct",
+    authorizedSupplierBinding: {
+      provider: "Rezgo",
+      supplierOperatorKey: "juneau-tours-whale-watch",
+      supplierItemCode: "344494",
+      supplierDefaultOptionUid: "344494",
+      supplierHostedSeoSlug: "glacier-shuttle-tour",
+      normalizedFeedTourId: "dcc:rezgo:juneau-tours:344494",
+      matchedPartnerProductCode: "5857SHUTTLE",
+      supplierHostedDomain: "juneauwhalewatch.rezgo.com",
+      publicRefId: "dccjuneau10",
+      surfaceName: "dcc_juneau_rezgo_direct_checkout",
+      trackingTagPrefix: "dcc_juneau_rezgo_direct",
+      liveAvailabilityConnected: true,
+      directCheckoutConnected: true,
+      merchantOfRecord: "operator",
+      customerFundsCapturedByPlatform: false,
+      settlementMode: "operator_mor_platform_invoices_commission",
+      commissionPercent: 10,
+      commissionEarnedOn: "completed_non_refunded_bookings",
+    },
     viatorProductCode: "5857SHUTTLE",
     viatorOfficialUrl: "https://www.viator.com/tours/Juneau/Round-Trip-Mendenhall-Glacier-Shuttle-Service/d941-5857SHUTTLE",
     officialProductUrl: "https://www.juneautours.com/mendenhall-glacier-shuttle-tour/",
@@ -3429,6 +3526,8 @@ export interface SoutheastAlaskaDirectorySnapshot {
   categories: readonly SoutheastAlaskaCategoryDefinition[];
   operators: Array<{
     operator: SoutheastAlaskaOperatorRecord;
+    liveAvailabilityConnected: boolean;
+    directCheckoutConnected: boolean;
     tours: SoutheastAlaskaTourProductRecord[];
     gate: EntityPublicationGateEvaluation;
   }>;
@@ -3437,33 +3536,113 @@ export interface SoutheastAlaskaDirectorySnapshot {
   heldRecordsLedger: SoutheastAlaskaHeldRecordEntry[];
 }
 
-export function getSoutheastAlaskaDirectorySnapshot(): SoutheastAlaskaDirectorySnapshot {
+export interface RuntimeSupplierVerificationOptions {
+  juneauToursRezgo?: {
+    liveAvailabilityVerified: boolean;
+    directCheckoutVerified: boolean;
+    verifiedRezgoComs?: ReadonlySet<string>;
+  };
+}
+
+export function resolveSoutheastAlaskaTourDirectRezgoHref(
+  tour: SoutheastAlaskaTourProductRecord,
+  options?: {
+    originatingSite?: string | null;
+    serviceDate?: string | null;
+    partySize?: number | null;
+    optionUid?: string | null;
+  },
+): string | null {
+  if (
+    tour.bookingChannel !== "supplier_direct_facilitator_10pct" ||
+    !tour.authorizedSupplierBinding ||
+    !tour.authorizedSupplierBinding.directCheckoutConnected
+  ) {
+    return null;
+  }
+  return buildAuthorizedSupplierDirectWrapperHref(tour.authorizedSupplierBinding, {
+    placeSlug: tour.portSlug,
+    originatingSite: options?.originatingSite || "lastfrontiershoreexcursions.com",
+    serviceDate: options?.serviceDate ?? "2027-07-15",
+    partySize: options?.partySize ?? null,
+    optionUid: options?.optionUid ?? null,
+  });
+}
+
+export function getSoutheastAlaskaDirectorySnapshot(
+  options?: RuntimeSupplierVerificationOptions,
+): SoutheastAlaskaDirectorySnapshot {
   assertMandatorySoutheastAlaskaInvariants();
 
+  const jtRuntime = options?.juneauToursRezgo;
+
   const normalizedTours: SoutheastAlaskaTourProductRecord[] =
-    SOUTHEAST_ALASKA_TOURS.map((tour) => ({
-      ...tour,
-      departures:
-        tour.departures ??
-        normalizeProductDepartureSlots({
-          productId: tour.tourId,
-          typicalDepartureTimes: tour.typicalDepartureTimes,
-          durationMinutes: tour.durationMinutes,
-          pickupAvailable: tour.cruisePickupIncluded,
-        }),
-    }));
+    SOUTHEAST_ALASKA_TOURS.map((tour) => {
+      let effectiveBinding = tour.authorizedSupplierBinding ?? null;
+      if (
+        effectiveBinding &&
+        tour.operatorId === "operator:juneau-tours-and-whale-watch" &&
+        jtRuntime
+      ) {
+        const itemInLiveFeed = jtRuntime.verifiedRezgoComs
+          ? jtRuntime.verifiedRezgoComs.has(effectiveBinding.supplierItemCode)
+          : jtRuntime.liveAvailabilityVerified;
+        effectiveBinding = {
+          ...effectiveBinding,
+          liveAvailabilityConnected:
+            jtRuntime.liveAvailabilityVerified && itemInLiveFeed,
+          directCheckoutConnected:
+            jtRuntime.directCheckoutVerified && itemInLiveFeed,
+        };
+      }
+      return {
+        ...tour,
+        authorizedSupplierBinding: effectiveBinding,
+        departures:
+          tour.departures ??
+          normalizeProductDepartureSlots({
+            productId: tour.tourId,
+            typicalDepartureTimes: tour.typicalDepartureTimes,
+            durationMinutes: tour.durationMinutes,
+            pickupAvailable: tour.cruisePickupIncluded,
+          }),
+      };
+    });
 
   const evaluatedPlaces = SOUTHEAST_ALASKA_PLACES.map((place) => ({
     place,
     gate: evaluatePlacePublicationGate(place),
   }));
 
-  const evaluatedOperators = SOUTHEAST_ALASKA_OPERATORS.map((operator) => {
+  const evaluatedOperators = SOUTHEAST_ALASKA_OPERATORS.map((rawOperator) => {
+    let operator = rawOperator;
+    if (
+      rawOperator.operatorId === "operator:juneau-tours-and-whale-watch" &&
+      jtRuntime
+    ) {
+      operator = {
+        ...rawOperator,
+        integrationApproval: {
+          ...rawOperator.integrationApproval,
+          liveAvailabilityApprovedByOwner:
+            rawOperator.integrationApproval.liveAvailabilityApprovedByOwner &&
+            jtRuntime.liveAvailabilityVerified,
+          directCheckoutApprovedByOwner:
+            rawOperator.integrationApproval.directCheckoutApprovedByOwner &&
+            jtRuntime.directCheckoutVerified,
+          liveFeedVerificationStatus: jtRuntime.liveAvailabilityVerified
+            ? "verified_live_feed"
+            : "degraded_fallback",
+        },
+      };
+    }
     const tours = normalizedTours.filter(
       (t) => t.operatorId === operator.operatorId,
     );
     return {
       operator,
+      liveAvailabilityConnected: isOperatorLiveAvailabilityConnected(operator),
+      directCheckoutConnected: isOperatorDirectCheckoutConnected(operator),
       tours,
       gate: evaluateOperatorPublicationGate(operator, tours),
     };
@@ -3614,8 +3793,12 @@ export function getSoutheastAlaskaDirectorySnapshot(): SoutheastAlaskaDirectoryS
         .length,
       heldOperatorsInResearchQueue: evaluatedOperators.filter((o) => !o.gate.indexable)
         .length,
-      liveAvailabilityConnectedOperators: 0,
-      directCheckoutConnectedOperators: 0,
+      liveAvailabilityConnectedOperators: evaluatedOperators.filter((o) =>
+        isOperatorLiveAvailabilityConnected(o.operator),
+      ).length,
+      directCheckoutConnectedOperators: evaluatedOperators.filter((o) =>
+        isOperatorDirectCheckoutConnected(o.operator),
+      ).length,
       totalToursModeled: normalizedTours.length,
       verifiedActiveTours: verifiedActiveTours.length,
       commerciallyHeldTours: commerciallyHeldTours.length,

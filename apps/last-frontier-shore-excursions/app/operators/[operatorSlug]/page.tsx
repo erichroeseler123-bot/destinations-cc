@@ -5,14 +5,17 @@ import { buildDccHandoffAffiliateUrl } from "@/lib/affiliate/links";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 import { OperatorProfileClaimPanel } from "@/components/OperatorProfileClaimPanel";
 import { OperatorEntityReviewsTabs } from "@/components/OperatorEntityReviewsTabs";
+import { JuneauNormalizedSupplierFeedSection } from "@/components/JuneauNormalizedSupplierFeedSection";
+import { loadLfseJuneauNormalizedSupplierFeed } from "@/lib/dccJuneauSupplierFeed";
 import {
   isOperatorDirectCheckoutConnected,
   isOperatorLiveAvailabilityConnected,
 } from "../../../../../lib/dcc/shared/southeastAlaskaDirectoryContract";
-import { SOUTHEAST_ALASKA_OPERATORS } from "../../../../../lib/dcc/shared/southeastAlaskaDirectoryOperatorsAndTours";
 import {
+  SOUTHEAST_ALASKA_OPERATORS,
   findSoutheastAlaskaOperatorBySlugOrAlias,
   getSoutheastAlaskaDirectorySnapshot,
+  resolveSoutheastAlaskaTourDirectRezgoHref,
 } from "../../../../../lib/dcc/shared/southeastAlaskaDirectoryOperatorsAndTours";
 
 const SITE = "https://www.lastfrontiershoreexcursions.com";
@@ -88,6 +91,22 @@ export default async function OperatorProfilePage({
 
   const liveAvailConnected = isOperatorLiveAvailabilityConnected(operator);
   const directCheckoutConnected = isOperatorDirectCheckoutConnected(operator);
+  const juneauFeed =
+    operator.slug === "juneau-tours-and-whale-watch"
+      ? await loadLfseJuneauNormalizedSupplierFeed({
+          date: "2027-07-15",
+          revalidateSeconds: 120,
+        })
+      : null;
+
+  const verifiedLiveAvail =
+    liveAvailConnected &&
+    (operator.slug !== "juneau-tours-and-whale-watch" ||
+      Boolean(juneauFeed?.ok && juneauFeed.source === "dcc_rezgo_readonly_xml"));
+  const verifiedDirectCheckout =
+    directCheckoutConnected &&
+    (operator.slug !== "juneau-tours-and-whale-watch" ||
+      Boolean(juneauFeed?.liveDirectRezgoCheckoutEnabled));
   const isJuneauAviation =
     operator.publicPortSlugs.includes("juneau") &&
     operator.categorySlugs.includes("helicopter-glacier-tours");
@@ -421,16 +440,22 @@ export default async function OperatorProfilePage({
                 </li>
                 <li>
                   <strong>Live Availability API:</strong>{" "}
-                  {liveAvailConnected
-                    ? "Connected (Owner Approved)"
+                  {verifiedLiveAvail
+                    ? "Connected (Authorized Rezgo Live Feed)"
                     : "Not yet connected"}
                 </li>
                 <li>
-                  <strong>Direct Facilitator Checkout:</strong>{" "}
-                  {directCheckoutConnected
-                    ? "Connected (10% Facilitator Active)"
+                  <strong>Direct Checkout:</strong>{" "}
+                  {verifiedDirectCheckout
+                    ? `Connected (Direct Checkout with ${operator.name} · Supplier-Hosted Rezgo)`
                     : "Not connected (Official Site / Partner Reference)"}
                 </li>
+                {verifiedDirectCheckout && (
+                  <li>
+                    <strong>Commercial Settlement:</strong> {operator.name} is Merchant of
+                    Record (supplier-hosted payment; 10% post-completion invoicing)
+                  </li>
+                )}
               </ul>
             </div>
           </div>
@@ -465,6 +490,13 @@ export default async function OperatorProfilePage({
         </div>
       </section>
 
+      {/* 2B. Live Authorized Rezgo Availability & Direct Checkout (Juneau Tours ONLY) */}
+      {juneauFeed && verifiedLiveAvail && (
+        <div id="live-rezgo-booking" data-testid="operator-live-rezgo-feed">
+          <JuneauNormalizedSupplierFeedSection feed={juneauFeed} />
+        </div>
+      )}
+
       {/* 3. Tour Lineup */}
       <section
         className="section"
@@ -484,9 +516,34 @@ export default async function OperatorProfilePage({
           ) : (
             <div className="grid" style={{ marginTop: 18 }}>
               {tours.map((tour) => {
-                const bookingHref =
-                  tour.bookingChannel === "viator_exact_product" &&
-                  tour.viatorOfficialUrl
+                const matchedLiveRezgoTour =
+                  verifiedLiveAvail && tour.authorizedSupplierBinding
+                    ? juneauFeed?.tours.find(
+                        (t) =>
+                          t.normalizedTourId ===
+                            tour.authorizedSupplierBinding?.normalizedFeedTourId ||
+                          t.rezgoCom === tour.authorizedSupplierBinding?.supplierItemCode,
+                      ) || null
+                    : null;
+                const isTourDirectRezgo = Boolean(
+                  verifiedDirectCheckout &&
+                    tour.authorizedSupplierBinding &&
+                    (!juneauFeed || matchedLiveRezgoTour?.liveDirectRezgoCheckoutEnabled),
+                );
+                const directRezgoHref = isTourDirectRezgo
+                  ? resolveSoutheastAlaskaTourDirectRezgoHref(tour, {
+                      optionUid: matchedLiveRezgoTour?.rezgoUid ?? null,
+                      serviceDate: juneauFeed?.dateChecked ?? "2027-07-15",
+                    })
+                  : null;
+                const isViatorFallback =
+                  !directRezgoHref &&
+                  (tour.bookingChannel === "viator_exact_product" ||
+                    tour.bookingChannel === "supplier_direct_facilitator_10pct") &&
+                  Boolean(tour.viatorOfficialUrl);
+                const bookingHref = directRezgoHref
+                  ? directRezgoHref
+                  : isViatorFallback && tour.viatorOfficialUrl
                     ? buildDccHandoffAffiliateUrl({
                         source: "viator",
                         destinationUrl: tour.viatorOfficialUrl,
@@ -561,14 +618,16 @@ export default async function OperatorProfilePage({
                           href={bookingHref}
                           target="_blank"
                           rel={
-                            tour.bookingChannel === "viator_exact_product"
+                            isViatorFallback
                               ? "noopener noreferrer sponsored"
                               : "noopener noreferrer"
                           }
                         >
-                          {tour.bookingChannel === "viator_exact_product"
-                            ? "Check Partner Availability ↗"
-                            : "Official Tour Page ↗"}
+                          {directRezgoHref
+                            ? `Direct Checkout with ${operator.name} ↗`
+                            : isViatorFallback
+                              ? "Check Partner Availability ↗"
+                              : "Official Tour Page ↗"}
                         </a>
                       ) : (
                         <span className="badge badge-warning">

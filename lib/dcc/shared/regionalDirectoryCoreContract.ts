@@ -183,14 +183,119 @@ export interface OperatorIntegrationApprovalState {
   liveAvailabilityApprovedByOwner: boolean;
   directCheckoutApprovedByOwner: boolean;
   commercialTermsSigned10Pct: boolean;
+  settlementMode?: "operator_mor_platform_invoices_commission" | null;
+  commissionEarnedOn?: "completed_non_refunded_bookings" | null;
+  publicAttributionParam?: string | null;
+  liveFeedVerificationStatus?:
+    | "unconnected"
+    | "verified_live_feed"
+    | "degraded_fallback";
   approvedAt: string | null;
   approvedBy: string | null;
   notes: string;
 }
 
+export interface AuthorizedSupplierProductBinding {
+  provider: BookingProviderPlatform;
+  supplierOperatorKey: string;
+  supplierItemCode: string;
+  supplierDefaultOptionUid: string;
+  supplierHostedSeoSlug: string;
+  normalizedFeedTourId: string;
+  matchedPartnerProductCode: string | null;
+  supplierHostedDomain: string;
+  publicRefId: string;
+  surfaceName: string;
+  trackingTagPrefix: string;
+  liveAvailabilityConnected: boolean;
+  directCheckoutConnected: boolean;
+  merchantOfRecord: "operator";
+  customerFundsCapturedByPlatform: false;
+  settlementMode: "operator_mor_platform_invoices_commission";
+  commissionPercent: 10;
+  commissionEarnedOn: "completed_non_refunded_bookings";
+}
+
+export function buildAuthorizedSupplierDirectWrapperHref(
+  binding: AuthorizedSupplierProductBinding,
+  options?: {
+    placeSlug?: string | null;
+    originatingSite?: string | null;
+    serviceDate?: string | null;
+    partySize?: number | null;
+    optionUid?: string | null;
+  },
+): string | null {
+  if (!binding.directCheckoutConnected) return null;
+  const host = binding.supplierHostedDomain
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/.*$/, "");
+  const refId = binding.publicRefId.trim();
+  const optionUid = (options?.optionUid || binding.supplierDefaultOptionUid).trim();
+  if (!host || !/^[A-Za-z0-9]+$/.test(refId) || !/^\d+$/.test(optionUid)) {
+    return null;
+  }
+
+  const dateSeg =
+    options?.serviceDate && /^\d{4}-\d{2}-\d{2}$/.test(options.serviceDate)
+      ? `/${options.serviceDate}`
+      : "";
+  const supplierUrl = new URL(
+    `https://${host}/details/${binding.supplierItemCode}/${binding.supplierHostedSeoSlug}/${optionUid}${dateSeg}`,
+  );
+  supplierUrl.searchParams.set("refid", refId);
+  if (
+    typeof options?.partySize === "number" &&
+    Number.isFinite(options.partySize) &&
+    options.partySize >= 1
+  ) {
+    supplierUrl.searchParams.set(
+      "adult_num",
+      String(Math.min(99, Math.trunc(options.partySize))),
+    );
+  }
+
+  const wrapper = new URL("https://www.destinationcommandcenter.com/go/out");
+  wrapper.searchParams.set("u", supplierUrl.toString());
+  wrapper.searchParams.set(
+    "originatingSite",
+    (options?.originatingSite || "destinationcommandcenter.com").trim(),
+  );
+  wrapper.searchParams.set("surface", binding.surfaceName);
+  if (options?.placeSlug) {
+    wrapper.searchParams.set("port", options.placeSlug);
+  }
+  const prodCode = binding.matchedPartnerProductCode || binding.supplierItemCode;
+  wrapper.searchParams.set("product", prodCode);
+  wrapper.searchParams.set("option", optionUid);
+  if (options?.serviceDate && /^\d{4}-\d{2}-\d{2}$/.test(options.serviceDate)) {
+    wrapper.searchParams.set("date", options.serviceDate);
+  }
+  if (
+    typeof options?.partySize === "number" &&
+    Number.isFinite(options.partySize) &&
+    options.partySize >= 1
+  ) {
+    wrapper.searchParams.set(
+      "partySize",
+      String(Math.min(99, Math.trunc(options.partySize))),
+    );
+  }
+  wrapper.searchParams.set(
+    "trackingTag",
+    `${binding.trackingTagPrefix}_${prodCode.toLowerCase()}_${optionUid}`,
+  );
+  return wrapper.toString();
+}
+
 export function isOperatorLiveAvailabilityConnected(operator: {
   integrationApproval: OperatorIntegrationApprovalState;
 }): boolean {
+  if (operator.integrationApproval.liveFeedVerificationStatus === "degraded_fallback") {
+    return false;
+  }
   return (
     operator.integrationApproval.connectionRequestStatus === "approved_live" &&
     operator.integrationApproval.liveAvailabilityApprovedByOwner === true
@@ -469,6 +574,7 @@ export interface DirectoryProductCoreRecord<
   imageAlt: string;
   imageCredit: string;
   bookingChannel: ProductBookingChannel;
+  authorizedSupplierBinding?: AuthorizedSupplierProductBinding | null;
   viatorProductCode?: string | null;
   viatorOfficialUrl?: string | null;
   officialProductUrl: string;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
+import { loadLfseJuneauNormalizedSupplierFeed } from "@/lib/dccJuneauSupplierFeed";
 import { getSoutheastAlaskaDirectorySnapshot } from "../../../../lib/dcc/shared/southeastAlaskaDirectoryOperatorsAndTours";
 
 const SITE = "https://www.lastfrontiershoreexcursions.com";
@@ -29,8 +30,22 @@ const PLACE_TYPE_LABELS: Record<string, string> = {
   scenic_cruise_destination: "Scenic Cruise Waterway (No Disembarkation)",
 };
 
-export default function SoutheastAlaskaHubPage() {
-  const snapshot = getSoutheastAlaskaDirectorySnapshot();
+export default async function SoutheastAlaskaHubPage() {
+  const juneauFeed = await loadLfseJuneauNormalizedSupplierFeed({
+    date: "2027-07-15",
+    revalidateSeconds: 120,
+  });
+  const snapshot = getSoutheastAlaskaDirectorySnapshot(
+    juneauFeed
+      ? {
+          juneauToursRezgo: {
+            liveAvailabilityVerified:
+              Boolean(juneauFeed.ok) && juneauFeed.source === "dcc_rezgo_readonly_xml",
+            directCheckoutVerified: Boolean(juneauFeed.liveDirectRezgoCheckoutEnabled),
+          },
+        }
+      : undefined,
+  );
 
   const indexablePlaces = snapshot.places.filter((p) => p.gate.indexable);
   const heldPublicPlaces = snapshot.places.filter(
@@ -597,16 +612,40 @@ export default function SoutheastAlaskaHubPage() {
             </div>
 
             <div className="card">
-              <span className="badge badge-warning" style={{ alignSelf: "flex-start" }}>
+              <span
+                className={`badge ${
+                  snapshot.counts.liveAvailabilityConnectedOperators > 0
+                    ? "badge-safety"
+                    : "badge-warning"
+                }`}
+                style={{ alignSelf: "flex-start" }}
+              >
                 Direct API Connections
               </span>
               <h3 style={{ fontSize: 32, marginTop: 10 }}>
                 {snapshot.counts.liveAvailabilityConnectedOperators} Live
               </h3>
               <p>
-                Live API availability and optional 10% supplier-hosted direct checkout
-                strictly require operator authorization and explicit owner approval (never
-                self-activated).
+                {snapshot.counts.directCheckoutConnectedOperators > 0 ? (
+                  <>
+                    <strong>{snapshot.counts.directCheckoutConnectedOperators}</strong>{" "}
+                    authorized direct supplier checkout active (
+                    <Link
+                      href="/operators/juneau-tours-and-whale-watch"
+                      style={{ fontWeight: 700, color: "var(--forest)" }}
+                    >
+                      Juneau Tours &amp; Whale Watch
+                    </Link>
+                    ); all other operators remain unconnected until verified authorization
+                    and explicit owner approval.
+                  </>
+                ) : (
+                  <>
+                    Live API availability and optional 10% supplier-hosted direct checkout
+                    strictly require operator authorization and explicit owner approval
+                    (never self-activated).
+                  </>
+                )}
               </p>
             </div>
           </div>

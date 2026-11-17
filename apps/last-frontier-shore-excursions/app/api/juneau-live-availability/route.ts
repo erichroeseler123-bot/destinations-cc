@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
   const rawDate = (searchParams.get("date") || "").trim();
   const date = /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? rawDate : "2027-07-15";
   const activitySlug = (searchParams.get("activity") || "").trim() || undefined;
+  const filterCardId = (searchParams.get("cardId") || "").trim() || null;
   const rawParty = searchParams.get("partySize");
   const parsedParty =
     rawParty !== null && rawParty.trim() !== ""
@@ -39,7 +40,10 @@ export async function GET(request: NextRequest) {
     shipAllAboardTime,
     allAboardConfirmed: Boolean(shipAllAboardTime),
   });
-  return NextResponse.json(view, {
+  const finalView = filterCardId
+    ? { ...view, cards: view.cards.filter((c) => c.cardId === filterCardId) }
+    : view;
+  return NextResponse.json(finalView, {
     status: 200,
     headers: { "Cache-Control": "no-store, max-age=0" },
   });
@@ -57,6 +61,10 @@ export async function POST(request: NextRequest) {
     const rawParty = Number(body.partySize);
     const partySize =
       Number.isFinite(rawParty) && rawParty >= 1 ? Math.min(99, Math.trunc(rawParty)) : 1;
+    const filterCardId =
+      typeof body.filterCardId === "string" && body.filterCardId.trim()
+        ? body.filterCardId.trim()
+        : null;
     const cardId = typeof body.cardId === "string" ? body.cardId.trim() : "";
     const rezgoUid = typeof body.rezgoUid === "string" ? body.rezgoUid.trim() : "";
     const departureTime24 =
@@ -114,18 +122,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    let finalCheckoutHref = matchedDep.checkoutHref;
+    try {
+      const wrapperUrl = new URL(finalCheckoutHref);
+      if (wrapperUrl.pathname === "/go/out") {
+        wrapperUrl.searchParams.set("partySize", String(partySize));
+        const innerRaw = wrapperUrl.searchParams.get("u");
+        if (innerRaw && innerRaw.includes(".rezgo.com/")) {
+          const innerUrl = new URL(innerRaw);
+          innerUrl.searchParams.set("adult_num", String(partySize));
+          wrapperUrl.searchParams.set("u", innerUrl.toString());
+        }
+        finalCheckoutHref = wrapperUrl.toString();
+      }
+    } catch {
+      // Preserve existing checkoutHref if URL parsing fails
+    }
+
+    const scopedRefreshedView = filterCardId
+      ? {
+          ...refreshedView,
+          cards: refreshedView.cards.filter((c) => c.cardId === filterCardId),
+        }
+      : refreshedView;
+
     return NextResponse.json(
       {
         ok: true,
         available: true,
         partySize,
         message: `Available for your group of ${partySize}`,
-        checkoutHref: matchedDep.checkoutHref,
+        checkoutHref: finalCheckoutHref,
         requiresReducedBufferConfirmation: matchedDep.requiresReducedBufferConfirmation,
         reducedBufferWarningLabel: matchedDep.requiresReducedBufferConfirmation
           ? matchedDep.timingStatusLabel
           : null,
-        refreshedView,
+        refreshedView: scopedRefreshedView,
       },
       { status: 200, headers: { "Cache-Control": "no-store, max-age=0" } },
     );

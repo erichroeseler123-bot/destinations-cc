@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
+import { loadLfseJuneauNormalizedSupplierFeed } from "@/lib/dccJuneauSupplierFeed";
 import { UNCLAIMED_OPERATOR_PROFILE_NOTICE } from "../../../../lib/dcc/shared/southeastAlaskaDirectoryContract";
 import { getSoutheastAlaskaDirectorySnapshot } from "../../../../lib/dcc/shared/southeastAlaskaDirectoryOperatorsAndTours";
 
@@ -21,8 +22,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function OperatorsDirectoryPage() {
-  const snapshot = getSoutheastAlaskaDirectorySnapshot();
+export default async function OperatorsDirectoryPage() {
+  const juneauFeed = await loadLfseJuneauNormalizedSupplierFeed({
+    date: "2027-07-15",
+    revalidateSeconds: 120,
+  });
+  const snapshot = getSoutheastAlaskaDirectorySnapshot(
+    juneauFeed
+      ? {
+          juneauToursRezgo: {
+            liveAvailabilityVerified:
+              Boolean(juneauFeed.ok) && juneauFeed.source === "dcc_rezgo_readonly_xml",
+            directCheckoutVerified: Boolean(juneauFeed.liveDirectRezgoCheckoutEnabled),
+          },
+        }
+      : undefined,
+  );
   const verifiedOperators = snapshot.operators.filter((o) => o.gate.indexable);
   const heldOperators = snapshot.operators.filter((o) => !o.gate.indexable);
 
@@ -178,7 +193,13 @@ export default function OperatorsDirectoryPage() {
           </p>
 
           <div className="grid">
-            {verifiedOperators.map(({ operator, tours }) => {
+            {verifiedOperators.map(
+              ({
+                operator,
+                liveAvailabilityConnected,
+                directCheckoutConnected,
+                tours,
+              }) => {
               const activeTours = tours.filter((t) => !t.isCommerciallyHeld);
               return (
                 <div
@@ -244,8 +265,15 @@ export default function OperatorsDirectoryPage() {
                       <span className="chip">{operator.bookingPlatform}</span>
                     </div>
 
-                    {operator.verifiedOwnershipBadges.length > 0 && (
+                    {(liveAvailabilityConnected ||
+                      directCheckoutConnected ||
+                      operator.verifiedOwnershipBadges.length > 0) && (
                       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+                        {liveAvailabilityConnected && directCheckoutConnected && (
+                          <span className="badge badge-safety">
+                            Live Availability + Direct Checkout
+                          </span>
+                        )}
                         {operator.verifiedOwnershipBadges.map((b) => (
                           <span key={b.tag} className="badge badge-safety">
                             {b.label}

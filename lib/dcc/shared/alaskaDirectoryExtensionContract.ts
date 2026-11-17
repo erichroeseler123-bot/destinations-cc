@@ -16,6 +16,7 @@ import {
   evaluateCoreLocationPublicationGate,
   evaluateCoreOperatorPublicationGate,
   evaluateCorePlaceCategoryPublicationGate,
+  type AuthorizedSupplierProductBinding,
   type BookingProviderPlatform,
   type CoreOwnershipTag,
   type CorePublicationGateHoldReasonCode,
@@ -250,6 +251,7 @@ export interface SoutheastAlaskaTourProductRecord {
   imageAlt: string;
   imageCredit: string;
   bookingChannel: ProductBookingChannel;
+  authorizedSupplierBinding?: AuthorizedSupplierProductBinding | null;
   viatorProductCode?: string | null;
   viatorOfficialUrl?: string | null;
   officialProductUrl: string;

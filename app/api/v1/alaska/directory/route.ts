@@ -1,5 +1,9 @@
 import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  buildNormalizedJuneauSupplierFeed,
+  getSereneRezgoReadinessStatus,
+} from "@/lib/dcc/liveSlots/rezgoReadOnly";
 import { OPERATOR_FIELD_AUTHORITY_MATRIX } from "@/lib/dcc/shared/southeastAlaskaDirectoryContract";
 import {
   findSoutheastAlaskaOperatorBySlugOrAlias,
@@ -54,7 +58,44 @@ async function handleRequest(request: NextRequest, headOnly: boolean) {
     );
   }
 
-  const snapshot = getSoutheastAlaskaDirectorySnapshot();
+  const sereneReadiness = getSereneRezgoReadinessStatus();
+  let juneauToursRezgoVerification:
+    | {
+        liveAvailabilityVerified: boolean;
+        directCheckoutVerified: boolean;
+        verifiedRezgoComs: ReadonlySet<string>;
+      }
+    | undefined;
+
+  if (sereneReadiness.gates.credentialsStoredSecurelyInEnv) {
+    const rezgoFeed = await buildNormalizedJuneauSupplierFeed({
+      searchDate: "2027-07-15",
+    });
+    const verifiedComs = new Set<string>();
+    for (const item of rezgoFeed.tours) {
+      if (item.rezgoCom) verifiedComs.add(String(item.rezgoCom));
+    }
+    juneauToursRezgoVerification = {
+      liveAvailabilityVerified:
+        Boolean(rezgoFeed.ok) && rezgoFeed.source === "dcc_rezgo_readonly_xml",
+      directCheckoutVerified:
+        Boolean(sereneReadiness.directHostedCheckoutAllowed) &&
+        Boolean(rezgoFeed.liveDirectRezgoCheckoutEnabled),
+      verifiedRezgoComs: verifiedComs,
+    };
+  } else if (process.env.VERCEL === "1") {
+    juneauToursRezgoVerification = {
+      liveAvailabilityVerified: false,
+      directCheckoutVerified: false,
+      verifiedRezgoComs: new Set<string>(),
+    };
+  }
+
+  const snapshot = getSoutheastAlaskaDirectorySnapshot(
+    juneauToursRezgoVerification
+      ? { juneauToursRezgo: juneauToursRezgoVerification }
+      : undefined,
+  );
 
   const places = snapshot.places.filter((entry) => {
     if (!includeHeld && !entry.gate.indexable) return false;

@@ -16,6 +16,7 @@ interface JuneauNormalizedSupplierFeedSectionProps {
   initialShipArrival?: string | null;
   initialAllAboard?: string | null;
   activitySlug?: string;
+  filterNormalizedTourId?: string;
   isWhaleWatchingLanding?: boolean;
 }
 
@@ -39,11 +40,19 @@ export function JuneauNormalizedSupplierFeedSection({
   initialShipArrival = null,
   initialAllAboard = null,
   activitySlug,
+  filterNormalizedTourId,
   isWhaleWatchingLanding = false,
 }: JuneauNormalizedSupplierFeedSectionProps) {
   const isWhaleWatching = isWhaleWatchingLanding || activitySlug === "whale-watching";
   const computedInitialView = useMemo(() => {
-    if (initialView) return initialView;
+    if (initialView) {
+      return filterNormalizedTourId
+        ? {
+            ...initialView,
+            cards: initialView.cards.filter((c) => c.cardId === filterNormalizedTourId),
+          }
+        : initialView;
+    }
     if (!feed) {
       return {
         ok: false,
@@ -56,13 +65,23 @@ export function JuneauNormalizedSupplierFeedSection({
         cards: [],
       };
     }
-    return buildLfsePublicJuneauAvailabilityView(feed, {
+    const built = buildLfsePublicJuneauAvailabilityView(feed, {
       partySize: initialPartySize,
       shipArrivalTime: initialShipArrival,
       shipAllAboardTime: initialAllAboard,
       allAboardConfirmed: Boolean(initialAllAboard),
     });
-  }, [feed, initialView, initialPartySize, initialShipArrival, initialAllAboard]);
+    return filterNormalizedTourId
+      ? { ...built, cards: built.cards.filter((c) => c.cardId === filterNormalizedTourId) }
+      : built;
+  }, [
+    feed,
+    initialView,
+    initialPartySize,
+    initialShipArrival,
+    initialAllAboard,
+    filterNormalizedTourId,
+  ]);
 
   const [liveView, setLiveView] = useState<LfsePublicJuneauAvailabilityView | null>(null);
   const view = liveView ?? computedInitialView;
@@ -103,6 +122,7 @@ export function JuneauNormalizedSupplierFeedSection({
       const qs = new URLSearchParams();
       qs.set("date", nextDate);
       if (activitySlug) qs.set("activity", activitySlug);
+      if (filterNormalizedTourId) qs.set("cardId", filterNormalizedTourId);
       if (nextPartySize !== null && nextPartySize >= 1) {
         qs.set("partySize", String(nextPartySize));
       }
@@ -214,6 +234,7 @@ export function JuneauNormalizedSupplierFeedSection({
           date: card.serviceDate || serviceDate,
           partySize,
           activity: activitySlug,
+          filterCardId: filterNormalizedTourId,
           cardId: card.cardId,
           rezgoUid: activeDep.rezgoUid,
           departureTime24: activeDep.departureTime24,

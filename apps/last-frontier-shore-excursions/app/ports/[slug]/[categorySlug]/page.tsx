@@ -4,12 +4,18 @@ import { notFound } from "next/navigation";
 import { buildDccHandoffAffiliateUrl } from "@/lib/affiliate/links";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 import { PortSailingTimingFitPanel } from "@/components/PortSailingTimingFitPanel";
-import { evaluatePortCategoryPublicationGate } from "../../../../../../lib/dcc/shared/southeastAlaskaDirectoryContract";
+import { loadLfseJuneauNormalizedSupplierFeed } from "@/lib/dccJuneauSupplierFeed";
+import {
+  evaluatePortCategoryPublicationGate,
+  isOperatorDirectCheckoutConnected,
+  isOperatorLiveAvailabilityConnected,
+} from "../../../../../../lib/dcc/shared/southeastAlaskaDirectoryContract";
 import { SOUTHEAST_ALASKA_CATEGORIES } from "../../../../../../lib/dcc/shared/southeastAlaskaDirectoryData";
 import {
   findEvaluatedPortCategory,
   findSoutheastAlaskaPlaceByPortSlug,
   getSoutheastAlaskaDirectorySnapshot,
+  resolveSoutheastAlaskaTourDirectRezgoHref,
 } from "../../../../../../lib/dcc/shared/southeastAlaskaDirectoryOperatorsAndTours";
 
 const SITE = "https://www.lastfrontiershoreexcursions.com";
@@ -123,6 +129,14 @@ export default async function PortCategoryComparisonPage({
 
   const { place, bundle } = ctx;
   const { category, comparison, qualifiedOperators, qualifiedTours, gate } = bundle;
+  const juneauFeed =
+    bundle.portSlug === "juneau" &&
+    qualifiedTours.some((t) => Boolean(t.authorizedSupplierBinding))
+      ? await loadLfseJuneauNormalizedSupplierFeed({
+          date: "2027-07-15",
+          revalidateSeconds: 120,
+        })
+      : null;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -380,6 +394,18 @@ export default async function PortCategoryComparisonPage({
               {qualifiedOperators.map((op) => (
                 <div key={op.operatorId} className="card" style={{ background: "#ffffff" }}>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+                    {isOperatorLiveAvailabilityConnected(op) &&
+                      isOperatorDirectCheckoutConnected(op) &&
+                      (op.slug !== "juneau-tours-and-whale-watch" ||
+                        Boolean(
+                          juneauFeed?.ok &&
+                            juneauFeed.source === "dcc_rezgo_readonly_xml" &&
+                            juneauFeed.liveDirectRezgoCheckoutEnabled,
+                        )) && (
+                        <span className="badge badge-safety">
+                          Live Availability + Direct Checkout
+                        </span>
+                      )}
                     {op.verifiedOwnershipBadges.map((b) => (
                       <span key={b.tag} className="badge badge-safety">
                         {b.label}
@@ -422,9 +448,35 @@ export default async function PortCategoryComparisonPage({
             </h2>
             <div className="grid" style={{ marginTop: 18, marginBottom: 28 }}>
               {qualifiedTours.map((tour) => {
-                const bookingHref =
-                  tour.bookingChannel === "viator_exact_product" &&
-                  tour.viatorOfficialUrl
+                const matchedLiveRezgoTour =
+                  juneauFeed && tour.authorizedSupplierBinding
+                    ? juneauFeed.tours.find(
+                        (t) =>
+                          t.normalizedTourId ===
+                            tour.authorizedSupplierBinding?.normalizedFeedTourId ||
+                          t.rezgoCom === tour.authorizedSupplierBinding?.supplierItemCode,
+                      ) || null
+                    : null;
+                const isDirectRezgo = Boolean(
+                  tour.authorizedSupplierBinding &&
+                    juneauFeed?.ok &&
+                    juneauFeed.source === "dcc_rezgo_readonly_xml" &&
+                    matchedLiveRezgoTour?.liveDirectRezgoCheckoutEnabled,
+                );
+                const directRezgoHref = isDirectRezgo
+                  ? resolveSoutheastAlaskaTourDirectRezgoHref(tour, {
+                      optionUid: matchedLiveRezgoTour?.rezgoUid ?? null,
+                      serviceDate: juneauFeed?.dateChecked ?? "2027-07-15",
+                    })
+                  : null;
+                const isViatorFallback =
+                  !directRezgoHref &&
+                  (tour.bookingChannel === "viator_exact_product" ||
+                    tour.bookingChannel === "supplier_direct_facilitator_10pct") &&
+                  Boolean(tour.viatorOfficialUrl);
+                const bookingHref = directRezgoHref
+                  ? directRezgoHref
+                  : isViatorFallback && tour.viatorOfficialUrl
                     ? buildDccHandoffAffiliateUrl({
                         source: "viator",
                         destinationUrl: tour.viatorOfficialUrl,
@@ -490,14 +542,16 @@ export default async function PortCategoryComparisonPage({
                         href={bookingHref}
                         target="_blank"
                         rel={
-                          tour.bookingChannel === "viator_exact_product"
+                          isViatorFallback
                             ? "noopener noreferrer sponsored"
                             : "noopener noreferrer"
                         }
                       >
-                        {tour.bookingChannel === "viator_exact_product"
-                          ? "Check Partner Availability ↗"
-                          : "Official Operator Site ↗"}
+                        {directRezgoHref
+                          ? `Direct Checkout with ${tour.operatorName} ↗`
+                          : isViatorFallback
+                            ? "Check Partner Availability ↗"
+                            : "Official Operator Site ↗"}
                       </a>
                     </div>
                   </div>

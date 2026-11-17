@@ -5,12 +5,15 @@ import { AFFILIATE_CATALOG } from "@/lib/affiliate/catalog";
 import { buildDccHandoffAffiliateUrl } from "@/lib/affiliate/links";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 import { PortSailingTimingFitPanel } from "@/components/PortSailingTimingFitPanel";
+import { JuneauNormalizedSupplierFeedSection } from "@/components/JuneauNormalizedSupplierFeedSection";
+import { loadLfseJuneauNormalizedSupplierFeed } from "@/lib/dccJuneauSupplierFeed";
 import {
   SOUTHEAST_ALASKA_TOURS,
   findEvaluatedPortCategory,
   findSoutheastAlaskaOperatorBySlugOrAlias,
   findSoutheastAlaskaPlaceByPortSlug,
   findSoutheastAlaskaTourByOperatorAndSlug,
+  resolveSoutheastAlaskaTourDirectRezgoHref,
 } from "../../../../../../lib/dcc/shared/southeastAlaskaDirectoryOperatorsAndTours";
 
 const SITE = "https://www.lastfrontiershoreexcursions.com";
@@ -183,8 +186,44 @@ export default async function TourDetailPage({
     portCategoryBundle?.category.shortLabel ||
     tour.categorySlug.replace(/-/g, " ");
 
-  const bookingHref =
-    tour.bookingChannel === "viator_exact_product" && tour.viatorOfficialUrl
+  const juneauFeed = tour.authorizedSupplierBinding
+    ? await loadLfseJuneauNormalizedSupplierFeed({
+        date: "2027-07-15",
+        revalidateSeconds: 120,
+      })
+    : null;
+  const matchedLiveRezgoTour =
+    juneauFeed && tour.authorizedSupplierBinding
+      ? juneauFeed.tours.find(
+          (t) =>
+            t.normalizedTourId ===
+              tour.authorizedSupplierBinding?.normalizedFeedTourId ||
+            t.rezgoCom === tour.authorizedSupplierBinding?.supplierItemCode,
+        ) || null
+      : null;
+  const isTourLiveRezgoConnected = Boolean(
+    juneauFeed?.ok &&
+      juneauFeed.source === "dcc_rezgo_readonly_xml" &&
+      matchedLiveRezgoTour,
+  );
+  const isTourDirectRezgoCheckout = Boolean(
+    isTourLiveRezgoConnected && matchedLiveRezgoTour?.liveDirectRezgoCheckoutEnabled,
+  );
+  const directRezgoHref = isTourDirectRezgoCheckout
+    ? resolveSoutheastAlaskaTourDirectRezgoHref(tour, {
+        optionUid: matchedLiveRezgoTour?.rezgoUid ?? null,
+        serviceDate: juneauFeed?.dateChecked ?? "2027-07-15",
+      })
+    : null;
+  const isViatorFallback =
+    !directRezgoHref &&
+    (tour.bookingChannel === "viator_exact_product" ||
+      tour.bookingChannel === "supplier_direct_facilitator_10pct") &&
+    Boolean(tour.viatorOfficialUrl);
+
+  const bookingHref = directRezgoHref
+    ? directRezgoHref
+    : isViatorFallback && tour.viatorOfficialUrl
       ? buildDccHandoffAffiliateUrl({
           source: "viator",
           destinationUrl: tour.viatorOfficialUrl,
@@ -328,19 +367,26 @@ export default async function TourDetailPage({
                     href={bookingHref}
                     target="_blank"
                     rel={
-                      tour.bookingChannel === "viator_exact_product"
+                      isViatorFallback
                         ? "noopener noreferrer sponsored"
                         : "noopener noreferrer"
                     }
                   >
-                    {tour.bookingChannel === "viator_exact_product"
-                      ? "Check Partner Availability & Rates ↗"
-                      : `Visit ${tour.operatorName} Official Page ↗`}
+                    {directRezgoHref
+                      ? `Direct Checkout with ${tour.operatorName} ↗`
+                      : isViatorFallback
+                        ? "Check Partner Availability & Rates ↗"
+                        : `Visit ${tour.operatorName} Official Page ↗`}
                   </a>
                 ) : (
                   <span className="badge badge-warning">
                     Checkout Held Pending Shuttle Buffer Verification
                   </span>
+                )}
+                {isTourLiveRezgoConnected && (
+                  <a className="button secondary" href="#live-rezgo-booking">
+                    Check Live Port-Day Times ↓
+                  </a>
                 )}
                 <Link
                   className="button secondary"
@@ -472,6 +518,19 @@ export default async function TourDetailPage({
           </div>
         </div>
       </section>
+
+      {/* Scoped Live Authorized Rezgo Availability & Direct Checkout (Juneau Tours ONLY) */}
+      {juneauFeed && tour.authorizedSupplierBinding && isTourLiveRezgoConnected && (
+        <div id="live-rezgo-booking" data-testid="tour-live-rezgo-feed">
+          <JuneauNormalizedSupplierFeedSection
+            feed={juneauFeed}
+            filterNormalizedTourId={
+              matchedLiveRezgoTour?.normalizedTourId ||
+              tour.authorizedSupplierBinding.normalizedFeedTourId
+            }
+          />
+        </div>
+      )}
 
       {/* Logistics, Pickup, Accessibility & Weight/Age */}
       <section className="section" style={{ background: "#f8fbfb" }}>
