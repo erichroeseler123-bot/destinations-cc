@@ -146,6 +146,9 @@ export default async function AreaPage({
   const areaComparisons = snapshot.areaCategories.filter(
     (c) => c.areaSlug === slug && c.gate.indexable,
   );
+  const consolidatedAreaCategories = snapshot.areaCategories.filter(
+    (c) => c.areaSlug === slug && !c.gate.indexable,
+  );
 
   const drive = place.driveEstimateFromFrenchQuarter;
   const outboundMax = drive ? drive.typicalMinutesMax : 15;
@@ -398,6 +401,31 @@ export default async function AreaPage({
                     Compare vessel types, pickup windows, and check-in addresses →
                   </p>
                 </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* CONSOLIDATED IN-AREA CATEGORY COVERAGE (HELD STANDALONE INTERSECTIONS) */}
+        {consolidatedAreaCategories.length > 0 && (
+          <div
+            data-testid="consolidated-parent-area-categories"
+            className="mt-10 rounded-xl border border-white/15 bg-[#121016] p-6"
+          >
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">
+              Consolidated Category Coverage Within {place.name}
+            </p>
+            <div className="mt-3 space-y-3">
+              {consolidatedAreaCategories.map((heldCat) => (
+                <div key={heldCat.category.categorySlug}>
+                  <h3 className="font-serif text-xl text-white">{heldCat.category.name}</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-white/80">
+                    {heldCat.category.summary} Verified operators ({heldCat.operatorCount}) and
+                    active tours ({heldCat.productCount}) for this category are consolidated directly
+                    on this {place.name} directory page below rather than split onto a separate
+                    sub-page.
+                  </p>
+                </div>
               ))}
             </div>
           </div>

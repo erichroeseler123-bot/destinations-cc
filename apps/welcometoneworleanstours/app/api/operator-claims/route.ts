@@ -5,6 +5,11 @@ import {
 } from "@/app/api/v1/new-orleans/claims/route";
 import { submitNewOrleansOperatorClaim } from "@/lib/dcc/new-orleans/operatorClaimsGovernance";
 import { isPreviewOrLocalRuntime } from "@/lib/dcc/commercialAttribution";
+import {
+  resolveDccIngestEndpointUrl,
+  resolveDccInternalSecret,
+} from "@/lib/dcc/shared/envCompat";
+import { isServerlessRuntimeEnvironment } from "@/lib/dcc/storage/transactionalSubmissions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -96,61 +101,53 @@ export async function POST(request: Request) {
   let durableBackend = result.record.durableBackend;
 
   // Standalone WNO Vercel container fallback when DATABASE_URL lives only on DCC:
-  // forward to DCC specialist-inquiries durable ingest with notificationStatus=skipped_disabled
+  // forward to DCC specialist-inquiries durable ingest with notificationStatus=durable_storage_only
   // so zero automatic emails/notifications are sent while guaranteeing Postgres durability.
   if (!durablePersisted) {
-    const dccBase = (
-      process.env.DCC_SPECIALIST_INQUIRY_INGEST_URL ||
-      process.env.DCC_API_BASE_URL ||
-      process.env.NEXT_PUBLIC_DCC_API_URL ||
-      "https://www.destinationcommandcenter.com"
-    )
-      .trim()
-      .replace(/\/+$/, "");
+    const ingestEndpoint = resolveDccIngestEndpointUrl();
 
     const upstreamHeaders: Record<string, string> = {
       "Content-Type": "application/json",
       Accept: "application/json",
       "x-specialist-origin-host":
-        request.headers.get("host") || "welcometoneworleanstours.vercel.app",
+        request.headers.get("host") || "welcometoneworleanstours.com",
     };
-    const internalAuthSecret = (
-      process.env.DCC_INTERNAL_API_SECRET ||
-      process.env.INTERNAL_API_SECRET ||
-      process.env.ADMIN_ACCESS_KEY ||
-      ""
-    ).trim();
+    const internalAuthSecret =
+      resolveDccInternalSecret() ||
+      (process.env.ADMIN_ACCESS_KEY || "").trim();
     if (internalAuthSecret) {
+      upstreamHeaders["x-dcc-internal-secret"] = internalAuthSecret;
       upstreamHeaders["x-admin-access-key"] = internalAuthSecret;
       upstreamHeaders["x-internal-secret"] = internalAuthSecret;
       upstreamHeaders.Authorization = `Bearer ${internalAuthSecret}`;
     }
 
     try {
-      const upstreamRes = await fetch(
-        `${dccBase}/api/internal/specialist-inquiries`,
-        {
-          method: "POST",
-          headers: upstreamHeaders,
-          body: JSON.stringify({
-            channel: "welcometoneworleanstours-inquiry",
-            submissionId: result.record.claimSubmissionId,
-            name: contactName,
-            email,
-            phone,
-            headline: `[New Orleans Operator Claim] ${result.record.operatorName} (${result.record.assessment.verificationMethod})`,
-            partySize: 1,
-            routeOrLocation: result.record.operatorId,
-            notes: `Role: ${roleTitle} · Direct API requested: ${result.record.requestDirectApiConnection} · Handle: ${result.record.bookingSystemIdentifier || "none"} · Live/Checkout active: false`,
-            sourcePath: result.record.sourcePage,
-            environment: previewRuntime ? "preview" : result.record.environment,
-            namespace: previewRuntime ? "preview" : "production",
-            isTest: result.record.isTest,
-            notificationStatus: "skipped_disabled",
-          }),
-          cache: "no-store",
-        },
-      );
+      const upstreamRes = await fetch(ingestEndpoint, {
+        method: "POST",
+        headers: upstreamHeaders,
+        body: JSON.stringify({
+          channel: "welcometoneworleanstours-inquiry",
+          submissionId: result.record.claimSubmissionId,
+          name: contactName,
+          company: result.record.operatorName,
+          email,
+          phone,
+          headline: `[New Orleans Operator Claim] ${result.record.operatorName} (${result.record.assessment.verificationMethod})`,
+          partySize: 1,
+          tourType: "operator_profile_claim",
+          bookingMode: "claim_factual_control_0_usd",
+          routeOrLocation: result.record.operatorId,
+          notes: `Role: ${roleTitle} · Direct API requested: ${result.record.requestDirectApiConnection} · Handle: ${result.record.bookingSystemIdentifier || "none"} · Live/Checkout active: false`,
+          sourcePath: result.record.sourcePage,
+          environment: previewRuntime ? "preview" : result.record.environment,
+          namespace: previewRuntime ? "preview" : "production",
+          isTest: result.record.isTest,
+          emailSent: false,
+          notificationStatus: "durable_storage_only",
+        }),
+        cache: "no-store",
+      });
       const upstreamJson = (await upstreamRes.json().catch(() => null)) as {
         ok?: boolean;
         persisted?: boolean;
@@ -163,6 +160,18 @@ export async function POST(request: Request) {
     } catch {
       // Preserve local result if upstream is unreachable in offline test
     }
+  }
+
+  if (!durablePersisted && isServerlessRuntimeEnvironment()) {
+    return NextResponse.json(
+      {
+        ok: false,
+        durablePersisted: false,
+        error:
+          "Durable operator claim inbox storage is temporarily unavailable. Please try again shortly.",
+      },
+      { status: 503, headers: NO_STORE_HEADERS },
+    );
   }
 
   return NextResponse.json(

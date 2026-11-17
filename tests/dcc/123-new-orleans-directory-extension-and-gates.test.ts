@@ -313,6 +313,28 @@ test("5. Operator claims durability, business-control verification, secret rejec
   assert.equal(validBody.liveAvailabilityActive, false);
   assert.equal(validBody.directCheckout10PctActive, false);
   assert.equal(validBody.automaticNotificationsSent, false);
+
+  // Confirm claim surfaces in the authenticated DCC owner inbox even with convenience emails disabled
+  const { getUnifiedOperatorInbox } = await import("@/lib/dcc/operatorInbox");
+  const inbox = await getUnifiedOperatorInbox({ view: "all" });
+  const matchedInboxItem = inbox.items.find(
+    (item) => item.sourceId === validBody.claimSubmissionId,
+  );
+  assert.ok(
+    matchedInboxItem,
+    "New Orleans operator claim must appear in the authenticated DCC owner inbox",
+  );
+  assert.equal(matchedInboxItem.contact.name, "[TEST] Lafitte Dispatch");
+  assert.equal(matchedInboxItem.contact.company, "Airboat Adventures");
+  assert.equal(matchedInboxItem.notificationStatus, "durable_storage_only");
+  assert.equal(matchedInboxItem.classification, "test");
+
+  const genuineOnlyInbox = await getUnifiedOperatorInbox({ view: "genuine" });
+  assert.equal(
+    genuineOnlyInbox.items.some((item) => item.sourceId === validBody.claimSubmissionId),
+    false,
+    "Synthetic [TEST] claim must not inflate genuine owner inbox counts",
+  );
 });
 
 test("6. Welcome to the Swamp links upward to WNO canonical profiles without duplicating /operators", () => {

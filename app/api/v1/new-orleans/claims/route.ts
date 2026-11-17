@@ -9,6 +9,8 @@ import {
   reviewNewOrleansOperatorClaimByOwner,
   submitNewOrleansOperatorClaim,
 } from "@/lib/dcc/new-orleans/operatorClaimsGovernance";
+import { getUnifiedOperatorInbox } from "@/lib/dcc/operatorInbox";
+import { isServerlessRuntimeEnvironment } from "@/lib/dcc/storage/transactionalSubmissions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,12 +44,55 @@ export async function GET(request: Request) {
   }
   const { searchParams } = new URL(request.url);
   const includeTest = searchParams.get("includeTest") !== "0";
-  const claims = listStoredNewOrleansOperatorClaims({ includeTest });
+  const inMemoryClaims = listStoredNewOrleansOperatorClaims({ includeTest });
+  const seenIds = new Set(inMemoryClaims.map((item) => item.claimSubmissionId));
+  const mergedClaims: unknown[] = [...inMemoryClaims];
+
+  try {
+    const inbox = await getUnifiedOperatorInbox({
+      view: includeTest ? "all" : "genuine",
+      site: "welcometoneworleanstours",
+    });
+    for (const item of inbox.items) {
+      const submissionId = item.sourceId;
+      if (seenIds.has(submissionId)) continue;
+      const headline = item.tripDetails.headline || item.title || "";
+      if (!/\[New Orleans Operator Claim\]/i.test(headline)) continue;
+      seenIds.add(submissionId);
+      mergedClaims.push({
+        claimSubmissionId: submissionId,
+        operatorId: item.tripDetails.routeOrLocation || "unknown",
+        operatorName: item.contact.company || headline,
+        contactName: item.contact.name || "Representative",
+        email: item.contact.email || "",
+        phone: item.contact.phone || null,
+        headline,
+        notes: item.tripDetails.messageOrNotes || null,
+        sourcePage: item.tripDetails.pageOrSourceUrl || null,
+        isTest: item.classification === "test",
+        environment: item.environment,
+        durablePersisted: true,
+        durableBackend: "postgres",
+        notificationStatus: item.notificationStatus,
+        automaticNotificationsSent: false,
+        liveAvailabilityActive: false,
+        directCheckout10PctActive: false,
+        ownerReviewState:
+          item.triageStatus === "resolved"
+            ? "claim_verified_workspace_enabled"
+            : "pending_owner_review",
+        createdAt: item.submittedAt,
+      });
+    }
+  } catch {
+    // Fall back to in-memory claims if inbox DB read is unavailable
+  }
+
   return NextResponse.json(
     {
       ok: true,
-      count: claims.length,
-      claims,
+      count: mergedClaims.length,
+      claims: mergedClaims,
     },
     { status: 200, headers: NO_STORE_HEADERS },
   );
@@ -123,6 +168,18 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { ok: false, error: result.error },
       { status: result.status, headers: NO_STORE_HEADERS },
+    );
+  }
+
+  if (!result.record.durablePersisted && isServerlessRuntimeEnvironment()) {
+    return NextResponse.json(
+      {
+        ok: false,
+        durablePersisted: false,
+        error:
+          "Durable operator claim inbox storage is temporarily unavailable. Please try again shortly.",
+      },
+      { status: 503, headers: NO_STORE_HEADERS },
     );
   }
 

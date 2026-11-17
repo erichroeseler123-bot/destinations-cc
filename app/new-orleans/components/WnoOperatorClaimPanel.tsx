@@ -137,6 +137,32 @@ export default function WnoOperatorClaimPanel({
         owner review.
       </p>
 
+      <div
+        data-testid="claim-vs-commercial-separation"
+        className="mt-4 grid gap-3 md:grid-cols-2 text-xs"
+      >
+        <div className="rounded-lg border border-white/15 bg-[#0a080d] p-4">
+          <p className="font-bold uppercase tracking-wider text-[#d4af37]">
+            Step 1 · Claim This Profile ($0 — Factual Control Only)
+          </p>
+          <p className="mt-1.5 leading-relaxed text-white/80">
+            Verifies your business representative status so you can update dock addresses, boarding
+            wharves, pickup rules, and accessibility details. Does <strong>not</strong> activate live
+            API inventory, direct checkout, or any commercial fee.
+          </p>
+        </div>
+        <div className="rounded-lg border border-white/15 bg-[#0a080d] p-4">
+          <p className="font-bold uppercase tracking-wider text-white/90">
+            Step 2 · Optional API Inventory, Direct Checkout &amp; Commercial Terms
+          </p>
+          <p className="mt-1.5 leading-relaxed text-white/80">
+            Connecting Rezgo/FareHarbor live availability or supplier-hosted direct checkout (10%
+            post-completion settlement with you as Merchant of Record) requires a separate
+            owner-approved agreement and verified integration test.
+          </p>
+        </div>
+      </div>
+
       {successData ? (
         <div
           data-testid="wno-operator-claim-confirmation"
