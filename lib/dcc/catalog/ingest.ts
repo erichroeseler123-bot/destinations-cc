@@ -14,23 +14,28 @@ import { DCC_SITE_TRUTH } from "@/lib/dcc/siteTruth";
 import {
   EARTHOS_DESTINATION_NODES,
   commitCatalogBatchAndCheckpointAtomically,
+  getAllActiveProviderProductCodes,
+  getAllDurableToursByProviderProductCodes,
   getCompatibilityAliasesForViatorCode,
   getDestinationProviderCodesOrdered,
   getDestinationScheduleRefreshCheckpoint,
   getDurableCatalogSummaryReport,
   getDurableToursByDestinationAndProviderCodes,
   getDurableToursByProviderProductCodes,
+  getGlobalRefreshCheckpoint,
   getImportedProviderProductCodesForDestination,
   getLatestDestinationBackfillCheckpoint,
   getRefreshCheckpoint,
   hasSubstantiveTourCatalogChange,
   loadSyncRunsWithPgHydration,
+  normalizeCatalogTourPickupAndMeeting,
   readLocalCatalogSnapshot,
   recordCatalogSyncRun,
   retireDurableTourRecord,
   selectViatorScheduleRefreshCandidates,
   upsertDestinationScheduleRefreshCheckpoint,
   upsertDurableTourRecords,
+  upsertGlobalRefreshCheckpoint,
   upsertRefreshCheckpoint,
   type CatalogSyncRunRecord,
   type ChannelOffer,
@@ -46,6 +51,8 @@ import {
 } from "./durableCatalogStore";
 import {
   DESTINATION_SCHEDULE_REFRESH_PROVIDER,
+  GLOBAL_PRODUCTS_MODIFIED_SINCE_STREAM_KEY,
+  GLOBAL_SCHEDULES_MODIFIED_SINCE_STREAM_KEY,
   buildDestinationScheduleRefreshStreamKey,
   normalizeCheckpointDestinationSlug,
 } from "./checkpointContract";
@@ -2217,9 +2224,34 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
 export type IncrementalRefreshOptions = {
   cursor?: string;
   count?: number;
+  maxPagesPerRun?: number;
+  timeBudgetMs?: number;
+  retryBaseDelayMs?: number;
   scheduleRefreshLimit?: number;
   includeScheduleAndPricingRefresh?: boolean;
+  allowControlledGlobalExecution?: boolean;
+  beforePageCommitHook?: (ctx: { pageIndex: number; nextCursor: string | null }) => Promise<void> | void;
+  midPageProcessingHook?: (ctx: { pageIndex: number; itemIndex: number; code: string }) => void;
+  midPageTransactionHook?: (statementIndex: number) => void;
 };
+
+export function isGlobalModifiedSinceExecutionAllowed(options?: {
+  allowControlledGlobalExecution?: boolean;
+}): { allowed: boolean; reason: string } {
+  if (process.env.DCC_CATALOG_REFRESH_ENABLED === "1") {
+    return { allowed: true, reason: "dcc_catalog_refresh_enabled_env" };
+  }
+  if (options?.allowControlledGlobalExecution === true) {
+    if (process.env.VERCEL_ENV === "production") {
+      return {
+        allowed: false,
+        reason: "controlled_global_override_prohibited_in_production_while_cron_paused",
+      };
+    }
+    return { allowed: true, reason: "explicit_nonprod_controlled_verification" };
+  }
+  return { allowed: false, reason: "global_modified_since_consumer_disabled" };
+}
 
 function isRetryableViatorUpstreamError(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err || "");
@@ -2340,7 +2372,7 @@ function buildRefreshedTourRecordFromDetailAndSchedule(params: {
     pickupParsed.hasCruisePortPickup,
   );
 
-  return {
+  const rawNextRecord: DurableTourRecord = {
     ...existing,
     title: effectiveTitle,
     durationMinutes: durationParsed.durationMinutes ?? existing.durationMinutes,
@@ -2387,6 +2419,8 @@ function buildRefreshedTourRecordFromDetailAndSchedule(params: {
     lastVerifiedAt: nowIso,
     updatedAt: nowIso,
   };
+
+  return normalizeCatalogTourPickupAndMeeting(rawNextRecord).normalizedRecord;
 }
 
 export type DestinationBulkRefreshErrorRecord = {
@@ -2857,11 +2891,425 @@ export async function runDestinationBoundedBulkScheduleRefresh(
   }
 }
 
+function doesScheduleUpdateRequireProductDetail(
+  existing: DurableTourRecord,
+  schedItem: any,
+): boolean {
+  const bookableItems = Array.isArray(schedItem?.bookableItems) ? schedItem.bookableItems : [];
+  if (bookableItems.length === 0) {
+    return true;
+  }
+  const existingOpts = Array.isArray(existing.productOptions) ? existing.productOptions : [];
+  const existingOptCodes = new Set(
+    existingOpts.map((o) => String(o.optionCode || "").trim()).filter(Boolean),
+  );
+  if (
+    bookableItems.length === 1 &&
+    String(bookableItems[0]?.productOptionCode || "DEFAULT").trim() === "DEFAULT" &&
+    (existingOptCodes.size === 0 || existingOptCodes.has("DEFAULT"))
+  ) {
+    return false;
+  }
+  if (existingOptCodes.size === 0) {
+    return true;
+  }
+  for (const bi of bookableItems) {
+    const optCode = String(bi?.productOptionCode || "DEFAULT").trim();
+    if (!existingOptCodes.has(optCode)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export type GlobalScheduleModifiedSinceOptions = {
+  scheduleCursor?: string;
+  maxPagesPerRun?: number;
+  timeBudgetMs?: number;
+  retryBaseDelayMs?: number;
+  allowControlledGlobalExecution?: boolean;
+  runId?: string;
+  beforePageCommitHook?: (ctx: {
+    pageIndex: number;
+    inputCursor: string | null;
+    nextCursor: string | null;
+    matchedCodes: string[];
+  }) => Promise<void> | void;
+  midPageProcessingHook?: (ctx: { pageIndex: number; itemIndex: number; code: string }) => void;
+  midPageTransactionHook?: (statementIndex: number) => void;
+};
+
+export async function runGlobalScheduleModifiedSinceRefresh(
+  options: GlobalScheduleModifiedSinceOptions = {},
+): Promise<CatalogSyncRunRecord> {
+  const startedMs = Date.now();
+  const startedAt = new Date(startedMs).toISOString();
+  const runId = options.runId || `sync:viator:schedule_pricing_refresh:${startedMs}`;
+
+  const gate = isGlobalModifiedSinceExecutionAllowed({
+    allowControlledGlobalExecution: options.allowControlledGlobalExecution,
+  });
+  if (!gate.allowed) {
+    const ckpt = await getGlobalRefreshCheckpoint(GLOBAL_SCHEDULES_MODIFIED_SINCE_STREAM_KEY);
+    return {
+      runId,
+      provider: "viator_schedule_pricing",
+      destinationSlug: "multi-destination",
+      status: "paused" as any,
+      cursorValue: ckpt?.cursorValue || null,
+      importedCount: 0,
+      updatedCount: 0,
+      rejectedCount: 0,
+      upstreamRequestCount: 0,
+      rejectionReasons: {},
+      metadata: {
+        checkpointContractVersion: "v2",
+        paused: true,
+        reason: gate.reason,
+        streamKey: GLOBAL_SCHEDULES_MODIFIED_SINCE_STREAM_KEY,
+        destinationSlug: null,
+        preservedCursor: ckpt?.cursorValue || null,
+      },
+      startedAt,
+      completedAt: new Date().toISOString(),
+    };
+  }
+
+  const client = getViatorClient();
+  const maxPagesPerRun = Math.min(Math.max(Math.floor(options.maxPagesPerRun ?? 5), 1), 50);
+  const timeBudgetMs = Math.max(options.timeBudgetMs ?? 25_000, 1_000);
+  const retryBaseDelayMs = Math.max(options.retryBaseDelayMs ?? 250, 20);
+
+  let currentCursor: string | null = options.scheduleCursor?.trim() || null;
+  if (!currentCursor) {
+    const ckpt = await getGlobalRefreshCheckpoint(GLOBAL_SCHEDULES_MODIFIED_SINCE_STREAM_KEY);
+    currentCursor = ckpt?.cursorValue || null;
+  }
+  const initialCursor = currentCursor;
+
+  // Match complete 500-item stream pages against ALL active DCC Viator codes (no LIMIT 12 truncation).
+  const {
+    codeSet: activeViatorCodes,
+    totalActiveProviderRecords,
+    storageSource,
+  } = await getAllActiveProviderProductCodes("viator");
+
+  let pagesProcessed = 0;
+  let totalSchedulesScanned = 0;
+  let totalMatchedCodes = 0;
+  let updatedCount = 0;
+  let unchangedCount = 0;
+  let retiredCount = 0;
+  let rejectedCount = 0;
+  let upstreamRequests = 0;
+  let scheduleStreamRequests = 0;
+  let productBulkRequests = 0;
+  let retryAttemptsTotal = 0;
+  let streamDrained = false;
+  let continuationPending = false;
+  let stoppedReason = "completed";
+  const refreshedCodes: string[] = [];
+
+  try {
+    while (pagesProcessed < maxPagesPerRun) {
+      if (pagesProcessed > 0 && Date.now() - startedMs >= timeBudgetMs) {
+        continuationPending = true;
+        stoppedReason = "time_budget_reached";
+        break;
+      }
+
+      const pageIndex = pagesProcessed;
+      const pageInputCursor = currentCursor;
+
+      const { result: schedStreamRes, attempts: streamAttempts } = await withRetry(
+        () => client.getAvailabilitySchedulesModifiedSince(pageInputCursor || undefined) as Promise<any>,
+        { maxAttempts: 3, baseDelayMs: retryBaseDelayMs },
+      );
+      upstreamRequests += streamAttempts;
+      scheduleStreamRequests += 1;
+      retryAttemptsTotal += Math.max(streamAttempts - 1, 0);
+
+      const pageSchedules = extractBulkSchedulesArray(schedStreamRes);
+      const rawNextCursor =
+        typeof schedStreamRes?.nextCursor === "string" && schedStreamRes.nextCursor.trim().length > 0
+          ? schedStreamRes.nextCursor.trim()
+          : pageInputCursor;
+
+      totalSchedulesScanned += pageSchedules.length;
+
+      if (pageSchedules.length === 0) {
+        streamDrained = true;
+        continuationPending = false;
+        stoppedReason = "stream_empty";
+        if (rawNextCursor && rawNextCursor !== currentCursor) {
+          await upsertGlobalRefreshCheckpoint({
+            streamKey: GLOBAL_SCHEDULES_MODIFIED_SINCE_STREAM_KEY,
+            provider: "viator_schedule_pricing",
+            cursorValue: rawNextCursor,
+            nextStartOffset: null,
+            providerTotalCount: totalActiveProviderRecords,
+            status: "completed",
+            metadata: {
+              checkpointContractVersion: "v2",
+              consumerVersion: "v2_atomic_global",
+              runId,
+              inputCursor: pageInputCursor,
+              nextCursor: rawNextCursor,
+              streamDrained: true,
+              continuationPending: false,
+              storageSource,
+            },
+          });
+          currentCursor = rawNextCursor;
+        }
+        break;
+      }
+
+      // Deduplicate schedules on page by uppercase productCode, keeping latest entry in page order.
+      const pageScheduleByCode = new Map<string, any>();
+      for (const item of pageSchedules) {
+        const code = String(item?.productCode || "").trim().toUpperCase();
+        if (code) {
+          pageScheduleByCode.set(code, item);
+        }
+      }
+
+      // Filter against ALL active DCC Viator codes across all destinations (zero LIMIT 12 cap).
+      const matchedPageCodes = Array.from(pageScheduleByCode.keys()).filter((code) =>
+        activeViatorCodes.has(code),
+      );
+      totalMatchedCodes += matchedPageCodes.length;
+
+      const { byUpperCodeList: existingListsByCode } =
+        matchedPageCodes.length > 0
+          ? await getAllDurableToursByProviderProductCodes("viator", matchedPageCodes)
+          : { byUpperCodeList: new Map<string, DurableTourRecord[]>() };
+
+      // Bulk-fetch ONLY additional product data that is genuinely required (new option codes or empty bookableItems).
+      const codesRequiringProductBulk: string[] = [];
+      for (const code of matchedPageCodes) {
+        const existingList = existingListsByCode.get(code) || [];
+        const schedItem = pageScheduleByCode.get(code);
+        if (
+          existingList.length > 0 &&
+          existingList.some((ex) => doesScheduleUpdateRequireProductDetail(ex, schedItem))
+        ) {
+          codesRequiringProductBulk.push(code);
+        }
+      }
+
+      const fetchedProductDetailByCode = new Map<string, any>();
+      for (let i = 0; i < codesRequiringProductBulk.length; i += 500) {
+        const bulkSlice = codesRequiringProductBulk.slice(i, i + 500);
+        const { result: bulkProdRes, attempts: bulkProdAttempts } = await withRetry(
+          () => client.getProductsBulk(bulkSlice),
+          { maxAttempts: 3, baseDelayMs: retryBaseDelayMs },
+        );
+        upstreamRequests += bulkProdAttempts;
+        productBulkRequests += 1;
+        retryAttemptsTotal += Math.max(bulkProdAttempts - 1, 0);
+        for (const prod of extractBulkProductsArray(bulkProdRes)) {
+          const pCode = String(prod?.productCode || "").trim().toUpperCase();
+          if (pCode) {
+            fetchedProductDetailByCode.set(pCode, prod);
+          }
+        }
+      }
+
+      const nowIso = new Date().toISOString();
+      const pageRecordsToUpsert: DurableTourRecord[] = [];
+      const pageRetirements: Array<{
+        providerProductCode: string;
+        reason: string;
+        retiredAtIso: string;
+      }> = [];
+      let pageUpdated = 0;
+      let pageUnchanged = 0;
+
+      for (let i = 0; i < matchedPageCodes.length; i++) {
+        const code = matchedPageCodes[i];
+        if (options.midPageProcessingHook) {
+          options.midPageProcessingHook({ pageIndex, itemIndex: i, code });
+        }
+
+        const detail = fetchedProductDetailByCode.get(code) || null;
+        if (detail && String(detail?.status || "").toUpperCase() === "INACTIVE") {
+          pageRetirements.push({
+            providerProductCode: code,
+            reason: "viator_global_schedule_modified_since_status_inactive",
+            retiredAtIso: nowIso,
+          });
+          activeViatorCodes.delete(code);
+          continue;
+        }
+
+        const schedItem = pageScheduleByCode.get(code);
+        const existingList = existingListsByCode.get(code) || [];
+        for (const existing of existingList) {
+          const nextRecord = buildRefreshedTourRecordFromDetailAndSchedule({
+            existing,
+            detail,
+            sched: schedItem,
+            sourceEndpoint: detail
+              ? "/availability/schedules/modified-since+/products/bulk"
+              : "/availability/schedules/modified-since",
+            nowIso,
+            modifiedSinceCursor: rawNextCursor,
+          });
+          if (hasSubstantiveTourCatalogChange(existing, nextRecord)) {
+            pageRecordsToUpsert.push(nextRecord);
+            pageUpdated += 1;
+            refreshedCodes.push(code);
+          } else {
+            pageUnchanged += 1;
+          }
+        }
+      }
+
+      const cursorStopsAdvancing = !rawNextCursor || rawNextCursor === pageInputCursor;
+      const willHaveMorePages = !cursorStopsAdvancing && pageSchedules.length > 0;
+      const reachedPageBudget = pagesProcessed + 1 >= maxPagesPerRun;
+      const pageContinuationPending = willHaveMorePages && reachedPageBudget;
+
+      // Commit all catalog changes for this page AND the page's resulting cursor ATOMICALLY.
+      await commitCatalogBatchAndCheckpointAtomically({
+        recordsToUpsert: pageRecordsToUpsert,
+        retirements: pageRetirements,
+        checkpoint: {
+          streamKey: GLOBAL_SCHEDULES_MODIFIED_SINCE_STREAM_KEY,
+          provider: "viator_schedule_pricing",
+          destinationSlug: null,
+          cursorValue: rawNextCursor,
+          nextStartOffset: null,
+          providerTotalCount: totalActiveProviderRecords,
+          status: pageContinuationPending ? "in_progress" : "completed",
+          metadata: {
+            checkpointContractVersion: "v2",
+            consumerVersion: "v2_atomic_global",
+            runId,
+            storageSource,
+            pageIndex,
+            inputScheduleStreamCursor: pageInputCursor,
+            nextScheduleStreamCursor: rawNextCursor,
+            modifiedSchedulesScannedOnPage: pageSchedules.length,
+            dccMatchesOnPage: matchedPageCodes.length,
+            productBulkFetchedOnPage: codesRequiringProductBulk.length,
+            updatedOnPage: pageUpdated,
+            unchangedOnPage: pageUnchanged,
+            retiredOnPage: pageRetirements.length,
+            continuationPending: pageContinuationPending,
+            streamDrained: cursorStopsAdvancing,
+          },
+          updatedAt: nowIso,
+        },
+        beforeCommitHook: options.beforePageCommitHook
+          ? () =>
+              options.beforePageCommitHook!({
+                pageIndex,
+                inputCursor: pageInputCursor,
+                nextCursor: rawNextCursor,
+                matchedCodes: matchedPageCodes,
+              })
+          : undefined,
+        midTransactionStatementHook: options.midPageTransactionHook,
+      });
+
+      updatedCount += pageUpdated;
+      unchangedCount += pageUnchanged;
+      retiredCount += pageRetirements.length;
+      currentCursor = rawNextCursor;
+      pagesProcessed += 1;
+
+      if (cursorStopsAdvancing) {
+        streamDrained = true;
+        continuationPending = false;
+        stoppedReason = "cursor_stationary_stream_drained";
+        break;
+      }
+      if (pagesProcessed >= maxPagesPerRun) {
+        continuationPending = true;
+        stoppedReason = "max_pages_budget_reached";
+        break;
+      }
+    }
+
+    const syncRun: CatalogSyncRunRecord = {
+      runId,
+      provider: "viator_schedule_pricing",
+      destinationSlug: "multi-destination",
+      status: "completed",
+      cursorValue: currentCursor,
+      importedCount: 0,
+      updatedCount,
+      rejectedCount,
+      upstreamRequestCount: upstreamRequests,
+      rejectionReasons: {},
+      metadata: {
+        checkpointContractVersion: "v2",
+        consumerVersion: "v2_atomic_global",
+        storageSource,
+        inputScheduleStreamCursor: initialCursor,
+        nextScheduleStreamCursor: currentCursor,
+        pagesProcessed,
+        maxPagesPerRun,
+        timeBudgetMs,
+        modifiedSchedulesScanned: totalSchedulesScanned,
+        dccMatchesFound: totalMatchedCodes,
+        unchangedCount,
+        retiredCount,
+        scheduleStreamRequests,
+        productBulkRequests,
+        scheduleBulkRequests: 0,
+        retryAttemptsTotal,
+        streamDrained,
+        continuationPending,
+        stoppedReason,
+        refreshedCodes: Array.from(new Set(refreshedCodes)),
+      },
+      startedAt,
+      completedAt: new Date().toISOString(),
+    };
+    await recordCatalogSyncRun(syncRun);
+    return syncRun;
+  } catch (err) {
+    const failedRun: CatalogSyncRunRecord = {
+      runId,
+      provider: "viator_schedule_pricing",
+      destinationSlug: "multi-destination",
+      status: "failed",
+      cursorValue: currentCursor,
+      importedCount: 0,
+      updatedCount,
+      rejectedCount,
+      upstreamRequestCount: upstreamRequests,
+      rejectionReasons: { global_schedule_modified_since_failed: 1 },
+      metadata: {
+        checkpointContractVersion: "v2",
+        consumerVersion: "v2_atomic_global",
+        storageSource,
+        inputScheduleStreamCursor: initialCursor,
+        lastCommittedCursor: currentCursor,
+        pagesProcessedBeforeFailure: pagesProcessed,
+        scheduleStreamRequests,
+        productBulkRequests,
+        scheduleBulkRequests: 0,
+        retryAttemptsTotal,
+        error: err instanceof Error ? err.message : String(err),
+      },
+      startedAt,
+      completedAt: new Date().toISOString(),
+    };
+    await recordCatalogSyncRun(failedRun);
+    throw err;
+  }
+}
+
 /**
  * Incremental availability & pricing schedule refresh job.
- * Destination-bounded calls strictly delegate to runDestinationBoundedBulkScheduleRefresh
- * (/products/bulk + /availability/schedules/bulk + viator_destination_schedule_refresh:<slug>)
- * and NEVER read or advance the global modified-since cursor.
+ * - Destination-bounded calls strictly delegate to runDestinationBoundedBulkScheduleRefresh
+ *   (/products/bulk + /availability/schedules/bulk + viator_destination_schedule_refresh:<slug>).
+ * - Global calls strictly delegate to runGlobalScheduleModifiedSinceRefresh
+ *   (viator_availability_schedules_modified_since, destination_slug = NULL, disabled by default).
  */
 export async function runIncrementalScheduleAndPricingRefresh(options: {
   limit?: number;
@@ -2870,6 +3318,13 @@ export async function runIncrementalScheduleAndPricingRefresh(options: {
   chunkSize?: number;
   maxChunksPerRun?: number;
   resume?: boolean;
+  maxPagesPerRun?: number;
+  timeBudgetMs?: number;
+  retryBaseDelayMs?: number;
+  allowControlledGlobalExecution?: boolean;
+  beforePageCommitHook?: GlobalScheduleModifiedSinceOptions["beforePageCommitHook"];
+  midPageProcessingHook?: GlobalScheduleModifiedSinceOptions["midPageProcessingHook"];
+  midPageTransactionHook?: GlobalScheduleModifiedSinceOptions["midPageTransactionHook"];
 } = {}) {
   if (options.destinationSlug && options.destinationSlug.trim().length > 0) {
     return runDestinationBoundedBulkScheduleRefresh({
@@ -2880,387 +3335,259 @@ export async function runIncrementalScheduleAndPricingRefresh(options: {
     });
   }
 
-  const client = getViatorClient();
-  const limit = Math.min(Math.max(options.limit ?? 15, 1), 100);
-
-  // 1. Read durable availability/pricing change-stream checkpoint from Postgres
-  let effectiveScheduleCursor = options.scheduleCursor;
-  if (!effectiveScheduleCursor) {
-    const ckpt = await getRefreshCheckpoint("viator_availability_schedules_modified_since");
-    if (ckpt?.cursorValue) {
-      effectiveScheduleCursor = ckpt.cursorValue;
-    } else {
-      const syncRuns = await loadSyncRunsWithPgHydration();
-      const priorSchedRun = syncRuns.find(
-        (r) =>
-          r.provider === "viator_schedule_pricing" &&
-          r.status === "completed" &&
-          typeof r.metadata?.nextScheduleStreamCursor === "string" &&
-          (r.metadata.nextScheduleStreamCursor as string).length > 0,
-      );
-      if (priorSchedRun?.metadata?.nextScheduleStreamCursor) {
-        effectiveScheduleCursor = String(priorSchedRun.metadata.nextScheduleStreamCursor);
-      }
-    }
-  }
-
-  const runId = `sync:viator:schedule_pricing_refresh:${Date.now()}`;
-  const startedAt = new Date().toISOString();
-  let upstreamRequests = 0;
-  let updatedCount = 0;
-  let retiredCount = 0;
-  let rejectedCount = 0;
-  let retryAttemptsTotal = 0;
-  let nextScheduleStreamCursor: string | null = effectiveScheduleCursor || null;
-  let modifiedSchedulesScanned = 0;
-  const modifiedStreamCodes: string[] = [];
-
-  // 2. Poll separate Viator /availability/schedules/modified-since change stream first
-  try {
-    const { result: schedStreamRes, attempts: streamAttempts } = await withRetry(
-      () =>
-        client.getAvailabilitySchedulesModifiedSince(
-          effectiveScheduleCursor || undefined,
-        ) as Promise<any>,
-      { maxAttempts: 2, baseDelayMs: 250 },
-    );
-    upstreamRequests += streamAttempts;
-    retryAttemptsTotal += Math.max(streamAttempts - 1, 0);
-    if (typeof schedStreamRes?.nextCursor === "string" && schedStreamRes.nextCursor.trim()) {
-      nextScheduleStreamCursor = schedStreamRes.nextCursor.trim();
-    }
-    const modSchedules: any[] = Array.isArray(schedStreamRes?.availabilitySchedules)
-      ? schedStreamRes.availabilitySchedules
-      : Array.isArray(schedStreamRes?.schedules)
-        ? schedStreamRes.schedules
-        : [];
-    modifiedSchedulesScanned = modSchedules.length;
-    for (const ms of modSchedules) {
-      const code = String(ms?.productCode || "").trim().toUpperCase();
-      if (code) {
-        modifiedStreamCodes.push(code);
-      }
-    }
-  } catch {
-    // Non-fatal if /availability/schedules/modified-since requires initial cursor or falls back to Postgres queue
-  }
-
-  // 3. Select <= limit targeted schedule refresh candidates in SQL without pulling the full catalog
-  const {
-    candidates: prioritizedCandidates,
-    totalViatorRecords,
-    storageSource,
-  } = await selectViatorScheduleRefreshCandidates({
-    destinationSlug: options.destinationSlug,
-    modifiedProductCodes: modifiedStreamCodes,
-    limit,
+  return runGlobalScheduleModifiedSinceRefresh({
+    scheduleCursor: options.scheduleCursor,
+    maxPagesPerRun: options.maxPagesPerRun,
+    timeBudgetMs: options.timeBudgetMs,
+    retryBaseDelayMs: options.retryBaseDelayMs,
+    allowControlledGlobalExecution: options.allowControlledGlobalExecution,
+    beforePageCommitHook: options.beforePageCommitHook,
+    midPageProcessingHook: options.midPageProcessingHook,
+    midPageTransactionHook: options.midPageTransactionHook,
   });
-
-  const updatedRecords: DurableTourRecord[] = [];
-  const refreshedCodes: string[] = [];
-
-  for (const existing of prioritizedCandidates) {
-    const code = existing.providerProductCode.toUpperCase();
-    const nowIso = new Date().toISOString();
-    try {
-      const { result: detail, attempts: detailAttempts } = await withRetry(
-        () => client.getProductDetail(code) as Promise<any>,
-        { maxAttempts: 3, baseDelayMs: 250 },
-      );
-      upstreamRequests += detailAttempts;
-      retryAttemptsTotal += Math.max(detailAttempts - 1, 0);
-
-      if (String(detail?.status || "").toUpperCase() === "INACTIVE") {
-        await retireDurableTourRecord(code, "viator_schedule_refresh_status_inactive");
-        retiredCount += 1;
-        continue;
-      }
-
-      const { result: sched, attempts: schedAttempts } = await withRetry(
-        () => client.getProductSchedules(code) as Promise<any>,
-        { maxAttempts: 3, baseDelayMs: 250 },
-      ).catch(() => ({ result: null, attempts: 1 }));
-      upstreamRequests += schedAttempts;
-      retryAttemptsTotal += Math.max(schedAttempts - 1, 0);
-
-      const durationParsed = parseDurationMinutesFromViator(
-        detail?.itinerary?.duration || detail?.duration,
-      );
-      const pickupParsed = parsePickupAndLocationsFromViator(detail, new Map());
-      const optionsAndSchedule = parseProductOptionsAndScheduleFromViator(
-        detail,
-        sched,
-        pickupParsed.hasHotelPickup ?? existing.hasHotelPickup,
-        durationParsed.durationMinutes ?? existing.durationMinutes,
-        String(detail?.title || existing.title),
-        typeof detail?.description === "string" ? detail.description : existing.summary,
-        existing.destinationSlug,
-        pickupParsed.meetingPointAddress ?? existing.meetingPointAddress,
-        pickupParsed.meetingPointLat ?? existing.meetingPointLat,
-        pickupParsed.meetingPointLng ?? existing.meetingPointLng,
-        pickupParsed.hasCruisePortPickup,
-      );
-
-      updatedRecords.push({
-        ...existing,
-        fromPriceCents: optionsAndSchedule.scheduleFromPriceCents ?? existing.fromPriceCents,
-        priceBasis: optionsAndSchedule.priceBasis,
-        lowestPriceIncludesPickup:
-          optionsAndSchedule.lowestPriceIncludesPickup ?? existing.lowestPriceIncludesPickup,
-        pickupFulfillmentType:
-          optionsAndSchedule.primaryPickupFulfillmentType ?? existing.pickupFulfillmentType,
-        productOptions:
-          optionsAndSchedule.productOptions.length > 0
-            ? optionsAndSchedule.productOptions
-            : existing.productOptions,
-        constraints: {
-          ...existing.constraints,
-          cruiseBufferBeforeMinutes: optionsAndSchedule.tourTransferBeforeMinutes,
-          cruiseBufferAfterMinutes: optionsAndSchedule.tourTransferAfterMinutes,
-          transferTimeSource: optionsAndSchedule.tourTransferTimeSource,
-          transferEvidenceSource: optionsAndSchedule.tourTransferEvidenceSource,
-          applicableBerthOrMeetingPoint: optionsAndSchedule.tourApplicableBerthOrMeetingPoint,
-          planningEstimateTransferMinutes: optionsAndSchedule.tourPlanningEstimateTransferMinutes,
-        },
-        provenance: {
-          ...existing.provenance,
-          sourceEndpoint:
-            "/availability/schedules/modified-since+/products/{code}+/availability/schedules/{code}",
-          fetchedAt: nowIso,
-          lastScheduleRefreshAt: nowIso,
-        } as any,
-        lastVerifiedAt: nowIso,
-        updatedAt: nowIso,
-      });
-      updatedCount += 1;
-      refreshedCodes.push(code);
-    } catch {
-      rejectedCount += 1;
-    }
-  }
-
-  if (updatedRecords.length > 0) {
-    await upsertDurableTourRecords(updatedRecords);
-  }
-
-  const cursorOut =
-    nextScheduleStreamCursor || refreshedCodes[refreshedCodes.length - 1] || null;
-
-  await upsertRefreshCheckpoint({
-    streamKey: "viator_availability_schedules_modified_since",
-    provider: "viator_schedule_pricing",
-    destinationSlug: options.destinationSlug || null,
-    cursorValue: cursorOut,
-    nextStartOffset: null,
-    providerTotalCount: totalViatorRecords,
-    status: "completed",
-    metadata: {
-      storageSource,
-      modifiedSchedulesScanned,
-      candidatesSelected: prioritizedCandidates.length,
-      refreshedCodes,
-      retiredCount,
-    },
-  });
-
-  const syncRun: CatalogSyncRunRecord = {
-    runId,
-    provider: "viator_schedule_pricing",
-    destinationSlug: options.destinationSlug || "multi-destination",
-    status: "completed",
-    cursorValue: cursorOut,
-    importedCount: 0,
-    updatedCount,
-    rejectedCount,
-    upstreamRequestCount: upstreamRequests,
-    rejectionReasons: rejectedCount > 0 ? { schedule_refresh_failed: rejectedCount } : {},
-    metadata: {
-      storageSource,
-      inputScheduleStreamCursor: effectiveScheduleCursor || null,
-      nextScheduleStreamCursor,
-      modifiedSchedulesScanned,
-      candidatesSelected: prioritizedCandidates.length,
-      refreshedCodes,
-      retiredCount,
-      retryAttemptsTotal,
-    },
-    startedAt,
-    completedAt: new Date().toISOString(),
-  };
-  await recordCatalogSyncRun(syncRun);
-  return syncRun;
 }
 
 /**
  * Incremental refresh job using Viator /products/modified-since cursor pagination.
- * Reads checkpoints and catalog state from durable Postgres, supports exponential backoff retries,
- * product retirement handling (INACTIVE -> active: false), and separate schedule/pricing stream.
+ * Strictly global (destination_slug = NULL), disabled by default while global cron is paused,
+ * matches against all active DCC Viator codes, bulk-fetches schedules in <=500 chunks, and
+ * commits catalog changes + cursor atomically per page.
  */
 export async function runIncrementalViatorCatalogRefresh(options: IncrementalRefreshOptions = {}) {
-  const client = getViatorClient();
+  const startedMs = Date.now();
+  const startedAt = new Date(startedMs).toISOString();
+  const runId = `sync:viator:incremental:${startedMs}`;
 
-  // Resume from durable Postgres checkpoint cursor if no explicit cursor was passed
-  let effectiveCursor = options.cursor;
-  if (!effectiveCursor) {
-    const ckpt = await getRefreshCheckpoint("viator_products_modified_since");
-    if (ckpt?.cursorValue) {
-      effectiveCursor = ckpt.cursorValue;
-    } else {
-      const syncRuns = await loadSyncRunsWithPgHydration();
-      const priorIncremental = syncRuns.find(
-        (r) =>
-          r.provider === "viator_incremental" &&
-          r.status === "completed" &&
-          typeof r.cursorValue === "string" &&
-          r.cursorValue.length > 0,
-      );
-      if (priorIncremental?.cursorValue) {
-        effectiveCursor = priorIncremental.cursorValue;
-      }
-    }
+  const gate = isGlobalModifiedSinceExecutionAllowed({
+    allowControlledGlobalExecution: options.allowControlledGlobalExecution,
+  });
+  if (!gate.allowed) {
+    const ckpt = await getGlobalRefreshCheckpoint(GLOBAL_PRODUCTS_MODIFIED_SINCE_STREAM_KEY);
+    return {
+      runId,
+      provider: "viator_incremental",
+      destinationSlug: "multi-destination",
+      status: "paused" as any,
+      cursorValue: ckpt?.cursorValue || null,
+      importedCount: 0,
+      updatedCount: 0,
+      rejectedCount: 0,
+      upstreamRequestCount: 0,
+      rejectionReasons: {},
+      metadata: {
+        checkpointContractVersion: "v2",
+        paused: true,
+        reason: gate.reason,
+        streamKey: GLOBAL_PRODUCTS_MODIFIED_SINCE_STREAM_KEY,
+        destinationSlug: null,
+        preservedCursor: ckpt?.cursorValue || null,
+      },
+      startedAt,
+      completedAt: new Date().toISOString(),
+    };
   }
 
-  const runId = `sync:viator:incremental:${Date.now()}`;
-  const startedAt = new Date().toISOString();
-  let upstreamRequests = 0;
+  const client = getViatorClient();
+  const pageCount = Math.min(Math.max(options.count ?? 500, 1), 500);
+  const maxPagesPerRun = Math.min(Math.max(Math.floor(options.maxPagesPerRun ?? 5), 1), 50);
+  const timeBudgetMs = Math.max(options.timeBudgetMs ?? 25_000, 1_000);
+  const retryBaseDelayMs = Math.max(options.retryBaseDelayMs ?? 250, 20);
+
+  let currentCursor: string | null = options.cursor?.trim() || null;
+  if (!currentCursor) {
+    const ckpt = await getGlobalRefreshCheckpoint(GLOBAL_PRODUCTS_MODIFIED_SINCE_STREAM_KEY);
+    currentCursor = ckpt?.cursorValue || null;
+  }
+  const initialCursor = currentCursor;
+
+  const {
+    codeSet: activeViatorCodes,
+    totalActiveProviderRecords,
+    storageSource,
+  } = await getAllActiveProviderProductCodes("viator");
+
+  let pagesProcessed = 0;
+  let totalProductsScanned = 0;
   let updatedCount = 0;
+  let unchangedCount = 0;
   let retiredCount = 0;
-  let rejectedCount = 0;
+  const rejectedCount = 0;
+  let upstreamRequests = 0;
+  let productStreamRequests = 0;
+  let scheduleBulkRequests = 0;
   let retryAttemptsTotal = 0;
+  let streamDrained = false;
+  let continuationPending = false;
 
   try {
-    const { result: modRes, attempts } = await withRetry(
-      () =>
-        client.getProductsModifiedSince(
-          effectiveCursor,
-          Math.min(Math.max(options.count ?? 50, 1), 500),
-        ) as Promise<any>,
-      { maxAttempts: 3, baseDelayMs: 300 },
-    );
-    upstreamRequests += attempts;
-    retryAttemptsTotal += Math.max(attempts - 1, 0);
+    while (pagesProcessed < maxPagesPerRun) {
+      if (pagesProcessed > 0 && Date.now() - startedMs >= timeBudgetMs) {
+        continuationPending = true;
+        break;
+      }
+      const pageIndex = pagesProcessed;
+      const pageInputCursor = currentCursor;
 
-    const nextCursor = typeof modRes?.nextCursor === "string" ? modRes.nextCursor : null;
-    const modProducts: any[] = Array.isArray(modRes?.products) ? modRes.products : [];
-    const modCodes = modProducts
-      .map((item) => String(item?.productCode || "").trim().toUpperCase())
-      .filter(Boolean);
-    const {
-      byUpperCode: existingByProviderCode,
-      totalProviderRecords,
-      storageSource,
-    } = await getDurableToursByProviderProductCodes("viator", modCodes);
-    const updatedRecords: DurableTourRecord[] = [];
-    const nowIso = new Date().toISOString();
+      const { result: modRes, attempts } = await withRetry(
+        () => client.getProductsModifiedSince(pageInputCursor || undefined, pageCount) as Promise<any>,
+        { maxAttempts: 3, baseDelayMs: retryBaseDelayMs },
+      );
+      upstreamRequests += attempts;
+      productStreamRequests += 1;
+      retryAttemptsTotal += Math.max(attempts - 1, 0);
 
-    for (const item of modProducts) {
-      const code = String(item?.productCode || "").trim().toUpperCase();
-      if (!code) continue;
-      const existing = existingByProviderCode.get(code);
-      if (!existing) continue;
+      const rawNextCursor =
+        typeof modRes?.nextCursor === "string" && modRes.nextCursor.trim().length > 0
+          ? modRes.nextCursor.trim()
+          : pageInputCursor;
+      const modProducts: any[] = Array.isArray(modRes?.products) ? modRes.products : [];
+      totalProductsScanned += modProducts.length;
 
-      if (String(item?.status || "").toUpperCase() === "INACTIVE") {
-        await retireDurableTourRecord(code, "viator_modified_since_status_inactive");
-        retiredCount += 1;
-        updatedCount += 1;
-        continue;
+      if (modProducts.length === 0) {
+        streamDrained = true;
+        continuationPending = false;
+        break;
       }
 
-      const { result: sched, attempts: schedAttempts } = await withRetry(
-        () => client.getProductSchedules(code) as Promise<any>,
-        { maxAttempts: 2, baseDelayMs: 250 },
-      ).catch(() => ({ result: null, attempts: 1 }));
-      upstreamRequests += schedAttempts;
-      retryAttemptsTotal += Math.max(schedAttempts - 1, 0);
+      const modByCode = new Map<string, any>();
+      for (const item of modProducts) {
+        const code = String(item?.productCode || "").trim().toUpperCase();
+        if (code && activeViatorCodes.has(code)) {
+          modByCode.set(code, item);
+        }
+      }
+      const matchedCodes = Array.from(modByCode.keys());
+      const { byUpperCodeList } =
+        matchedCodes.length > 0
+          ? await getAllDurableToursByProviderProductCodes("viator", matchedCodes)
+          : { byUpperCodeList: new Map<string, DurableTourRecord[]>() };
 
-      const durationParsed = parseDurationMinutesFromViator(
-        item?.itinerary?.duration || item?.duration,
+      const activeMatchedCodes = matchedCodes.filter(
+        (code) => String(modByCode.get(code)?.status || "").toUpperCase() !== "INACTIVE",
       );
-      const cancellationParsed = parseCancellationFromViator(item?.cancellationPolicy, []);
-      const pickupParsed = parsePickupAndLocationsFromViator(item, new Map());
-      const optionsAndSchedule = parseProductOptionsAndScheduleFromViator(
-        item,
-        sched,
-        pickupParsed.hasHotelPickup ?? existing.hasHotelPickup,
-        durationParsed.durationMinutes ?? existing.durationMinutes,
-        String(item?.title || existing.title),
-        typeof item?.description === "string" ? item.description : existing.summary,
-        existing.destinationSlug,
-        pickupParsed.meetingPointAddress ?? existing.meetingPointAddress,
-        pickupParsed.meetingPointLat ?? existing.meetingPointLat,
-        pickupParsed.meetingPointLng ?? existing.meetingPointLng,
-        pickupParsed.hasCruisePortPickup,
-      );
+      const scheduleByCode = new Map<string, any>();
+      for (let i = 0; i < activeMatchedCodes.length; i += 500) {
+        const slice = activeMatchedCodes.slice(i, i + 500);
+        const { result: schedBulkRaw, attempts: schedAttempts } = await withRetry(
+          () => client.getAvailabilitySchedulesBulk(slice),
+          { maxAttempts: 3, baseDelayMs: retryBaseDelayMs },
+        );
+        upstreamRequests += schedAttempts;
+        scheduleBulkRequests += 1;
+        retryAttemptsTotal += Math.max(schedAttempts - 1, 0);
+        for (const s of extractBulkSchedulesArray(schedBulkRaw)) {
+          const sCode = String(s?.productCode || "").trim().toUpperCase();
+          if (sCode) scheduleByCode.set(sCode, s);
+        }
+      }
 
-      updatedRecords.push({
-        ...existing,
-        title: String(item?.title || existing.title),
-        durationMinutes: durationParsed.durationMinutes ?? existing.durationMinutes,
-        durationRawText: durationParsed.durationRawText ?? existing.durationRawText,
-        fromPriceCents: optionsAndSchedule.scheduleFromPriceCents ?? existing.fromPriceCents,
-        priceBasis: optionsAndSchedule.priceBasis,
-        freeCancellation: cancellationParsed.freeCancellation ?? existing.freeCancellation,
-        cancellationPolicyType:
-          cancellationParsed.cancellationPolicyType ?? existing.cancellationPolicyType,
-        cancellationCutoffHours:
-          cancellationParsed.cancellationCutoffHours ?? existing.cancellationCutoffHours,
-        cancellationSummary: cancellationParsed.cancellationSummary ?? existing.cancellationSummary,
-        hasHotelPickup: pickupParsed.hasHotelPickup ?? existing.hasHotelPickup,
-        lowestPriceIncludesPickup:
-          optionsAndSchedule.lowestPriceIncludesPickup ?? existing.lowestPriceIncludesPickup,
-        pickupFulfillmentType:
-          optionsAndSchedule.primaryPickupFulfillmentType ?? existing.pickupFulfillmentType,
-        productOptions:
-          optionsAndSchedule.productOptions.length > 0
-            ? optionsAndSchedule.productOptions
-            : existing.productOptions,
-        constraints: {
-          ...existing.constraints,
-          cruiseBufferBeforeMinutes: optionsAndSchedule.tourTransferBeforeMinutes,
-          cruiseBufferAfterMinutes: optionsAndSchedule.tourTransferAfterMinutes,
-          transferTimeSource: optionsAndSchedule.tourTransferTimeSource,
-          transferEvidenceSource: optionsAndSchedule.tourTransferEvidenceSource,
-          applicableBerthOrMeetingPoint: optionsAndSchedule.tourApplicableBerthOrMeetingPoint,
-          planningEstimateTransferMinutes: optionsAndSchedule.tourPlanningEstimateTransferMinutes,
+      const nowIso = new Date().toISOString();
+      const pageRecordsToUpsert: DurableTourRecord[] = [];
+      const pageRetirements: Array<{
+        providerProductCode: string;
+        reason: string;
+        retiredAtIso: string;
+      }> = [];
+      let pageUpdated = 0;
+      let pageUnchanged = 0;
+
+      for (let i = 0; i < matchedCodes.length; i++) {
+        const code = matchedCodes[i];
+        if (options.midPageProcessingHook) {
+          options.midPageProcessingHook({ pageIndex, itemIndex: i, code });
+        }
+        const item = modByCode.get(code);
+        if (String(item?.status || "").toUpperCase() === "INACTIVE") {
+          pageRetirements.push({
+            providerProductCode: code,
+            reason: "viator_modified_since_status_inactive",
+            retiredAtIso: nowIso,
+          });
+          activeViatorCodes.delete(code);
+          continue;
+        }
+        const sched = scheduleByCode.get(code) || null;
+        for (const existing of byUpperCodeList.get(code) || []) {
+          const nextRecord = buildRefreshedTourRecordFromDetailAndSchedule({
+            existing,
+            detail: item,
+            sched,
+            sourceEndpoint: "/products/modified-since+/availability/schedules/bulk",
+            nowIso,
+            modifiedSinceCursor: rawNextCursor,
+          });
+          if (hasSubstantiveTourCatalogChange(existing, nextRecord)) {
+            pageRecordsToUpsert.push(nextRecord);
+            pageUpdated += 1;
+          } else {
+            pageUnchanged += 1;
+          }
+        }
+      }
+
+      const cursorStopsAdvancing = !rawNextCursor || rawNextCursor === pageInputCursor;
+      const pageContinuationPending =
+        !cursorStopsAdvancing && pagesProcessed + 1 >= maxPagesPerRun;
+
+      await commitCatalogBatchAndCheckpointAtomically({
+        recordsToUpsert: pageRecordsToUpsert,
+        retirements: pageRetirements,
+        checkpoint: {
+          streamKey: GLOBAL_PRODUCTS_MODIFIED_SINCE_STREAM_KEY,
+          provider: "viator_incremental",
+          destinationSlug: null,
+          cursorValue: rawNextCursor,
+          nextStartOffset: null,
+          providerTotalCount: totalActiveProviderRecords,
+          status: pageContinuationPending ? "in_progress" : "completed",
+          metadata: {
+            checkpointContractVersion: "v2",
+            consumerVersion: "v2_atomic_global",
+            runId,
+            storageSource,
+            pageIndex,
+            inputCursor: pageInputCursor,
+            nextCursor: rawNextCursor,
+            modifiedProductsScannedOnPage: modProducts.length,
+            dccMatchesOnPage: matchedCodes.length,
+            updatedOnPage: pageUpdated,
+            unchangedOnPage: pageUnchanged,
+            retiredOnPage: pageRetirements.length,
+            continuationPending: pageContinuationPending,
+            streamDrained: cursorStopsAdvancing,
+          },
+          updatedAt: nowIso,
         },
-        provenance: {
-          ...existing.provenance,
-          sourceEndpoint: "/products/modified-since",
-          fetchedAt: nowIso,
-          modifiedSinceCursor: nextCursor,
-        },
-        lastVerifiedAt: nowIso,
-        updatedAt: nowIso,
+        beforeCommitHook: options.beforePageCommitHook
+          ? () => options.beforePageCommitHook!({ pageIndex, nextCursor: rawNextCursor })
+          : undefined,
+        midTransactionStatementHook: options.midPageTransactionHook,
       });
-      updatedCount += 1;
-    }
 
-    if (updatedRecords.length > 0) {
-      await upsertDurableTourRecords(updatedRecords);
-    }
+      updatedCount += pageUpdated;
+      unchangedCount += pageUnchanged;
+      retiredCount += pageRetirements.length;
+      currentCursor = rawNextCursor;
+      pagesProcessed += 1;
 
-    await upsertRefreshCheckpoint({
-      streamKey: "viator_products_modified_since",
-      provider: "viator_incremental",
-      destinationSlug: null,
-      cursorValue: nextCursor,
-      nextStartOffset: null,
-      providerTotalCount: totalProviderRecords,
-      status: "completed",
-      metadata: {
-        storageSource,
-        inputCursor: effectiveCursor || null,
-        nextCursor,
-        modifiedProductsScanned: modProducts.length,
-        catalogMatchesUpdated: updatedCount,
-        retiredCount,
-      },
-    });
+      if (cursorStopsAdvancing) {
+        streamDrained = true;
+        continuationPending = false;
+        break;
+      }
+      if (pagesProcessed >= maxPagesPerRun) {
+        continuationPending = true;
+        break;
+      }
+    }
 
     let scheduleRefreshRun: CatalogSyncRunRecord | null = null;
     if (options.includeScheduleAndPricingRefresh !== false) {
-      scheduleRefreshRun = await runIncrementalScheduleAndPricingRefresh({
-        limit: options.scheduleRefreshLimit ?? 10,
+      scheduleRefreshRun = await runGlobalScheduleModifiedSinceRefresh({
+        maxPagesPerRun: options.maxPagesPerRun,
+        timeBudgetMs: options.timeBudgetMs,
+        retryBaseDelayMs: options.retryBaseDelayMs,
+        allowControlledGlobalExecution: options.allowControlledGlobalExecution,
       });
     }
 
@@ -3269,20 +3596,28 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       provider: "viator_incremental",
       destinationSlug: "multi-destination",
       status: "completed",
-      cursorValue: nextCursor,
+      cursorValue: currentCursor,
       importedCount: 0,
       updatedCount,
       rejectedCount,
       upstreamRequestCount: upstreamRequests + (scheduleRefreshRun?.upstreamRequestCount ?? 0),
       rejectionReasons: {},
       metadata: {
+        checkpointContractVersion: "v2",
+        consumerVersion: "v2_atomic_global",
         storageSource,
-        inputCursor: effectiveCursor || null,
-        nextCursor,
-        modifiedProductsScanned: modProducts.length,
+        inputCursor: initialCursor,
+        nextCursor: currentCursor,
+        pagesProcessed,
+        modifiedProductsScanned: totalProductsScanned,
         catalogMatchesUpdated: updatedCount,
+        unchangedCount,
         retiredCount,
+        productStreamRequests,
+        scheduleBulkRequests,
         retryAttemptsTotal,
+        streamDrained,
+        continuationPending,
         schedulePricingRefreshRunId: scheduleRefreshRun?.runId || null,
         schedulePricingRefreshedCount: scheduleRefreshRun?.updatedCount ?? 0,
       },
@@ -3297,13 +3632,18 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       provider: "viator_incremental",
       destinationSlug: "multi-destination",
       status: "failed",
-      cursorValue: effectiveCursor || null,
+      cursorValue: currentCursor,
       importedCount: 0,
       updatedCount,
       rejectedCount,
       upstreamRequestCount: upstreamRequests,
       rejectionReasons: { api_error: 1 },
       metadata: {
+        checkpointContractVersion: "v2",
+        consumerVersion: "v2_atomic_global",
+        inputCursor: initialCursor,
+        lastCommittedCursor: currentCursor,
+        pagesProcessedBeforeFailure: pagesProcessed,
         error: err instanceof Error ? err.message : String(err),
         retryAttemptsTotal,
       },
@@ -3311,7 +3651,7 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       completedAt: new Date().toISOString(),
     };
     await recordCatalogSyncRun(syncRun);
-    return syncRun;
+    throw err;
   }
 }
 

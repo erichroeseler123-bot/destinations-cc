@@ -12,6 +12,7 @@ import {
 } from "@/lib/dcc/catalog/durableCatalogStore";
 import {
   runDestinationBoundedBulkScheduleRefresh,
+  runGlobalScheduleModifiedSinceRefresh,
   runIncrementalScheduleAndPricingRefresh,
   runIncrementalViatorCatalogRefresh,
   runUniversalCatalogIngestion,
@@ -245,6 +246,7 @@ export async function POST(request: NextRequest) {
         | "full_or_paginated"
         | "incremental_refresh"
         | "schedule_pricing_refresh"
+        | "global_schedule_modified_since"
         | "destination_bulk_refresh"
         | "normalize_pickup_and_queue_review_desk";
       cursor?: string;
@@ -254,6 +256,9 @@ export async function POST(request: NextRequest) {
       destinationSlug?: string;
       chunkSize?: number;
       maxChunksPerRun?: number;
+      maxPagesPerRun?: number;
+      timeBudgetMs?: number;
+      allowControlledGlobalVerification?: boolean;
       forceRestart?: boolean;
       runId?: string;
       perDestinationLimit?: number;
@@ -319,22 +324,55 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const explicitNonProdGlobalOverride =
+      body.allowControlledGlobalVerification === true &&
+      request.headers.get("x-dcc-controlled-global-verification")?.trim() === "1" &&
+      process.env.VERCEL_ENV !== "production";
+
+    if (body.mode === "global_schedule_modified_since") {
+      const globalRun = await runGlobalScheduleModifiedSinceRefresh({
+        scheduleCursor: body.cursor,
+        maxPagesPerRun: body.maxPagesPerRun ?? 1,
+        timeBudgetMs: body.timeBudgetMs,
+        runId: body.runId,
+        allowControlledGlobalExecution: explicitNonProdGlobalOverride,
+      });
+      const paused = Boolean((globalRun.metadata as any)?.paused);
+      const summary = paused ? null : await getDurableCatalogSummaryReport();
+      return NextResponse.json(
+        {
+          ok: true,
+          paused,
+          mode: "global_schedule_modified_since",
+          globalScheduleRun: globalRun,
+          ...(summary ? { summary } : {}),
+        },
+        { status: 200, headers: CORS_HEADERS },
+      );
+    }
+
     if (body.mode === "schedule_pricing_refresh") {
       const targetDest = (body.destinationSlug || body.destinations?.[0] || "").trim();
       const schedRun = await runIncrementalScheduleAndPricingRefresh({
         limit: body.scheduleRefreshLimit ?? body.count ?? 15,
         destinationSlug: targetDest || undefined,
+        scheduleCursor: body.cursor,
         chunkSize: body.chunkSize,
         maxChunksPerRun: body.maxChunksPerRun,
+        maxPagesPerRun: body.maxPagesPerRun,
+        timeBudgetMs: body.timeBudgetMs,
         resume: body.resumeFromCheckpoint !== false,
+        allowControlledGlobalExecution: targetDest ? undefined : explicitNonProdGlobalOverride,
       });
-      const summary = await getDurableCatalogSummaryReport();
+      const paused = Boolean((schedRun.metadata as any)?.paused);
+      const summary = paused ? null : await getDurableCatalogSummaryReport();
       return NextResponse.json(
         {
           ok: true,
+          paused,
           mode: "schedule_pricing_refresh",
           schedulePricingRun: schedRun,
-          summary,
+          ...(summary ? { summary } : {}),
         },
         { status: 200, headers: CORS_HEADERS },
       );
@@ -344,15 +382,20 @@ export async function POST(request: NextRequest) {
       const incRun = await runIncrementalViatorCatalogRefresh({
         cursor: body.cursor,
         count: body.count,
+        maxPagesPerRun: body.maxPagesPerRun,
+        timeBudgetMs: body.timeBudgetMs,
         scheduleRefreshLimit: body.scheduleRefreshLimit,
+        allowControlledGlobalExecution: explicitNonProdGlobalOverride,
       });
-      const summary = await getDurableCatalogSummaryReport();
+      const paused = Boolean((incRun.metadata as any)?.paused);
+      const summary = paused ? null : await getDurableCatalogSummaryReport();
       return NextResponse.json(
         {
           ok: true,
+          paused,
           mode: "incremental_refresh",
           incrementalRun: incRun,
-          summary,
+          ...(summary ? { summary } : {}),
         },
         { status: 200, headers: CORS_HEADERS },
       );

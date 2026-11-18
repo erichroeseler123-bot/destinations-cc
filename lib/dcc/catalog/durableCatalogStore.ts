@@ -1336,10 +1336,20 @@ export async function upsertDurableTourRecords(records: DurableTourRecord[]): Pr
 }
 
 export async function recordCatalogSyncRun(run: CatalogSyncRunRecord): Promise<void> {
-  const snapshot = readLocalCatalogSnapshot();
-  const byRunId = new Map<string, CatalogSyncRunRecord>(snapshot.syncRuns.map((r) => [r.runId, r]));
-  byRunId.set(run.runId, run);
-  writeLocalCatalogSnapshot(snapshot.records, Array.from(byRunId.values()));
+  if (!shouldUsePostgres() && !isAutomatedTestRuntime()) {
+    const snapshot = readLocalCatalogSnapshot();
+    const byRunId = new Map<string, CatalogSyncRunRecord>(
+      snapshot.syncRuns.map((r) => [r.runId, r]),
+    );
+    byRunId.set(run.runId, run);
+    writeLocalCatalogSnapshot(snapshot.records, Array.from(byRunId.values()));
+  } else if (memorySyncRunsCache) {
+    const byRunId = new Map<string, CatalogSyncRunRecord>(
+      memorySyncRunsCache.map((r) => [r.runId, r]),
+    );
+    byRunId.set(run.runId, run);
+    memorySyncRunsCache = Array.from(byRunId.values());
+  }
 
   if (shouldUsePostgres()) {
     try {
@@ -6470,6 +6480,138 @@ export async function commitCatalogBatchAndCheckpointAtomically(params: {
     persistedToPostgres,
     checkpoint: fullCheckpoint,
   };
+}
+
+export async function getAllActiveProviderProductCodes(
+  provider = "viator",
+): Promise<{
+  codeSet: Set<string>;
+  totalActiveProviderRecords: number;
+  storageSource: "postgres" | "local_snapshot";
+}> {
+  const codeSet = new Set<string>();
+  if (shouldUsePostgres()) {
+    const rows = await executeCatalogSql(
+      `
+        SELECT UPPER(provider_product_code) AS code
+        FROM dcc_tour_catalog
+        WHERE active = true
+          AND quarantined = false
+          AND NOT (tour_id = ANY($1::text[]))
+          AND primary_provider = $2
+      `,
+      [Array.from(QUARANTINED_TOUR_IDS), provider],
+    );
+    for (const r of rows) {
+      const code = String(r.code || r.provider_product_code || "").trim().toUpperCase();
+      if (code) codeSet.add(code);
+    }
+    for (const pilot of PILOT_VERIFIED_TOUR_RECORDS) {
+      if (pilot.active && !isQuarantinedTourRecord(pilot) && pilot.primaryProvider === provider) {
+        codeSet.add(pilot.providerProductCode.trim().toUpperCase());
+      }
+    }
+    return {
+      codeSet,
+      totalActiveProviderRecords: Math.max(rows.length, codeSet.size),
+      storageSource: "postgres",
+    };
+  }
+
+  const snapshotRecords = loadOfflineSnapshotRecordsForLocalTestsOnly().filter(
+    (r) => r.active && !isQuarantinedTourRecord(r) && r.primaryProvider === provider,
+  );
+  for (const r of snapshotRecords) {
+    codeSet.add(r.providerProductCode.trim().toUpperCase());
+  }
+  for (const pilot of PILOT_VERIFIED_TOUR_RECORDS) {
+    if (pilot.active && !isQuarantinedTourRecord(pilot) && pilot.primaryProvider === provider) {
+      codeSet.add(pilot.providerProductCode.trim().toUpperCase());
+    }
+  }
+  return {
+    codeSet,
+    totalActiveProviderRecords: Math.max(snapshotRecords.length, codeSet.size),
+    storageSource: "local_snapshot",
+  };
+}
+
+export async function getAllDurableToursByProviderProductCodes(
+  provider: string,
+  productCodes: string[],
+  projection: DurableCatalogProjectionOptions = {
+    includeProductOptions: true,
+    includeConstraints: true,
+    includeFullProvenance: true,
+  },
+): Promise<{
+  byUpperCodeList: Map<string, DurableTourRecord[]>;
+  storageSource: "postgres" | "local_snapshot";
+}> {
+  const upperCodes = Array.from(
+    new Set(productCodes.map((c) => c.trim().toUpperCase()).filter(Boolean)),
+  );
+  const byUpperCodeList = new Map<string, DurableTourRecord[]>();
+
+  const pushRecord = (rec: DurableTourRecord) => {
+    const code = rec.providerProductCode.trim().toUpperCase();
+    const list = byUpperCodeList.get(code) || [];
+    if (!list.some((existing) => existing.tourId === rec.tourId)) {
+      list.push(rec);
+      byUpperCodeList.set(code, list);
+    }
+  };
+
+  if (shouldUsePostgres()) {
+    if (upperCodes.length > 0) {
+      const quarantinedArray = Array.from(QUARANTINED_TOUR_IDS);
+      const selectCols = buildCatalogSelectColumnsSql(projection);
+      const rows = await executeCatalogSql(
+        `
+          SELECT ${selectCols}
+          FROM dcc_tour_catalog
+          WHERE active = true
+            AND quarantined = false
+            AND NOT (tour_id = ANY($1::text[]))
+            AND primary_provider = $2
+            AND UPPER(provider_product_code) = ANY($3::text[])
+          ORDER BY tour_id ASC
+        `,
+        [quarantinedArray, provider, upperCodes],
+      );
+      const pilotMap = getNormalizedPilotMap();
+      for (const r of rows) {
+        const mapped =
+          pilotMap.get(String(r.tour_id)) ||
+          normalizeCatalogTourPickupAndMeeting(mapPgRowToDurableTourRecord(r)).normalizedRecord;
+        pushRecord(mapped);
+      }
+    }
+    for (const pilot of PILOT_VERIFIED_TOUR_RECORDS) {
+      if (
+        pilot.active &&
+        !isQuarantinedTourRecord(pilot) &&
+        pilot.primaryProvider === provider &&
+        upperCodes.includes(pilot.providerProductCode.toUpperCase())
+      ) {
+        pushRecord(normalizeCatalogTourPickupAndMeeting(pilot).normalizedRecord);
+      }
+    }
+    return { byUpperCodeList, storageSource: "postgres" };
+  }
+
+  const upperSet = new Set(upperCodes);
+  for (const r of loadOfflineSnapshotRecordsForLocalTestsOnly()) {
+    if (
+      r.active &&
+      !isQuarantinedTourRecord(r) &&
+      r.primaryProvider === provider &&
+      upperSet.has(r.providerProductCode.toUpperCase())
+    ) {
+      pushRecord(applyRequestedProjectionToRecord(r, projection));
+    }
+  }
+  return { byUpperCodeList, storageSource: "local_snapshot" };
 }
 
 export async function getDurableToursByProviderProductCodes(

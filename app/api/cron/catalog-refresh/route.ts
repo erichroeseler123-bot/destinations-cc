@@ -176,8 +176,10 @@ async function handleCatalogRefreshCron(request: NextRequest) {
           { status: 200, headers: { "Cache-Control": "no-store" } },
         );
       }
+      const maxPages = sp.get("maxPages") ? Number(sp.get("maxPages")) : 5;
       const schedRun = await runIncrementalScheduleAndPricingRefresh({
-        limit: Number.isFinite(scheduleLimit) ? scheduleLimit : 12,
+        scheduleCursor: sp.get("cursor") || undefined,
+        maxPagesPerRun: Number.isFinite(maxPages) ? maxPages : 5,
       });
       const summary = await getDurableCatalogSummaryReport();
       return NextResponse.json(
