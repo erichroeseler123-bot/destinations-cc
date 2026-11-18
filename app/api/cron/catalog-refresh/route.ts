@@ -12,6 +12,21 @@ export const dynamic = "force-dynamic";
 export const SCHEDULED_CATALOG_REFRESH_PATH = "/api/cron/catalog-refresh";
 export const SCHEDULED_CATALOG_REFRESH_CRON = "0 */4 * * *";
 
+/**
+ * Emergency egress circuit-breaker: keeps `/api/cron/catalog-refresh` paused by default
+ * until `DCC_CATALOG_REFRESH_ENABLED=1` is explicitly set, preventing scheduled cron ticks
+ * from initiating another catalog hydration while preserving historical route behavior for rollback.
+ */
+export function isCatalogRefreshCronPaused(request?: NextRequest): boolean {
+  if (
+    request?.headers.get("x-dcc-resume-catalog-refresh")?.trim() === "1" &&
+    process.env.DCC_ALLOW_HEADER_CATALOG_REFRESH_RESUME === "1"
+  ) {
+    return false;
+  }
+  return process.env.DCC_CATALOG_REFRESH_ENABLED !== "1";
+}
+
 function isAuthorizedCatalogCron(request: NextRequest): {
   authorized: boolean;
   method: string;
@@ -49,6 +64,25 @@ async function handleCatalogRefreshCron(request: NextRequest) {
         { status: 401 },
       );
     }
+  }
+
+  if (isCatalogRefreshCronPaused(request)) {
+    return NextResponse.json(
+      {
+        ok: true,
+        paused: true,
+        hydrationInitiated: false,
+        reason: "emergency_egress_guard_paused",
+        resumeControl: "Set DCC_CATALOG_REFRESH_ENABLED=1 to resume scheduled catalog refresh.",
+        scheduledRefreshCadence: {
+          endpoint: SCHEDULED_CATALOG_REFRESH_PATH,
+          cron: SCHEDULED_CATALOG_REFRESH_CRON,
+          mode: request.nextUrl.searchParams.get("mode") || "full_pipeline",
+          status: "paused",
+        },
+      },
+      { status: 200, headers: { "Cache-Control": "no-store" } },
+    );
   }
 
   try {

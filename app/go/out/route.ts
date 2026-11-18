@@ -115,7 +115,7 @@ export async function GET(request: Request) {
       : `${defaultTagPrefix}_handoff`);
 
   const catalogTour = productCode
-    ? await getDurableTourByIdOrAlias(productCode)
+    ? await getDurableTourByIdOrAlias(productCode, { projection: "handoff_minimal" })
     : null;
 
   let resolvedTargetUrl = rawTarget || catalogTour?.bookingUrl || "";

@@ -6,6 +6,7 @@ import {
   EARTHOS_DESTINATION_NODES,
   getActiveDestinationProviderCounts,
   getDurableTourByIdOrAlias,
+  paginateAllDurableTourCatalogPages,
   queryDurableTourCatalog,
   resolveEarthOSDestinationNode,
   type DurableCatalogSortBy,
@@ -3498,16 +3499,47 @@ export async function queryPortDayExcursionCatalog(params: {
   const isFitsSailingMode = viewMode === "fits_sailing" || isShortlist2hMode;
 
   const [sqlRes, liveProviderCounts, sharedHandoffLedgerSummary, juneauSupplierFeed] = await Promise.all([
-    queryDurableTourCatalog({
-      destinationSlug: profile.destinationSlug,
-      category: category === "all" ? undefined : category,
-      searchQuery: params.search,
-      requireVerifiedCruiseLogistics: isFitsSailingMode,
-      verifiedTimingOnly: isFitsSailingMode ? true : undefined,
-      sortBy,
-      limit: isFitsSailingMode ? 500 : limit,
-      offset: isFitsSailingMode ? 0 : offset,
-    }),
+    isFitsSailingMode
+      ? paginateAllDurableTourCatalogPages(
+          {
+            destinationSlug: profile.destinationSlug,
+            category: category === "all" ? undefined : category,
+            searchQuery: params.search,
+            requireVerifiedCruiseLogistics: true,
+            verifiedTimingOnly: true,
+            includeProductOptions: true,
+            includeConstraints: true,
+            includeServiceDetails: true,
+            sortBy,
+          },
+          { pageSize: 200 },
+        ).then((paged) => ({
+          records: paged.records,
+          totalMatched: paged.totalMatched,
+          limit: paged.records.length || 200,
+          offset: 0,
+          hasMore: false,
+          storageSource: paged.storageSource,
+          nextOffset: null,
+          cursorApplied: null,
+          nextCursor: null,
+          projectionTier: "explicit_extended" as const,
+          executedInSql: paged.storageSource === "postgres",
+          rowsLoadedIntoApp: paged.records.length,
+          fullCatalogLoadedIntoApp: false,
+          sqlQueryMs: null,
+        }))
+      : queryDurableTourCatalog({
+          destinationSlug: profile.destinationSlug,
+          category: category === "all" ? undefined : category,
+          searchQuery: params.search,
+          includeProductOptions: true,
+          includeConstraints: true,
+          includeServiceDetails: true,
+          sortBy,
+          limit,
+          offset,
+        }),
     getActiveDestinationProviderCounts(profile.destinationSlug),
     getSharedHandoffLedgerSummary({
       originatingSite: params.originatingSite || null,

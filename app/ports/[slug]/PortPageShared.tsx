@@ -421,7 +421,7 @@ export async function renderPortPage(
         cruiseSailDate: query.sailing_date,
         limit: 12,
         offset: 0,
-      })
+      }).catch(() => null)
     : null;
   const portLat = port.lat ?? portReferenceNode?.primaryCoordinate.lat;
   const portLng = port.lng ?? port.lon ?? portReferenceNode?.primaryCoordinate.lng;

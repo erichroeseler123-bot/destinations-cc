@@ -4,6 +4,7 @@ import {
   getDurableCatalogSummaryReport,
   getDurableTourByIdOrAlias,
   normalizeCatalogBatchPickupAndMeeting,
+  paginateAllDurableTourCatalogPages,
   queueCatalogPickupExceptionsToReviewDesk,
   queryDurableTourCatalog,
   type DurableCatalogSortBy,
@@ -102,9 +103,8 @@ export async function GET(request: NextRequest) {
     const limit =
       parsedLimit !== undefined && Number.isFinite(parsedLimit) && parsedLimit > 0
         ? Math.min(parsedLimit, 500)
-        : isExceptionsRequest
-          ? undefined
-          : 100;
+        : 100;
+    const cursor = sp.get("cursor") || undefined;
     const offsetRaw = sp.get("offset");
     const offset = offsetRaw ? Number(offsetRaw) : undefined;
     const pageRaw = sp.get("page");
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
     const sortByRaw = (sp.get("sortBy") || sp.get("sort") || "") as DurableCatalogSortBy;
     const searchQuery = sp.get("q") || sp.get("search") || undefined;
 
-    const result = await queryDurableTourCatalog({
+    const baseFilter = {
       destinationSlug:
         sp.get("destination") ||
         sp.get("destinationSlug") ||
@@ -126,26 +126,46 @@ export async function GET(request: NextRequest) {
       searchQuery,
       approvedTourIds: approvedTourIds.length > 0 ? approvedTourIds : undefined,
       includeDiscoveryOnly: sp.get("includeDiscoveryOnly") !== "false",
+      includeProductOptions:
+        sp.get("includeOptions") === "true" || sp.get("includeOptions") === "1",
+      includeConstraints:
+        sp.get("includeConstraints") === "true" || sp.get("includeConstraints") === "1",
+      includeFullProvenance:
+        sp.get("includeProvenance") === "true" || sp.get("includeProvenance") === "1",
       sortBy: sortByRaw || undefined,
-      limit: Number.isFinite(limit) ? limit : undefined,
-      offset: Number.isFinite(offset) ? offset : undefined,
-      page: Number.isFinite(page) ? page : undefined,
-    });
+    };
 
-    if (sp.get("exceptions") === "true" || sp.get("exceptions") === "1") {
-      const batch = normalizeCatalogBatchPickupAndMeeting(result.records);
+    if (isExceptionsRequest) {
+      const paged = await paginateAllDurableTourCatalogPages(
+        {
+          ...baseFilter,
+          includeProductOptions: true,
+          includeConstraints: true,
+        },
+        { pageSize: 250 },
+      );
+      const batch = normalizeCatalogBatchPickupAndMeeting(paged.records);
       return NextResponse.json(
         {
           ok: true,
           readOnly: true,
-          storageSource: result.storageSource,
+          storageSource: paged.storageSource,
+          pagesEvaluated: paged.pagesFetched,
           summary: batch.summary,
-          exceptions: batch.exceptions.slice(0, limit ?? 100),
+          exceptions: batch.exceptions.slice(0, parsedLimit ?? 100),
           reviewDeskQueue: null,
         },
         { status: 200, headers: CORS_HEADERS },
       );
     }
+
+    const result = await queryDurableTourCatalog({
+      ...baseFilter,
+      cursor,
+      limit: Number.isFinite(limit) ? limit : 100,
+      offset: Number.isFinite(offset) ? offset : undefined,
+      page: Number.isFinite(page) ? page : undefined,
+    });
 
     const enrichedRecords = result.records.map((rec) => ({
       ...rec,
@@ -165,6 +185,7 @@ export async function GET(request: NextRequest) {
         ok: true,
         readOnly: true,
         storageSource: result.storageSource,
+        projectionTier: result.projectionTier,
         executedInSql: result.executedInSql,
         rowsLoadedIntoApp: result.rowsLoadedIntoApp,
         fullCatalogLoadedIntoApp: result.fullCatalogLoadedIntoApp,
@@ -176,6 +197,8 @@ export async function GET(request: NextRequest) {
         offset: result.offset,
         hasMore: result.hasMore,
         nextOffset: result.nextOffset,
+        cursorApplied: result.cursorApplied,
+        nextCursor: result.nextCursor,
         records: enrichedRecords,
         tours: enrichedRecords,
       },
@@ -235,10 +258,15 @@ export async function POST(request: NextRequest) {
     };
 
     if (body.mode === "normalize_pickup_and_queue_review_desk") {
-      const result = await queryDurableTourCatalog({
-        destinationSlug: body.destinations?.[0],
-      });
-      const batch = normalizeCatalogBatchPickupAndMeeting(result.records);
+      const paged = await paginateAllDurableTourCatalogPages(
+        {
+          destinationSlug: body.destinations?.[0],
+          includeProductOptions: true,
+          includeConstraints: true,
+        },
+        { pageSize: 250 },
+      );
+      const batch = normalizeCatalogBatchPickupAndMeeting(paged.records);
       const reviewDeskResult = await queueCatalogPickupExceptionsToReviewDesk(
         batch.exceptions,
         { maxRowsToQueue: body.maxRowsToQueue ?? 250 },

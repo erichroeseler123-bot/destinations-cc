@@ -469,8 +469,6 @@ export async function appendCorridorEventDurably(input: CorridorEventPayload) {
     };
   }
 
-  await ensureCorridorCatalogRows();
-
   const safeEventId = sanitizeTelemetryEventId(input.event_id);
   const resolvedEventUuid = resolveDeterministicEventUuid(safeEventId);
   const rawMeta = (input.metadata && typeof input.metadata === "object" ? input.metadata : {}) as Record<string, unknown>;
@@ -548,8 +546,12 @@ export async function listRecentCorridorEvents(limit = 5000) {
   if (!db) return [];
 
   try {
-    await ensureCorridorCatalogRows();
-    return db.select().from(dccCorridorEvents).orderBy(desc(dccCorridorEvents.occurredAt)).limit(limit);
+    const safeLimit = Math.min(Math.max(1, Math.floor(limit)), 20000);
+    return db
+      .select()
+      .from(dccCorridorEvents)
+      .orderBy(desc(dccCorridorEvents.occurredAt))
+      .limit(safeLimit);
   } catch {
     return [];
   }
@@ -578,8 +580,6 @@ export async function getCorridorPerformanceRows(limit = 5000): Promise<Corridor
       bookingOpens: 0,
     }));
   }
-
-  await ensureCorridorCatalogRows();
 
   let catalogRows;
   let events;

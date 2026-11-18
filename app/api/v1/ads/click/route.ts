@@ -44,20 +44,20 @@ async function resolveApprovedCatalogOffer(
   parsedTarget: URL | null,
 ): Promise<DurableTourRecord | null> {
   if (offerParam) {
-    const byOffer = await getDurableTourByIdOrAlias(offerParam);
+    const byOffer = await getDurableTourByIdOrAlias(offerParam, { projection: "handoff_minimal" });
     if (byOffer) return byOffer;
   }
 
   if (parsedTarget) {
     const viatorPathMatch = parsedTarget.pathname.match(/\/d\d+-([A-Za-z0-9_]+)$/i);
     if (viatorPathMatch?.[1]) {
-      const byPathCode = await getDurableTourByIdOrAlias(viatorPathMatch[1]);
+      const byPathCode = await getDurableTourByIdOrAlias(viatorPathMatch[1], { projection: "handoff_minimal" });
       if (byPathCode) return byPathCode;
     }
 
     const fhItemMatch = parsedTarget.pathname.match(/\/items\/(\d+)/i);
     if (fhItemMatch?.[1]) {
-      const byFhItem = await getDurableTourByIdOrAlias(fhItemMatch[1]);
+      const byFhItem = await getDurableTourByIdOrAlias(fhItemMatch[1], { projection: "handoff_minimal" });
       if (byFhItem) return byFhItem;
     }
 
@@ -67,7 +67,7 @@ async function resolveApprovedCatalogOffer(
       parsedTarget.searchParams.get("item")?.trim() ||
       "";
     if (dccCode) {
-      const byQueryCode = await getDurableTourByIdOrAlias(dccCode);
+      const byQueryCode = await getDurableTourByIdOrAlias(dccCode, { projection: "handoff_minimal" });
       if (byQueryCode) return byQueryCode;
     }
 

@@ -15,13 +15,15 @@ import {
   EARTHOS_DESTINATION_NODES,
   getCompatibilityAliasesForViatorCode,
   getDurableCatalogSummaryReport,
+  getDurableToursByProviderProductCodes,
+  getImportedProviderProductCodesForDestination,
   getLatestDestinationBackfillCheckpoint,
   getRefreshCheckpoint,
   loadSyncRunsWithPgHydration,
-  queryDurableTourCatalog,
   readLocalCatalogSnapshot,
   recordCatalogSyncRun,
   retireDurableTourRecord,
+  selectViatorScheduleRefreshCandidates,
   upsertDurableTourRecords,
   upsertRefreshCheckpoint,
   type CatalogSyncRunRecord,
@@ -1823,16 +1825,10 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
         importedCount += 1;
       }
 
-      // Count total Viator records for this destination from durable Postgres + current batch
-      const { records: existingForDest } = await queryDurableTourCatalog({
-        destinationSlug: destSlug,
-        provider: "viator",
-        includeDiscoveryOnly: true,
-      });
-      const existingViatorCodesForDest = new Set(
-        existingForDest
-          .filter((r) => r.active && !r.quarantined)
-          .map((r) => r.providerProductCode.toUpperCase()),
+      // Count total Viator records for this destination using narrow product-code projection + current batch
+      const existingViatorCodesForDest = await getImportedProviderProductCodesForDestination(
+        destSlug,
+        "viator",
       );
       for (const r of allUpsertedRecords) {
         if (r.destinationSlug === destSlug && r.primaryProvider === "viator") {
@@ -2249,20 +2245,7 @@ export async function runIncrementalScheduleAndPricingRefresh(options: {
   const client = getViatorClient();
   const limit = Math.min(Math.max(options.limit ?? 15, 1), 100);
 
-  // 1. Load active Viator records from durable Postgres (with snapshot fallback in test mode)
-  const { records: allViatorRecords, storageSource } = await queryDurableTourCatalog({
-    provider: "viator",
-    destinationSlug: options.destinationSlug,
-    includeDiscoveryOnly: true,
-  });
-  const byCode = new Map<string, DurableTourRecord>();
-  for (const r of allViatorRecords) {
-    if (r.active && !r.quarantined) {
-      byCode.set(r.providerProductCode.toUpperCase(), r);
-    }
-  }
-
-  // 2. Read durable availability/pricing change-stream checkpoint from Postgres
+  // 1. Read durable availability/pricing change-stream checkpoint from Postgres
   let effectiveScheduleCursor = options.scheduleCursor;
   if (!effectiveScheduleCursor) {
     const ckpt = await getRefreshCheckpoint("viator_availability_schedules_modified_since");
@@ -2292,11 +2275,9 @@ export async function runIncrementalScheduleAndPricingRefresh(options: {
   let retryAttemptsTotal = 0;
   let nextScheduleStreamCursor: string | null = effectiveScheduleCursor || null;
   let modifiedSchedulesScanned = 0;
+  const modifiedStreamCodes: string[] = [];
 
-  const prioritizedCandidates: DurableTourRecord[] = [];
-  const selectedCodes = new Set<string>();
-
-  // 3. Poll separate Viator /availability/schedules/modified-since change stream
+  // 2. Poll separate Viator /availability/schedules/modified-since change stream first
   try {
     const { result: schedStreamRes, attempts: streamAttempts } = await withRetry(
       () =>
@@ -2318,34 +2299,24 @@ export async function runIncrementalScheduleAndPricingRefresh(options: {
     modifiedSchedulesScanned = modSchedules.length;
     for (const ms of modSchedules) {
       const code = String(ms?.productCode || "").trim().toUpperCase();
-      const matched = code ? byCode.get(code) : null;
-      if (matched && !selectedCodes.has(code) && prioritizedCandidates.length < limit) {
-        selectedCodes.add(code);
-        prioritizedCandidates.push(matched);
+      if (code) {
+        modifiedStreamCodes.push(code);
       }
     }
   } catch {
     // Non-fatal if /availability/schedules/modified-since requires initial cursor or falls back to Postgres queue
   }
 
-  // 4. Fill remaining capacity from durable Postgres least-recently-refreshed schedule queue
-  const queueSorted = [...allViatorRecords]
-    .filter((r) => r.active && !r.quarantined && !selectedCodes.has(r.providerProductCode.toUpperCase()))
-    .sort((a, b) => {
-      const tsA = Date.parse(
-        (a.provenance as any)?.lastScheduleRefreshAt || a.lastVerifiedAt || a.updatedAt || "1970-01-01",
-      );
-      const tsB = Date.parse(
-        (b.provenance as any)?.lastScheduleRefreshAt || b.lastVerifiedAt || b.updatedAt || "1970-01-01",
-      );
-      return tsA - tsB;
-    });
-
-  for (const item of queueSorted) {
-    if (prioritizedCandidates.length >= limit) break;
-    selectedCodes.add(item.providerProductCode.toUpperCase());
-    prioritizedCandidates.push(item);
-  }
+  // 3. Select <= limit targeted schedule refresh candidates in SQL without pulling the full catalog
+  const {
+    candidates: prioritizedCandidates,
+    totalViatorRecords,
+    storageSource,
+  } = await selectViatorScheduleRefreshCandidates({
+    destinationSlug: options.destinationSlug,
+    modifiedProductCodes: modifiedStreamCodes,
+    limit,
+  });
 
   const updatedRecords: DurableTourRecord[] = [];
   const refreshedCodes: string[] = [];
@@ -2443,7 +2414,7 @@ export async function runIncrementalScheduleAndPricingRefresh(options: {
     destinationSlug: options.destinationSlug || null,
     cursorValue: cursorOut,
     nextStartOffset: null,
-    providerTotalCount: allViatorRecords.length,
+    providerTotalCount: totalViatorRecords,
     status: "completed",
     metadata: {
       storageSource,
@@ -2489,14 +2460,6 @@ export async function runIncrementalScheduleAndPricingRefresh(options: {
  */
 export async function runIncrementalViatorCatalogRefresh(options: IncrementalRefreshOptions = {}) {
   const client = getViatorClient();
-  const { records: durableViatorRecords, storageSource } = await queryDurableTourCatalog({
-    provider: "viator",
-    includeDiscoveryOnly: true,
-  });
-  const existingByProviderCode = new Map<string, DurableTourRecord>();
-  for (const rec of durableViatorRecords) {
-    existingByProviderCode.set(rec.providerProductCode.toUpperCase(), rec);
-  }
 
   // Resume from durable Postgres checkpoint cursor if no explicit cursor was passed
   let effectiveCursor = options.cursor;
@@ -2541,6 +2504,14 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
 
     const nextCursor = typeof modRes?.nextCursor === "string" ? modRes.nextCursor : null;
     const modProducts: any[] = Array.isArray(modRes?.products) ? modRes.products : [];
+    const modCodes = modProducts
+      .map((item) => String(item?.productCode || "").trim().toUpperCase())
+      .filter(Boolean);
+    const {
+      byUpperCode: existingByProviderCode,
+      totalProviderRecords,
+      storageSource,
+    } = await getDurableToursByProviderProductCodes("viator", modCodes);
     const updatedRecords: DurableTourRecord[] = [];
     const nowIso = new Date().toISOString();
 
@@ -2636,7 +2607,7 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       destinationSlug: null,
       cursorValue: nextCursor,
       nextStartOffset: null,
-      providerTotalCount: durableViatorRecords.length,
+      providerTotalCount: totalProviderRecords,
       status: "completed",
       metadata: {
         storageSource,

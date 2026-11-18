@@ -1464,21 +1464,6 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
     ? parseTimeWindowMinutes(input.shipArrival, input.allAboardTime, true)
     : parseTimeWindowMinutes(input.shipArrival, input.shipDeparture, false);
 
-  const catalogResult = await queryDurableTourCatalog({
-    destinationSlug: node.destinationSlug,
-    approvedTourIds: input.approvedTourIds,
-    category: input.category,
-    q: input.q,
-    maxDurationMinutes: input.maxDurationMinutes,
-    maxPriceCents: input.maxPriceCents,
-    freeCancellationOnly: input.freeCancellationOnly,
-    commissionAuthorizedOnly: input.commissionAuthorizedOnly,
-    includeDiscoveryOnly: input.includeDiscoveryOnly !== false,
-    limit: 500,
-  });
-
-  const cachedCatalogSearchMs = Date.now() - tStart;
-
   const guestLat =
     typeof input.hotelLat === "number" && Number.isFinite(input.hotelLat)
       ? input.hotelLat
@@ -1491,6 +1476,25 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       : hasCruiseWindowInput && node.cruisePierLng !== null
         ? node.cruisePierLng
         : null;
+
+  const catalogResult = await queryDurableTourCatalog({
+    destinationSlug: node.destinationSlug,
+    approvedTourIds: input.approvedTourIds,
+    category: input.category,
+    q: input.q,
+    maxDurationMinutes: input.maxDurationMinutes,
+    maxPriceCents: input.maxPriceCents,
+    freeCancellationOnly: input.freeCancellationOnly,
+    commissionAuthorizedOnly: input.commissionAuthorizedOnly,
+    includeDiscoveryOnly: input.includeDiscoveryOnly !== false,
+    includeProductOptions: true,
+    includeConstraints: true,
+    includeAgeBands: true,
+    includePickupLocations: guestLat !== null && guestLng !== null,
+    limit: 500,
+  });
+
+  const cachedCatalogSearchMs = Date.now() - tStart;
 
   const evaluated: Array<{
     record: DurableTourRecord;
@@ -3231,8 +3235,8 @@ export function buildCatalogTourDirectHandoff(
   const firstOpt = Array.isArray(record.productOptions) && record.productOptions.length > 0
     ? sortProductOptionsByPrice(record.productOptions)[0]
     : null;
-  const optionCode = firstOpt?.optionCode || "DEFAULT";
-  const optionTitle = firstOpt?.title || record.title;
+  const optionCode = firstOpt?.optionCode || record.defaultOptionCode || "DEFAULT";
+  const optionTitle = firstOpt?.title || record.defaultOptionTitle || record.title;
   const baseUrl = selectedOffer.bookingUrl || record.bookingUrl;
   const preClickId = generateOpaqueClickId({ isTest });
 

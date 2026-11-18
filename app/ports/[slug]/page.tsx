@@ -136,7 +136,7 @@ export default async function PortPage({
         cruiseSailDate: query.sailing_date,
         limit: 12,
         offset: 0,
-      })
+      }).catch(() => null)
     : null;
 
   return (

@@ -2317,7 +2317,7 @@ export async function getCommercialHandoffById(
       metadata_json: Record<string, unknown> | null;
       created_at: Date | string;
     }>(
-      `SELECT * FROM dcc_commercial_handoffs WHERE handoff_id = $1 LIMIT 1`,
+      `SELECT handoff_id, originating_site, provider, provider_account, product_code, product_title, destination_url, outbound_affiliate_url, attribution_param_name, attribution_param_value, context_id, evaluation_run_id, receipt_id, intended_date, intended_option, party_size, party_details_json, quoted_price_amount, quoted_price_currency, caller_client_id, traceparent, metadata_json, created_at FROM dcc_commercial_handoffs WHERE handoff_id = $1 LIMIT 1`,
       [normalized]
     );
     const row = res.rows[0];
@@ -2856,7 +2856,7 @@ export async function getPollerCheckpoint(
         locked_until: Date | string | null;
         updated_at: Date | string;
       }>(
-        `SELECT * FROM dcc_commercial_poller_checkpoints WHERE poller_id = $1 LIMIT 1`,
+        `SELECT poller_id, provider, provider_account, cursor_value, last_polled_at, last_ingested_count, last_deduplicated_count, locked_by, locked_until, updated_at FROM dcc_commercial_poller_checkpoints WHERE poller_id = $1 LIMIT 1`,
         [pollerId]
       );
       const row = res.rows[0];
@@ -3334,6 +3334,7 @@ export async function listCommercialOutcomes(options?: {
   receiptId?: string;
   provider?: CommercialProvider;
   excludeQa?: boolean;
+  includeRawPayload?: boolean;
   limit?: number;
 }): Promise<CommercialOutcomeRecord[]> {
   const limit = Math.min(Math.max(1, options?.limit ?? 25), 100);
@@ -3396,7 +3397,7 @@ export async function listCommercialOutcomes(options?: {
         raw_payload_json?: Record<string, unknown> | null;
         traceparent: string | null;
       }>(
-        `SELECT * FROM dcc_commercial_outcomes ${whereSql} ORDER BY dcc_recorded_at ASC LIMIT $${values.length}`,
+        `SELECT outcome_id, dedupe_key, reporter_client_id, reporter_provenance, provider, provider_account, provider_booking_ref, event_type, provider_event_time, dcc_recorded_at, handoff_id, evaluation_run_id, receipt_id, context_id, reconciliation_status, reconciliation_json, booked_product_code, booked_date, booked_option, booked_party_size, booking_value_amount, booking_value_currency, estimated_commission_amount, estimated_commission_currency, paid_commission_amount, paid_commission_currency, cancellation_reason, traceparent${options?.includeRawPayload ? ", raw_payload_json" : ""} FROM dcc_commercial_outcomes ${whereSql} ORDER BY dcc_recorded_at ASC LIMIT $${values.length}`,
         values
       );
 

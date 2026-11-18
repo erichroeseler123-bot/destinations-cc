@@ -204,6 +204,8 @@ export type DurableTourRecord = {
   constraints: TourConstraintsRecord;
   channelOffers: ChannelOffer[];
   productOptions?: TourProductOptionRecord[];
+  defaultOptionCode?: string | null;
+  defaultOptionTitle?: string | null;
   serviceDetails?: Record<string, unknown>;
   inclusions: string[];
   exclusions: string[];
@@ -615,11 +617,29 @@ export type UniversalCatalogSnapshotFile = {
   syncRuns: CatalogSyncRunRecord[];
 };
 
+export type CatalogSqlQueryExecutor = (
+  queryText: string,
+  params?: unknown[],
+) => Promise<Record<string, any>[]>;
+
 let memoryCatalogCache: DurableTourRecord[] | null = null;
 let memorySyncRunsCache: CatalogSyncRunRecord[] | null = null;
 let pgSchemaReadyPromise: Promise<void> | null = null;
 let pgSchemaReadyForUrl: string | null = null;
-let pgHydratedFromSnapshot = false;
+let customSqlQueryExecutor: CatalogSqlQueryExecutor | null = null;
+
+export function setCatalogSqlQueryExecutorForTests(
+  executor: CatalogSqlQueryExecutor | null,
+): void {
+  customSqlQueryExecutor = executor;
+}
+
+export function clearDurableCatalogCachesForTests(): void {
+  memoryCatalogCache = null;
+  memorySyncRunsCache = null;
+  activeDestinationCountsCache.clear();
+  memoryCheckpointsByStream.clear();
+}
 
 function isAutomatedTestRuntime(): boolean {
   if (process.env.NODE_ENV === "test") return true;
@@ -634,6 +654,9 @@ function isAutomatedTestRuntime(): boolean {
 }
 
 function shouldUsePostgres(): boolean {
+  if (customSqlQueryExecutor) {
+    return true;
+  }
   if (isAutomatedTestRuntime() && process.env.DCC_ENABLE_PG_SYNC_IN_TESTS !== "1") {
     return false;
   }
@@ -647,6 +670,17 @@ function getSqlClient() {
     throw new Error("DATABASE_URL is not configured or is redacted.");
   }
   return neon(url);
+}
+
+async function executeCatalogSql(
+  queryText: string,
+  params: unknown[] = [],
+): Promise<Record<string, any>[]> {
+  if (customSqlQueryExecutor) {
+    return customSqlQueryExecutor(queryText, params);
+  }
+  const sql = getSqlClient();
+  return (await sql.query(queryText, params)) as Record<string, any>[];
 }
 
 export async function ensureCatalogSchema(): Promise<void> {
@@ -834,19 +868,97 @@ export function writeLocalCatalogSnapshot(
   }
 }
 
+function sanitizeProvenanceObject(
+  rawProv: Record<string, any> | null | undefined,
+  row: Record<string, any>,
+): TourProvenanceRecord {
+  if (rawProv && typeof rawProv === "object") {
+    const {
+      raw_json: _rawJson,
+      rawPayload: _rawPayload,
+      rawProduct: _rawProduct,
+      ...rest
+    } = rawProv;
+    return {
+      sourceSystem: String(rest.sourceSystem || row.primary_provider || "viator"),
+      sourceEndpoint: String(rest.sourceEndpoint || "db"),
+      fetchedAt: String(rest.fetchedAt || (row.last_verified_at ? new Date(row.last_verified_at).toISOString() : new Date().toISOString())),
+      ...(rest.modifiedSinceCursor !== undefined ? { modifiedSinceCursor: rest.modifiedSinceCursor } : {}),
+      ...(rest.lastScheduleRefreshAt !== undefined ? { lastScheduleRefreshAt: rest.lastScheduleRefreshAt } : {}),
+      contentSha256: typeof rest.contentSha256 === "string" ? rest.contentSha256 : "",
+      rawFieldsVerified: {
+        durationKnown:
+          typeof rest.rawFieldsVerified?.durationKnown === "boolean"
+            ? rest.rawFieldsVerified.durationKnown
+            : row.duration_minutes !== null && row.duration_minutes !== undefined,
+        cancellationKnown:
+          typeof rest.rawFieldsVerified?.cancellationKnown === "boolean"
+            ? rest.rawFieldsVerified.cancellationKnown
+            : row.free_cancellation !== null && row.free_cancellation !== undefined,
+        pickupKnown:
+          typeof rest.rawFieldsVerified?.pickupKnown === "boolean"
+            ? rest.rawFieldsVerified.pickupKnown
+            : typeof row.prov_pickup_known === "boolean"
+              ? row.prov_pickup_known
+              : row.has_hotel_pickup !== null && row.has_hotel_pickup !== undefined,
+        meetingCoordinatesKnown:
+          typeof rest.rawFieldsVerified?.meetingCoordinatesKnown === "boolean"
+            ? rest.rawFieldsVerified.meetingCoordinatesKnown
+            : row.meeting_point_lat !== null && row.meeting_point_lat !== undefined,
+        ageBandsKnown:
+          typeof rest.rawFieldsVerified?.ageBandsKnown === "boolean"
+            ? rest.rawFieldsVerified.ageBandsKnown
+            : Array.isArray(row.age_bands_json) && row.age_bands_json.length > 0,
+      },
+    };
+  }
+  return {
+    sourceSystem: String(row.prov_source_system || row.primary_provider || "viator"),
+    sourceEndpoint: String(row.prov_source_endpoint || "db_narrow_projection"),
+    fetchedAt: row.prov_fetched_at
+      ? String(row.prov_fetched_at)
+      : row.last_verified_at
+        ? new Date(row.last_verified_at).toISOString()
+        : new Date().toISOString(),
+    ...(row.prov_last_schedule_refresh_at
+      ? { lastScheduleRefreshAt: String(row.prov_last_schedule_refresh_at) }
+      : {}),
+    contentSha256: "",
+    rawFieldsVerified: {
+      durationKnown: row.duration_minutes !== null && row.duration_minutes !== undefined,
+      cancellationKnown: row.free_cancellation !== null && row.free_cancellation !== undefined,
+      pickupKnown:
+        typeof row.prov_pickup_known === "boolean"
+          ? row.prov_pickup_known
+          : row.has_hotel_pickup !== null && row.has_hotel_pickup !== undefined,
+      meetingCoordinatesKnown: row.meeting_point_lat !== null && row.meeting_point_lat !== undefined,
+      ageBandsKnown: Array.isArray(row.age_bands_json) && row.age_bands_json.length > 0,
+    },
+  };
+}
+
 function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecord {
   const tourId = String(row.tour_id);
   const quarantined = Boolean(row.quarantined) || QUARANTINED_TOUR_IDS.has(tourId);
+  const sdFulfillment =
+    typeof row.sd_pickup_fulfillment_type === "string" && row.sd_pickup_fulfillment_type
+      ? (row.sd_pickup_fulfillment_type as PickupFulfillmentType)
+      : row.service_details_json &&
+          typeof row.service_details_json === "object" &&
+          typeof row.service_details_json.pickupFulfillmentType === "string"
+        ? (row.service_details_json.pickupFulfillmentType as PickupFulfillmentType)
+        : undefined;
+
   return {
     tourId,
     compatibilityAliases: Array.isArray(row.compatibility_aliases) ? row.compatibility_aliases : [],
     destinationSlug: String(row.destination_slug),
     portSlug: row.port_slug ? String(row.port_slug) : null,
-    earthosDestinationNodeId: String(row.earthos_destination_node_id),
-    timeZone: String(row.time_zone),
-    title: String(row.title),
+    earthosDestinationNodeId: String(row.earthos_destination_node_id || ""),
+    timeZone: String(row.time_zone || "UTC"),
+    title: String(row.title || ""),
     summary: row.summary ? String(row.summary) : null,
-    category: String(row.category),
+    category: String(row.category || "General"),
     tags: Array.isArray(row.tags) ? row.tags : [],
     primaryProvider: row.primary_provider,
     providerProductCode: String(row.provider_product_code),
@@ -874,19 +986,16 @@ function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecor
     lowestPriceIncludesPickup:
       typeof row.lowest_price_includes_pickup === "boolean" ? row.lowest_price_includes_pickup : null,
     pickupFulfillmentType:
-      (row.service_details_json &&
-      typeof row.service_details_json === "object" &&
-      typeof row.service_details_json.pickupFulfillmentType === "string"
-        ? (row.service_details_json.pickupFulfillmentType as PickupFulfillmentType)
-        : row.pickup_type === "CRUISE_PIER_PICKUP"
-          ? "pier_pickup"
-          : row.pickup_type === "DOWNTOWN_SHUTTLE_DEPARTURE"
-            ? "downtown_shuttle_departure"
-            : row.pickup_type === "HOTEL_PICKUP"
-              ? "hotel_pickup"
-              : row.pickup_type === "MEETING_POINT_ONLY"
-                ? "self_drive"
-                : undefined),
+      sdFulfillment ??
+      (row.pickup_type === "CRUISE_PIER_PICKUP"
+        ? "pier_pickup"
+        : row.pickup_type === "DOWNTOWN_SHUTTLE_DEPARTURE"
+          ? "downtown_shuttle_departure"
+          : row.pickup_type === "HOTEL_PICKUP"
+            ? "hotel_pickup"
+            : row.pickup_type === "MEETING_POINT_ONLY"
+              ? "self_drive"
+              : undefined),
     pickupType: row.pickup_type || null,
     pickupSummary: row.pickup_summary ? String(row.pickup_summary) : null,
     meetingPointName: row.meeting_point_name ? String(row.meeting_point_name) : null,
@@ -905,7 +1014,13 @@ function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecor
     constraints:
       row.constraints_json && typeof row.constraints_json === "object" ? row.constraints_json : {},
     channelOffers: Array.isArray(row.channel_offers_json) ? row.channel_offers_json : [],
-    productOptions: Array.isArray(row.product_options_json) ? row.product_options_json : [],
+    productOptions: Array.isArray(row.product_options_json) ? row.product_options_json : undefined,
+    ...(typeof row.default_option_code === "string" && row.default_option_code
+      ? { defaultOptionCode: row.default_option_code }
+      : {}),
+    ...(typeof row.default_option_title === "string" && row.default_option_title
+      ? { defaultOptionTitle: row.default_option_title }
+      : {}),
     serviceDetails:
       row.service_details_json && typeof row.service_details_json === "object"
         ? row.service_details_json
@@ -922,32 +1037,21 @@ function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecor
         ? row.review_count
         : null,
     bookingUrl: String(row.booking_url),
-    provenance:
-      row.provenance_json && typeof row.provenance_json === "object"
-        ? (row.provenance_json as TourProvenanceRecord)
-        : {
-            sourceSystem: row.primary_provider,
-            sourceEndpoint: "db",
-            fetchedAt: new Date().toISOString(),
-            contentSha256: "",
-            rawFieldsVerified: {
-              durationKnown: row.duration_minutes !== null,
-              cancellationKnown: row.free_cancellation !== null,
-              pickupKnown: row.has_hotel_pickup !== null,
-              meetingCoordinatesKnown: row.meeting_point_lat !== null,
-              ageBandsKnown: Array.isArray(row.age_bands_json) && row.age_bands_json.length > 0,
-            },
-          },
+    provenance: sanitizeProvenanceObject(row.provenance_json, row),
     quarantined,
     quarantineReason: row.quarantine_reason ? String(row.quarantine_reason) : null,
     retiredAt:
-      row.service_details_json && typeof row.service_details_json?.retiredAt === "string"
-        ? row.service_details_json.retiredAt
-        : null,
+      typeof row.sd_retired_at === "string"
+        ? row.sd_retired_at
+        : row.service_details_json && typeof row.service_details_json?.retiredAt === "string"
+          ? row.service_details_json.retiredAt
+          : null,
     retirementReason:
-      row.service_details_json && typeof row.service_details_json?.retirementReason === "string"
-        ? row.service_details_json.retirementReason
-        : null,
+      typeof row.sd_retirement_reason === "string"
+        ? row.sd_retirement_reason
+        : row.service_details_json && typeof row.service_details_json?.retirementReason === "string"
+          ? row.service_details_json.retirementReason
+          : null,
     active: Boolean(row.active) && !quarantined,
     lastVerifiedAt: row.last_verified_at
       ? new Date(row.last_verified_at).toISOString()
@@ -1140,9 +1244,8 @@ export async function upsertDurableTourRecords(records: DurableTourRecord[]): Pr
   writeLocalCatalogSnapshot(merged, snapshot.syncRuns);
 
   let persistedToPostgres = false;
-  if (shouldUsePostgres()) {
+  if (shouldUsePostgres() && !customSqlQueryExecutor) {
     try {
-      await ensureCatalogSchema();
       const sql = getSqlClient();
       const quarantinedArray = Array.from(QUARANTINED_TOUR_IDS);
       if (quarantinedArray.length > 0) {
@@ -1180,39 +1283,44 @@ export async function recordCatalogSyncRun(run: CatalogSyncRunRecord): Promise<v
 
   if (shouldUsePostgres()) {
     try {
-      await ensureCatalogSchema();
-      const sql = getSqlClient();
-      await sql`
-        INSERT INTO dcc_catalog_sync_runs (
-          run_id, provider, destination_slug, status, cursor_value,
-          imported_count, updated_count, rejected_count, upstream_request_count,
-          rejection_reasons_json, metadata_json, started_at, completed_at
-        ) VALUES (
-          ${run.runId},
-          ${run.provider},
-          ${run.destinationSlug},
-          ${run.status},
-          ${run.cursorValue},
-          ${run.importedCount},
-          ${run.updatedCount},
-          ${run.rejectedCount},
-          ${run.upstreamRequestCount},
-          ${JSON.stringify(run.rejectionReasons)}::jsonb,
-          ${JSON.stringify(run.metadata)}::jsonb,
-          ${run.startedAt}::timestamptz,
-          ${run.completedAt}::timestamptz
-        )
-        ON CONFLICT (run_id) DO UPDATE SET
-          status = EXCLUDED.status,
-          cursor_value = EXCLUDED.cursor_value,
-          imported_count = EXCLUDED.imported_count,
-          updated_count = EXCLUDED.updated_count,
-          rejected_count = EXCLUDED.rejected_count,
-          upstream_request_count = EXCLUDED.upstream_request_count,
-          rejection_reasons_json = EXCLUDED.rejection_reasons_json,
-          metadata_json = EXCLUDED.metadata_json,
-          completed_at = EXCLUDED.completed_at
-      `;
+      await executeCatalogSql(
+        `
+          INSERT INTO dcc_catalog_sync_runs (
+            run_id, provider, destination_slug, status, cursor_value,
+            imported_count, updated_count, rejected_count, upstream_request_count,
+            rejection_reasons_json, metadata_json, started_at, completed_at
+          ) VALUES (
+            $1, $2, $3, $4, $5,
+            $6, $7, $8, $9,
+            $10::jsonb, $11::jsonb, $12::timestamptz, $13::timestamptz
+          )
+          ON CONFLICT (run_id) DO UPDATE SET
+            status = EXCLUDED.status,
+            cursor_value = EXCLUDED.cursor_value,
+            imported_count = EXCLUDED.imported_count,
+            updated_count = EXCLUDED.updated_count,
+            rejected_count = EXCLUDED.rejected_count,
+            upstream_request_count = EXCLUDED.upstream_request_count,
+            rejection_reasons_json = EXCLUDED.rejection_reasons_json,
+            metadata_json = EXCLUDED.metadata_json,
+            completed_at = EXCLUDED.completed_at
+        `,
+        [
+          run.runId,
+          run.provider,
+          run.destinationSlug,
+          run.status,
+          run.cursorValue,
+          run.importedCount,
+          run.updatedCount,
+          run.rejectedCount,
+          run.upstreamRequestCount,
+          JSON.stringify(run.rejectionReasons),
+          JSON.stringify(run.metadata),
+          run.startedAt,
+          run.completedAt,
+        ],
+      );
     } catch (err) {
       console.error("[durableCatalogStore] Failed recording sync run in Postgres:", err);
     }
@@ -1220,8 +1328,6 @@ export async function recordCatalogSyncRun(run: CatalogSyncRunRecord): Promise<v
 }
 
 let memoryCatalogLoadedAt = 0;
-let memoryCatalogSource: "postgres" | "snapshot_hydrated_to_postgres" | "local_snapshot" = "local_snapshot";
-let pilotRecordsUpsertedToPg = false;
 
 export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
   {
@@ -4839,83 +4945,23 @@ function mergePilotVerifiedRecords(records: DurableTourRecord[]): DurableTourRec
   return Array.from(byId.values());
 }
 
-async function loadAllCatalogRecordsWithPgHydration(): Promise<{
-  records: DurableTourRecord[];
-  source: "postgres" | "snapshot_hydrated_to_postgres" | "local_snapshot";
-}> {
+function loadOfflineSnapshotRecordsForLocalTestsOnly(): DurableTourRecord[] {
   if (
     memoryCatalogCache &&
     memoryCatalogCache.length > 0 &&
     Date.now() - memoryCatalogLoadedAt < 60_000
   ) {
-    return {
-      records: mergePilotVerifiedRecords(
-        memoryCatalogCache.filter((r) => r.active && !isQuarantinedTourRecord(r)),
-      ),
-      source: memoryCatalogSource,
-    };
-  }
-
-  if (shouldUsePostgres()) {
-    try {
-      await ensureCatalogSchema();
-      const sql = getSqlClient();
-      if (!pilotRecordsUpsertedToPg) {
-        pilotRecordsUpsertedToPg = true;
-        for (const pilot of PILOT_VERIFIED_TOUR_RECORDS) {
-          await upsertSingleTourToPg(sql, pilot);
-        }
-      }
-      const rows = await sql`
-        SELECT * FROM dcc_tour_catalog WHERE active = true AND quarantined = false ORDER BY destination_slug, tour_id
-      `;
-      if (rows.length > 0) {
-        const mapped = mergePilotVerifiedRecords(
-          rows.map(mapPgRowToDurableTourRecord).filter((r) => r.active && !isQuarantinedTourRecord(r)),
-        );
-        memoryCatalogCache = mapped;
-        memoryCatalogLoadedAt = Date.now();
-        memoryCatalogSource = "postgres";
-        return { records: mapped, source: "postgres" };
-      }
-
-      // If Postgres is empty on first query (e.g., fresh production DB), auto-hydrate from committed snapshot
-      const snapshot = readLocalCatalogSnapshot();
-      const activeSnapshotRecords = mergePilotVerifiedRecords(
-        snapshot.records.filter((r) => r.active && !isQuarantinedTourRecord(r)),
-      );
-      if (activeSnapshotRecords.length > 0 && !pgHydratedFromSnapshot) {
-        pgHydratedFromSnapshot = true;
-        for (const rec of activeSnapshotRecords) {
-          await upsertSingleTourToPg(sql, rec);
-        }
-        for (const run of snapshot.syncRuns) {
-          await recordCatalogSyncRun(run);
-        }
-        memoryCatalogCache = activeSnapshotRecords;
-        memoryCatalogLoadedAt = Date.now();
-        memoryCatalogSource = "snapshot_hydrated_to_postgres";
-        return { records: activeSnapshotRecords, source: "snapshot_hydrated_to_postgres" };
-      }
-    } catch (err) {
-      console.warn("[durableCatalogStore] Falling back to snapshot after Postgres query error:", err);
-    }
-  }
-
-  if (memoryCatalogCache && memoryCatalogCache.length > 0) {
-    return {
-      records: mergePilotVerifiedRecords(
-        memoryCatalogCache.filter((r) => r.active && !isQuarantinedTourRecord(r)),
-      ),
-      source: "local_snapshot",
-    };
+    return mergePilotVerifiedRecords(
+      memoryCatalogCache.filter((r) => r.active && !isQuarantinedTourRecord(r)),
+    );
   }
   const snapshot = readLocalCatalogSnapshot();
   const activeRecords = mergePilotVerifiedRecords(
     snapshot.records.filter((r) => r.active && !isQuarantinedTourRecord(r)),
   );
   memoryCatalogCache = activeRecords;
-  return { records: activeRecords, source: "local_snapshot" };
+  memoryCatalogLoadedAt = Date.now();
+  return activeRecords;
 }
 
 export type DurableCatalogSortBy =
@@ -4926,7 +4972,18 @@ export type DurableCatalogSortBy =
   | "duration_asc"
   | "title_asc";
 
-export type DurableCatalogQueryFilter = {
+export type DurableCatalogProjectionOptions = {
+  includeProductOptions?: boolean;
+  includeConstraints?: boolean;
+  includeServiceDetails?: boolean;
+  includePickupLocations?: boolean;
+  includeAgeBands?: boolean;
+  includeChannelOffers?: boolean;
+  includeFullProvenance?: boolean;
+  includeInclusionsExclusions?: boolean;
+};
+
+export type DurableCatalogQueryFilter = DurableCatalogProjectionOptions & {
   destinationSlug?: string;
   portSlug?: string;
   earthosDestinationNodeId?: string;
@@ -4946,10 +5003,60 @@ export type DurableCatalogQueryFilter = {
   verifiedTimingOnly?: boolean;
   sortBy?: DurableCatalogSortBy;
   sort?: DurableCatalogSortBy;
+  cursor?: string | null;
   limit?: number;
   offset?: number;
   page?: number;
 };
+
+export const DEFAULT_CATALOG_PAGE_LIMIT = 100;
+export const MAX_CATALOG_PAGE_LIMIT = 500;
+
+export type DecodedCatalogCursor = {
+  v: 1;
+  offset: number;
+  sortBy: DurableCatalogSortBy;
+  lastTourId: string | null;
+};
+
+export function encodeCatalogCursor(payload: {
+  offset: number;
+  sortBy: DurableCatalogSortBy;
+  lastTourId?: string | null;
+}): string {
+  const normalized: DecodedCatalogCursor = {
+    v: 1,
+    offset: Math.max(0, Math.floor(payload.offset)),
+    sortBy: payload.sortBy || "recommended",
+    lastTourId: payload.lastTourId || null,
+  };
+  return Buffer.from(JSON.stringify(normalized), "utf8").toString("base64url");
+}
+
+export function decodeCatalogCursor(rawCursor?: string | null): DecodedCatalogCursor | null {
+  if (!rawCursor || typeof rawCursor !== "string" || !rawCursor.trim()) return null;
+  try {
+    const decoded = JSON.parse(
+      Buffer.from(rawCursor.trim(), "base64url").toString("utf8"),
+    ) as Partial<DecodedCatalogCursor>;
+    if (
+      decoded &&
+      typeof decoded.offset === "number" &&
+      Number.isFinite(decoded.offset) &&
+      decoded.offset >= 0
+    ) {
+      return {
+        v: 1,
+        offset: Math.floor(decoded.offset),
+        sortBy: (decoded.sortBy as DurableCatalogSortBy) || "recommended",
+        lastTourId: typeof decoded.lastTourId === "string" ? decoded.lastTourId : null,
+      };
+    }
+  } catch {
+    // Ignore malformed cursor and fall back to explicit offset/0
+  }
+  return null;
+}
 
 export function hasVerifiedCruisePortLogistics(rec: DurableTourRecord): boolean {
   const hasDuration = typeof rec.durationMinutes === "number" && rec.durationMinutes > 0;
@@ -4993,6 +5100,9 @@ export type DurableCatalogQueryResult = {
   categoriesAvailable?: string[];
   storageSource: "postgres" | "snapshot_hydrated_to_postgres" | "local_snapshot";
   nextOffset: number | null;
+  cursorApplied: string | null;
+  nextCursor: string | null;
+  projectionTier: "narrow_scalar" | "explicit_extended";
   executedInSql: boolean;
   rowsLoadedIntoApp: number;
   fullCatalogLoadedIntoApp: boolean;
@@ -5050,15 +5160,181 @@ function getNormalizedPilotMap(): Map<string, DurableTourRecord> {
 }
 
 export async function syncPilotVerifiedRecordsToPostgres(): Promise<number> {
-  if (!shouldUsePostgres()) return 0;
+  if (!shouldUsePostgres() || customSqlQueryExecutor) return 0;
   await ensureCatalogSchema();
   const sql = getSqlClient();
   const normalizedPilots = PILOT_VERIFIED_TOUR_RECORDS.map(
     (p) => normalizeCatalogTourPickupAndMeeting(p).normalizedRecord,
   );
   await Promise.all(normalizedPilots.map((pilot) => upsertSingleTourToPg(sql, pilot)));
-  pilotRecordsUpsertedToPg = true;
   return normalizedPilots.length;
+}
+
+const CARD_SCALAR_SELECT_COLUMNS: readonly string[] = [
+  "tour_id",
+  "compatibility_aliases",
+  "destination_slug",
+  "port_slug",
+  "earthos_destination_node_id",
+  "time_zone",
+  "title",
+  "summary",
+  "category",
+  "tags",
+  "primary_provider",
+  "provider_product_code",
+  "operator_name",
+  "operator_code",
+  "capability_tier",
+  "commission_authorized",
+  "duration_minutes",
+  "duration_raw_text",
+  "from_price_cents",
+  "price_basis",
+  "currency",
+  "free_cancellation",
+  "cancellation_policy_type",
+  "cancellation_cutoff_hours",
+  "cancellation_summary",
+  "has_hotel_pickup",
+  "lowest_price_includes_pickup",
+  "pickup_type",
+  "pickup_summary",
+  "meeting_point_name",
+  "meeting_point_address",
+  "meeting_point_lat",
+  "meeting_point_lng",
+  "location_precision",
+  "COALESCE((SELECT jsonb_agg(co - 'inclusions' - 'exclusions' - 'cancellationSummary') FROM jsonb_array_elements(COALESCE(channel_offers_json, '[]'::jsonb)) co), '[]'::jsonb) AS channel_offers_json",
+  "primary_image_url",
+  "rating_average",
+  "review_count",
+  "booking_url",
+  "quarantined",
+  "quarantine_reason",
+  "active",
+  "last_verified_at",
+  "updated_at",
+  "created_at",
+  "service_details_json->>'pickupFulfillmentType' AS sd_pickup_fulfillment_type",
+  "service_details_json->>'retiredAt' AS sd_retired_at",
+  "service_details_json->>'retirementReason' AS sd_retirement_reason",
+  "COALESCE((provenance_json->'rawFieldsVerified'->>'pickupKnown')::boolean, false) AS prov_pickup_known",
+  "provenance_json->>'sourceSystem' AS prov_source_system",
+  "provenance_json->>'sourceEndpoint' AS prov_source_endpoint",
+  "provenance_json->>'fetchedAt' AS prov_fetched_at",
+  "provenance_json->>'lastScheduleRefreshAt' AS prov_last_schedule_refresh_at",
+  "(SELECT opt->>'optionCode' FROM jsonb_array_elements(COALESCE(product_options_json, '[]'::jsonb)) opt ORDER BY COALESCE((opt->>'fromPriceCents')::int, 2147483647) ASC LIMIT 1) AS default_option_code",
+  "(SELECT opt->>'title' FROM jsonb_array_elements(COALESCE(product_options_json, '[]'::jsonb)) opt ORDER BY COALESCE((opt->>'fromPriceCents')::int, 2147483647) ASC LIMIT 1) AS default_option_title",
+];
+
+function isExplicitExtendedProjection(filter: DurableCatalogProjectionOptions & { requireVerifiedCruiseLogistics?: boolean }): boolean {
+  return Boolean(
+    filter.includeProductOptions ||
+      filter.includeConstraints ||
+      filter.includeServiceDetails ||
+      filter.includePickupLocations ||
+      filter.includeAgeBands ||
+      filter.includeFullProvenance ||
+      filter.includeInclusionsExclusions ||
+      filter.requireVerifiedCruiseLogistics,
+  );
+}
+
+function buildCatalogSelectColumnsSql(
+  filter: DurableCatalogProjectionOptions & { requireVerifiedCruiseLogistics?: boolean },
+): string {
+  const cols = [...CARD_SCALAR_SELECT_COLUMNS];
+  if (filter.includeProductOptions || filter.requireVerifiedCruiseLogistics) {
+    cols.push("product_options_json");
+  }
+  if (filter.includeConstraints || filter.requireVerifiedCruiseLogistics) {
+    cols.push("constraints_json");
+  }
+  if (filter.includeServiceDetails || filter.requireVerifiedCruiseLogistics) {
+    cols.push("service_details_json");
+  }
+  if (filter.includePickupLocations) {
+    cols.push("pickup_locations_json");
+  }
+  if (filter.includeAgeBands) {
+    cols.push("age_bands_json");
+  }
+  if (filter.includeInclusionsExclusions) {
+    cols.push("inclusions_json", "exclusions_json");
+  }
+  if (filter.includeFullProvenance) {
+    cols.push("(provenance_json - 'raw_json' - 'rawPayload' - 'rawProduct') AS provenance_json");
+  }
+  return cols.join(",\n          ");
+}
+
+function applyRequestedProjectionToRecord(
+  rec: DurableTourRecord,
+  filter: DurableCatalogProjectionOptions & { requireVerifiedCruiseLogistics?: boolean },
+): DurableTourRecord {
+  const needOptions = Boolean(filter.includeProductOptions || filter.requireVerifiedCruiseLogistics);
+  const needConstraints = Boolean(filter.includeConstraints || filter.requireVerifiedCruiseLogistics);
+  const needServiceDetails = Boolean(filter.includeServiceDetails || filter.requireVerifiedCruiseLogistics);
+  const needPickupLocations = Boolean(filter.includePickupLocations);
+  const needAgeBands = Boolean(filter.includeAgeBands);
+  const needInclusions = Boolean(filter.includeInclusionsExclusions);
+  const needFullProvenance = Boolean(filter.includeFullProvenance);
+
+  let defaultOptionCode = rec.defaultOptionCode ?? null;
+  let defaultOptionTitle = rec.defaultOptionTitle ?? null;
+  if ((!defaultOptionCode || !defaultOptionTitle) && Array.isArray(rec.productOptions) && rec.productOptions.length > 0) {
+    const sortedOpts = [...rec.productOptions].sort(
+      (a, b) => (a.fromPriceCents ?? Number.MAX_SAFE_INTEGER) - (b.fromPriceCents ?? Number.MAX_SAFE_INTEGER),
+    );
+    defaultOptionCode = defaultOptionCode || sortedOpts[0]?.optionCode || null;
+    defaultOptionTitle = defaultOptionTitle || sortedOpts[0]?.title || null;
+  }
+
+  const rawProv = (rec.provenance || {}) as Record<string, any>;
+  const {
+    raw_json: _rj,
+    rawPayload: _rp,
+    rawProduct: _rprod,
+    ...cleanProv
+  } = rawProv;
+
+  return {
+    ...rec,
+    productOptions: needOptions ? rec.productOptions : undefined,
+    ...(defaultOptionCode ? { defaultOptionCode } : {}),
+    ...(defaultOptionTitle ? { defaultOptionTitle } : {}),
+    constraints: needConstraints ? rec.constraints : {},
+    serviceDetails: needServiceDetails ? rec.serviceDetails : {},
+    pickupLocations: needPickupLocations ? rec.pickupLocations : [],
+    ageBands: needAgeBands ? rec.ageBands : [],
+    channelOffers: needInclusions
+      ? rec.channelOffers
+      : (rec.channelOffers || []).map((co) => ({
+          ...co,
+          inclusions: [],
+          exclusions: [],
+          cancellationSummary: null,
+        })),
+    inclusions: needInclusions ? rec.inclusions : [],
+    exclusions: needInclusions ? rec.exclusions : [],
+    provenance: needFullProvenance
+      ? (cleanProv as TourProvenanceRecord)
+      : {
+          sourceSystem: String(cleanProv.sourceSystem || rec.primaryProvider),
+          sourceEndpoint: String(cleanProv.sourceEndpoint || "catalog"),
+          fetchedAt: String(cleanProv.fetchedAt || rec.lastVerifiedAt),
+          ...(cleanProv.lastScheduleRefreshAt ? { lastScheduleRefreshAt: cleanProv.lastScheduleRefreshAt } : {}),
+          contentSha256: "",
+          rawFieldsVerified: cleanProv.rawFieldsVerified || {
+            durationKnown: rec.durationMinutes !== null,
+            cancellationKnown: rec.freeCancellation !== null,
+            pickupKnown: rec.hasHotelPickup !== null,
+            meetingCoordinatesKnown: rec.meetingPointLat !== null,
+            ageBandsKnown: needAgeBands && rec.ageBands.length > 0,
+          },
+        },
+  };
 }
 
 function buildSqlOrderByClause(sortBy: DurableCatalogSortBy = "recommended"): string {
@@ -5166,13 +5442,6 @@ export async function queryDurableTourCatalog(
       ? Array.from(new Set(filter.approvedTourIds.map((id) => id.trim().toLowerCase()).filter(Boolean)))
       : null;
   const searchNorm = filter.q && filter.q.trim() ? filter.q.trim().toLowerCase() : null;
-  const categoryNorm =
-    filter.category && filter.category.trim() && filter.category.trim().toLowerCase() !== "all"
-      ? filter.category
-          .trim()
-          .toLowerCase()
-          .replace(/\s+(?:tours|excursions)$/i, "")
-      : null;
   const pickupMode =
     filter.pickupMode && filter.pickupMode !== "any" ? filter.pickupMode : null;
   const maxDuration =
@@ -5187,186 +5456,236 @@ export async function queryDurableTourCatalog(
     filter.maxPriceCents > 0
       ? Math.round(filter.maxPriceCents)
       : null;
-  const requestedLimit =
+
+  const decodedCursor = decodeCatalogCursor(filter.cursor);
+  const sortBy: DurableCatalogSortBy =
+    filter.sortBy || filter.sort || decodedCursor?.sortBy || "recommended";
+  const effectiveLimit =
     typeof filter.limit === "number" && Number.isFinite(filter.limit) && filter.limit > 0
-      ? Math.floor(filter.limit)
-      : null;
+      ? Math.min(Math.floor(filter.limit), MAX_CATALOG_PAGE_LIMIT)
+      : DEFAULT_CATALOG_PAGE_LIMIT;
   const requestedOffset =
-    typeof filter.offset === "number" && Number.isFinite(filter.offset) && filter.offset >= 0
-      ? Math.floor(filter.offset)
-      : typeof filter.page === "number" &&
-          Number.isFinite(filter.page) &&
-          filter.page > 1 &&
-          requestedLimit !== null
-        ? (Math.floor(filter.page) - 1) * requestedLimit
-        : 0;
-  const sortBy: DurableCatalogSortBy = filter.sortBy || filter.sort || "recommended";
+    decodedCursor !== null
+      ? decodedCursor.offset
+      : typeof filter.offset === "number" && Number.isFinite(filter.offset) && filter.offset >= 0
+        ? Math.floor(filter.offset)
+        : typeof filter.page === "number" &&
+            Number.isFinite(filter.page) &&
+            filter.page > 1
+          ? (Math.floor(filter.page) - 1) * effectiveLimit
+          : 0;
+  const projectionTier: "narrow_scalar" | "explicit_extended" = isExplicitExtendedProjection(filter)
+    ? "explicit_extended"
+    : "narrow_scalar";
 
   if (shouldUsePostgres()) {
-    try {
-      const sql = getSqlClient();
-      const params: unknown[] = [];
-      const addParam = (val: unknown): string => {
-        params.push(val);
-        return `$${params.length}`;
-      };
+    const params: unknown[] = [];
+    const addParam = (val: unknown): string => {
+      params.push(val);
+      return `$${params.length}`;
+    };
 
-      const pQuarantined = addParam(Array.from(QUARANTINED_TOUR_IDS));
-      const whereClauses: string[] = [
-        "active = true",
-        "quarantined = false",
-        `NOT (tour_id = ANY(${pQuarantined}::text[]))`,
-      ];
+    const pQuarantined = addParam(Array.from(QUARANTINED_TOUR_IDS));
+    const whereClauses: string[] = [
+      "active = true",
+      "quarantined = false",
+      `NOT (tour_id = ANY(${pQuarantined}::text[]))`,
+    ];
 
-      if (filter.includeDiscoveryOnly === false) {
-        whereClauses.push("capability_tier <> 'discovery_only'");
-      }
-      if (filter.verifiedTimingOnly === true) {
+    if (filter.includeDiscoveryOnly === false) {
+      whereClauses.push("capability_tier <> 'discovery_only'");
+    }
+    if (filter.commissionAuthorizedOnly === true) {
+      whereClauses.push("commission_authorized = true");
+    }
+    if (filter.freeCancellationOnly === true) {
+      whereClauses.push("free_cancellation = true");
+    }
+    if (maxDuration !== null) {
+      const pMaxDur = addParam(maxDuration);
+      whereClauses.push(`duration_minutes IS NOT NULL AND duration_minutes <= ${pMaxDur}`);
+    }
+    if (maxPriceCents !== null) {
+      const pMaxPrice = addParam(maxPriceCents);
+      whereClauses.push(`from_price_cents IS NOT NULL AND from_price_cents <= ${pMaxPrice}`);
+    }
+    if (pickupMode) {
+      const pPickup = addParam(pickupMode);
+      if (pickupMode === "pier_pickup") {
         whereClauses.push(
-          "meeting_point_name IS NOT NULL AND duration_minutes IS NOT NULL AND duration_minutes > 0 AND COALESCE(constraints_json->>'transferTimeSource', '') IN ('verified_pier_pickup', 'verified_meeting_point') AND COALESCE(service_details_json->>'checkInCutoffMinutes', '') <> ''",
+          `(COALESCE(service_details_json->>'pickupFulfillmentType', '') = ${pPickup} OR pickup_type = 'CRUISE_PIER_PICKUP' OR EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(product_options_json, '[]'::jsonb)) o WHERE o->>'pickupFulfillmentType' = ${pPickup}))`,
+        );
+      } else if (pickupMode === "hotel_pickup") {
+        whereClauses.push(
+          `(COALESCE(service_details_json->>'pickupFulfillmentType', '') = ${pPickup} OR has_hotel_pickup = true OR pickup_type IN ('HOTEL_PICKUP', 'HOTEL_OR_MEETING_POINT') OR EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(product_options_json, '[]'::jsonb)) o WHERE o->>'pickupFulfillmentType' = ${pPickup} OR (o->>'includesPickup')::boolean = true))`,
+        );
+      } else if (pickupMode === "downtown_shuttle_departure") {
+        whereClauses.push(
+          `(COALESCE(service_details_json->>'pickupFulfillmentType', '') = ${pPickup} OR pickup_type = 'DOWNTOWN_SHUTTLE_DEPARTURE' OR EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(product_options_json, '[]'::jsonb)) o WHERE o->>'pickupFulfillmentType' = ${pPickup}))`,
+        );
+      } else if (pickupMode === "self_drive") {
+        whereClauses.push(
+          `(COALESCE(service_details_json->>'pickupFulfillmentType', '') = ${pPickup} OR pickup_type = 'MEETING_POINT_ONLY' OR EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(product_options_json, '[]'::jsonb)) o WHERE o->>'pickupFulfillmentType' = ${pPickup}))`,
+        );
+      } else {
+        whereClauses.push(
+          `(COALESCE(service_details_json->>'pickupFulfillmentType', '') = ${pPickup} OR EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(product_options_json, '[]'::jsonb)) o WHERE o->>'pickupFulfillmentType' = ${pPickup}))`,
         );
       }
-      if (resolvedDest) {
-        const pDest = addParam(resolvedDest);
-        whereClauses.push(`LOWER(destination_slug) = ${pDest}`);
-      }
-      if (resolvedPort) {
-        const pPort = addParam(resolvedPort);
-        whereClauses.push(`LOWER(COALESCE(port_slug, '')) = ${pPort}`);
-      }
-      if (filter.earthosDestinationNodeId) {
-        const pNode = addParam(filter.earthosDestinationNodeId);
-        whereClauses.push(`earthos_destination_node_id = ${pNode}`);
-      }
-      if (filter.provider) {
-        const pProv = addParam(filter.provider);
-        whereClauses.push(`primary_provider = ${pProv}`);
-      }
-      if (filter.capabilityTier) {
-        const pTier = addParam(filter.capabilityTier);
-        whereClauses.push(`capability_tier = ${pTier}`);
-      }
-      if (filter.category) {
-        const filterCat = filter.category
-          .trim()
-          .toLowerCase()
-          .replace(/\s+(?:tours|excursions)$/i, "");
-        if (filterCat && filterCat !== "all") {
-          const pCat = addParam(filterCat);
-          const facetPattern = SHORE_EXCURSION_CATEGORY_FACET_PATTERNS[filterCat];
-          if (facetPattern) {
-            const pRegex = addParam(facetPattern);
-            whereClauses.push(
-              `(POSITION(${pCat} IN LOWER(category)) > 0 OR POSITION(LOWER(category) IN ${pCat}) > 0 OR LOWER(category) ~ ${pRegex} OR LOWER(title) ~ ${pRegex} OR LOWER(COALESCE(summary, '')) ~ ${pRegex} OR EXISTS (SELECT 1 FROM jsonb_array_elements_text(tags) t WHERE LOWER(t) ~ ${pRegex}))`,
-            );
-          } else {
-            whereClauses.push(
-              `(POSITION(${pCat} IN LOWER(category)) > 0 OR POSITION(LOWER(category) IN ${pCat}) > 0)`,
-            );
-          }
+    }
+    if (filter.verifiedTimingOnly === true) {
+      whereClauses.push(
+        "meeting_point_name IS NOT NULL AND duration_minutes IS NOT NULL AND duration_minutes > 0 AND COALESCE(constraints_json->>'transferTimeSource', '') IN ('verified_pier_pickup', 'verified_meeting_point') AND COALESCE(service_details_json->>'checkInCutoffMinutes', '') <> ''",
+      );
+    }
+    if (resolvedDest) {
+      const pDest = addParam(resolvedDest);
+      whereClauses.push(`LOWER(destination_slug) = ${pDest}`);
+    }
+    if (resolvedPort) {
+      const pPort = addParam(resolvedPort);
+      whereClauses.push(`LOWER(COALESCE(port_slug, '')) = ${pPort}`);
+    }
+    if (filter.earthosDestinationNodeId) {
+      const pNode = addParam(filter.earthosDestinationNodeId);
+      whereClauses.push(`earthos_destination_node_id = ${pNode}`);
+    }
+    if (filter.provider) {
+      const pProv = addParam(filter.provider);
+      whereClauses.push(`primary_provider = ${pProv}`);
+    }
+    if (filter.capabilityTier) {
+      const pTier = addParam(filter.capabilityTier);
+      whereClauses.push(`capability_tier = ${pTier}`);
+    }
+    if (filter.category) {
+      const filterCat = filter.category
+        .trim()
+        .toLowerCase()
+        .replace(/\s+(?:tours|excursions)$/i, "");
+      if (filterCat && filterCat !== "all") {
+        const pCat = addParam(filterCat);
+        const facetPattern = SHORE_EXCURSION_CATEGORY_FACET_PATTERNS[filterCat];
+        if (facetPattern) {
+          const pRegex = addParam(facetPattern);
+          whereClauses.push(
+            `(POSITION(${pCat} IN LOWER(category)) > 0 OR POSITION(LOWER(category) IN ${pCat}) > 0 OR LOWER(category) ~ ${pRegex} OR LOWER(title) ~ ${pRegex} OR LOWER(COALESCE(summary, '')) ~ ${pRegex} OR EXISTS (SELECT 1 FROM jsonb_array_elements_text(tags) t WHERE LOWER(t) ~ ${pRegex}))`,
+          );
+        } else {
+          whereClauses.push(
+            `(POSITION(${pCat} IN LOWER(category)) > 0 OR POSITION(LOWER(category) IN ${pCat}) > 0)`,
+          );
         }
       }
-      if (filter.searchQuery && filter.searchQuery.trim()) {
-        const pSearch = addParam(`%${filter.searchQuery.trim()}%`);
-        whereClauses.push(
-          `(title ILIKE ${pSearch} OR COALESCE(summary, '') ILIKE ${pSearch} OR category ILIKE ${pSearch} OR provider_product_code ILIKE ${pSearch} OR COALESCE(operator_name, '') ILIKE ${pSearch})`,
-        );
-      }
-      if (approvedList && approvedList.length > 0) {
-        const pApproved = addParam(approvedList);
-        whereClauses.push(
-          `(LOWER(tour_id) = ANY(${pApproved}::text[]) OR LOWER(provider_product_code) = ANY(${pApproved}::text[]) OR EXISTS (SELECT 1 FROM jsonb_array_elements_text(compatibility_aliases) a WHERE LOWER(a) = ANY(${pApproved}::text[])))`,
-        );
-      }
-      if (filter.requireVerifiedCruiseLogistics) {
-        whereClauses.push(
-          `duration_minutes IS NOT NULL AND duration_minutes > 0`,
-          `COALESCE(TRIM(meeting_point_name), '') <> ''`,
-          `COALESCE(TRIM(constraints_json->>'applicableBerthOrMeetingPoint'), '') <> ''`,
-          `COALESCE(constraints_json->>'transferTimeSource', '') IN ('verified_pier_pickup', 'verified_meeting_point')`,
-          `COALESCE(TRIM(constraints_json->>'transferEvidenceSource'), '') <> ''`,
-          `(constraints_json->>'cruiseBufferBeforeMinutes') IS NOT NULL`,
-          `COALESCE(pickup_type, 'UNKNOWN') <> 'UNKNOWN'`,
-          `COALESCE((provenance_json->'rawFieldsVerified'->>'pickupKnown')::boolean, false) = true`,
-          `(jsonb_array_length(COALESCE(product_options_json, '[]'::jsonb)) > 0 OR jsonb_typeof(service_details_json->'verifiedDepartureTimesLocal') = 'array')`,
-        );
-      }
+    }
+    const effectiveTextSearch = filter.searchQuery?.trim() || searchNorm || null;
+    if (effectiveTextSearch) {
+      const pSearch = addParam(`%${effectiveTextSearch}%`);
+      whereClauses.push(
+        `(title ILIKE ${pSearch} OR COALESCE(summary, '') ILIKE ${pSearch} OR category ILIKE ${pSearch} OR provider_product_code ILIKE ${pSearch} OR COALESCE(operator_name, '') ILIKE ${pSearch})`,
+      );
+    }
+    if (approvedList && approvedList.length > 0) {
+      const pApproved = addParam(approvedList);
+      whereClauses.push(
+        `(LOWER(tour_id) = ANY(${pApproved}::text[]) OR LOWER(provider_product_code) = ANY(${pApproved}::text[]) OR EXISTS (SELECT 1 FROM jsonb_array_elements_text(compatibility_aliases) a WHERE LOWER(a) = ANY(${pApproved}::text[])))`,
+      );
+    }
+    if (filter.requireVerifiedCruiseLogistics) {
+      whereClauses.push(
+        `duration_minutes IS NOT NULL AND duration_minutes > 0`,
+        `COALESCE(TRIM(meeting_point_name), '') <> ''`,
+        `COALESCE(TRIM(constraints_json->>'applicableBerthOrMeetingPoint'), '') <> ''`,
+        `COALESCE(constraints_json->>'transferTimeSource', '') IN ('verified_pier_pickup', 'verified_meeting_point')`,
+        `COALESCE(TRIM(constraints_json->>'transferEvidenceSource'), '') <> ''`,
+        `(constraints_json->>'cruiseBufferBeforeMinutes') IS NOT NULL`,
+        `COALESCE(pickup_type, 'UNKNOWN') <> 'UNKNOWN'`,
+        `COALESCE((provenance_json->'rawFieldsVerified'->>'pickupKnown')::boolean, false) = true`,
+        `(jsonb_array_length(COALESCE(product_options_json, '[]'::jsonb)) > 0 OR jsonb_typeof(service_details_json->'verifiedDepartureTimesLocal') = 'array')`,
+      );
+    }
 
-      const whereSql = whereClauses.join(" AND ");
-      const orderBySql = buildSqlOrderByClause(sortBy);
-      const countFilterParams = [...params];
+    const whereSql = whereClauses.join(" AND ");
+    const orderBySql = buildSqlOrderByClause(sortBy);
+    const selectColumnsSql = buildCatalogSelectColumnsSql(filter);
+    const countFilterParams = [...params];
 
-      let paginationSql = "";
-      if (requestedLimit !== null) {
-        const pLimit = addParam(requestedLimit);
-        paginationSql += ` LIMIT ${pLimit}`;
-      }
-      if (requestedOffset > 0) {
-        const pOffset = addParam(requestedOffset);
-        paginationSql += ` OFFSET ${pOffset}`;
-      }
+    const pLimit = addParam(effectiveLimit);
+    let paginationSql = ` LIMIT ${pLimit}`;
+    if (requestedOffset > 0) {
+      const pOffset = addParam(requestedOffset);
+      paginationSql += ` OFFSET ${pOffset}`;
+    }
 
-      const querySql = `
-        SELECT *, COUNT(*) OVER()::int AS total_matched_count
+    const querySql = `
+        SELECT
+          ${selectColumnsSql},
+          COUNT(*) OVER()::int AS total_matched_count
         FROM dcc_tour_catalog
         WHERE ${whereSql}
         ORDER BY ${orderBySql}${paginationSql}
       `;
 
-      const t0 = performance.now();
-      const rows = (await sql.query(querySql, params)) as Record<string, any>[];
-      const sqlQueryMs = Math.round((performance.now() - t0) * 100) / 100;
+    const t0 = performance.now();
+    // Do NOT catch and fall back to loading the complete catalog; propagate SQL errors cleanly.
+    const rows = await executeCatalogSql(querySql, params);
+    const sqlQueryMs = Math.round((performance.now() - t0) * 100) / 100;
 
-      let totalMatched = rows.length > 0 ? Number(rows[0].total_matched_count ?? rows.length) : 0;
-      if (rows.length === 0 && requestedOffset > 0) {
-        const countRows = (await sql.query(
-          `SELECT COUNT(*)::int AS cnt FROM dcc_tour_catalog WHERE ${whereSql}`,
-          countFilterParams,
-        )) as Record<string, any>[];
-        totalMatched = countRows.length > 0 ? Number(countRows[0].cnt ?? 0) : 0;
-      }
-
-      const pilotMap = getNormalizedPilotMap();
-      const mappedRecords = rows
-        .map((r) => {
-          const tourId = String(r.tour_id);
-          if (pilotMap.has(tourId)) {
-            return pilotMap.get(tourId)!;
-          }
-          return normalizeCatalogTourPickupAndMeeting(mapPgRowToDurableTourRecord(r)).normalizedRecord;
-        })
-        .filter(
-          (r) =>
-            r.active &&
-            !isQuarantinedTourRecord(r) &&
-            (!filter.requireVerifiedCruiseLogistics || hasVerifiedCruisePortLogistics(r)),
-        );
-
-      const effectiveLimit = requestedLimit ?? totalMatched;
-      const hasMore = requestedOffset + mappedRecords.length < totalMatched;
-
-      return {
-        records: mappedRecords,
-        totalMatched,
-        storageSource: "postgres",
-        limit: effectiveLimit,
-        offset: requestedOffset,
-        hasMore,
-        nextOffset: hasMore ? requestedOffset + mappedRecords.length : null,
-        executedInSql: true,
-        rowsLoadedIntoApp: rows.length,
-        fullCatalogLoadedIntoApp: false,
-        sqlQueryMs,
-      };
-    } catch (err) {
-      console.warn(
-        "[durableCatalogStore] SQL catalog query failed, falling back to snapshot:",
-        err,
+    let totalMatched = rows.length > 0 ? Number(rows[0].total_matched_count ?? rows.length) : 0;
+    if (rows.length === 0 && requestedOffset > 0) {
+      const countRows = await executeCatalogSql(
+        `SELECT COUNT(*)::int AS cnt FROM dcc_tour_catalog WHERE ${whereSql}`,
+        countFilterParams,
       );
+      totalMatched = countRows.length > 0 ? Number(countRows[0].cnt ?? 0) : 0;
     }
+
+    const pilotMap = getNormalizedPilotMap();
+    const mappedRecords = rows
+      .map((r) => {
+        const tourId = String(r.tour_id);
+        const normalized = pilotMap.has(tourId)
+          ? pilotMap.get(tourId)!
+          : normalizeCatalogTourPickupAndMeeting(mapPgRowToDurableTourRecord(r)).normalizedRecord;
+        return applyRequestedProjectionToRecord(normalized, filter);
+      })
+      .filter(
+        (r) =>
+          r.active &&
+          !isQuarantinedTourRecord(r) &&
+          (!filter.requireVerifiedCruiseLogistics || hasVerifiedCruisePortLogistics(r)),
+      );
+
+    const hasMore = rows.length > 0 && requestedOffset + rows.length < totalMatched;
+    const nextOffset = hasMore ? requestedOffset + rows.length : null;
+    const nextCursor =
+      hasMore && nextOffset !== null
+        ? encodeCatalogCursor({
+            offset: nextOffset,
+            sortBy,
+            lastTourId: mappedRecords[mappedRecords.length - 1]?.tourId || null,
+          })
+        : null;
+
+    return {
+      records: mappedRecords,
+      totalMatched,
+      storageSource: "postgres",
+      limit: effectiveLimit,
+      offset: requestedOffset,
+      hasMore,
+      nextOffset,
+      cursorApplied: decodedCursor ? filter.cursor || null : null,
+      nextCursor,
+      projectionTier,
+      executedInSql: true,
+      rowsLoadedIntoApp: rows.length,
+      fullCatalogLoadedIntoApp: false,
+      sqlQueryMs,
+    };
   }
 
-  const { records: allRecords, source } = await loadAllCatalogRecordsWithPgHydration();
+  const allRecords = loadOfflineSnapshotRecordsForLocalTestsOnly();
   const approvedSet = approvedList ? new Set(approvedList) : null;
   const searchLower = filter.searchQuery?.trim().toLowerCase() || "";
 
@@ -5461,29 +5780,412 @@ export async function queryDurableTourCatalog(
   });
 
   const sorted = sortCatalogRecordsInJs(filtered, sortBy);
-  const effectiveLimit = requestedLimit ?? sorted.length;
-  const pageRecords = sorted.slice(requestedOffset, requestedOffset + effectiveLimit);
+  const pageRecords = sorted
+    .slice(requestedOffset, requestedOffset + effectiveLimit)
+    .map((rec) => applyRequestedProjectionToRecord(rec, filter));
   const hasMore = requestedOffset + pageRecords.length < sorted.length;
+  const nextOffset = hasMore ? requestedOffset + pageRecords.length : null;
+  const nextCursor =
+    hasMore && nextOffset !== null
+      ? encodeCatalogCursor({
+          offset: nextOffset,
+          sortBy,
+          lastTourId: pageRecords[pageRecords.length - 1]?.tourId || null,
+        })
+      : null;
 
   return {
     records: pageRecords,
     totalMatched: sorted.length,
-    storageSource: source,
+    storageSource: "local_snapshot",
     limit: effectiveLimit,
     offset: requestedOffset,
     hasMore,
-    nextOffset: hasMore ? requestedOffset + pageRecords.length : null,
+    nextOffset,
+    cursorApplied: decodedCursor ? filter.cursor || null : null,
+    nextCursor,
+    projectionTier,
     executedInSql: false,
     rowsLoadedIntoApp: pageRecords.length,
-    fullCatalogLoadedIntoApp: requestedLimit === null,
+    fullCatalogLoadedIntoApp: false,
     sqlQueryMs: null,
   };
 }
 
-export async function getDurableTourByIdOrAlias(idOrAlias: string): Promise<DurableTourRecord | null> {
+/**
+ * Explicit cursor-paginated walker for callers that genuinely require complete matching
+ * results across multiple pages without imposing a silent 100-record cap OR executing
+ * an unbounded single-shot full-table query.
+ */
+export async function paginateAllDurableTourCatalogPages(
+  filter: Omit<DurableCatalogQueryFilter, "cursor" | "offset" | "page">,
+  options?: {
+    pageSize?: number;
+    maxTotalRecords?: number;
+  },
+): Promise<{
+  records: DurableTourRecord[];
+  totalMatched: number;
+  pagesFetched: number;
+  storageSource: DurableCatalogQueryResult["storageSource"];
+}> {
+  const pageSize = Math.min(
+    Math.max(1, Math.floor(options?.pageSize ?? 250)),
+    MAX_CATALOG_PAGE_LIMIT,
+  );
+  const maxTotal =
+    typeof options?.maxTotalRecords === "number" && options.maxTotalRecords > 0
+      ? Math.floor(options.maxTotalRecords)
+      : Number.MAX_SAFE_INTEGER;
+
+  const collected: DurableTourRecord[] = [];
+  let cursor: string | null = null;
+  let pagesFetched = 0;
+  let totalMatched = 0;
+  let storageSource: DurableCatalogQueryResult["storageSource"] = "postgres";
+
+  while (collected.length < maxTotal) {
+    const remaining = maxTotal - collected.length;
+    const res = await queryDurableTourCatalog({
+      ...filter,
+      cursor,
+      limit: Math.min(pageSize, remaining),
+    });
+    pagesFetched += 1;
+    totalMatched = res.totalMatched;
+    storageSource = res.storageSource;
+    collected.push(...res.records);
+    if (!res.hasMore || !res.nextCursor || res.records.length === 0) {
+      break;
+    }
+    cursor = res.nextCursor;
+  }
+
+  return {
+    records: collected,
+    totalMatched,
+    pagesFetched,
+    storageSource,
+  };
+}
+
+export async function getImportedProviderProductCodesForDestination(
+  destinationSlug: string,
+  provider = "viator",
+): Promise<Set<string>> {
+  const slug = destinationSlug.trim().toLowerCase();
+  const codes = new Set<string>();
+  for (const pilot of PILOT_VERIFIED_TOUR_RECORDS) {
+    if (
+      pilot.active &&
+      !isQuarantinedTourRecord(pilot) &&
+      pilot.destinationSlug.toLowerCase() === slug &&
+      pilot.primaryProvider === provider
+    ) {
+      codes.add(pilot.providerProductCode.toUpperCase());
+    }
+  }
+  if (shouldUsePostgres()) {
+    const rows = await executeCatalogSql(
+      `
+        SELECT provider_product_code
+        FROM dcc_tour_catalog
+        WHERE active = true
+          AND quarantined = false
+          AND NOT (tour_id = ANY($1::text[]))
+          AND LOWER(destination_slug) = $2
+          AND primary_provider = $3
+      `,
+      [Array.from(QUARANTINED_TOUR_IDS), slug, provider],
+    );
+    for (const r of rows) {
+      if (r.provider_product_code) {
+        codes.add(String(r.provider_product_code).toUpperCase());
+      }
+    }
+    return codes;
+  }
+  for (const rec of loadOfflineSnapshotRecordsForLocalTestsOnly()) {
+    if (rec.destinationSlug.toLowerCase() === slug && rec.primaryProvider === provider) {
+      codes.add(rec.providerProductCode.toUpperCase());
+    }
+  }
+  return codes;
+}
+
+export async function getDurableToursByProviderProductCodes(
+  provider: string,
+  productCodes: string[],
+  projection: DurableCatalogProjectionOptions = {
+    includeProductOptions: true,
+    includeConstraints: true,
+    includeFullProvenance: true,
+  },
+): Promise<{
+  byUpperCode: Map<string, DurableTourRecord>;
+  totalProviderRecords: number;
+  storageSource: "postgres" | "local_snapshot";
+}> {
+  const upperCodes = Array.from(
+    new Set(productCodes.map((c) => c.trim().toUpperCase()).filter(Boolean)),
+  );
+  const byUpperCode = new Map<string, DurableTourRecord>();
+
+  if (shouldUsePostgres()) {
+    const quarantinedArray = Array.from(QUARANTINED_TOUR_IDS);
+    const countRows = await executeCatalogSql(
+      `
+        SELECT COUNT(*)::int AS cnt
+        FROM dcc_tour_catalog
+        WHERE active = true
+          AND quarantined = false
+          AND NOT (tour_id = ANY($1::text[]))
+          AND primary_provider = $2
+      `,
+      [quarantinedArray, provider],
+    );
+    const totalProviderRecords = Number(countRows[0]?.cnt ?? 0);
+
+    if (upperCodes.length > 0) {
+      const selectCols = buildCatalogSelectColumnsSql(projection);
+      const rows = await executeCatalogSql(
+        `
+          SELECT ${selectCols}
+          FROM dcc_tour_catalog
+          WHERE active = true
+            AND quarantined = false
+            AND NOT (tour_id = ANY($1::text[]))
+            AND primary_provider = $2
+            AND UPPER(provider_product_code) = ANY($3::text[])
+        `,
+        [quarantinedArray, provider, upperCodes],
+      );
+      const pilotMap = getNormalizedPilotMap();
+      for (const r of rows) {
+        const mapped =
+          pilotMap.get(String(r.tour_id)) ||
+          normalizeCatalogTourPickupAndMeeting(mapPgRowToDurableTourRecord(r)).normalizedRecord;
+        byUpperCode.set(mapped.providerProductCode.toUpperCase(), mapped);
+      }
+    }
+    for (const pilot of PILOT_VERIFIED_TOUR_RECORDS) {
+      if (
+        pilot.active &&
+        !isQuarantinedTourRecord(pilot) &&
+        pilot.primaryProvider === provider &&
+        upperCodes.includes(pilot.providerProductCode.toUpperCase())
+      ) {
+        const norm = normalizeCatalogTourPickupAndMeeting(pilot).normalizedRecord;
+        byUpperCode.set(norm.providerProductCode.toUpperCase(), norm);
+      }
+    }
+    return { byUpperCode, totalProviderRecords, storageSource: "postgres" };
+  }
+
+  const all = loadOfflineSnapshotRecordsForLocalTestsOnly().filter(
+    (r) => r.primaryProvider === provider,
+  );
+  const upperSet = new Set(upperCodes);
+  for (const r of all) {
+    if (upperSet.has(r.providerProductCode.toUpperCase())) {
+      byUpperCode.set(r.providerProductCode.toUpperCase(), applyRequestedProjectionToRecord(r, projection));
+    }
+  }
+  return { byUpperCode, totalProviderRecords: all.length, storageSource: "local_snapshot" };
+}
+
+export async function selectViatorScheduleRefreshCandidates(options: {
+  destinationSlug?: string;
+  modifiedProductCodes?: string[];
+  limit: number;
+}): Promise<{
+  candidates: DurableTourRecord[];
+  totalViatorRecords: number;
+  storageSource: "postgres" | "local_snapshot";
+}> {
+  const safeLimit = Math.min(Math.max(1, Math.floor(options.limit)), 100);
+  const destNorm = options.destinationSlug?.trim().toLowerCase() || null;
+  const modCodes = Array.from(
+    new Set((options.modifiedProductCodes || []).map((c) => c.trim().toUpperCase()).filter(Boolean)),
+  );
+  const projection: DurableCatalogProjectionOptions = {
+    includeProductOptions: true,
+    includeConstraints: true,
+    includeFullProvenance: true,
+  };
+
+  if (shouldUsePostgres()) {
+    const quarantinedArray = Array.from(QUARANTINED_TOUR_IDS);
+    const baseParams: unknown[] = [quarantinedArray];
+    let destWhere = "";
+    if (destNorm) {
+      baseParams.push(destNorm);
+      destWhere = ` AND LOWER(destination_slug) = $2`;
+    }
+    const countRows = await executeCatalogSql(
+      `
+        SELECT COUNT(*)::int AS cnt
+        FROM dcc_tour_catalog
+        WHERE active = true
+          AND quarantined = false
+          AND NOT (tour_id = ANY($1::text[]))
+          AND primary_provider = 'viator'${destWhere}
+      `,
+      baseParams,
+    );
+    const totalViatorRecords = Number(countRows[0]?.cnt ?? 0);
+    const selectCols = buildCatalogSelectColumnsSql(projection);
+    const pilotMap = getNormalizedPilotMap();
+    const candidates: DurableTourRecord[] = [];
+    const selectedCodes = new Set<string>();
+
+    if (modCodes.length > 0) {
+      const modParams = [...baseParams, modCodes.slice(0, safeLimit * 3), safeLimit];
+      const modParamIdx = baseParams.length + 1;
+      const limParamIdx = baseParams.length + 2;
+      const modRows = await executeCatalogSql(
+        `
+          SELECT ${selectCols}
+          FROM dcc_tour_catalog
+          WHERE active = true
+            AND quarantined = false
+            AND NOT (tour_id = ANY($1::text[]))
+            AND primary_provider = 'viator'${destWhere}
+            AND UPPER(provider_product_code) = ANY($${modParamIdx}::text[])
+          LIMIT $${limParamIdx}
+        `,
+        modParams,
+      );
+      for (const r of modRows) {
+        const mapped =
+          pilotMap.get(String(r.tour_id)) ||
+          normalizeCatalogTourPickupAndMeeting(mapPgRowToDurableTourRecord(r)).normalizedRecord;
+        const code = mapped.providerProductCode.toUpperCase();
+        if (!selectedCodes.has(code) && candidates.length < safeLimit) {
+          selectedCodes.add(code);
+          candidates.push(mapped);
+        }
+      }
+    }
+
+    const remaining = safeLimit - candidates.length;
+    if (remaining > 0) {
+      const queueParams = [...baseParams, Array.from(selectedCodes), remaining];
+      const exclIdx = baseParams.length + 1;
+      const remIdx = baseParams.length + 2;
+      const queueRows = await executeCatalogSql(
+        `
+          SELECT ${selectCols}
+          FROM dcc_tour_catalog
+          WHERE active = true
+            AND quarantined = false
+            AND NOT (tour_id = ANY($1::text[]))
+            AND primary_provider = 'viator'${destWhere}
+            AND NOT (UPPER(provider_product_code) = ANY($${exclIdx}::text[]))
+          ORDER BY COALESCE(
+            NULLIF(provenance_json->>'lastScheduleRefreshAt', '')::timestamptz,
+            last_verified_at,
+            updated_at
+          ) ASC NULLS FIRST, tour_id ASC
+          LIMIT $${remIdx}
+        `,
+        queueParams,
+      );
+      for (const r of queueRows) {
+        const mapped =
+          pilotMap.get(String(r.tour_id)) ||
+          normalizeCatalogTourPickupAndMeeting(mapPgRowToDurableTourRecord(r)).normalizedRecord;
+        const code = mapped.providerProductCode.toUpperCase();
+        if (!selectedCodes.has(code) && candidates.length < safeLimit) {
+          selectedCodes.add(code);
+          candidates.push(mapped);
+        }
+      }
+    }
+
+    return { candidates, totalViatorRecords, storageSource: "postgres" };
+  }
+
+  const allViator = loadOfflineSnapshotRecordsForLocalTestsOnly().filter(
+    (r) =>
+      r.primaryProvider === "viator" &&
+      (!destNorm || r.destinationSlug.toLowerCase() === destNorm),
+  );
+  const byCode = new Map(allViator.map((r) => [r.providerProductCode.toUpperCase(), r]));
+  const candidates: DurableTourRecord[] = [];
+  const selectedCodes = new Set<string>();
+  for (const code of modCodes) {
+    const matched = byCode.get(code);
+    if (matched && !selectedCodes.has(code) && candidates.length < safeLimit) {
+      selectedCodes.add(code);
+      candidates.push(matched);
+    }
+  }
+  const queueSorted = [...allViator]
+    .filter((r) => !selectedCodes.has(r.providerProductCode.toUpperCase()))
+    .sort((a, b) => {
+      const tsA = Date.parse(
+        (a.provenance as any)?.lastScheduleRefreshAt || a.lastVerifiedAt || a.updatedAt || "1970-01-01",
+      );
+      const tsB = Date.parse(
+        (b.provenance as any)?.lastScheduleRefreshAt || b.lastVerifiedAt || b.updatedAt || "1970-01-01",
+      );
+      return tsA - tsB;
+    });
+  for (const item of queueSorted) {
+    if (candidates.length >= safeLimit) break;
+    candidates.push(item);
+  }
+  return {
+    candidates,
+    totalViatorRecords: allViator.length,
+    storageSource: "local_snapshot",
+  };
+}
+
+const HANDOFF_MINIMAL_SELECT_COLUMNS: readonly string[] = [
+  "tour_id",
+  "compatibility_aliases",
+  "destination_slug",
+  "port_slug",
+  "earthos_destination_node_id",
+  "time_zone",
+  "title",
+  "category",
+  "primary_provider",
+  "provider_product_code",
+  "operator_name",
+  "operator_code",
+  "capability_tier",
+  "commission_authorized",
+  "duration_minutes",
+  "from_price_cents",
+  "price_basis",
+  "currency",
+  "free_cancellation",
+  "has_hotel_pickup",
+  "pickup_type",
+  "location_precision",
+  "channel_offers_json",
+  "booking_url",
+  "quarantined",
+  "quarantine_reason",
+  "active",
+  "last_verified_at",
+  "updated_at",
+  "created_at",
+  "(SELECT opt->>'optionCode' FROM jsonb_array_elements(COALESCE(product_options_json, '[]'::jsonb)) opt ORDER BY COALESCE((opt->>'fromPriceCents')::int, 2147483647) ASC LIMIT 1) AS default_option_code",
+  "(SELECT opt->>'title' FROM jsonb_array_elements(COALESCE(product_options_json, '[]'::jsonb)) opt ORDER BY COALESCE((opt->>'fromPriceCents')::int, 2147483647) ASC LIMIT 1) AS default_option_title",
+];
+
+export async function getDurableTourByIdOrAlias(
+  idOrAlias: string,
+  options?: { projection?: "detail" | "handoff_minimal" },
+): Promise<DurableTourRecord | null> {
   const norm = idOrAlias.trim().toLowerCase();
   if (!norm) return null;
   if (QUARANTINED_TOUR_IDS.has(idOrAlias.trim())) return null;
+  const projectionMode = options?.projection || "detail";
 
   for (const pilot of PILOT_VERIFIED_TOUR_RECORDS) {
     if (
@@ -5493,17 +6195,40 @@ export async function getDurableTourByIdOrAlias(idOrAlias: string): Promise<Dura
         pilot.providerProductCode.toLowerCase() === norm ||
         pilot.compatibilityAliases.some((a) => a.toLowerCase() === norm))
     ) {
-      return normalizeCatalogTourPickupAndMeeting(pilot).normalizedRecord;
+      const normalized = normalizeCatalogTourPickupAndMeeting(pilot).normalizedRecord;
+      return projectionMode === "handoff_minimal"
+        ? applyRequestedProjectionToRecord(normalized, {})
+        : applyRequestedProjectionToRecord(normalized, {
+            includeProductOptions: true,
+            includeConstraints: true,
+            includeServiceDetails: true,
+            includePickupLocations: true,
+            includeAgeBands: true,
+            includeInclusionsExclusions: true,
+            includeFullProvenance: true,
+          });
     }
   }
 
   if (shouldUsePostgres()) {
-    try {
-      const sql = getSqlClient();
-      const quarantinedArray = Array.from(QUARANTINED_TOUR_IDS);
-      const rows = (await sql.query(
-        `
-          SELECT *
+    const quarantinedArray = Array.from(QUARANTINED_TOUR_IDS);
+    const selectCols =
+      projectionMode === "handoff_minimal"
+        ? HANDOFF_MINIMAL_SELECT_COLUMNS.join(",\n            ")
+        : buildCatalogSelectColumnsSql({
+            includeProductOptions: true,
+            includeConstraints: true,
+            includeServiceDetails: true,
+            includePickupLocations: true,
+            includeAgeBands: true,
+            includeInclusionsExclusions: true,
+            includeFullProvenance: true,
+          });
+    // Never fall back to loading the complete catalog on miss or SQL error.
+    const rows = await executeCatalogSql(
+      `
+          SELECT
+            ${selectCols}
           FROM dcc_tour_catalog
           WHERE active = true
             AND quarantined = false
@@ -5519,32 +6244,40 @@ export async function getDurableTourByIdOrAlias(idOrAlias: string): Promise<Dura
             )
           LIMIT 1
         `,
-        [quarantinedArray, norm],
-      )) as Record<string, any>[];
-      if (rows.length > 0) {
-        const mapped = normalizeCatalogTourPickupAndMeeting(
-          mapPgRowToDurableTourRecord(rows[0]),
-        ).normalizedRecord;
-        if (mapped.active && !isQuarantinedTourRecord(mapped)) {
-          return mapped;
-        }
+      [quarantinedArray, norm],
+    );
+    if (rows.length > 0) {
+      const mapped = normalizeCatalogTourPickupAndMeeting(
+        mapPgRowToDurableTourRecord(rows[0]),
+      ).normalizedRecord;
+      if (mapped.active && !isQuarantinedTourRecord(mapped)) {
+        return mapped;
       }
-      return null;
-    } catch (err) {
-      console.warn("[durableCatalogStore] SQL getDurableTourByIdOrAlias fallback:", err);
     }
+    return null;
   }
 
-  const { records } = await loadAllCatalogRecordsWithPgHydration();
-  return (
+  const records = loadOfflineSnapshotRecordsForLocalTestsOnly();
+  const found =
     records.find(
       (r) =>
         !isQuarantinedTourRecord(r) &&
         (r.tourId.toLowerCase() === norm ||
           r.providerProductCode.toLowerCase() === norm ||
           r.compatibilityAliases.some((a) => a.toLowerCase() === norm)),
-    ) || null
-  );
+    ) || null;
+  if (!found) return null;
+  return projectionMode === "handoff_minimal"
+    ? applyRequestedProjectionToRecord(found, {})
+    : applyRequestedProjectionToRecord(found, {
+        includeProductOptions: true,
+        includeConstraints: true,
+        includeServiceDetails: true,
+        includePickupLocations: true,
+        includeAgeBands: true,
+        includeInclusionsExclusions: true,
+        includeFullProvenance: true,
+      });
 }
 
 export interface ActiveDestinationProviderCounts {
@@ -5580,10 +6313,9 @@ export async function getActiveDestinationProviderCounts(
 
   if (shouldUsePostgres()) {
     try {
-      const sql = getSqlClient();
       const quarantinedArray = Array.from(QUARANTINED_TOUR_IDS);
       const [providerRows, ckptRows, syncRows] = await Promise.all([
-        sql.query(
+        executeCatalogSql(
           `
             SELECT primary_provider, COUNT(*)::int AS cnt
             FROM dcc_tour_catalog
@@ -5595,7 +6327,7 @@ export async function getActiveDestinationProviderCounts(
           `,
           [quarantinedArray, slug],
         ) as unknown as Promise<Array<{ primary_provider: string; cnt: number }>>,
-        sql.query(
+        executeCatalogSql(
           `
             SELECT provider_total_count, next_start_offset, updated_at
             FROM dcc_catalog_refresh_checkpoints
@@ -5612,7 +6344,7 @@ export async function getActiveDestinationProviderCounts(
             updated_at: Date | string | null;
           }>
         >,
-        sql.query(
+        executeCatalogSql(
           `
             SELECT metadata_json, completed_at
             FROM dcc_catalog_sync_runs
@@ -5715,44 +6447,58 @@ export type CatalogRefreshCheckpointRecord = {
 
 const memoryCheckpointsByStream = new Map<string, CatalogRefreshCheckpointRecord>();
 
-export async function loadSyncRunsWithPgHydration(): Promise<CatalogSyncRunRecord[]> {
-  const snapshot = readLocalCatalogSnapshot();
-  const byRunId = new Map<string, CatalogSyncRunRecord>();
-  for (const r of snapshot.syncRuns) {
-    byRunId.set(r.runId, r);
-  }
+const SYNC_RUN_SELECT_COLUMNS = `
+  run_id,
+  provider,
+  destination_slug,
+  status,
+  cursor_value,
+  imported_count,
+  updated_count,
+  rejected_count,
+  upstream_request_count,
+  rejection_reasons_json,
+  metadata_json,
+  started_at,
+  completed_at
+`;
+
+function mapPgSyncRunRow(r: Record<string, any>): CatalogSyncRunRecord {
+  return {
+    runId: String(r.run_id),
+    provider: String(r.provider),
+    destinationSlug: String(r.destination_slug),
+    status: r.status,
+    cursorValue: r.cursor_value ? String(r.cursor_value) : null,
+    importedCount: Number(r.imported_count || 0),
+    updatedCount: Number(r.updated_count || 0),
+    rejectedCount: Number(r.rejected_count || 0),
+    upstreamRequestCount: Number(r.upstream_request_count || 0),
+    rejectionReasons: r.rejection_reasons_json || {},
+    metadata: r.metadata_json || {},
+    startedAt: new Date(r.started_at).toISOString(),
+    completedAt: r.completed_at ? new Date(r.completed_at).toISOString() : null,
+  };
+}
+
+export async function loadSyncRunsWithPgHydration(limit = 50): Promise<CatalogSyncRunRecord[]> {
+  const safeLimit = Math.min(Math.max(1, Math.floor(limit)), 250);
   if (shouldUsePostgres()) {
-    try {
-      await ensureCatalogSchema();
-      const sql = getSqlClient();
-      const rows = await sql`
-        SELECT * FROM dcc_catalog_sync_runs ORDER BY started_at DESC LIMIT 250
-      `;
-      for (const r of rows as any[]) {
-        const mapped: CatalogSyncRunRecord = {
-          runId: String(r.run_id),
-          provider: String(r.provider),
-          destinationSlug: String(r.destination_slug),
-          status: r.status,
-          cursorValue: r.cursor_value ? String(r.cursor_value) : null,
-          importedCount: Number(r.imported_count || 0),
-          updatedCount: Number(r.updated_count || 0),
-          rejectedCount: Number(r.rejected_count || 0),
-          upstreamRequestCount: Number(r.upstream_request_count || 0),
-          rejectionReasons: r.rejection_reasons_json || {},
-          metadata: r.metadata_json || {},
-          startedAt: new Date(r.started_at).toISOString(),
-          completedAt: r.completed_at ? new Date(r.completed_at).toISOString() : null,
-        };
-        byRunId.set(mapped.runId, mapped);
-      }
-    } catch {
-      // Fallback to snapshot syncRuns
-    }
+    const rows = await executeCatalogSql(
+      `
+        SELECT ${SYNC_RUN_SELECT_COLUMNS}
+        FROM dcc_catalog_sync_runs
+        ORDER BY started_at DESC
+        LIMIT $1
+      `,
+      [safeLimit],
+    );
+    return rows.map(mapPgSyncRunRow);
   }
-  return Array.from(byRunId.values()).sort(
-    (a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime(),
-  );
+  const snapshot = readLocalCatalogSnapshot();
+  return [...snapshot.syncRuns]
+    .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime())
+    .slice(0, safeLimit);
 }
 
 export async function upsertRefreshCheckpoint(
@@ -5767,33 +6513,37 @@ export async function upsertRefreshCheckpoint(
 
   if (shouldUsePostgres()) {
     try {
-      await ensureCatalogSchema();
-      const sql = getSqlClient();
-      await sql`
-        INSERT INTO dcc_catalog_refresh_checkpoints (
-          stream_key, provider, destination_slug, cursor_value,
-          next_start_offset, provider_total_count, status, metadata_json, updated_at
-        ) VALUES (
-          ${full.streamKey},
-          ${full.provider},
-          ${full.destinationSlug},
-          ${full.cursorValue},
-          ${full.nextStartOffset},
-          ${full.providerTotalCount},
-          ${full.status},
-          ${JSON.stringify(full.metadata)}::jsonb,
-          ${full.updatedAt}::timestamptz
-        )
-        ON CONFLICT (stream_key) DO UPDATE SET
-          provider = EXCLUDED.provider,
-          destination_slug = EXCLUDED.destination_slug,
-          cursor_value = EXCLUDED.cursor_value,
-          next_start_offset = EXCLUDED.next_start_offset,
-          provider_total_count = EXCLUDED.provider_total_count,
-          status = EXCLUDED.status,
-          metadata_json = EXCLUDED.metadata_json,
-          updated_at = EXCLUDED.updated_at
-      `;
+      await executeCatalogSql(
+        `
+          INSERT INTO dcc_catalog_refresh_checkpoints (
+            stream_key, provider, destination_slug, cursor_value,
+            next_start_offset, provider_total_count, status, metadata_json, updated_at
+          ) VALUES (
+            $1, $2, $3, $4,
+            $5, $6, $7, $8::jsonb, $9::timestamptz
+          )
+          ON CONFLICT (stream_key) DO UPDATE SET
+            provider = EXCLUDED.provider,
+            destination_slug = EXCLUDED.destination_slug,
+            cursor_value = EXCLUDED.cursor_value,
+            next_start_offset = EXCLUDED.next_start_offset,
+            provider_total_count = EXCLUDED.provider_total_count,
+            status = EXCLUDED.status,
+            metadata_json = EXCLUDED.metadata_json,
+            updated_at = EXCLUDED.updated_at
+        `,
+        [
+          full.streamKey,
+          full.provider,
+          full.destinationSlug,
+          full.cursorValue,
+          full.nextStartOffset,
+          full.providerTotalCount,
+          full.status,
+          JSON.stringify(full.metadata),
+          full.updatedAt,
+        ],
+      );
     } catch (err) {
       console.warn("[durableCatalogStore] Failed upserting refresh checkpoint to Postgres:", err);
     }
@@ -5806,11 +6556,24 @@ export async function getRefreshCheckpoint(
 ): Promise<CatalogRefreshCheckpointRecord | null> {
   if (shouldUsePostgres()) {
     try {
-      await ensureCatalogSchema();
-      const sql = getSqlClient();
-      const rows = await sql`
-        SELECT * FROM dcc_catalog_refresh_checkpoints WHERE stream_key = ${streamKey} LIMIT 1
-      `;
+      const rows = await executeCatalogSql(
+        `
+          SELECT
+            stream_key,
+            provider,
+            destination_slug,
+            cursor_value,
+            next_start_offset,
+            provider_total_count,
+            status,
+            metadata_json,
+            updated_at
+          FROM dcc_catalog_refresh_checkpoints
+          WHERE stream_key = $1
+          LIMIT 1
+        `,
+        [streamKey],
+      );
       if (rows.length > 0) {
         const r = rows[0] as any;
         const mapped: CatalogRefreshCheckpointRecord = {
@@ -5833,8 +6596,9 @@ export async function getRefreshCheckpoint(
         memoryCheckpointsByStream.set(streamKey, mapped);
         return mapped;
       }
-    } catch {
-      // Fallback to memory or syncRuns
+      return null;
+    } catch (err) {
+      throw err;
     }
   }
   return memoryCheckpointsByStream.get(streamKey) || null;
@@ -5849,7 +6613,78 @@ export async function getLatestDestinationBackfillCheckpoint(destinationSlug: st
   cursorValue: string | null;
   source: "postgres_checkpoint_table" | "postgres_sync_runs" | "snapshot_sync_runs";
 }> {
-  const { records, source: recordSource } = await loadAllCatalogRecordsWithPgHydration();
+  const normSlug = destinationSlug.trim().toLowerCase();
+  const pilotMap = getNormalizedPilotMap();
+  const pilotIds = Array.from(pilotMap.keys());
+  const pilotViatorCountForDest = Array.from(pilotMap.values()).filter(
+    (p) => p.destinationSlug.toLowerCase() === normSlug && p.primaryProvider === "viator",
+  ).length;
+
+  if (shouldUsePostgres()) {
+    const excludeIds = Array.from(new Set([...QUARANTINED_TOUR_IDS, ...pilotIds]));
+    const [countRows, ckpt, priorRunRows] = await Promise.all([
+      executeCatalogSql(
+        `
+          SELECT COUNT(*)::int AS cnt
+          FROM dcc_tour_catalog
+          WHERE active = true
+            AND quarantined = false
+            AND NOT (tour_id = ANY($1::text[]))
+            AND LOWER(destination_slug) = $2
+            AND primary_provider = 'viator'
+        `,
+        [excludeIds, normSlug],
+      ),
+      getRefreshCheckpoint(`viator_backfill:${destinationSlug}`),
+      executeCatalogSql(
+        `
+          SELECT cursor_value, metadata_json
+          FROM dcc_catalog_sync_runs
+          WHERE provider = 'viator'
+            AND LOWER(destination_slug) = $1
+            AND status = 'completed'
+          ORDER BY started_at DESC
+          LIMIT 1
+        `,
+        [normSlug],
+      ),
+    ]);
+
+    const viatorImportedCount = Number(countRows[0]?.cnt ?? 0) + pilotViatorCountForDest;
+    const priorMeta = (priorRunRows[0]?.metadata_json || {}) as Record<string, any>;
+    const priorCursor = priorRunRows[0]?.cursor_value ? String(priorRunRows[0].cursor_value) : null;
+
+    const rawProviderTotal =
+      ckpt?.providerTotalCount ??
+      (typeof priorMeta.providerTotalCount === "number" ? priorMeta.providerTotalCount : null);
+    const providerTotalCount =
+      typeof rawProviderTotal === "number" && Number.isFinite(rawProviderTotal) && rawProviderTotal > 0
+        ? rawProviderTotal
+        : null;
+
+    const isComplete = providerTotalCount !== null && viatorImportedCount >= providerTotalCount;
+    const savedNextFromCkpt = ckpt?.nextStartOffset;
+    const savedNextFromRun =
+      typeof priorMeta.nextStartOffset === "number" ? priorMeta.nextStartOffset : null;
+
+    let nextStartOffset =
+      savedNextFromCkpt ?? savedNextFromRun ?? (viatorImportedCount > 0 ? viatorImportedCount + 1 : 1);
+    if (providerTotalCount !== null && nextStartOffset > providerTotalCount) {
+      nextStartOffset = 1;
+    }
+
+    return {
+      destinationSlug,
+      nextStartOffset: Math.max(1, nextStartOffset),
+      providerTotalCount,
+      viatorImportedCount,
+      coverageStatus: isComplete ? "complete" : "sampled",
+      cursorValue: ckpt?.cursorValue ?? priorCursor ?? null,
+      source: ckpt ? "postgres_checkpoint_table" : "postgres_sync_runs",
+    };
+  }
+
+  const records = loadOfflineSnapshotRecordsForLocalTestsOnly();
   const viatorImportedCount = records.filter(
     (r) =>
       r.destinationSlug === destinationSlug &&
@@ -5859,7 +6694,7 @@ export async function getLatestDestinationBackfillCheckpoint(destinationSlug: st
   ).length;
 
   const ckpt = await getRefreshCheckpoint(`viator_backfill:${destinationSlug}`);
-  const syncRuns = await loadSyncRunsWithPgHydration();
+  const syncRuns = await loadSyncRunsWithPgHydration(250);
   const priorRun = syncRuns.find(
     (r) =>
       r.provider === "viator" &&
@@ -5877,9 +6712,7 @@ export async function getLatestDestinationBackfillCheckpoint(destinationSlug: st
       ? rawProviderTotal
       : null;
 
-  const isComplete =
-    providerTotalCount !== null && viatorImportedCount >= providerTotalCount;
-
+  const isComplete = providerTotalCount !== null && viatorImportedCount >= providerTotalCount;
   const savedNextFromCkpt = ckpt?.nextStartOffset;
   const savedNextFromRun =
     typeof priorRun?.metadata?.nextStartOffset === "number"
@@ -5887,9 +6720,7 @@ export async function getLatestDestinationBackfillCheckpoint(destinationSlug: st
       : null;
 
   let nextStartOffset =
-    savedNextFromCkpt ??
-    savedNextFromRun ??
-    (viatorImportedCount > 0 ? viatorImportedCount + 1 : 1);
+    savedNextFromCkpt ?? savedNextFromRun ?? (viatorImportedCount > 0 ? viatorImportedCount + 1 : 1);
   if (providerTotalCount !== null && nextStartOffset > providerTotalCount) {
     nextStartOffset = 1;
   }
@@ -5901,18 +6732,577 @@ export async function getLatestDestinationBackfillCheckpoint(destinationSlug: st
     viatorImportedCount,
     coverageStatus: isComplete ? "complete" : "sampled",
     cursorValue: ckpt?.cursorValue ?? priorRun?.cursorValue ?? null,
-    source: ckpt
-      ? "postgres_checkpoint_table"
-      : recordSource === "postgres"
-        ? "postgres_sync_runs"
-        : "snapshot_sync_runs",
+    source: ckpt ? "postgres_checkpoint_table" : "snapshot_sync_runs",
+  };
+}
+
+const GENERIC_MEETING_PLACEHOLDER_SQL_REGEX =
+  "^(?:tbd|unknown|n/a|none|contact\\s+operator|contact\\s+local\\s+operator|meet\\s+on\\s+location|varying\\s+locations|multiple\\s+locations|new\\s+orleans(?:,\\s*(?:la|louisiana)(?:,\\s*usa)?)?|nassau(?:,\\s*(?:bahamas|new\\s+providence))?|st\\.?\\s*thomas(?:,\\s*(?:usvi|u\\.?s\\.?\\s*virgin\\s+islands))?|charlotte\\s+amalie(?:,\\s*(?:st\\.?\\s*thomas|usvi))?|juneau(?:,\\s*(?:ak|alaska))?|ketchikan(?:,\\s*(?:ak|alaska))?|skagway(?:,\\s*(?:ak|alaska))?|sitka(?:,\\s*(?:ak|alaska))?|seward(?:,\\s*(?:ak|alaska))?|denali(?:,\\s*(?:ak|alaska))?|cozumel(?:,\\s*(?:mexico|quintana\\s+roo))?|roatan(?:,\\s*honduras)?|grand\\s+cayman(?:,\\s*cayman\\s+islands)?|george\\s+town(?:,\\s*grand\\s+cayman)?|miami(?:,\\s*(?:fl|florida))?|las\\s+vegas(?:,\\s*(?:nv|nevada))?|denver(?:,\\s*(?:co|colorado))?)$";
+
+type DestinationSummaryEntry = {
+  total: number;
+  earthosNodeId: string;
+  timeZone: string;
+  coverageStatus: "sampled" | "complete";
+  connectedProviderCatalogCoverageStatus:
+    | "sampled_provider_catalog"
+    | "complete_provider_catalog";
+  connectedProviderCatalogCoverageLabel: string;
+  providerTotalAvailableCount: number | null;
+  importedCount: number;
+  viatorImportedCount: number;
+  viatorCoveragePercent: number | null;
+  nextCursor: string | null;
+  nextStartOffset: number | null;
+  byCapabilityTier: Record<string, number>;
+  byProvider: Record<string, number>;
+  byPickupFulfillmentType: Record<string, number>;
+  explicitUnknownCounts: {
+    unknownDuration: number;
+    unknownCancellation: number;
+    unknownPickup: number;
+    unknownMeetingCoordinates: number;
+    unknownTransferBuffer: number;
+  };
+};
+
+function ensureDestinationSummaryEntry(
+  byDestination: Record<string, DestinationSummaryEntry>,
+  destinationSlug: string,
+  earthosNodeId: string,
+  timeZone: string,
+  latestSyncByDestination: Map<string, CatalogSyncRunRecord>,
+): DestinationSummaryEntry {
+  if (!byDestination[destinationSlug]) {
+    const latestRun = latestSyncByDestination.get(destinationSlug);
+    const rawProviderTotal = latestRun?.metadata?.providerTotalCount;
+    const providerTotalAvailableCount =
+      typeof rawProviderTotal === "number" && Number.isFinite(rawProviderTotal)
+        ? rawProviderTotal
+        : null;
+    const rawNextStart = latestRun?.metadata?.nextStartOffset;
+    const nextStartOffset =
+      typeof rawNextStart === "number" && Number.isFinite(rawNextStart)
+        ? rawNextStart
+        : null;
+    byDestination[destinationSlug] = {
+      total: 0,
+      earthosNodeId,
+      timeZone,
+      coverageStatus: "sampled",
+      connectedProviderCatalogCoverageStatus: "sampled_provider_catalog",
+      connectedProviderCatalogCoverageLabel: "Sampled coverage of connected provider catalog",
+      providerTotalAvailableCount,
+      importedCount: 0,
+      viatorImportedCount: 0,
+      viatorCoveragePercent: null,
+      nextCursor: latestRun?.cursorValue || null,
+      nextStartOffset,
+      byCapabilityTier: {},
+      byProvider: {},
+      byPickupFulfillmentType: {},
+      explicitUnknownCounts: {
+        unknownDuration: 0,
+        unknownCancellation: 0,
+        unknownPickup: 0,
+        unknownMeetingCoordinates: 0,
+        unknownTransferBuffer: 0,
+      },
+    };
+  }
+  return byDestination[destinationSlug];
+}
+
+function finalizeSummaryCoverageLabels(byDestination: Record<string, DestinationSummaryEntry>) {
+  const sampledDestinations: string[] = [];
+  const completeDestinations: string[] = [];
+  const alaskaSlugs = ["juneau", "skagway", "ketchikan", "seward", "denali"];
+  const alaskaCompleteDestinations: string[] = [];
+
+  for (const [slug, destStats] of Object.entries(byDestination)) {
+    const viatorImported = destStats.byProvider["viator"] || 0;
+    const directCount = destStats.importedCount - viatorImported;
+    destStats.viatorImportedCount = viatorImported;
+    if (
+      destStats.providerTotalAvailableCount !== null &&
+      destStats.providerTotalAvailableCount > 0
+    ) {
+      destStats.viatorCoveragePercent =
+        Math.min(
+          100,
+          Math.round((viatorImported / destStats.providerTotalAvailableCount) * 1000) / 10,
+        );
+    }
+    if (
+      destStats.providerTotalAvailableCount !== null &&
+      destStats.providerTotalAvailableCount > 0 &&
+      viatorImported >= destStats.providerTotalAvailableCount
+    ) {
+      destStats.coverageStatus = "complete";
+      destStats.connectedProviderCatalogCoverageStatus = "complete_provider_catalog";
+      destStats.connectedProviderCatalogCoverageLabel = `Complete coverage of connected Viator catalog (${viatorImported}/${destStats.providerTotalAvailableCount}, 100%)${directCount > 0 ? ` + ${directCount} authorized direct operator offers` : ""}`;
+      completeDestinations.push(slug);
+      if (alaskaSlugs.includes(slug)) {
+        alaskaCompleteDestinations.push(slug);
+      }
+    } else {
+      destStats.coverageStatus = "sampled";
+      destStats.connectedProviderCatalogCoverageStatus = "sampled_provider_catalog";
+      const pctStr =
+        destStats.viatorCoveragePercent !== null ? `${destStats.viatorCoveragePercent}%` : "unknown %";
+      destStats.connectedProviderCatalogCoverageLabel = `Sampled coverage of connected Viator catalog (${viatorImported}/${destStats.providerTotalAvailableCount ?? "?"} imported, ${pctStr})${directCount > 0 ? ` + ${directCount} authorized direct operator offers` : ""}`;
+      sampledDestinations.push(slug);
+    }
+  }
+
+  return {
+    sampledDestinations,
+    completeDestinations,
+    alaskaSlugs,
+    alaskaCompleteDestinations,
   };
 }
 
 export async function getDurableCatalogSummaryReport() {
-  const { records, source } = await loadAllCatalogRecordsWithPgHydration();
+  if (shouldUsePostgres()) {
+    const pilotMap = getNormalizedPilotMap();
+    const pilotRecords = Array.from(pilotMap.values());
+    const excludeIds = Array.from(
+      new Set([...QUARANTINED_TOUR_IDS, ...pilotMap.keys()]),
+    );
+
+    const [
+      groupedCatalogRows,
+      retiredCountRows,
+      sampleExceptionRows,
+      syncTotalsRows,
+      latestDestSyncRows,
+      recentSyncRows,
+    ] = await Promise.all([
+      executeCatalogSql(
+        `
+          WITH base AS (
+            SELECT
+              destination_slug,
+              earthos_destination_node_id,
+              time_zone,
+              port_slug,
+              capability_tier,
+              primary_provider,
+              duration_minutes,
+              free_cancellation,
+              has_hotel_pickup,
+              CASE
+                WHEN meeting_point_name IS NULL OR BTRIM(meeting_point_name) = '' OR BTRIM(meeting_point_name) ~* $2 THEN NULL
+                ELSE BTRIM(meeting_point_name)
+              END AS clean_meeting_name,
+              CASE
+                WHEN meeting_point_address IS NULL OR BTRIM(meeting_point_address) = '' OR BTRIM(meeting_point_address) ~* $2 THEN NULL
+                ELSE BTRIM(meeting_point_address)
+              END AS clean_meeting_addr,
+              meeting_point_lat,
+              meeting_point_lng,
+              location_precision,
+              CASE
+                WHEN pickup_type IN ('HOTEL_PICKUP','MEETING_POINT_ONLY','HOTEL_OR_MEETING_POINT','CRUISE_PIER_PICKUP','DOWNTOWN_SHUTTLE_DEPARTURE','UNKNOWN') THEN pickup_type
+                WHEN has_hotel_pickup IS TRUE THEN 'HOTEL_PICKUP'
+                WHEN has_hotel_pickup IS FALSE THEN 'MEETING_POINT_ONLY'
+                ELSE 'UNKNOWN'
+              END AS norm_pickup_type,
+              COALESCE(
+                NULLIF(service_details_json->>'pickupFulfillmentType', ''),
+                CASE pickup_type
+                  WHEN 'CRUISE_PIER_PICKUP' THEN 'pier_pickup'
+                  WHEN 'DOWNTOWN_SHUTTLE_DEPARTURE' THEN 'downtown_shuttle_departure'
+                  WHEN 'HOTEL_PICKUP' THEN 'hotel_pickup'
+                  WHEN 'MEETING_POINT_ONLY' THEN 'self_drive'
+                  ELSE NULL
+                END
+              ) AS raw_pf,
+              ((constraints_json->>'cruiseBufferBeforeMinutes') IS NOT NULL
+                AND COALESCE(BTRIM(constraints_json->>'transferEvidenceSource'), '') <> ''
+                AND COALESCE(BTRIM(constraints_json->>'applicableBerthOrMeetingPoint'), '') <> '') AS has_verified_transfer,
+              COALESCE(NULLIF(constraints_json->>'transferTimeSource', ''), 'unknown') AS raw_transfer_source,
+              ((constraints_json->>'planningEstimateTransferMinutes') IS NOT NULL) AS has_planning_est,
+              COALESCE(product_options_json, '[]'::jsonb) AS opts_json
+            FROM dcc_tour_catalog
+            WHERE active = true
+              AND quarantined = false
+              AND NOT (tour_id = ANY($1::text[]))
+          ),
+          norm AS (
+            SELECT
+              destination_slug,
+              earthos_destination_node_id,
+              time_zone,
+              port_slug,
+              capability_tier,
+              primary_provider,
+              duration_minutes,
+              free_cancellation,
+              has_hotel_pickup,
+              clean_meeting_name,
+              (
+                (clean_meeting_name IS NOT NULL OR clean_meeting_addr IS NOT NULL)
+                AND meeting_point_lat IS NOT NULL
+                AND meeting_point_lng IS NOT NULL
+                AND NOT (meeting_point_lat = 0 AND meeting_point_lng = 0)
+              ) AS valid_coords,
+              location_precision,
+              norm_pickup_type,
+              CASE
+                WHEN raw_pf IN ('pier_pickup','hotel_pickup','downtown_shuttle_departure','self_drive','walkable_from_pier','unknown') THEN raw_pf
+                WHEN norm_pickup_type = 'CRUISE_PIER_PICKUP' THEN 'pier_pickup'
+                WHEN norm_pickup_type = 'DOWNTOWN_SHUTTLE_DEPARTURE' THEN 'downtown_shuttle_departure'
+                WHEN has_hotel_pickup IS TRUE THEN 'hotel_pickup'
+                WHEN has_hotel_pickup IS FALSE THEN 'self_drive'
+                ELSE 'unknown'
+              END AS norm_pf,
+              has_verified_transfer,
+              CASE
+                WHEN raw_transfer_source IN ('verified_pier_pickup','verified_meeting_point') THEN
+                  CASE
+                    WHEN has_verified_transfer THEN raw_transfer_source
+                    WHEN has_planning_est THEN 'planning_estimate'
+                    ELSE 'unknown'
+                  END
+                ELSE raw_transfer_source
+              END AS norm_transfer_source,
+              (
+                SELECT COUNT(*)::int
+                FROM jsonb_array_elements(opts_json) opt
+                WHERE (
+                  CASE
+                    WHEN (opt->>'pickupFulfillmentType') IN ('pier_pickup','hotel_pickup','downtown_shuttle_departure','self_drive','walkable_from_pier','unknown') THEN opt->>'pickupFulfillmentType'
+                    WHEN (opt->>'includesPickup')::boolean IS TRUE THEN 'hotel_pickup'
+                    WHEN (opt->>'includesPickup')::boolean IS FALSE THEN 'self_drive'
+                    ELSE 'unknown'
+                  END
+                ) = 'unknown'
+                OR (
+                  (
+                    CASE
+                      WHEN (opt->>'pickupFulfillmentType') IN ('pier_pickup','hotel_pickup','downtown_shuttle_departure','self_drive','walkable_from_pier','unknown') THEN opt->>'pickupFulfillmentType'
+                      WHEN (opt->>'includesPickup')::boolean IS TRUE THEN 'hotel_pickup'
+                      WHEN (opt->>'includesPickup')::boolean IS FALSE THEN 'self_drive'
+                      ELSE 'unknown'
+                    END
+                  ) = 'self_drive'
+                  AND (opt->>'meetingPointName' IS NULL OR BTRIM(opt->>'meetingPointName') = '' OR BTRIM(opt->>'meetingPointName') ~* $2)
+                  AND clean_meeting_name IS NULL
+                )
+              ) AS opt_ambiguous_cnt
+            FROM base
+          ),
+          eval AS (
+            SELECT
+              destination_slug,
+              earthos_destination_node_id,
+              time_zone,
+              capability_tier,
+              primary_provider,
+              norm_pf,
+              (duration_minutes IS NULL) AS unk_duration,
+              (free_cancellation IS NULL) AS unk_cancellation,
+              (has_hotel_pickup IS NULL) AS unk_pickup,
+              (NOT valid_coords) AS unk_coords,
+              (NOT has_verified_transfer OR norm_transfer_source IN ('unknown', 'planning_estimate')) AS unk_transfer,
+              NOT (has_hotel_pickup IS NOT NULL AND norm_pickup_type <> 'UNKNOWN' AND norm_pf <> 'unknown') AS exc_missing_pickup,
+              (
+                (norm_pickup_type IN ('MEETING_POINT_ONLY','HOTEL_OR_MEETING_POINT','DOWNTOWN_SHUTTLE_DEPARTURE')
+                  OR norm_pf IN ('self_drive','downtown_shuttle_departure'))
+                AND clean_meeting_name IS NULL
+              ) AS exc_missing_meeting_id,
+              (
+                (
+                  norm_pickup_type IN ('MEETING_POINT_ONLY','HOTEL_OR_MEETING_POINT','DOWNTOWN_SHUTTLE_DEPARTURE')
+                  OR norm_pf IN ('self_drive','downtown_shuttle_departure')
+                  OR clean_meeting_name IS NOT NULL
+                )
+                AND NOT (valid_coords AND COALESCE(location_precision, '') <> 'approximate')
+              ) AS exc_missing_coords,
+              (port_slug IS NOT NULL AND norm_transfer_source NOT IN ('verified_pier_pickup','verified_meeting_point')) AS exc_unverified_berth,
+              opt_ambiguous_cnt
+            FROM norm
+          )
+          SELECT
+            destination_slug,
+            earthos_destination_node_id,
+            time_zone,
+            capability_tier,
+            primary_provider,
+            norm_pf,
+            COUNT(*)::int AS cnt,
+            COUNT(*) FILTER (WHERE unk_duration)::int AS unk_duration_cnt,
+            COUNT(*) FILTER (WHERE unk_cancellation)::int AS unk_cancellation_cnt,
+            COUNT(*) FILTER (WHERE unk_pickup)::int AS unk_pickup_cnt,
+            COUNT(*) FILTER (WHERE unk_coords)::int AS unk_coords_cnt,
+            COUNT(*) FILTER (WHERE unk_transfer)::int AS unk_transfer_cnt,
+            COUNT(*) FILTER (WHERE NOT exc_missing_pickup AND NOT exc_missing_meeting_id AND NOT exc_missing_coords AND NOT exc_unverified_berth AND opt_ambiguous_cnt = 0)::int AS fully_verified_cnt,
+            COUNT(*) FILTER (WHERE exc_missing_pickup OR exc_missing_meeting_id OR exc_missing_coords OR exc_unverified_berth OR opt_ambiguous_cnt > 0)::int AS records_with_unknown_cnt,
+            COUNT(*) FILTER (WHERE exc_missing_pickup)::int AS exc_missing_pickup_cnt,
+            COUNT(*) FILTER (WHERE exc_missing_meeting_id)::int AS exc_missing_meeting_id_cnt,
+            COUNT(*) FILTER (WHERE exc_missing_coords)::int AS exc_missing_coords_cnt,
+            COUNT(*) FILTER (WHERE exc_unverified_berth)::int AS exc_unverified_berth_cnt,
+            COALESCE(SUM(opt_ambiguous_cnt), 0)::int AS exc_opt_ambiguous_cnt
+          FROM eval
+          GROUP BY
+            destination_slug,
+            earthos_destination_node_id,
+            time_zone,
+            capability_tier,
+            primary_provider,
+            norm_pf
+          ORDER BY destination_slug ASC
+        `,
+        [excludeIds, GENERIC_MEETING_PLACEHOLDER_SQL_REGEX],
+      ),
+      executeCatalogSql(
+        `
+          SELECT COUNT(*)::int AS retired_cnt
+          FROM dcc_tour_catalog
+          WHERE active = false
+            AND quarantined = false
+            AND NOT (tour_id = ANY($1::text[]))
+        `,
+        [Array.from(QUARANTINED_TOUR_IDS)],
+      ),
+      executeCatalogSql(
+        `
+          SELECT
+            tour_id,
+            primary_provider,
+            provider_product_code,
+            destination_slug,
+            port_slug,
+            title,
+            has_hotel_pickup,
+            pickup_type,
+            meeting_point_name,
+            meeting_point_address,
+            meeting_point_lat,
+            meeting_point_lng,
+            location_precision,
+            booking_url,
+            service_details_json->>'pickupFulfillmentType' AS sd_pickup_fulfillment_type,
+            constraints_json,
+            product_options_json,
+            active,
+            quarantined
+          FROM dcc_tour_catalog
+          WHERE active = true
+            AND quarantined = false
+            AND NOT (tour_id = ANY($1::text[]))
+            AND (
+              has_hotel_pickup IS NULL
+              OR COALESCE(pickup_type, 'UNKNOWN') = 'UNKNOWN'
+              OR meeting_point_lat IS NULL
+              OR (port_slug IS NOT NULL AND COALESCE(constraints_json->>'transferTimeSource', 'unknown') NOT IN ('verified_pier_pickup', 'verified_meeting_point'))
+            )
+          ORDER BY destination_slug ASC, tour_id ASC
+          LIMIT 15
+        `,
+        [excludeIds],
+      ),
+      executeCatalogSql(
+        `
+          SELECT
+            COALESCE(SUM(rejected_count), 0)::int AS total_rejected,
+            COALESCE(SUM(upstream_request_count), 0)::int AS total_upstream_requests
+          FROM dcc_catalog_sync_runs
+        `,
+        [],
+      ),
+      executeCatalogSql(
+        `
+          SELECT DISTINCT ON (destination_slug)
+            ${SYNC_RUN_SELECT_COLUMNS}
+          FROM dcc_catalog_sync_runs
+          WHERE provider = 'viator'
+            AND status = 'completed'
+          ORDER BY destination_slug ASC, started_at DESC
+        `,
+        [],
+      ),
+      executeCatalogSql(
+        `
+          SELECT ${SYNC_RUN_SELECT_COLUMNS}
+          FROM dcc_catalog_sync_runs
+          ORDER BY started_at DESC
+          LIMIT 25
+        `,
+        [],
+      ),
+    ]);
+
+    const latestSyncByDestination = new Map<string, CatalogSyncRunRecord>();
+    for (const r of latestDestSyncRows) {
+      const mapped = mapPgSyncRunRow(r);
+      latestSyncByDestination.set(mapped.destinationSlug, mapped);
+    }
+
+    const byDestination: Record<string, DestinationSummaryEntry> = {};
+    const byCapabilityTier: Record<string, number> = {};
+    const byProvider: Record<string, number> = {};
+    const byPickupFulfillmentType: Record<string, number> = {};
+    let totalImportedRecords = 0;
+
+    const byExceptionCode: Record<CatalogPickupExceptionCode, number> = {
+      missing_pickup_mode: 0,
+      missing_meeting_point_identity: 0,
+      missing_meeting_point_coordinates: 0,
+      unverified_cruise_berth_transfer: 0,
+      option_pickup_unknown_or_ambiguous: 0,
+    };
+    let fullyVerifiedPickupAndMeetingCount = 0;
+    let recordsWithUnknownPickupOrMeetingCount = 0;
+
+    for (const row of groupedCatalogRows) {
+      const cnt = Number(row.cnt || 0);
+      if (cnt <= 0) continue;
+      const slug = String(row.destination_slug);
+      const tier = String(row.capability_tier);
+      const prov = String(row.primary_provider);
+      const pfType = String(row.norm_pf || "unknown");
+
+      totalImportedRecords += cnt;
+      byCapabilityTier[tier] = (byCapabilityTier[tier] || 0) + cnt;
+      byProvider[prov] = (byProvider[prov] || 0) + cnt;
+      byPickupFulfillmentType[pfType] = (byPickupFulfillmentType[pfType] || 0) + cnt;
+
+      const d = ensureDestinationSummaryEntry(
+        byDestination,
+        slug,
+        String(row.earthos_destination_node_id || ""),
+        String(row.time_zone || "UTC"),
+        latestSyncByDestination,
+      );
+      d.total += cnt;
+      d.importedCount += cnt;
+      if (prov === "viator") {
+        d.viatorImportedCount += cnt;
+      }
+      d.byCapabilityTier[tier] = (d.byCapabilityTier[tier] || 0) + cnt;
+      d.byProvider[prov] = (d.byProvider[prov] || 0) + cnt;
+      d.byPickupFulfillmentType[pfType] = (d.byPickupFulfillmentType[pfType] || 0) + cnt;
+      d.explicitUnknownCounts.unknownDuration += Number(row.unk_duration_cnt || 0);
+      d.explicitUnknownCounts.unknownCancellation += Number(row.unk_cancellation_cnt || 0);
+      d.explicitUnknownCounts.unknownPickup += Number(row.unk_pickup_cnt || 0);
+      d.explicitUnknownCounts.unknownMeetingCoordinates += Number(row.unk_coords_cnt || 0);
+      d.explicitUnknownCounts.unknownTransferBuffer += Number(row.unk_transfer_cnt || 0);
+
+      fullyVerifiedPickupAndMeetingCount += Number(row.fully_verified_cnt || 0);
+      recordsWithUnknownPickupOrMeetingCount += Number(row.records_with_unknown_cnt || 0);
+      byExceptionCode.missing_pickup_mode += Number(row.exc_missing_pickup_cnt || 0);
+      byExceptionCode.missing_meeting_point_identity += Number(row.exc_missing_meeting_id_cnt || 0);
+      byExceptionCode.missing_meeting_point_coordinates += Number(row.exc_missing_coords_cnt || 0);
+      byExceptionCode.unverified_cruise_berth_transfer += Number(row.exc_unverified_berth_cnt || 0);
+      byExceptionCode.option_pickup_unknown_or_ambiguous += Number(row.exc_opt_ambiguous_cnt || 0);
+    }
+
+    const pilotBatch = normalizeCatalogBatchPickupAndMeeting(pilotRecords);
+    for (const rec of pilotBatch.normalizedRecords) {
+      totalImportedRecords += 1;
+      byCapabilityTier[rec.capabilityTier] = (byCapabilityTier[rec.capabilityTier] || 0) + 1;
+      byProvider[rec.primaryProvider] = (byProvider[rec.primaryProvider] || 0) + 1;
+      const pfType = rec.pickupFulfillmentType || "unknown";
+      byPickupFulfillmentType[pfType] = (byPickupFulfillmentType[pfType] || 0) + 1;
+
+      const d = ensureDestinationSummaryEntry(
+        byDestination,
+        rec.destinationSlug,
+        rec.earthosDestinationNodeId,
+        rec.timeZone,
+        latestSyncByDestination,
+      );
+      d.total += 1;
+      d.importedCount += 1;
+      if (rec.primaryProvider === "viator") {
+        d.viatorImportedCount += 1;
+      }
+      d.byCapabilityTier[rec.capabilityTier] = (d.byCapabilityTier[rec.capabilityTier] || 0) + 1;
+      d.byProvider[rec.primaryProvider] = (d.byProvider[rec.primaryProvider] || 0) + 1;
+      d.byPickupFulfillmentType[pfType] = (d.byPickupFulfillmentType[pfType] || 0) + 1;
+
+      if (rec.durationMinutes === null) d.explicitUnknownCounts.unknownDuration += 1;
+      if (rec.freeCancellation === null) d.explicitUnknownCounts.unknownCancellation += 1;
+      if (rec.hasHotelPickup === null) d.explicitUnknownCounts.unknownPickup += 1;
+      if (rec.meetingPointLat === null || rec.meetingPointLng === null) {
+        d.explicitUnknownCounts.unknownMeetingCoordinates += 1;
+      }
+      if (
+        rec.constraints?.cruiseBufferBeforeMinutes === null ||
+        rec.constraints?.cruiseBufferBeforeMinutes === undefined ||
+        rec.constraints?.transferTimeSource === "unknown" ||
+        rec.constraints?.transferTimeSource === "planning_estimate"
+      ) {
+        d.explicitUnknownCounts.unknownTransferBuffer += 1;
+      }
+    }
+    fullyVerifiedPickupAndMeetingCount += pilotBatch.summary.fullyVerifiedPickupAndMeetingCount;
+    recordsWithUnknownPickupOrMeetingCount +=
+      pilotBatch.summary.recordsWithUnknownPickupOrMeetingCount;
+    for (const code of Object.keys(byExceptionCode) as CatalogPickupExceptionCode[]) {
+      byExceptionCode[code] += pilotBatch.summary.byExceptionCode[code] || 0;
+    }
+
+    const totalExceptionsCount = Object.values(byExceptionCode).reduce((a, b) => a + b, 0);
+    const sampleBatch = normalizeCatalogBatchPickupAndMeeting(
+      sampleExceptionRows.map(mapPgRowToDurableTourRecord),
+    );
+    const combinedSamples = [...sampleBatch.exceptions, ...pilotBatch.exceptions].slice(0, 15);
+
+    const {
+      sampledDestinations,
+      completeDestinations,
+      alaskaSlugs,
+      alaskaCompleteDestinations,
+    } = finalizeSummaryCoverageLabels(byDestination);
+
+    return {
+      storageSource: "postgres" as const,
+      totalImportedRecords,
+      totalDestinationsCovered: Object.keys(byDestination).length,
+      quarantinedRecordsExcludedCount: QUARANTINED_TOUR_IDS.size,
+      quarantinedTourIds: Array.from(QUARANTINED_TOUR_IDS),
+      retiredRecordsExcludedCount: Number(retiredCountRows[0]?.retired_cnt ?? 0),
+      destinationCoverageBreakdown: {
+        coverageBasis: "connected_provider_catalog_total",
+        coverageBasisDescription:
+          "Completeness measures imported active products against the connected provider's (Viator Partner API v2) total available catalog count for each destination, plus authorized direct operator feeds (FareHarbor, GoSno, PARR).",
+        totalDestinations: Object.keys(byDestination).length,
+        sampledDestinationsCount: sampledDestinations.length,
+        completeDestinationsCount: completeDestinations.length,
+        sampledDestinations,
+        completeDestinations,
+        alaskaCompleteDestinationsCount: alaskaCompleteDestinations.length,
+        alaskaTotalDestinationsCount: alaskaSlugs.length,
+        alaskaCompleteDestinations,
+      },
+      pickupAndMeetingNormalization: {
+        totalRecordsEvaluated: totalImportedRecords,
+        fullyVerifiedPickupAndMeetingCount,
+        recordsWithUnknownPickupOrMeetingCount,
+        totalExceptionsCount,
+        byExceptionCode,
+        sampleReviewDeskExceptions: combinedSamples,
+        reviewDeskSyncOrigin: "catalog_pickup_normalizer_exception_queue",
+      },
+      totalRejectedRecords: Number(syncTotalsRows[0]?.total_rejected ?? 0),
+      totalUpstreamRequestsDuringSync: Number(syncTotalsRows[0]?.total_upstream_requests ?? 0),
+      byCapabilityTier,
+      byProvider,
+      byPickupFulfillmentType,
+      byDestination,
+      recentSyncRuns: recentSyncRows.map(mapPgSyncRunRow),
+      widgetPlacements: getWidgetPlacementReport(),
+      wtaStatus: "paused",
+    };
+  }
+
+  const records = loadOfflineSnapshotRecordsForLocalTestsOnly();
   const snapshot = readLocalCatalogSnapshot();
-  const sortedSyncRuns = await loadSyncRunsWithPgHydration();
+  const sortedSyncRuns = await loadSyncRunsWithPgHydration(250);
 
   const latestSyncByDestination = new Map<string, CatalogSyncRunRecord>();
   for (const run of sortedSyncRuns) {
@@ -5923,36 +7313,7 @@ export async function getDurableCatalogSummaryReport() {
     }
   }
 
-  const byDestination: Record<
-    string,
-    {
-      total: number;
-      earthosNodeId: string;
-      timeZone: string;
-      coverageStatus: "sampled" | "complete";
-      connectedProviderCatalogCoverageStatus:
-        | "sampled_provider_catalog"
-        | "complete_provider_catalog";
-      connectedProviderCatalogCoverageLabel: string;
-      providerTotalAvailableCount: number | null;
-      importedCount: number;
-      viatorImportedCount: number;
-      viatorCoveragePercent: number | null;
-      nextCursor: string | null;
-      nextStartOffset: number | null;
-      byCapabilityTier: Record<string, number>;
-      byProvider: Record<string, number>;
-      byPickupFulfillmentType: Record<string, number>;
-      explicitUnknownCounts: {
-        unknownDuration: number;
-        unknownCancellation: number;
-        unknownPickup: number;
-        unknownMeetingCoordinates: number;
-        unknownTransferBuffer: number;
-      };
-    }
-  > = {};
-
+  const byDestination: Record<string, DestinationSummaryEntry> = {};
   const byCapabilityTier: Record<string, number> = {};
   const byProvider: Record<string, number> = {};
   const byPickupFulfillmentType: Record<string, number> = {};
@@ -5964,44 +7325,13 @@ export async function getDurableCatalogSummaryReport() {
     const pfType = rec.pickupFulfillmentType || "unknown";
     byPickupFulfillmentType[pfType] = (byPickupFulfillmentType[pfType] || 0) + 1;
 
-    if (!byDestination[rec.destinationSlug]) {
-      const latestRun = latestSyncByDestination.get(rec.destinationSlug);
-      const rawProviderTotal = latestRun?.metadata?.providerTotalCount;
-      const providerTotalAvailableCount =
-        typeof rawProviderTotal === "number" && Number.isFinite(rawProviderTotal)
-          ? rawProviderTotal
-          : null;
-      const rawNextStart = latestRun?.metadata?.nextStartOffset;
-      const nextStartOffset =
-        typeof rawNextStart === "number" && Number.isFinite(rawNextStart)
-          ? rawNextStart
-          : null;
-      byDestination[rec.destinationSlug] = {
-        total: 0,
-        earthosNodeId: rec.earthosDestinationNodeId,
-        timeZone: rec.timeZone,
-        coverageStatus: "sampled",
-        connectedProviderCatalogCoverageStatus: "sampled_provider_catalog",
-        connectedProviderCatalogCoverageLabel: "Sampled coverage of connected provider catalog",
-        providerTotalAvailableCount,
-        importedCount: 0,
-        viatorImportedCount: 0,
-        viatorCoveragePercent: null,
-        nextCursor: latestRun?.cursorValue || null,
-        nextStartOffset,
-        byCapabilityTier: {},
-        byProvider: {},
-        byPickupFulfillmentType: {},
-        explicitUnknownCounts: {
-          unknownDuration: 0,
-          unknownCancellation: 0,
-          unknownPickup: 0,
-          unknownMeetingCoordinates: 0,
-          unknownTransferBuffer: 0,
-        },
-      };
-    }
-    const d = byDestination[rec.destinationSlug];
+    const d = ensureDestinationSummaryEntry(
+      byDestination,
+      rec.destinationSlug,
+      rec.earthosDestinationNodeId,
+      rec.timeZone,
+      latestSyncByDestination,
+    );
     d.total += 1;
     d.importedCount += 1;
     if (rec.primaryProvider === "viator") {
@@ -6027,47 +7357,12 @@ export async function getDurableCatalogSummaryReport() {
     }
   }
 
-  const sampledDestinations: string[] = [];
-  const completeDestinations: string[] = [];
-  const alaskaSlugs = ["juneau", "skagway", "ketchikan", "seward", "denali"];
-  const alaskaCompleteDestinations: string[] = [];
-
-  for (const [slug, destStats] of Object.entries(byDestination)) {
-    const viatorImported = destStats.byProvider["viator"] || 0;
-    const directCount = destStats.importedCount - viatorImported;
-    destStats.viatorImportedCount = viatorImported;
-    if (
-      destStats.providerTotalAvailableCount !== null &&
-      destStats.providerTotalAvailableCount > 0
-    ) {
-      destStats.viatorCoveragePercent =
-        Math.min(
-          100,
-          Math.round((viatorImported / destStats.providerTotalAvailableCount) * 1000) / 10,
-        );
-    }
-    // Completeness is strictly defined as coverage of the connected provider's (Viator) catalog total for that destination
-    if (
-      destStats.providerTotalAvailableCount !== null &&
-      destStats.providerTotalAvailableCount > 0 &&
-      viatorImported >= destStats.providerTotalAvailableCount
-    ) {
-      destStats.coverageStatus = "complete";
-      destStats.connectedProviderCatalogCoverageStatus = "complete_provider_catalog";
-      destStats.connectedProviderCatalogCoverageLabel = `Complete coverage of connected Viator catalog (${viatorImported}/${destStats.providerTotalAvailableCount}, 100%)${directCount > 0 ? ` + ${directCount} authorized direct operator offers` : ""}`;
-      completeDestinations.push(slug);
-      if (alaskaSlugs.includes(slug)) {
-        alaskaCompleteDestinations.push(slug);
-      }
-    } else {
-      destStats.coverageStatus = "sampled";
-      destStats.connectedProviderCatalogCoverageStatus = "sampled_provider_catalog";
-      const pctStr =
-        destStats.viatorCoveragePercent !== null ? `${destStats.viatorCoveragePercent}%` : "unknown %";
-      destStats.connectedProviderCatalogCoverageLabel = `Sampled coverage of connected Viator catalog (${viatorImported}/${destStats.providerTotalAvailableCount ?? "?"} imported, ${pctStr})${directCount > 0 ? ` + ${directCount} authorized direct operator offers` : ""}`;
-      sampledDestinations.push(slug);
-    }
-  }
+  const {
+    sampledDestinations,
+    completeDestinations,
+    alaskaSlugs,
+    alaskaCompleteDestinations,
+  } = finalizeSummaryCoverageLabels(byDestination);
 
   const totalRejectedRecords = sortedSyncRuns.reduce((acc, r) => acc + (r.rejectedCount || 0), 0);
   const totalUpstreamRequests = sortedSyncRuns.reduce(
@@ -6082,7 +7377,7 @@ export async function getDurableCatalogSummaryReport() {
   );
 
   return {
-    storageSource: source,
+    storageSource: "local_snapshot" as const,
     totalImportedRecords: records.length,
     totalDestinationsCovered: Object.keys(byDestination).length,
     quarantinedRecordsExcludedCount: QUARANTINED_TOUR_IDS.size,
@@ -6152,20 +7447,24 @@ export async function retireDurableTourRecord(
 
   if (shouldUsePostgres()) {
     try {
-      await ensureCatalogSchema();
-      const sql = getSqlClient();
-      const rows = await sql`
-        UPDATE dcc_tour_catalog
-        SET active = false,
-            service_details_json = COALESCE(service_details_json, '{}'::jsonb) || ${JSON.stringify({
-              retiredAt: nowIso,
-              retirementReason: reason,
-            })}::jsonb,
-            updated_at = now()
-        WHERE LOWER(tour_id) = ${norm}
-           OR LOWER(provider_product_code) = ${norm}
-        RETURNING tour_id
-      `;
+      const rows = await executeCatalogSql(
+        `
+          UPDATE dcc_tour_catalog
+          SET active = false,
+              service_details_json = COALESCE(service_details_json, '{}'::jsonb) || $1::jsonb,
+              updated_at = now()
+          WHERE LOWER(tour_id) = $2
+             OR LOWER(provider_product_code) = $2
+          RETURNING tour_id
+        `,
+        [
+          JSON.stringify({
+            retiredAt: nowIso,
+            retirementReason: reason,
+          }),
+          norm,
+        ],
+      );
       if (rows.length > 0 && !matchedTourId) {
         matchedTourId = String(rows[0].tour_id);
       }
