@@ -58,6 +58,40 @@ export default function ApplicableRouteDecisionPanel({
     ),
   );
   const [isCompiling, setIsCompiling] = useState<boolean>(false);
+  const [persistedServerSide, setPersistedServerSide] = useState<boolean>(false);
+
+  function commitInitialClickAttributionOnOutboundClick() {
+    if (persistedServerSide) return;
+    setPersistedServerSide(true);
+    const airport = destination === "Big Sky" ? "BZN" : "DEN";
+    const reqOrigin = direction === "RETURN" ? destination : airport;
+    const reqDest = direction === "RETURN" ? airport : destination;
+    void fetch("/api/v1/applicability/evaluate", {
+      method: "POST",
+      keepalive: true,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clickId: opaqueAttribution.clickId,
+        recordStage: "outbound_click",
+        corridorId: outcome.corridorId,
+        direction,
+        origin: reqOrigin,
+        destination: reqDest,
+        travelDate,
+        passengerCount,
+        standardBagCount,
+        skiOrOversizeBagCount,
+        partnerDestinationUrl: basePartnerDestinationUrl,
+        partnerNetwork: "direct",
+        activeSegmentConditions: {
+          vailPassChainLawActive,
+          i70TractionLawActive,
+        },
+      }),
+    }).catch(() => {
+      // non-blocking keepalive persistence on outbound navigation
+    });
+  }
 
   async function recompileOnServer(nextParams: {
     destination?: string;
@@ -105,6 +139,7 @@ export default function ApplicableRouteDecisionPanel({
       if (data.ok && data.outcome && data.opaqueAttribution) {
         setOutcome(data.outcome);
         setOpaqueAttribution(data.opaqueAttribution);
+        setPersistedServerSide(true);
       }
     } finally {
       setIsCompiling(false);
@@ -578,6 +613,7 @@ export default function ApplicableRouteDecisionPanel({
 
         <a
           href={opaqueAttribution.outboundPartnerUrl}
+          onClick={commitInitialClickAttributionOnOutboundClick}
           data-testid="opaque-partner-booking-link"
           data-click-id={opaqueAttribution.clickId}
           rel="sponsored noopener noreferrer"

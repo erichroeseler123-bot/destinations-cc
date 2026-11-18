@@ -103,9 +103,6 @@ export async function GET(request: NextRequest) {
       await syncDurableLedgerWithPostgres();
     }
     const result = await matchToursForTrip(matchReq);
-    if (matchReq.placementId) {
-      await syncDurableLedgerWithPostgres({ forcePushLocal: true });
-    }
     return NextResponse.json(result, { status: 200, headers: CORS_HEADERS });
   } catch (err: any) {
     const statusCode = typeof err?.statusCode === "number" ? err.statusCode : 500;
@@ -172,9 +169,6 @@ export async function POST(request: NextRequest) {
       await syncDurableLedgerWithPostgres();
     }
     const result = await matchToursForTrip(matchReq);
-    if (matchReq.placementId) {
-      await syncDurableLedgerWithPostgres({ forcePushLocal: true });
-    }
     return NextResponse.json(result, { status: 200, headers: CORS_HEADERS });
   } catch (err: any) {
     const statusCode = typeof err?.statusCode === "number" ? err.statusCode : 500;

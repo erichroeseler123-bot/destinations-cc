@@ -435,7 +435,12 @@ export async function GET(request: Request) {
       : null;
 
   if (!updated && catalogRecord && catalogRecord.bookingUrl) {
-    let resolvedDestinationUrl = catalogRecord.bookingUrl;
+    let resolvedDestinationUrl =
+      parsedTarget &&
+      catalogRecord.primaryProvider !== "viator" &&
+      catalogRecord.primaryProvider !== "fareharbor"
+        ? parsedTarget.toString()
+        : catalogRecord.bookingUrl;
     const effectiveOptionCode =
       optionParam ||
       catalogRecord.productOptions?.[0]?.optionCode ||

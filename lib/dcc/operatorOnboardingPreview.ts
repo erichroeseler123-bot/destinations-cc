@@ -4,6 +4,7 @@ import {
 } from "@/lib/dcc/catalog/matcher";
 import {
   getOpaqueClickAttributionById,
+  issueOpaqueClickAttribution,
   recordOutboundClickFollow,
 } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 import {
@@ -135,11 +136,30 @@ export async function traceCheckoutOnboardingReferral(params: {
   const providerCheckoutUrl = parsedUrl.toString();
   const trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(clickId)}&placementId=${encodeURIComponent(placementId)}&property=${encodeURIComponent(propertySlug)}${isTest ? "&isTest=true" : ""}&target=${encodeURIComponent(providerCheckoutUrl)}`;
 
-  recordOutboundClickFollow(clickId, {
+  const followed = recordOutboundClickFollow(clickId, {
     placementId,
     propertySlug,
     isTest,
   });
+  if (!followed) {
+    issueOpaqueClickAttribution({
+      clickId,
+      decisionReceiptId: `rcpt:dcc:onboarding:${targetTourId}:${matchedOption.boundOffer.optionCode || "default"}`,
+      recommendedOperatorId: matchedOption.operatorName || providerShortname,
+      recommendedOperatorName: matchedOption.operatorName || providerShortname,
+      evidenceVersion: "dcc_catalog_v2",
+      originatingSite: "destinationcommandcenter.com",
+      originatingPage: `/hotel_concierge/${propertySlug}`,
+      placementId,
+      propertySlug,
+      surface: "hotel_concierge",
+      provider: "fareharbor",
+      productCode: `${providerShortname}:${offerItemId}`,
+      productDestinationUrl: providerCheckoutUrl,
+      isTest,
+      recordStage: "outbound_click",
+    });
+  }
 
   const ledgerEntry = getOpaqueClickAttributionById(clickId);
 

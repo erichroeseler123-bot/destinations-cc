@@ -5,6 +5,7 @@ import {
 import type { CorridorId } from "./contextModel";
 import {
   issueOpaqueClickAttribution,
+  previewOpaqueClickAttribution,
   type HandoffTripDetails,
   type OpaqueClickAttributionRecord,
 } from "../commerce/opaqueAttributionLedger";
@@ -373,6 +374,47 @@ export function buildSharedGoSnoHandoffUrlAndDetails(
     productCode,
     isSnapshotExpired,
   };
+}
+
+export function previewSharedGoSnoHandoffAttribution(params: {
+  handoffBuild: SharedGoSnoHandoffBuildResult;
+  handoffId?: string | null;
+  decisionReceiptId: string;
+  recommendedOperatorId: string;
+  recommendedOperatorName?: string | null;
+  recommendedVehicleClassId?: string | null;
+  evidenceVersion: string;
+  applicabilityModelVersion?: string | null;
+  applicabilityOutcomeHash?: string | null;
+  originatingSite?: string | null;
+  originatingPage?: string | null;
+  isTest?: boolean;
+  productCodeOverride?: string | null;
+}): OpaqueClickAttributionRecord {
+  return previewOpaqueClickAttribution({
+    handoffId: params.handoffId || null,
+    decisionReceiptId: params.decisionReceiptId,
+    recommendedOperatorId: params.recommendedOperatorId,
+    recommendedOperatorName:
+      params.recommendedOperatorName ||
+      `GoSno Mountain Transfer (${params.handoffBuild.effectiveDestination})`,
+    recommendedVehicleClassId: params.recommendedVehicleClassId || null,
+    evidenceVersion: params.evidenceVersion,
+    applicabilityModelVersion: params.applicabilityModelVersion || null,
+    applicabilityOutcomeHash: params.applicabilityOutcomeHash || null,
+    originatingSite: params.originatingSite || "destinationcommandcenter.com",
+    originatingPage:
+      params.originatingPage ||
+      params.handoffBuild.tripDetails.originatingPage ||
+      "/transportation/colorado",
+    tripDetails: params.handoffBuild.tripDetails,
+    isTest: params.isTest,
+    provider: "direct",
+    productCode:
+      params.productCodeOverride || params.handoffBuild.productCode,
+    productDestinationUrl: params.handoffBuild.targetUrl,
+    recordStage: "recommendation",
+  });
 }
 
 export function issueSharedGoSnoHandoffAttribution(params: {

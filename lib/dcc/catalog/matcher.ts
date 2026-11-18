@@ -18,12 +18,12 @@ import {
   deriveServerReferralIdForOffer,
   generateOpaqueClickId,
   isDemoOrAutomatedVerificationTraffic,
-  issueOpaqueClickAttribution,
+  previewOpaqueClickAttribution,
   signApprovedCheckoutHandoff,
 } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 import {
   buildSharedGoSnoHandoffUrlAndDetails,
-  issueSharedGoSnoHandoffAttribution,
+  previewSharedGoSnoHandoffAttribution,
 } from "@/lib/dcc/applicability/gosnoHandoffBuilder";
 
 export type TripMatchRequest = {
@@ -2998,7 +2998,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           vehicleClass,
           originatingPage: originatingPagePath,
         });
-        const issued = issueSharedGoSnoHandoffAttribution({
+        const issued = previewSharedGoSnoHandoffAttribution({
           handoffBuild,
           recommendedOperatorId: "op:gosno",
           originatingPage: originatingPagePath,
@@ -3061,7 +3061,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           );
         }
 
-        const issued = issueOpaqueClickAttribution({
+        const issued = previewOpaqueClickAttribution({
           clickId: preClickId,
           decisionReceiptId: `rcpt:dcc:match:${record.tourId}:${option.boundOffer.optionCode || "default"}`,
           recommendedOperatorId: record.operatorCode || record.primaryProvider,

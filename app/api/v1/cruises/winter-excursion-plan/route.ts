@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
   });
 
   if (recordOpen) {
-    await syncDurableLedgerWithPostgres();
+    await syncDurableLedgerWithPostgres({ forcePushLocal: true });
   }
 
   const funnel = getFunnelMetricsReport({
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
         surface,
         isTest,
       });
-      await syncDurableLedgerWithPostgres();
+      await syncDurableLedgerWithPostgres({ forcePushLocal: true });
       return NextResponse.json({
         ok: true,
         action: "record_plan_open",
@@ -191,7 +191,7 @@ export async function POST(req: NextRequest) {
       }
 
       const trace = runWinterAttributionReplayAndNolaStatusTrace();
-      await syncDurableLedgerWithPostgres();
+      await syncDurableLedgerWithPostgres({ forcePushLocal: true });
       return NextResponse.json(trace);
     }
 
@@ -239,7 +239,9 @@ export async function POST(req: NextRequest) {
       isTest: body.isTest !== false,
     });
 
-    await syncDurableLedgerWithPostgres();
+    if (body.recordOpen === true) {
+      await syncDurableLedgerWithPostgres({ forcePushLocal: true });
+    }
 
     if (evaluated.offItineraryBlocked) {
       return NextResponse.json(

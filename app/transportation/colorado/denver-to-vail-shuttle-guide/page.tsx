@@ -6,7 +6,7 @@ import JsonLd from "@/app/components/dcc/JsonLd";
 import NextStepEngine from "@/app/components/dcc/NextStepEngine";
 import PublicMaterialChangeTimeline from "@/app/components/dcc/PublicMaterialChangeTimeline";
 import VailBusCatchChecker from "@/app/components/dcc/VailBusCatchChecker";
-import { issueOpaqueClickAttribution } from "@/lib/dcc/commerce/opaqueAttributionLedger";
+import { previewOpaqueClickAttribution } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 import {
   buildArticleJsonLd,
   buildBreadcrumbJsonLd,
@@ -50,7 +50,7 @@ export default async function DenverToVailShuttleGuidePage() {
     busCheckerPreviewCases,
   } = buildDenverToVailShuttleGuidePageModel();
 
-  const initialOpaqueRecord = issueOpaqueClickAttribution({
+  const initialOpaqueRecord = previewOpaqueClickAttribution({
     decisionReceiptId: initialOutcome.decisionReceiptId,
     recommendedOperatorId:
       initialOutcome.recommendedOperatorId || "gosno:vail-private-van",
@@ -62,6 +62,7 @@ export default async function DenverToVailShuttleGuidePage() {
     provider: "direct",
     productCode: initialOutcome.recommendedVehicleClassId || "gosno-vail-van",
     productDestinationUrl: basePartnerDestinationUrl,
+    recordStage: "recommendation",
   });
 
   const jsonLdData = {

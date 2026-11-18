@@ -942,7 +942,7 @@ export function inferTrafficSource(params: {
   return "direct-or-other";
 }
 
-export function issueOpaqueClickAttribution(
+export function previewOpaqueClickAttribution(
   input: IssueOpaqueClickAttributionInput,
 ): OpaqueClickAttributionRecord {
   const preEvaluatedTest = isDemoOrAutomatedVerificationTraffic({
@@ -958,112 +958,120 @@ export function issueOpaqueClickAttribution(
       ? normalizedInputClickId
       : generateOpaqueClickId({ isTest: preEvaluatedTest });
 
+  const { outboundUrl, strippedLeakParams, strippedPiiParams } =
+    sanitizeOutboundPartnerUrlWithOpaqueClickId(
+      input.productDestinationUrl,
+      clickId,
+    );
+
+  const inferredTripDetails = inferTripDetailsFromUrlAndInput(
+    outboundUrl,
+    input,
+  );
+  const resolvedOriginatingPage =
+    inferredTripDetails?.originatingPage ||
+    input.originatingPage?.trim() ||
+    "/transportation/colorado";
+  const resolvedPlacementId =
+    input.placementId?.trim() ||
+    inferredTripDetails?.placementId ||
+    null;
+  const resolvedPropertySlug =
+    input.propertySlug?.trim() ||
+    inferredTripDetails?.propertySlug ||
+    null;
+  const resolvedSurface =
+    input.surface?.trim() ||
+    inferredTripDetails?.surface ||
+    input.originatingSite?.trim() ||
+    null;
+  const resolvedTrafficSource = inferTrafficSource({
+    trafficSource: input.trafficSource || inferredTripDetails?.trafficSource,
+    originatingPage: resolvedOriginatingPage,
+  });
+  const partnerAttribution = resolvePartnerAttributionFromParams({
+    partner: input.partnerId,
+    partnerRole: input.partnerRole,
+    trafficSource: resolvedTrafficSource,
+    originatingPage: resolvedOriginatingPage,
+  });
+  const isTest =
+    isQaReferralId(clickId) ||
+    isDemoOrAutomatedVerificationTraffic({
+      isTest: input.isTest,
+      originatingPage: resolvedOriginatingPage,
+      decisionReceiptId: input.decisionReceiptId,
+      handoffId: input.handoffId,
+    });
+  const trafficClass: TrafficClass = isTest ? "test" : "production";
+  const recordStage: AttributionRecordStage =
+    input.recordStage === "recommendation" ? "recommendation" : "outbound_click";
+  const nowIso = new Date().toISOString();
+  const campaignValue = toViatorCampaignToken(clickId);
+
+  return {
+    clickId,
+    campaignValue,
+    handoffId: input.handoffId?.trim() || null,
+    decisionReceiptId: input.decisionReceiptId.trim(),
+    recommendedOperatorId: input.recommendedOperatorId.trim(),
+    recommendedOperatorName:
+      input.recommendedOperatorName?.trim() ||
+      input.recommendedOperatorId.trim(),
+    recommendedVehicleClassId:
+      input.recommendedVehicleClassId?.trim() || null,
+    evidenceVersion: input.evidenceVersion.trim(),
+    applicabilityModelVersion:
+      input.applicabilityModelVersion?.trim() || null,
+    applicabilityOutcomeHash: input.applicabilityOutcomeHash?.trim() || null,
+    originatingSite:
+      input.originatingSite?.trim() || "destinationcommandcenter.com",
+    originatingPage: resolvedOriginatingPage,
+    trafficSource: resolvedTrafficSource,
+    visitorId: input.visitorId?.trim() || null,
+    placementId: resolvedPlacementId,
+    propertySlug: resolvedPropertySlug,
+    surface: resolvedSurface,
+    partnerId: partnerAttribution.partnerId,
+    partnerRole: partnerAttribution.partnerRole,
+    tripDetails: inferredTripDetails
+      ? { ...inferredTripDetails, trafficSource: resolvedTrafficSource }
+      : null,
+    isTest,
+    trafficClass,
+    recordStage,
+    followedAt: recordStage === "outbound_click" ? nowIso : null,
+    clickCount: recordStage === "outbound_click" ? 1 : 0,
+    duplicateDeliveryCount: 0,
+    provider: input.provider,
+    productCode: input.productCode.trim(),
+    outboundPartnerUrl: outboundUrl,
+    strippedLeakParams,
+    strippedPiiParams,
+    reconciliationState: "pending_partner_event",
+    reconciledOutcomes: [],
+    createdAt: nowIso,
+  };
+}
+
+export function issueOpaqueClickAttribution(
+  input: IssueOpaqueClickAttributionInput,
+): OpaqueClickAttributionRecord {
+  const prepared = previewOpaqueClickAttribution(input);
+  const { clickId } = prepared;
+  const campaignValue = prepared.campaignValue || toViatorCampaignToken(clickId);
+
   return runDurableLedgerTransaction((state) => {
     const existing = state.opaqueClicksById[clickId];
     if (existing) return existing;
 
-    const { outboundUrl, strippedLeakParams, strippedPiiParams } =
-      sanitizeOutboundPartnerUrlWithOpaqueClickId(
-        input.productDestinationUrl,
-        clickId,
-      );
-
-    const inferredTripDetails = inferTripDetailsFromUrlAndInput(
-      outboundUrl,
-      input,
-    );
-    const resolvedOriginatingPage =
-      inferredTripDetails?.originatingPage ||
-      input.originatingPage?.trim() ||
-      "/transportation/colorado";
-    const resolvedPlacementId =
-      input.placementId?.trim() ||
-      inferredTripDetails?.placementId ||
-      null;
-    const resolvedPropertySlug =
-      input.propertySlug?.trim() ||
-      inferredTripDetails?.propertySlug ||
-      null;
-    const resolvedSurface =
-      input.surface?.trim() ||
-      inferredTripDetails?.surface ||
-      input.originatingSite?.trim() ||
-      null;
-    const resolvedTrafficSource = inferTrafficSource({
-      trafficSource: input.trafficSource || inferredTripDetails?.trafficSource,
-      originatingPage: resolvedOriginatingPage,
-    });
-    const partnerAttribution = resolvePartnerAttributionFromParams({
-      partner: input.partnerId,
-      partnerRole: input.partnerRole,
-      trafficSource: resolvedTrafficSource,
-      originatingPage: resolvedOriginatingPage,
-    });
-    const isTest =
-      isQaReferralId(clickId) ||
-      isDemoOrAutomatedVerificationTraffic({
-        isTest: input.isTest,
-        originatingPage: resolvedOriginatingPage,
-        decisionReceiptId: input.decisionReceiptId,
-        handoffId: input.handoffId,
-      });
-    const trafficClass: TrafficClass = isTest ? "test" : "production";
-    const recordStage: AttributionRecordStage =
-      input.recordStage === "recommendation" ? "recommendation" : "outbound_click";
-    const nowIso = new Date().toISOString();
-
-    const campaignValue = toViatorCampaignToken(clickId);
-    const record: OpaqueClickAttributionRecord = {
-      clickId,
-      campaignValue,
-      handoffId: input.handoffId?.trim() || null,
-      decisionReceiptId: input.decisionReceiptId.trim(),
-      recommendedOperatorId: input.recommendedOperatorId.trim(),
-      recommendedOperatorName:
-        input.recommendedOperatorName?.trim() ||
-        input.recommendedOperatorId.trim(),
-      recommendedVehicleClassId:
-        input.recommendedVehicleClassId?.trim() || null,
-      evidenceVersion: input.evidenceVersion.trim(),
-      applicabilityModelVersion:
-        input.applicabilityModelVersion?.trim() || null,
-      applicabilityOutcomeHash: input.applicabilityOutcomeHash?.trim() || null,
-      originatingSite:
-        input.originatingSite?.trim() || "destinationcommandcenter.com",
-      originatingPage: resolvedOriginatingPage,
-      trafficSource: resolvedTrafficSource,
-      visitorId: input.visitorId?.trim() || null,
-      placementId: resolvedPlacementId,
-      propertySlug: resolvedPropertySlug,
-      surface: resolvedSurface,
-      partnerId: partnerAttribution.partnerId,
-      partnerRole: partnerAttribution.partnerRole,
-      tripDetails: inferredTripDetails
-        ? { ...inferredTripDetails, trafficSource: resolvedTrafficSource }
-        : null,
-      isTest,
-      trafficClass,
-      recordStage,
-      followedAt: recordStage === "outbound_click" ? nowIso : null,
-      clickCount: recordStage === "outbound_click" ? 1 : 0,
-      duplicateDeliveryCount: 0,
-      provider: input.provider,
-      productCode: input.productCode.trim(),
-      outboundPartnerUrl: outboundUrl,
-      strippedLeakParams,
-      strippedPiiParams,
-      reconciliationState: "pending_partner_event",
-      reconciledOutcomes: [],
-      createdAt: nowIso,
-    };
-
-    state.opaqueClicksById[clickId] = record;
+    state.opaqueClicksById[clickId] = prepared;
     state.opaqueClickIdsByHandoffId[campaignValue] = clickId;
-    if (record.handoffId) {
-      state.opaqueClickIdsByHandoffId[record.handoffId] = clickId;
+    if (prepared.handoffId) {
+      state.opaqueClickIdsByHandoffId[prepared.handoffId] = clickId;
     }
 
-    return record;
+    return prepared;
   });
 }
 

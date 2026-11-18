@@ -282,7 +282,15 @@ export async function POST(request: Request) {
       Boolean(outcome.privateGroupInquiryOption) &&
       (body.preferPrivateTransfer === true || !outcome.recommendedOperatorId);
 
+    const requestedClickId =
+      typeof body.clickId === "string" && body.clickId.trim()
+        ? body.clickId.trim()
+        : undefined;
+    const requestedRecordStage =
+      body.recordStage === "outbound_click" ? "outbound_click" : "recommendation";
+
     const opaqueRecord = issueOpaqueClickAttribution({
+      clickId: requestedClickId,
       decisionReceiptId: outcome.decisionReceiptId,
       recommendedOperatorId: usePrivateGroupAsPrimary
         ? "op:gosno"
@@ -321,7 +329,7 @@ export async function POST(request: Request) {
         ? "gosno-multi-vehicle-group"
         : effectiveOfferId || outcome.recommendedVehicleClassId || corridorId,
       productDestinationUrl: basePartnerUrl,
-      recordStage: "recommendation",
+      recordStage: requestedRecordStage,
     });
 
     const privateGroupInquiryAttribution = outcome.privateGroupInquiryOption
