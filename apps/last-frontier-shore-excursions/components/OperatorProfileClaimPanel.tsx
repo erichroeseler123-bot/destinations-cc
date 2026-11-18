@@ -298,7 +298,7 @@ export function OperatorProfileClaimPanel({
                 </strong>
                 <span style={{ display: "block", color: "var(--muted)", fontSize: 13, marginTop: 4 }}>
                   Do not paste secret API keys here. Direct live-inventory status and
-                  optional 10% supplier-hosted facilitator checkout never self-activate;
+                  optional supplier-hosted direct checkout never self-activate;
                   they require separate credential setup and explicit owner approval.
                 </span>
               </span>

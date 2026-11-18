@@ -49,6 +49,10 @@ export function LfseExperienceShowcase({
 }) {
   const [activeFilter, setActiveFilter] = useState<"all" | LfseBookingCategory>("all");
 
+  const availableTabs = FILTER_TABS.filter(
+    (tab) => tab.id === "all" || items.some((item) => item.category === tab.id),
+  );
+
   const visibleItems =
     activeFilter === "all"
       ? items
@@ -74,7 +78,7 @@ export function LfseExperienceShowcase({
   return (
     <div>
       <div className={styles.filterTabs} role="tablist" aria-label="Filter shore excursions by booking status">
-        {FILTER_TABS.map((tab) => {
+        {availableTabs.map((tab) => {
           const isActive = activeFilter === tab.id;
           return (
             <button

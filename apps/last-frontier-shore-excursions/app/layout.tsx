@@ -1,32 +1,33 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PORTS } from "@/lib/ports";
+import { LfseSiteHeader } from "@/components/LfseSiteHeader";
+import { getSoutheastAlaskaDirectorySnapshot } from "../../../lib/dcc/shared/southeastAlaskaDirectoryOperatorsAndTours";
+import { LFSE_PUBLISHER_ORGANIZATION, LFSE_SITE_URL } from "@/lib/structuredData";
 import "./globals.css";
 
-const SITE = "https://www.lastfrontiershoreexcursions.com";
 const DESCRIPTION =
-  "Compare cruise-safe Alaska shore excursions in Juneau, Skagway, Ketchikan, Sitka, and Icy Strait Point by port, ship-day timing, duration, and return-to-ship margins.";
+  "Compare Alaska shore excursions across Juneau, Skagway, Ketchikan, Sitka, Icy Strait Point, Hoonah, Haines, Wrangell, Petersburg, Klawock, Gustavus, and Glacier Bay by dock logistics, local operators, and 2-hour return buffers.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE),
+  metadataBase: new URL(LFSE_SITE_URL),
   title: {
-    default: "Last Frontier Shore Excursions | Cruise-Safe Alaska Shore Excursions",
+    default: "Last Frontier Shore Excursions | Southeast Alaska Port & Excursion Guide",
     template: "%s | Last Frontier Shore Excursions",
   },
   description: DESCRIPTION,
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Last Frontier Shore Excursions | Cruise-Safe Alaska Shore Excursions",
+    title: "Last Frontier Shore Excursions | Southeast Alaska Port & Excursion Guide",
     description: DESCRIPTION,
-    url: SITE,
+    url: LFSE_SITE_URL,
     siteName: "Last Frontier Shore Excursions",
     type: "website",
     images: [
       {
         url: "/images/alaska/inside-passage-hero-generated.png",
-        width: 1024,
-        height: 426,
-        alt: "Panoramic vista of a grand tidewater glacier flowing into the Alaska Inside Passage surrounded by snow-dusted mountains",
+        width: 1600,
+        height: 900,
+        alt: "Sightseeing vessel cruising calm Alaska Inside Passage fjord waters surrounded by snow-dusted coastal peaks",
       },
     ],
   },
@@ -38,98 +39,103 @@ export const metadata: Metadata = {
   },
 };
 
-function JsonLd() {
+function SiteJsonLd() {
+  const snapshot = getSoutheastAlaskaDirectorySnapshot();
+  const verifiedPlaces = snapshot.places.filter(
+    (entry) => entry.gate.indexable && entry.place.publicPortSlug,
+  );
+
   const data = {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "Organization",
-        "@id": `${SITE}/#organization`,
-        name: "Last Frontier Shore Excursions",
-        url: SITE,
+        ...LFSE_PUBLISHER_ORGANIZATION,
         description: DESCRIPTION,
-        areaServed: PORTS.map((port) => `${port.name}, Alaska`),
+        areaServed: verifiedPlaces.map(({ place }) => `${place.name}, Alaska`),
         knowsAbout: [
-          "Alaska shore excursions",
-          "Alaska cruise ports",
-          "Juneau whale watching",
-          "Mendenhall Glacier tours",
-          "White Pass Railway",
-          "Misty Fjords floatplanes",
-          "cruise port timing",
-          "return to ship safety",
+          "Southeast Alaska shore excursions",
+          "Alaska cruise ports and harbors",
+          "Juneau whale watching and Mendenhall Glacier",
+          "Juneau Icefield helicopter glacier tours",
+          "White Pass & Yukon Route railway",
+          "Misty Fjords floatplanes and catamarans",
+          "Icy Strait Point and Hoonah excursions",
+          "Glacier Bay scenic cruising rules",
         ],
       },
       {
         "@type": "WebSite",
-        "@id": `${SITE}/#website`,
+        "@id": `${LFSE_SITE_URL}/#website`,
         name: "Last Frontier Shore Excursions",
-        url: SITE,
-        publisher: { "@id": `${SITE}/#organization` },
+        url: LFSE_SITE_URL,
+        publisher: { "@id": `${LFSE_SITE_URL}/#organization` },
         inLanguage: "en-US",
       },
       {
         "@type": "ItemList",
-        "@id": `${SITE}/#ports`,
-        name: "Alaska cruise ports",
-        itemListElement: PORTS.map((port, index) => ({
+        "@id": `${LFSE_SITE_URL}/#ports`,
+        name: "Southeast Alaska cruise ports and communities",
+        itemListElement: verifiedPlaces.map(({ place }, index) => ({
           "@type": "ListItem",
           position: index + 1,
-          name: `${port.name} shore excursions`,
-          url: `${SITE}/ports/${port.slug}`,
+          name: place.name,
+          url: `${LFSE_SITE_URL}/ports/${place.publicPortSlug}`,
         })),
       },
     ],
   };
 
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <JsonLd />
-        <header className="lfse-site-header">
-          <div className="shell lfse-header-inner">
-            <Link className="lfse-brand" href="/">
-              <span className="lfse-brand-title">Last Frontier Shore Excursions</span>
-              <span className="lfse-brand-sub">Alaska Port-Window Excursion Guide</span>
-            </Link>
-            <nav className="lfse-nav" aria-label="Primary navigation">
-              <Link href="/southeast-alaska">Southeast Alaska</Link>
-              <Link href="/ports">Ports &amp; Towns</Link>
-              <Link href="/operators">Operators</Link>
-              <Link href="/tours">All Excursions</Link>
-              <Link href="/cruise-ships">Cruise Ships</Link>
-              <Link className="lfse-nav-cta" href="/contact">Group &amp; Custom Help</Link>
-            </nav>
-          </div>
-        </header>
-        {children}
+        <a href="#lfse-main-content" className="lfse-skip-link">
+          Skip to main content
+        </a>
+        <SiteJsonLd />
+        <LfseSiteHeader />
+        <div id="lfse-main-content" tabIndex={-1}>
+          {children}
+        </div>
         <footer className="lfse-footer">
           <div className="shell">
             <div className="lfse-footer-top">
               <div style={{ maxWidth: 520 }}>
                 <strong className="lfse-footer-title">Last Frontier Shore Excursions</strong>
                 <p className="lfse-footer-copy">
-                  Independent Alaska cruise-port comparison guide. Checkout, live seat inventory, meeting instructions, and cancellation terms are completed directly with each listed partner or operator.
+                  Independent Southeast Alaska port, community, and excursion comparison
+                  guide. Reservations, live seat inventory, meeting instructions, and
+                  cancellation terms are completed directly with each listed local operator
+                  or booking partner.
                 </p>
               </div>
               <nav className="lfse-footer-links" aria-label="Footer navigation">
-                <Link href="/southeast-alaska">Southeast Alaska Hub</Link>
+                <Link href="/southeast-alaska">Southeast Alaska</Link>
                 <Link href="/ports">Ports &amp; Communities</Link>
                 <Link href="/operators">Local Operators</Link>
-                <Link href="/cruise-ships">Ships &amp; Port Windows</Link>
-                <Link href="/tours">All Excursions</Link>
-                <Link href="/decision/excursions-safe-for-cruise-ship-window">2-Hour Return Buffer Rule</Link>
+                <Link href="/tours">Excursions</Link>
+                <Link href="/cruise-ships">Cruise Ships</Link>
+                <Link href="/decision/excursions-safe-for-cruise-ship-window">
+                  2-Hour Return Standard
+                </Link>
                 <Link href="/about">About &amp; Disclosures</Link>
-                <Link href="/contact">Group &amp; Custom Help</Link>
+                <Link href="/contact">Contact</Link>
               </nav>
             </div>
             <div className="lfse-footer-bottom">
-              <span>© {new Date().getFullYear()} Last Frontier Shore Excursions · Juneau, Skagway, Ketchikan, Sitka &amp; Icy Strait Point</span>
-              <span>Not affiliated with any cruise line.</span>
+              <span>
+                © {new Date().getFullYear()} Last Frontier Shore Excursions · Southeast
+                Alaska Ports, Harbors &amp; Local Operators
+              </span>
+              <span>Independent planning guide · Not affiliated with any cruise line.</span>
             </div>
           </div>
         </footer>

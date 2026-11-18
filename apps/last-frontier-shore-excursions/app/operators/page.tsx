@@ -1,22 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
+import {
+  LfseOperatorsDirectoryClient,
+  type LfseOperatorDirectoryCardItem,
+} from "@/components/LfseOperatorsDirectoryClient";
 import { loadLfseJuneauNormalizedSupplierFeed } from "@/lib/dccJuneauSupplierFeed";
+import { formatCleanPlaceBaseName } from "@/lib/directoryDisplay";
+import {
+  buildOperatorsDirectoryJsonLd,
+  DCC_ALASKA_DIRECTORY_API_URL,
+  LFSE_SITE_URL,
+} from "@/lib/structuredData";
 import { UNCLAIMED_OPERATOR_PROFILE_NOTICE } from "../../../../lib/dcc/shared/southeastAlaskaDirectoryContract";
 import { getSoutheastAlaskaDirectorySnapshot } from "../../../../lib/dcc/shared/southeastAlaskaDirectoryOperatorsAndTours";
-
-const SITE = "https://www.lastfrontiershoreexcursions.com";
 
 export const metadata: Metadata = {
   title: "Southeast Alaska Shore Excursion Operators Directory | Local Companies",
   description:
-    "Permanent source-backed directory of verified Southeast Alaska shore excursion operators across Juneau, Hoonah, Icy Strait Point, Ketchikan, Skagway, Sitka, Haines, Wrangell, Petersburg, Klawock, and Gustavus.",
-  alternates: { canonical: `${SITE}/operators` },
+    "Browse 21 verified local Southeast Alaska shore excursion operators across Juneau, Hoonah, Icy Strait Point, Ketchikan, Skagway, Sitka, Haines, Wrangell, and Petersburg.",
+  alternates: { canonical: `${LFSE_SITE_URL}/operators` },
   openGraph: {
     title: "Southeast Alaska Local Excursion Operators | Last Frontier Shore Excursions",
     description:
-      "Compare verified Alaska whale captains, flightseeing companies, glacier guides, and Native-owned operators—with dock pickup rules, policies, and $0 free operator profile claims.",
-    url: `${SITE}/operators`,
+      "Compare verified Alaska whale captains, glacier helicopter pilots, floatplane operators, and Alaska Native-owned excursion companies—with dock pickup rules and passenger policies.",
+    url: `${LFSE_SITE_URL}/operators`,
     siteName: "Last Frontier Shore Excursions",
     type: "website",
   },
@@ -39,47 +47,85 @@ export default async function OperatorsDirectoryPage() {
       : undefined,
   );
   const verifiedOperators = snapshot.operators.filter((o) => o.gate.indexable);
-  const heldOperators = snapshot.operators.filter((o) => !o.gate.indexable);
 
+  const indexablePlaces = snapshot.places.filter(
+    (p) => p.gate.indexable && p.place.publicPortSlug,
+  );
   const placeNameBySlug = new Map<string, string>();
-  for (const { place } of snapshot.places) {
+  for (const { place } of indexablePlaces) {
     if (place.publicPortSlug) {
-      placeNameBySlug.set(place.publicPortSlug, place.name);
+      placeNameBySlug.set(
+        place.publicPortSlug,
+        formatCleanPlaceBaseName(place.name),
+      );
     }
   }
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "CollectionPage",
-        "@id": `${SITE}/operators#webpage`,
-        url: `${SITE}/operators`,
-        name: "Southeast Alaska Shore Excursion Operators Directory",
-        description:
-          "Primary-source verified company profiles for Southeast Alaska excursion operators.",
-        isPartOf: { "@id": `${SITE}/#website` },
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Southeast Alaska",
-            item: `${SITE}/southeast-alaska`,
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: "Local Operators",
-            item: `${SITE}/operators`,
-          },
-        ],
-      },
-    ],
-  };
+  const categoryLabelBySlug = new Map<string, string>();
+  for (const cat of snapshot.categories) {
+    categoryLabelBySlug.set(cat.categorySlug, cat.shortLabel);
+  }
+
+  const usedPortSlugs = new Set<string>();
+  const usedCategorySlugs = new Set<string>();
+
+  const cardItems: LfseOperatorDirectoryCardItem[] = verifiedOperators.map(
+    ({ operator, liveAvailabilityConnected, directCheckoutConnected, tours }) => {
+      const ports = operator.publicPortSlugs
+        .filter((ps) => placeNameBySlug.has(ps))
+        .map((ps) => {
+          usedPortSlugs.add(ps);
+          return { slug: ps, name: placeNameBySlug.get(ps)! };
+        });
+
+      const categories = operator.categorySlugs.map((cs) => {
+        usedCategorySlugs.add(cs);
+        return { slug: cs, label: categoryLabelBySlug.get(cs) || cs };
+      });
+
+      const activeToursCount = tours.filter((t) => !t.isCommerciallyHeld).length;
+
+      return {
+        operatorId: operator.operatorId,
+        slug: operator.slug,
+        name: operator.name,
+        tagline: operator.tagline,
+        cruiseLogisticsSummary: operator.cruiseLogisticsSummary,
+        heroImage: operator.heroImage,
+        heroImageAlt: operator.heroImageAlt,
+        heroImageCredit: operator.heroImageCredit,
+        ports,
+        categories,
+        ownershipBadges: operator.verifiedOwnershipBadges.map((b) => b.label),
+        liveDirectConnected: Boolean(
+          liveAvailabilityConnected && directCheckoutConnected,
+        ),
+        activeToursCount,
+        yearEstablished: operator.yearEstablished ?? null,
+      };
+    },
+  );
+
+  const portOptions = indexablePlaces
+    .filter(({ place }) => usedPortSlugs.has(place.publicPortSlug!))
+    .map(({ place }) => ({
+      slug: place.publicPortSlug!,
+      name: formatCleanPlaceBaseName(place.name),
+    }));
+
+  const categoryOptions = snapshot.categories
+    .filter((c) => usedCategorySlugs.has(c.categorySlug))
+    .map((c) => ({
+      slug: c.categorySlug,
+      label: c.shortLabel,
+    }));
+
+  const jsonLd = buildOperatorsDirectoryJsonLd(
+    verifiedOperators.map(({ operator }) => ({
+      slug: operator.slug,
+      name: operator.name,
+    })),
+  );
 
   return (
     <main>
@@ -88,7 +134,7 @@ export default async function OperatorsDirectoryPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <section className="port-hero" style={{ padding: "44px 0 36px" }}>
+      <section className="port-hero">
         <div className="shell">
           <nav className="breadcrumbs" aria-label="Breadcrumbs">
             <Link href="/">Home</Link>
@@ -98,277 +144,114 @@ export default async function OperatorsDirectoryPage() {
             <span>Local Operators</span>
           </nav>
 
-          <p className="eyebrow" style={{ color: "#607078" }}>
-            Canonical Company Profiles · {verifiedOperators.length} Verified Operators
+          <p className="eyebrow" style={{ color: "var(--muted)" }}>
+            Southeast Alaska Local Companies · {verifiedOperators.length} Verified
+            Operators
           </p>
-          <h1 style={{ marginTop: 6, marginBottom: 12 }}>
-            Southeast Alaska Shore Excursion Operators Directory
-          </h1>
+          <h1>Southeast Alaska Shore Excursion Operators</h1>
           <p
             className="lead"
-            style={{ color: "#485b63", maxWidth: 850, marginBottom: 18 }}
+            style={{ color: "#42555d", maxWidth: 850, marginBottom: 18 }}
           >
-            Every verified Southeast Alaska excursion company receives a permanent{" "}
-            <strong>$0 profile</strong> documenting its operating communities, vessel or
-            aircraft specs, dock-by-dock pickup rules, mobility and weight policies, and
-            primary sources—whether or not the operator has connected live inventory.
+            Compare independent Southeast Alaska whale-watching captains, glacier
+            helicopter pilots, floatplane operators, river guides, and Alaska Native-owned
+            excursion companies—complete with dock-by-dock pickup rules, mobility notes,
+            and verified tour lineups.
           </p>
           <div className="cta-row">
             <Link className="button" href="/ports">
-              Explore Ports &amp; Communities ({snapshot.counts.indexablePublicPlacePages})
+              {`Explore All ${snapshot.counts.indexablePublicPlacePages} Ports & Communities`}
             </Link>
             <Link className="button secondary" href="/southeast-alaska">
-              Southeast Alaska Regional Hub
+              Southeast Alaska Overview
             </Link>
           </div>
           <TrustDisclosure compact />
         </div>
       </section>
 
-      {/* Governance & Free Claim Summary */}
-      <section
-        className="section"
-        style={{
-          background: "#f8fbfb",
-          borderBottom: "1px solid var(--line)",
-          padding: "26px 0",
-        }}
-      >
+      {/* Searchable & Filterable 21 Verified Operators */}
+      <section className="section">
         <div className="shell">
-          <div
-            className="grid"
-            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}
-          >
-            <div className="card" style={{ background: "#ffffff" }}>
-              <span className="badge badge-safety" style={{ alignSelf: "flex-start" }}>
-                $0 Permanent Operator Listing
-              </span>
-              <h2 style={{ fontSize: 18, marginTop: 8, marginBottom: 6 }}>
-                Unclaimed vs. Verified Operator Profiles
-              </h2>
-              <p style={{ margin: 0, fontSize: 14, color: "var(--muted)" }}>
-                Unclaimed pages clearly display:{" "}
-                <em>&ldquo;{UNCLAIMED_OPERATOR_PROFILE_NOTICE}&rdquo;</em> Operators can
-                claim their page at no cost using an official company-domain email, listed
-                business phone, or manual owner review.
-              </p>
-            </div>
-
-            <div className="card" style={{ background: "#ffffff" }}>
-              <span className="badge badge-safety" style={{ alignSelf: "flex-start" }}>
-                Juneau Aviation Specialist Desk
-              </span>
-              <h2 style={{ fontSize: 18, marginTop: 8, marginBottom: 6 }}>
-                Juneau Flight Deck Boundary
-              </h2>
-              <p style={{ margin: 0, fontSize: 14, color: "var(--muted)" }}>
-                Last Frontier Shore Excursions hosts canonical company profiles for{" "}
-                <Link href="/operators/coastal-helicopters">Coastal Helicopters</Link>,{" "}
-                <Link href="/operators/northstar-trekking">NorthStar Trekking</Link>,{" "}
-                <Link href="/operators/temsco-helicopters">TEMSCO</Link>, and{" "}
-                <Link href="/operators/wings-airways">Wings Airways</Link>, while{" "}
-                <a
-                  href="https://juneauflightdeck.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ fontWeight: 700, color: "var(--forest)" }}
-                >
-                  Juneau Flight Deck ↗
-                </a>{" "}
-                provides flight-ceiling weather guidance and concierge handoffs.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Verified Operators Grid */}
-      <section className="section" style={{ background: "#ffffff" }}>
-        <div className="shell">
-          <h2>Verified Southeast Alaska Excursion Companies ({verifiedOperators.length})</h2>
+          <h2>Browse Verified Local Excursion Operators ({verifiedOperators.length})</h2>
           <p className="lead" style={{ color: "var(--muted)", marginBottom: 22 }}>
-            Each company below has passed our 6-point publication gate (verified legal
-            identity, official website/phone, operating communities, verified tours,
-            original cruise-logistics summary, and primary-source verification date):
+            Filter by cruise port or excursion category, or search by company name, harbor,
+            or vessel style:
           </p>
 
-          <div className="grid">
-            {verifiedOperators.map(
-              ({
-                operator,
-                liveAvailabilityConnected,
-                directCheckoutConnected,
-                tours,
-              }) => {
-              const activeTours = tours.filter((t) => !t.isCommerciallyHeld);
-              return (
-                <div
-                  key={operator.operatorId}
-                  className="card"
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <div>
-                    <div
-                      style={{
-                        borderRadius: 12,
-                        overflow: "hidden",
-                        aspectRatio: "16 / 9",
-                        marginBottom: 12,
-                        background: "#eef5f6",
-                        position: "relative",
-                      }}
-                    >
-                      <img
-                        src={operator.heroImage}
-                        alt={operator.heroImageAlt}
-                        width={640}
-                        height={360}
-                        loading="lazy"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          display: "block",
-                        }}
-                      />
-                      <span
-                        style={{
-                          position: "absolute",
-                          bottom: 6,
-                          right: 8,
-                          background: "rgba(14,26,31,0.75)",
-                          color: "#fff",
-                          fontSize: 10.5,
-                          padding: "2px 6px",
-                          borderRadius: 4,
-                        }}
-                      >
-                        {operator.heroImageCredit}
-                      </span>
-                    </div>
-
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-                      {operator.publicPortSlugs.map((portSlug) => (
-                        <Link
-                          key={portSlug}
-                          href={`/ports/${portSlug}`}
-                          className="chip"
-                          style={{ fontWeight: 700, color: "var(--forest)" }}
-                        >
-                          {placeNameBySlug.get(portSlug) || portSlug}
-                        </Link>
-                      ))}
-                      <span className="chip">{operator.bookingPlatform}</span>
-                    </div>
-
-                    {(liveAvailabilityConnected ||
-                      directCheckoutConnected ||
-                      operator.verifiedOwnershipBadges.length > 0) && (
-                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-                        {liveAvailabilityConnected && directCheckoutConnected && (
-                          <span className="badge badge-safety">
-                            Live Availability + Direct Checkout
-                          </span>
-                        )}
-                        {operator.verifiedOwnershipBadges.map((b) => (
-                          <span key={b.tag} className="badge badge-safety">
-                            {b.label}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    <h3 style={{ marginTop: 4, marginBottom: 6 }}>
-                      <Link
-                        href={`/operators/${operator.slug}`}
-                        style={{ color: "var(--deep)" }}
-                      >
-                        {operator.name}
-                      </Link>
-                    </h3>
-                    <p style={{ fontSize: 14, color: "var(--muted)", marginBottom: 10 }}>
-                      {operator.tagline}
-                    </p>
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: 14,
-                      paddingTop: 12,
-                      borderTop: "1px solid var(--line)",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: 8,
-                    }}
-                  >
-                    <span style={{ fontSize: 12.5, color: "var(--muted)" }}>
-                      {activeTours.length} verified{" "}
-                      {activeTours.length === 1 ? "tour" : "tours"} · Verified{" "}
-                      {operator.verifiedAt}
-                    </span>
-                    <Link
-                      href={`/operators/${operator.slug}`}
-                      style={{ fontWeight: 700, fontSize: 13.5, color: "var(--forest)" }}
-                    >
-                      View Profile →
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <LfseOperatorsDirectoryClient
+            items={cardItems}
+            portOptions={portOptions}
+            categoryOptions={categoryOptions}
+          />
         </div>
       </section>
 
-      {/* Held Operator Research Queue */}
-      {heldOperators.length > 0 && (
-        <section
-          className="section"
-          style={{ background: "#f8fbfb", borderTop: "1px solid var(--line)" }}
-        >
-          <div className="shell">
-            <span className="badge badge-warning">
-              OperatorResearchQueue · Held Unindexed
-            </span>
-            <h2 style={{ marginTop: 8 }}>
-              Operators Held Pending Primary-Source Verification ({heldOperators.length})
-            </h2>
-            <p style={{ color: "var(--muted)", maxWidth: 820 }}>
-              Companies or reseller listings with incomplete direct schedules, unconfirmed
-              shuttle buffers, or unresolved legal domains remain held in our research
-              queue (`noindex, follow`) and excluded from XML sitemaps:
-            </p>
+      {/* Subtle Bottom Operator Claim Note + Calm "Sources and freshness" Disclosure */}
+      <section
+        className="section"
+        style={{ background: "#ffffff", borderTop: "1px solid var(--line)" }}
+      >
+        <div className="shell" style={{ display: "grid", gap: 18 }}>
+          <div
+            className="card"
+            data-testid="operators-footer-claim-callout"
+            style={{ background: "var(--parchment)" }}
+          >
             <div
-              className="grid"
               style={{
-                marginTop: 18,
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 14,
               }}
             >
-              {heldOperators.map(({ operator, gate }) => (
-                <div
-                  key={operator.operatorId}
-                  className="card"
-                  style={{ background: "#ffffff", borderStyle: "dashed" }}
-                >
-                  <strong style={{ color: "var(--deep)" }}>{operator.name}</strong>
-                  <p style={{ fontSize: 13.5, color: "var(--muted)", margin: "6px 0 8px" }}>
-                    {gate.holdDetails[0] || operator.tagline}
-                  </p>
-                  <span style={{ fontSize: 12, color: "#7a4500", fontWeight: 600 }}>
-                    Hold codes: {gate.holdReasonCodes.join(", ")}
-                  </span>
-                </div>
-              ))}
+              <div style={{ maxWidth: 740 }}>
+                <span className="badge badge-safety">For Local Alaska Operators</span>
+                <h3 style={{ fontSize: 18, margin: "8px 0 6px" }}>
+                  Operate excursions in Southeast Alaska?
+                </h3>
+                <p style={{ margin: 0, fontSize: 14, color: "var(--muted)" }}>
+                  Unclaimed company pages display:{" "}
+                  <em>&ldquo;{UNCLAIMED_OPERATOR_PROFILE_NOTICE}&rdquo;</em> Local
+                  operators can claim their profile at no cost from any company page to
+                  update pickup details, accessibility notes, and tour schedules.
+                </p>
+              </div>
+              <Link className="button small secondary" href="/contact">
+                Contact Directory Team
+              </Link>
             </div>
           </div>
-        </section>
-      )}
+
+          <details
+            className="lfse-sources-details"
+            data-testid="operators-sources-and-freshness"
+          >
+            <summary>Sources and freshness</summary>
+            <div className="lfse-sources-body">
+              <p style={{ margin: 0 }}>
+                <strong>Last verified:</strong> 2026-11-17. Company profiles are compiled
+                from official operator websites, published passenger weight and mobility
+                FAQs, municipal harbor directories, and Alaska Native corporation filings.
+                Initials shown on operator cards are neutral editorial monograms rather
+                than official company trademarks.
+              </p>
+              <p style={{ margin: 0 }}>
+                <strong>Regional data provenance:</strong>{" "}
+                <a
+                  href={DCC_ALASKA_DIRECTORY_API_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Destination Command Center Southeast Alaska Regional Directory ↗
+                </a>
+              </p>
+            </div>
+          </details>
+        </div>
+      </section>
     </main>
   );
 }

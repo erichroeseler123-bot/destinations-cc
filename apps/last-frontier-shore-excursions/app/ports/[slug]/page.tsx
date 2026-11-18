@@ -11,8 +11,22 @@ import { ExcursionFilters } from "@/components/ExcursionFilters";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 import { ApprovedResearchQualificationSection } from "@/components/ApprovedResearchQualificationSection";
 import { JuneauNormalizedSupplierFeedSection } from "@/components/JuneauNormalizedSupplierFeedSection";
+import { JuneauFlightDeckPlanningCallout } from "@/components/JuneauFlightDeckPlanningCallout";
+import { OperatorIdentityMark } from "@/components/OperatorIdentityMark";
 import { PortSailingTimingFitPanel } from "@/components/PortSailingTimingFitPanel";
 import { loadLfseJuneauNormalizedSupplierFeed } from "@/lib/dccJuneauSupplierFeed";
+import {
+  buildPortDetailH1,
+  classifyDestinationType,
+  formatCleanPlaceBaseName,
+  resolveDestinationHeroMedia,
+  STANDARDIZED_TWO_HOUR_PLANNING_NOTE,
+} from "@/lib/directoryDisplay";
+import {
+  buildPortDetailJsonLd,
+  DCC_ALASKA_DIRECTORY_API_URL,
+  LFSE_SITE_URL,
+} from "@/lib/structuredData";
 import {
   BLOCKED_KETCHIKAN_UMBRELLA_PRODUCTS,
   loadLfseApprovedPortFacts,
@@ -29,14 +43,12 @@ import {
   resolveSoutheastAlaskaTourDirectRezgoHref,
 } from "../../../../../lib/dcc/shared/southeastAlaskaDirectoryOperatorsAndTours";
 
-const SITE = "https://www.lastfrontiershoreexcursions.com";
-
 const PLACE_TYPE_LABELS: Record<string, string> = {
   community: "Community & Local Harbor",
-  cruise_terminal: "Cruise Terminal Destination",
-  harbor: "Municipal Small-Boat Harbor",
+  cruise_terminal: "Cruise Terminal",
+  harbor: "Small-Boat Harbor",
   national_park: "National Park & Preserve",
-  scenic_cruise_destination: "Scenic Cruising Waterway (No Ship Disembarkation)",
+  scenic_cruise_destination: "Scenic Cruising — Non-Disembarkation",
 };
 
 const LEGACY_CALCULATOR_PORTS = new Set([
@@ -46,6 +58,41 @@ const LEGACY_CALCULATOR_PORTS = new Set([
   "sitka",
   "icy-strait-point",
 ]);
+
+function renderHumanizedPortNotes(text: string) {
+  const parts = text.split(/(\(\/ports\/glacier-bay\)|\/ports\/glacier-bay|\(\/ports\/gustavus\)|\/ports\/gustavus)/g);
+  return parts.map((part, index) => {
+    if (part === "(/ports/glacier-bay)" || part === "/ports/glacier-bay") {
+      return (
+        <span key={index}>
+          {part.startsWith("(") ? "(" : ""}
+          <Link
+            href="/ports/glacier-bay"
+            style={{ color: "var(--forest)", fontWeight: 700, textDecoration: "underline" }}
+          >
+            Glacier Bay Scenic Cruising Guide
+          </Link>
+          {part.endsWith(")") ? ")" : ""}
+        </span>
+      );
+    }
+    if (part === "(/ports/gustavus)" || part === "/ports/gustavus") {
+      return (
+        <span key={index}>
+          {part.startsWith("(") ? "(" : ""}
+          <Link
+            href="/ports/gustavus"
+            style={{ color: "var(--forest)", fontWeight: 700, textDecoration: "underline" }}
+          >
+            Gustavus Community Guide
+          </Link>
+          {part.endsWith(")") ? ")" : ""}
+        </span>
+      );
+    }
+    return <span key={index}>{part}</span>;
+  });
+}
 
 function getDistinctCategoryTourCount(
   activitySlug: string,
@@ -105,20 +152,22 @@ export async function generateMetadata({
   if (!entry) return {};
 
   const { place, gate } = entry;
+  const cleanName = formatCleanPlaceBaseName(place.name);
+  const media = resolveDestinationHeroMedia(place);
   const isScenicOnly = place.placeType === "scenic_cruise_destination";
 
   const title = isScenicOnly
-    ? `${place.name} Cruise Guide | Scenic Cruising Rules, Rangers & Gateway Access`
-    : `${place.name} Shore Excursions, Docks & Local Operators Directory`;
+    ? `${cleanName} — Scenic Cruising (Non-Disembarkation) Guide`
+    : `${cleanName} Shore Excursions, Docks & Local Operators`;
 
   const description = isScenicOnly
-    ? `${place.name} National Park scenic cruising guide: why large cruise ships do not dock or disembark passengers in Glacier Bay, NPS ranger boarding, and separate Gustavus gateway access.`
-    : `Compare ${place.name} Alaska docks, cruise pickup rules, verified local operators, tours, and 2-hour return-to-ship timing buffers.`;
+    ? `${cleanName} scenic cruising guide: why large cruise ships do not dock or disembark passengers in Glacier Bay, NPS ranger boarding, and separate Gustavus gateway access.`
+    : `Compare ${cleanName} Alaska docks, cruise pickup rules, verified local operators, tours, and two-hour return-to-ship planning margins.`;
 
   return {
     title,
     description,
-    alternates: { canonical: `${SITE}/ports/${slug}` },
+    alternates: { canonical: `${LFSE_SITE_URL}/ports/${slug}` },
     robots: {
       index: gate.indexable,
       follow: true,
@@ -126,15 +175,15 @@ export async function generateMetadata({
     openGraph: {
       title: `${title} | Last Frontier Shore Excursions`,
       description,
-      url: `${SITE}/ports/${slug}`,
+      url: `${LFSE_SITE_URL}/ports/${slug}`,
       siteName: "Last Frontier Shore Excursions",
       type: "website",
       images: [
         {
-          url: `${SITE}${place.heroImage}`,
+          url: `${LFSE_SITE_URL}${media.heroImage}`,
           width: 1600,
           height: 1067,
-          alt: place.heroImageAlt,
+          alt: media.heroImageAlt,
         },
       ],
     },
@@ -153,17 +202,34 @@ export default async function PortPage({
   }
 
   const { place, gate } = placeBundle;
+  const cleanPlaceName = formatCleanPlaceBaseName(place.name);
+  const typeInfo = classifyDestinationType(place);
+  const media = resolveDestinationHeroMedia(place);
+
   const snapshot = getSoutheastAlaskaDirectorySnapshot();
+  const indexablePlaceSlugs = new Set(
+    snapshot.places
+      .filter((p) => p.gate.indexable && p.place.publicPortSlug)
+      .map((p) => p.place.publicPortSlug!),
+  );
+  const indexableOperatorIds = new Set(
+    snapshot.operators
+      .filter((o) => o.gate.indexable)
+      .map((o) => o.operator.operatorId),
+  );
+
   const legacyPort = getPort(slug);
   const legacyActivities = legacyPort ? getPortActivities(slug) : [];
   const legacyPortExcursions = legacyPort ? getExcursionsByPort(slug as PortSlug) : [];
 
-  // Canonical Southeast Alaska operators & tours for this destination
   const localOperators = snapshot.operators.filter(
     (o) => o.gate.indexable && o.operator.publicPortSlugs.includes(slug),
   );
   const canonicalPortTours = snapshot.tours.filter(
-    (t) => t.portSlug === slug && !t.isCommerciallyHeld,
+    (t) =>
+      t.portSlug === slug &&
+      !t.isCommerciallyHeld &&
+      indexableOperatorIds.has(t.operatorId),
   );
   const portCategoryEvaluations = snapshot.portCategories.filter(
     (pc) => pc.portSlug === slug,
@@ -187,51 +253,13 @@ export default async function PortPage({
     ? qualifyLfsePortDirectContexts(slug, researchLoad.facts)
     : [];
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "CollectionPage",
-        "@id": `${SITE}/ports/${slug}#webpage`,
-        url: `${SITE}/ports/${slug}`,
-        name: `${place.name} Directory & Cruise Logistics`,
-        description: place.hook,
-        isPartOf: { "@id": `${SITE}/#website` },
-        ...(place.verifiedAt ? { dateModified: place.lastModifiedAt } : {}),
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Southeast Alaska",
-            item: `${SITE}/southeast-alaska`,
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: "Ports & Communities",
-            item: `${SITE}/ports`,
-          },
-          {
-            "@type": "ListItem",
-            position: 4,
-            name: place.name,
-            item: `${SITE}/ports/${slug}`,
-          },
-        ],
-      },
-      {
-        "@type": "TouristDestination",
-        "@id": `${SITE}/ports/${slug}#destination`,
-        name: `${place.name}, Alaska`,
-        description: place.overview,
-        touristType: ["Cruise Travelers", "Independent Alaska Travelers"],
-      },
-    ],
-  };
+  const jsonLd = buildPortDetailJsonLd({
+    slug,
+    name: cleanPlaceName,
+    hook: place.hook,
+    overview: place.overview,
+    lastModifiedAt: place.lastModifiedAt,
+  });
 
   return (
     <main>
@@ -252,18 +280,19 @@ export default async function PortPage({
         >
           <div className="shell">
             <strong style={{ color: "#7a4500" }}>
-              Research Queue Destination (Unindexed · noindex, follow):
+              Unindexed Community Preview (noindex, follow):
             </strong>{" "}
             <span style={{ fontSize: 14, color: "#5c3b09" }}>
-              {place.name} remains excluded from search indexing until primary-source dock
-              transfers and independent local operator schedules pass publication review.
+              {place.name} remains excluded from search indexing and public hubs until
+              dock transfers and independent local operator schedules pass primary-source
+              verification.
             </span>
           </div>
         </section>
       )}
 
-      {/* 1. Hero & Entity Type */}
-      <section className="port-hero" style={{ padding: "40px 0 36px" }}>
+      {/* 1. Hero & Destination Type */}
+      <section className="port-hero">
         <div className="shell">
           <nav className="breadcrumbs" aria-label="Breadcrumbs">
             <Link href="/">Home</Link>
@@ -272,19 +301,12 @@ export default async function PortPage({
             <span>›</span>
             <Link href="/ports">Ports &amp; Communities</Link>
             <span>›</span>
-            <span>{place.name}</span>
+            <span>{cleanPlaceName}</span>
           </nav>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-              gap: 32,
-              alignItems: "center",
-            }}
-          >
+          <div className="lfse-split-hero">
             <div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+              <div className="lfse-card-meta-row">
                 <span
                   className={`badge ${
                     place.placeType === "scenic_cruise_destination"
@@ -292,24 +314,15 @@ export default async function PortPage({
                       : "badge-safety"
                   }`}
                 >
-                  {PLACE_TYPE_LABELS[place.placeType] || place.placeType}
+                  {typeInfo.label}
                 </span>
                 <span className="chip">{place.subRegionLabel}</span>
-                {place.verifiedAt && (
-                  <span className="chip" data-testid="place-last-verified">
-                    Verified {place.verifiedAt}
-                  </span>
-                )}
               </div>
 
-              <h1 style={{ marginTop: 6, marginBottom: 12 }}>
-                {place.placeType === "scenic_cruise_destination"
-                  ? `${place.name} Scenic Cruising & National Park Guide`
-                  : `${place.name} Shore Excursions & Local Port Directory`}
-              </h1>
+              <h1>{buildPortDetailH1(place)}</h1>
               <p
                 className="lead"
-                style={{ color: "#485b63", fontSize: "17px", marginBottom: 14 }}
+                style={{ color: "#42555d", fontSize: "17px", marginBottom: 14 }}
               >
                 {place.hook}
               </p>
@@ -320,7 +333,7 @@ export default async function PortPage({
               <div className="cta-row">
                 {localOperators.length > 0 && (
                   <a className="button" href="#local-operators">
-                    Local {place.name} operators ({localOperators.length}) ↓
+                    Local {cleanPlaceName} operators ({localOperators.length}) ↓
                   </a>
                 )}
                 <a className="button secondary" href="#dock-and-pickup-guide">
@@ -337,21 +350,21 @@ export default async function PortPage({
               <TrustDisclosure compact />
             </div>
 
-            <div style={{ position: "relative" }}>
+            <div>
               <div
                 style={{
                   position: "relative",
-                  borderRadius: "14px",
+                  borderRadius: "16px",
                   overflow: "hidden",
                   border: "1px solid var(--line)",
                   boxShadow: "var(--card-shadow)",
                   aspectRatio: "16 / 10",
-                  background: "#eef5f6",
+                  background: "var(--ice)",
                 }}
               >
                 <img
-                  src={place.heroImage}
-                  alt={place.heroImageAlt}
+                  src={media.heroImage}
+                  alt={media.heroImageAlt}
                   width={1600}
                   height={1067}
                   loading="eager"
@@ -362,28 +375,14 @@ export default async function PortPage({
                     display: "block",
                   }}
                 />
-                <span
-                  style={{
-                    position: "absolute",
-                    bottom: 8,
-                    right: 10,
-                    background: "rgba(14, 26, 31, 0.75)",
-                    backdropFilter: "blur(4px)",
-                    color: "#ffffff",
-                    fontSize: "11px",
-                    padding: "3px 8px",
-                    borderRadius: "4px",
-                  }}
-                >
-                  {place.heroImageCredit}
-                </span>
+                <span className="lfse-card-credit">{media.heroImageCredit}</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Non-Disembarkation Alert (Mandatory for Glacier Bay) & Community Harbor Berth Explanation (Hoonah / Gustavus) */}
+      {/* Non-Disembarkation Alert (Glacier Bay) & Community Harbor Berth Explanation (Hoonah / Gustavus / Petersburg) */}
       {place.placeType === "scenic_cruise_destination" ? (
         <section
           data-testid="scenic-non-disembarkation-alert"
@@ -399,7 +398,7 @@ export default async function PortPage({
               Important Cruise Logistics Rule · No Passenger Disembarkation
             </span>
             <h2 style={{ fontSize: 22, marginTop: 8, marginBottom: 8 }}>
-              Large Cruise Ships Do NOT Dock or Disembark Passengers in {place.name}
+              Large Cruise Ships Do NOT Dock or Disembark Passengers in {cleanPlaceName}
             </h2>
             <p style={{ margin: 0, fontSize: 15.5, color: "var(--ink)", maxWidth: 900 }}>
               {place.disembarkationExplanation}
@@ -410,7 +409,7 @@ export default async function PortPage({
         <section
           data-testid="community-terminal-separation-note"
           style={{
-            background: "#eef8f5",
+            background: "#eef7f3",
             borderTop: "1px solid #b7dfd2",
             borderBottom: "1px solid #b7dfd2",
             padding: "20px 0",
@@ -427,137 +426,117 @@ export default async function PortPage({
         </section>
       ) : null}
 
-      {/* Related Distinct Places Cross-Links (Hoonah <-> ISP, Gustavus <-> Glacier Bay, Haines <-> Skagway, etc.) */}
+      {/* Related Distinct Places Cross-Links */}
       {place.relatedPlaces.length > 0 && (
         <section
           data-testid="related-places-crosslinks"
           className="section"
           style={{
-            background: "#f4f9f9",
+            background: "#ffffff",
             borderBottom: "1px solid var(--line)",
             padding: "26px 0",
           }}
         >
           <div className="shell">
             <p className="eyebrow" style={{ color: "var(--forest)", marginBottom: 6 }}>
-              Geographic &amp; Operational Relationship
+              Neighboring Stops &amp; Waterways
             </p>
             <h2 style={{ fontSize: 21, marginTop: 0, marginBottom: 14 }}>
-              Related Communities, Terminals &amp; Waterways Near {place.name}
+              Related Communities, Terminals &amp; Waterways Near {cleanPlaceName}
             </h2>
-            <div
-              className="grid"
-              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}
-            >
-              {place.relatedPlaces.map((rel) => (
-                <div
-                  key={rel.targetPlaceId}
-                  className="card"
-                  style={{ background: "#ffffff" }}
-                >
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
-                    <span className="badge badge-safety">
-                      {PLACE_TYPE_LABELS[rel.targetPlaceType] || rel.targetPlaceType}
-                    </span>
-                    <span className="chip">{rel.distanceOrTransitSummary}</span>
+            <div className="lfse-two-col">
+              {place.relatedPlaces.map((rel) => {
+                const canLink =
+                  Boolean(rel.targetPublicPortSlug) &&
+                  indexablePlaceSlugs.has(rel.targetPublicPortSlug!);
+                return (
+                  <div key={rel.targetPlaceId} className="card">
+                    <div className="lfse-card-meta-row">
+                      <span className="badge badge-safety">
+                        {PLACE_TYPE_LABELS[rel.targetPlaceType] || rel.targetPlaceType}
+                      </span>
+                      <span className="chip">{rel.distanceOrTransitSummary}</span>
+                    </div>
+                    <h3 style={{ fontSize: 18, margin: "4px 0 6px" }}>
+                      {canLink ? (
+                        <Link
+                          href={`/ports/${rel.targetPublicPortSlug}`}
+                          style={{ color: "var(--forest)" }}
+                        >
+                          {rel.targetName} →
+                        </Link>
+                      ) : (
+                        rel.targetName
+                      )}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: 14, color: "var(--muted)" }}>
+                      {rel.geographicExplanation}
+                    </p>
                   </div>
-                  <h3 style={{ fontSize: 18, margin: "4px 0 6px" }}>
-                    {rel.targetPublicPortSlug ? (
-                      <Link
-                        href={`/ports/${rel.targetPublicPortSlug}`}
-                        style={{ color: "var(--forest)" }}
-                      >
-                        {rel.targetName} →
-                      </Link>
-                    ) : (
-                      rel.targetName
-                    )}
-                  </h3>
-                  <p style={{ margin: 0, fontSize: 14, color: "var(--muted)" }}>
-                    {rel.geographicExplanation}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
       )}
 
-      {/* 2. Excursion Categories (Canonical /ports/[slug]/[categorySlug] + Legacy /[port]/[activity]) */}
+      {/* 2. Excursion Categories (Must appear BEFORE #calculator per test invariant!) */}
       {(indexablePortCategories.length > 0 || legacyActivities.length > 0) && (
         <section
           className="section"
           id="excursion-categories"
-          style={{ background: "#ffffff", padding: "34px 0" }}
+          style={{ background: "#ffffff", padding: "36px 0" }}
         >
           <div className="shell">
-            <h2>{place.name} Excursion Categories</h2>
+            <h2>{cleanPlaceName} Excursion Categories</h2>
             <p className="lead" style={{ color: "var(--muted)" }}>
-              Compare verified multi-operator category guides and port-window activity
-              clusters in {place.name}:
+              Compare side-by-side multi-operator category guides and port-window activity
+              options in {cleanPlaceName}:
             </p>
 
             {indexablePortCategories.length > 0 && (
-              <div className="grid" style={{ marginTop: 20 }}>
+              <div className="lfse-cards-grid" style={{ marginTop: 20 }}>
                 {indexablePortCategories.map((pc) => (
                   <Link
                     key={pc.category.categorySlug}
                     href={`/ports/${slug}/${pc.category.categorySlug}`}
-                    className="card"
+                    className="card lfse-directory-card"
                   >
-                    <div
-                      style={{
-                        borderRadius: 10,
-                        overflow: "hidden",
-                        aspectRatio: "16 / 9",
-                        marginBottom: 12,
-                        background: "#eef5f6",
-                        position: "relative",
-                      }}
-                    >
-                      <img
-                        src={pc.category.image}
-                        alt={pc.category.imageAlt}
-                        width={640}
-                        height={360}
-                        loading="lazy"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          display: "block",
-                        }}
-                      />
-                      <span
-                        style={{
-                          position: "absolute",
-                          bottom: 6,
-                          right: 8,
-                          background: "rgba(14,26,31,0.72)",
-                          color: "#fff",
-                          fontSize: 10.5,
-                          padding: "2px 6px",
-                          borderRadius: 4,
-                        }}
-                      >
-                        {pc.category.imageCredit}
-                      </span>
+                    <div>
+                      <div className="lfse-card-media">
+                        <img
+                          src={pc.category.image}
+                          alt={pc.category.imageAlt}
+                          width={640}
+                          height={360}
+                          loading="lazy"
+                        />
+                        <span className="lfse-card-credit">{pc.category.imageCredit}</span>
+                      </div>
+                      <div className="lfse-card-meta-row">
+                        <span className="badge badge-safety">
+                          {`${pc.qualifiedOperators.length} Local Operators`}
+                        </span>
+                        <span className="chip">
+                          {`${pc.qualifiedTours.length} Excursions`}
+                        </span>
+                      </div>
+                      <h3>{pc.comparison?.h1 || `${cleanPlaceName} ${pc.category.name}`}</h3>
+                      <p style={{ fontSize: 14, color: "var(--muted)" }}>
+                        {pc.comparison?.metaDescription || pc.category.summary}
+                      </p>
                     </div>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
-                      <span className="badge badge-safety">
-                        {pc.qualifiedOperators.length} Verified Operators
-                      </span>
-                      <span className="chip">
-                        {pc.qualifiedTours.length} Verified Tours
-                      </span>
-                    </div>
-                    <h3>{pc.comparison?.h1 || `${place.name} ${pc.category.name}`}</h3>
-                    <p style={{ fontSize: 14, color: "var(--muted)" }}>
-                      {pc.comparison?.metaDescription || pc.category.summary}
-                    </p>
                   </Link>
                 ))}
               </div>
+            )}
+
+            {/* Juneau Flightseeing Contextual Planning Links */}
+            {slug === "juneau" && (
+              <JuneauFlightDeckPlanningCallout
+                heading="Planning a Juneau Helicopter or Floatplane Excursion?"
+                contextLabel="Juneau Flight Deck · Aviation Planning Guides"
+              />
             )}
 
             {/* Preserve legacy /[port]/[activity] cards & data-testid attributes on original 5 ports */}
@@ -565,10 +544,10 @@ export default async function PortPage({
               <div style={{ marginTop: indexablePortCategories.length > 0 ? 28 : 20 }}>
                 {indexablePortCategories.length > 0 && (
                   <h3 style={{ fontSize: 18, marginBottom: 12, color: "var(--deep)" }}>
-                    {place.name} Port-Window Activity Guides
+                    {cleanPlaceName} Port-Window Activity Guides
                   </h3>
                 )}
-                <div className="grid">
+                <div className="lfse-cards-grid">
                   {legacyActivities.map((act) => {
                     const catCount = getDistinctCategoryTourCount(
                       act.slug,
@@ -586,6 +565,7 @@ export default async function PortPage({
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
+                            flexWrap: "wrap",
                             gap: 8,
                             marginBottom: 8,
                           }}
@@ -643,7 +623,7 @@ export default async function PortPage({
       <section
         className="section"
         id="local-operators"
-        style={{ background: "#f8fbfb", borderTop: "1px solid var(--line)" }}
+        style={{ borderTop: "1px solid var(--line)" }}
       >
         <div className="shell">
           <div
@@ -658,98 +638,101 @@ export default async function PortPage({
           >
             <div>
               <p className="eyebrow" style={{ color: "var(--muted)" }}>
-                Company Profiles · Primary-Source Verified
+                Local Alaska Companies
               </p>
-              <h2 style={{ margin: 0 }}>{place.name} Local Excursion Operators</h2>
+              <h2 style={{ margin: 0 }}>{cleanPlaceName} Excursion Operators</h2>
             </div>
             <Link
               href="/operators"
               style={{ fontWeight: 700, color: "var(--forest)", fontSize: 14.5 }}
             >
-              View all Southeast Alaska operators →
+              Browse all Southeast Alaska operators →
             </Link>
           </div>
 
           {localOperators.length === 0 ? (
-            <div className="card" style={{ background: "#ffffff" }}>
+            <div className="card">
               <p style={{ margin: 0, fontSize: 14.5, color: "var(--muted)" }}>
-                {!place.largeCruiseShipDisembarkationAllowed
-                  ? `Because large cruise ships do not disembark passengers in ${place.name}, independent local boat and flight operators base out of neighboring Gustavus instead. See the Gustavus community directory for Bartlett Cove day-boat operators.`
-                  : `Independent local operator profiles for ${place.name} are currently in verification review. See dock and official harbor visitor resources below.`}
+                {place.placeType === "scenic_cruise_destination" ? (
+                  <>
+                    Because large cruise ships do not disembark passengers in{" "}
+                    {cleanPlaceName}, independent local day-boat and flight operators base
+                    out of neighboring{" "}
+                    <Link
+                      href="/ports/gustavus"
+                      style={{ color: "var(--forest)", fontWeight: 700, textDecoration: "underline" }}
+                    >
+                      Gustavus
+                    </Link>{" "}
+                    instead.
+                  </>
+                ) : (
+                  `See dock, shuttle, and official visitor harbor guidance below for ${cleanPlaceName}.`
+                )}
               </p>
             </div>
           ) : (
-            <div className="grid">
+            <div className="lfse-cards-grid">
               {localOperators.map(({ operator, tours }) => {
                 const portToursCount = tours.filter(
                   (t) => t.portSlug === slug && !t.isCommerciallyHeld,
                 ).length;
+                const isLiveConnected =
+                  isOperatorLiveAvailabilityConnected(operator) &&
+                  isOperatorDirectCheckoutConnected(operator) &&
+                  (operator.slug !== "juneau-tours-and-whale-watch" ||
+                    Boolean(
+                      juneauNormalizedFeed?.ok &&
+                        juneauNormalizedFeed.source === "dcc_rezgo_readonly_xml" &&
+                        juneauNormalizedFeed.liveDirectRezgoCheckoutEnabled,
+                    ));
                 return (
                   <div
                     key={operator.operatorId}
-                    className="card"
-                    style={{
-                      background: "#ffffff",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                    }}
+                    className="card lfse-directory-card"
                   >
                     <div>
-                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-                        {isOperatorLiveAvailabilityConnected(operator) &&
-                          isOperatorDirectCheckoutConnected(operator) &&
-                          (operator.slug !== "juneau-tours-and-whale-watch" ||
-                            Boolean(
-                              juneauNormalizedFeed?.ok &&
-                                juneauNormalizedFeed.source === "dcc_rezgo_readonly_xml" &&
-                                juneauNormalizedFeed.liveDirectRezgoCheckoutEnabled,
-                            )) && (
-                            <span className="badge badge-safety">
-                              Live Availability + Direct Checkout
-                            </span>
-                          )}
+                      <div className="lfse-card-meta-row">
+                        {isLiveConnected && (
+                          <span className="badge badge-safety">
+                            Live Availability + Direct Checkout
+                          </span>
+                        )}
                         {operator.verifiedOwnershipBadges.map((b) => (
                           <span key={b.tag} className="badge badge-safety">
                             {b.label}
                           </span>
                         ))}
-                        <span className="chip">{operator.bookingPlatform}</span>
                       </div>
-                      <h3 style={{ marginTop: 4, marginBottom: 6 }}>
-                        <Link
-                          href={`/operators/${operator.slug}`}
-                          style={{ color: "var(--deep)" }}
-                        >
-                          {operator.name}
-                        </Link>
-                      </h3>
+
+                      <div className="lfse-operator-card-heading">
+                        <OperatorIdentityMark name={operator.name} size="md" />
+                        <h3>
+                          <Link
+                            href={`/operators/${operator.slug}`}
+                            style={{ color: "var(--deep)" }}
+                          >
+                            {operator.name}
+                          </Link>
+                        </h3>
+                      </div>
+
                       <p style={{ fontSize: 14, color: "var(--muted)", marginBottom: 10 }}>
                         {operator.tagline}
                       </p>
-                      <p style={{ fontSize: 13, color: "var(--ink)", margin: 0 }}>
+                      <p className="lfse-operator-pickup-snippet">
                         <strong>Cruise Pickup:</strong> {operator.cruiseLogisticsSummary}
                       </p>
                     </div>
 
-                    <div
-                      style={{
-                        marginTop: 14,
-                        paddingTop: 12,
-                        borderTop: "1px solid var(--line)",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      <span style={{ fontSize: 12.5, color: "var(--muted)" }}>
+                    <div className="lfse-card-footer lfse-card-footer--split">
+                      <span className="lfse-card-footer-meta">
                         {portToursCount} verified {portToursCount === 1 ? "tour" : "tours"} in{" "}
-                        {place.name}
+                        {cleanPlaceName}
                       </span>
                       <Link
                         href={`/operators/${operator.slug}`}
-                        style={{ fontWeight: 700, fontSize: 13.5, color: "var(--forest)" }}
+                        className="lfse-card-action-link"
                       >
                         Operator Profile →
                       </Link>
@@ -771,10 +754,10 @@ export default async function PortPage({
         >
           <div className="shell">
             <p className="eyebrow" style={{ color: "var(--muted)" }}>
-              Connected to Canonical Operator &amp; Dock Rules
+              Verified Local Excursions
             </p>
-            <h2>Tours Currently Available in {place.name}</h2>
-            <div className="grid" style={{ marginTop: 18 }}>
+            <h2>Tours Currently Available in {cleanPlaceName}</h2>
+            <div className="lfse-cards-grid" style={{ marginTop: 18 }}>
               {canonicalPortTours.map((tour) => {
                 const matchedLiveRezgoTour =
                   juneauNormalizedFeed && tour.authorizedSupplierBinding
@@ -815,15 +798,10 @@ export default async function PortPage({
                 return (
                   <div
                     key={tour.tourId}
-                    className="card"
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                    }}
+                    className="card lfse-directory-card"
                   >
                     <div>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+                      <div className="lfse-card-meta-row">
                         <span className="badge badge-safety">{tour.durationLabel}</span>
                         <span className="chip">{tour.priceDisplayLabel}</span>
                       </div>
@@ -850,10 +828,8 @@ export default async function PortPage({
                     </div>
 
                     <div
+                      className="lfse-card-footer"
                       style={{
-                        marginTop: 14,
-                        paddingTop: 12,
-                        borderTop: "1px solid var(--line)",
                         display: "flex",
                         gap: 10,
                         flexWrap: "wrap",
@@ -896,7 +872,7 @@ export default async function PortPage({
 
       {/* Preserve existing Affiliate ExcursionFilters & lfse-port-excursion-count on legacy ports */}
       {legacyPort && (
-        <section className="section" id="clusters" style={{ background: "#f8fbfb" }}>
+        <section className="section" id="clusters" style={{ borderTop: "1px solid var(--line)" }}>
           <div className="shell">
             <div
               style={{
@@ -904,6 +880,7 @@ export default async function PortPage({
                 justifyContent: "space-between",
                 alignItems: "baseline",
                 flexWrap: "wrap",
+                gap: 12,
                 marginBottom: 20,
               }}
             >
@@ -911,13 +888,13 @@ export default async function PortPage({
                 <p className="eyebrow" style={{ color: "var(--muted)" }}>
                   Compare Partner Catalog Excursions
                 </p>
-                <h2>{place.name} Shore Excursion Filter</h2>
+                <h2>{cleanPlaceName} Shore Excursion Filter</h2>
               </div>
               <span
                 data-testid="lfse-port-excursion-count"
                 style={{ fontSize: "14px", color: "var(--forest)", fontWeight: 700 }}
               >
-                {legacyPortExcursions.length} {place.name}{" "}
+                {legacyPortExcursions.length} {cleanPlaceName}{" "}
                 {legacyPortExcursions.length === 1 ? "excursion" : "excursions"}
               </span>
             </div>
@@ -932,42 +909,52 @@ export default async function PortPage({
         </section>
       )}
 
-      {/* 5. Port, Dock & Cruise Pickup / Drop-Off Guide */}
+      {/* 5. Port, Dock & Cruise Pickup / Drop-Off Guide + Standardized 2-Hour Planning Note */}
       <section
         className="section"
         id="dock-and-pickup-guide"
         style={{
           background: "#ffffff",
           borderTop: "1px solid var(--line)",
-          padding: "36px 0",
         }}
       >
         <div className="shell">
-          <h2>{place.name} Docks, Landings &amp; Cruise Pickup Rules</h2>
+          <h2>{cleanPlaceName} Docks, Landings &amp; Cruise Pickup Rules</h2>
           <p style={{ color: "var(--ink)", maxWidth: 860, fontSize: 15.5 }}>
             {place.portAndDockSummary}
           </p>
-          <div
-            className="callout"
-            style={{ marginTop: 16, marginBottom: 22, background: "#f4f9f9" }}
-          >
+
+          <div className="callout" style={{ marginTop: 16, marginBottom: 18 }}>
             <strong style={{ display: "block", color: "var(--deep)", marginBottom: 4 }}>
-              Independent Excursion Pickup &amp; Drop-Off Logistics ({place.typicalPortHours})
+              Excursion Pickup &amp; Drop-Off Logistics ({place.typicalPortHours})
             </strong>
             <p style={{ margin: 0, fontSize: 14.5, color: "var(--ink)" }}>
-              {place.cruisePickupDropoffNotes}
+              {renderHumanizedPortNotes(place.cruisePickupDropoffNotes)}
             </p>
           </div>
 
-          <div className="grid">
+          <div
+            className="lfse-return-standard-box"
+            data-testid="port-return-timing-standard"
+          >
+            <strong>2-Hour Return Planning Standard:</strong>
+            <p>{STANDARDIZED_TWO_HOUR_PLANNING_NOTE}</p>
+            <p>
+              This two-hour buffer is an independent planning standard—not an operator
+              return guarantee or a cruise-line rule. Always verify three separate times
+              on your ticket: your <strong>operator check-in deadline</strong>, the{" "}
+              <strong>operator or booking-partner cancellation cutoff</strong>, and your{" "}
+              <strong>cruise ship&apos;s published all-aboard time</strong>.
+            </p>
+          </div>
+
+          <div className="lfse-cards-grid" style={{ marginTop: 22 }}>
             {place.docksAndAccessPoints.map((dock) => (
-              <div
-                key={dock.locationId}
-                className="card"
-                style={{ background: "#f8fbfb", border: "1px solid var(--line)" }}
-              >
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
-                  <span className="badge badge-safety">{dock.facilityKind.replace(/_/g, " ")}</span>
+              <div key={dock.locationId} className="card">
+                <div className="lfse-card-meta-row">
+                  <span className="badge badge-safety">
+                    {dock.facilityKind.replace(/_/g, " ")}
+                  </span>
                   <span className="chip">
                     +{dock.additionalTransferMinutesEachWay}m transfer buffer each way
                   </span>
@@ -977,7 +964,7 @@ export default async function PortPage({
                 >
                   {dock.name}
                 </strong>
-                <p style={{ fontSize: "13.5px", color: "var(--muted)", marginTop: 6 }}>
+                <p style={{ fontSize: "13.5px", color: "var(--muted)", marginTop: 6, marginBottom: 0 }}>
                   {dock.shuttleOrWalkNotes}
                 </p>
               </div>
@@ -991,12 +978,12 @@ export default async function PortPage({
         <section
           className="section"
           id="visiting-ships"
-          style={{ background: "#f8fbfb", borderTop: "1px solid var(--line)" }}
+          style={{ borderTop: "1px solid var(--line)" }}
         >
           <div className="shell">
-            <h2>Cruise Ships &amp; Sailings Calling at {place.name}</h2>
+            <h2>Cruise Ships &amp; Sailings Calling at {cleanPlaceName}</h2>
             <p style={{ color: "var(--muted)", maxWidth: 800 }}>
-              Representative ships and call patterns visiting {place.name}, linked to
+              Representative ships and call patterns visiting {cleanPlaceName}, linked to
               ship-window guides:
             </p>
             <div className="table-wrap">
@@ -1045,7 +1032,7 @@ export default async function PortPage({
         </section>
       )}
 
-      {/* 7. Timing-Fit Results for Your Sailing */}
+      {/* 7. Timing-Fit Results & Calculator */}
       <section
         className="section"
         id="sailing-timing-fit"
@@ -1053,7 +1040,7 @@ export default async function PortPage({
       >
         <div className="shell">
           <PortSailingTimingFitPanel
-            portName={place.name}
+            portName={cleanPlaceName}
             docks={place.docksAndAccessPoints}
             tours={canonicalPortTours}
           />
@@ -1071,99 +1058,86 @@ export default async function PortPage({
         </div>
       </section>
 
-      {/* 8. Weather Backup & Official Local Tourism / Harbor Sources */}
+      {/* 8. Weather Reality + Calm "Sources and freshness" Disclosure */}
       <section
         className="section"
-        style={{ background: "#f8fbfb", borderTop: "1px solid var(--line)" }}
+        style={{ borderTop: "1px solid var(--line)" }}
       >
-        <div className="shell">
-          <div className="callout" style={{ marginBottom: 24 }}>
-            <h2 style={{ fontSize: "20px", marginTop: 0 }}>
-              Weather &amp; Operational Reality in {place.name}
+        <div className="shell" style={{ display: "grid", gap: 20 }}>
+          <div className="callout" style={{ margin: 0 }}>
+            <h2 style={{ fontSize: "20px", marginTop: 0, marginBottom: 6 }}>
+              Weather &amp; Backup Planning in {cleanPlaceName}
             </h2>
-            <p style={{ fontSize: "15px", lineHeight: 1.6, marginTop: 8 }}>
+            <p style={{ fontSize: "15px", lineHeight: 1.6 }}>
               {place.weatherBackupAdvice}
             </p>
           </div>
 
-          <div className="card" style={{ background: "#ffffff" }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "baseline",
-                flexWrap: "wrap",
-                gap: 10,
-                marginBottom: 12,
-              }}
-            >
-              <h2 style={{ fontSize: 19, margin: 0 }}>
-                Official {place.name} Tourism, Harbor &amp; Park Sources
-              </h2>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--forest)" }}>
-                {place.verifiedAt
-                  ? `Primary-Source Verified: ${place.verifiedAt}`
-                  : "Verification Status: Held in Research Queue"}
-              </span>
-            </div>
+          <details
+            className="lfse-sources-details"
+            data-testid="port-sources-and-freshness"
+          >
+            <summary>Sources and freshness</summary>
+            <div className="lfse-sources-body">
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+                <strong style={{ color: "var(--deep)" }}>
+                  Official {cleanPlaceName} Tourism, Harbor &amp; Park Sources
+                </strong>
+                {place.verifiedAt ? (
+                  <span className="chip" data-testid="place-last-verified">
+                    Verified {place.verifiedAt}
+                  </span>
+                ) : (
+                  <span className="chip">Verification pending</span>
+                )}
+              </div>
 
-            {place.officialLocalSources.length > 0 ? (
-              <ul style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 8 }}>
-                {place.officialLocalSources.map((src) => (
-                  <li key={src.url} style={{ fontSize: 14 }}>
-                    <a
-                      href={src.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ fontWeight: 700, color: "var(--forest)" }}
-                    >
-                      {src.label} ↗
-                    </a>{" "}
-                    <span style={{ color: "var(--muted)", fontSize: 12.5 }}>
-                      ({src.sourceKind.replace(/_/g, " ")} · checked {src.checkedAt})
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p style={{ margin: 0, fontSize: 14, color: "var(--muted)" }}>
-                Official local visitor sources are queued for primary-source verification.
+              {place.officialLocalSources.length > 0 ? (
+                <ul style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 6 }}>
+                  {place.officialLocalSources.map((src) => (
+                    <li key={src.url}>
+                      <a
+                        href={src.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {src.label} ↗
+                      </a>{" "}
+                      <span>
+                        ({src.sourceKind.replace(/_/g, " ")} · checked {src.checkedAt})
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p style={{ margin: 0 }}>
+                  Official local visitor sources are pending primary-source verification.
+                </p>
+              )}
+
+              <p style={{ margin: 0 }}>
+                <strong>Regional data provenance:</strong> Compiled independently by Last
+                Frontier Shore Excursions with geographic and berth coordinates referenced
+                from{" "}
+                <a
+                  href={DCC_ALASKA_DIRECTORY_API_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Destination Command Center&apos;s Southeast Alaska Regional Directory ↗
+                </a>
+                .
               </p>
-            )}
-          </div>
-        </div>
-      </section>
+            </div>
+          </details>
 
-      {researchQualifications.length > 0 && (
-        <section
-          className="section"
-          style={{
-            background: "#ffffff",
-            borderTop: "1px solid var(--line)",
-            padding: "24px 0",
-          }}
-        >
-          <div className="shell">
+          {researchQualifications.length > 0 && (
             <details
               data-testid="lfse-port-research-methodology-details"
-              style={{
-                background: "#f8fbfb",
-                border: "1px solid var(--line)",
-                borderRadius: 10,
-                padding: "14px 18px",
-              }}
+              className="lfse-sources-details"
             >
-              <summary
-                style={{
-                  cursor: "pointer",
-                  fontWeight: 700,
-                  fontSize: "15px",
-                  color: "var(--deep)",
-                }}
-              >
-                Research &amp; Operator Verification Methodology
-              </summary>
-              <div style={{ marginTop: 14 }}>
+              <summary>Research &amp; Operator Verification Methodology</summary>
+              <div className="lfse-sources-body">
                 <ApprovedResearchQualificationSection
                   portSlug={slug}
                   initialQualifications={researchQualifications}
@@ -1176,9 +1150,9 @@ export default async function PortPage({
                 />
               </div>
             </details>
-          </div>
-        </section>
-      )}
+          )}
+        </div>
+      </section>
     </main>
   );
 }

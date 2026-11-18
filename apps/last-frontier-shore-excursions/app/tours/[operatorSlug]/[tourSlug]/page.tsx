@@ -4,9 +4,20 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { AFFILIATE_CATALOG } from "@/lib/affiliate/catalog";
 import { buildDccHandoffAffiliateUrl } from "@/lib/affiliate/links";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
+import { OperatorIdentityMark } from "@/components/OperatorIdentityMark";
 import { PortSailingTimingFitPanel } from "@/components/PortSailingTimingFitPanel";
 import { JuneauNormalizedSupplierFeedSection } from "@/components/JuneauNormalizedSupplierFeedSection";
+import { JuneauFlightDeckPlanningCallout } from "@/components/JuneauFlightDeckPlanningCallout";
 import { loadLfseJuneauNormalizedSupplierFeed } from "@/lib/dccJuneauSupplierFeed";
+import {
+  formatCleanPlaceBaseName,
+  STANDARDIZED_TWO_HOUR_PLANNING_NOTE,
+} from "@/lib/directoryDisplay";
+import {
+  buildTourDetailJsonLd,
+  DCC_ALASKA_DIRECTORY_API_URL,
+  LFSE_SITE_URL,
+} from "@/lib/structuredData";
 import {
   SOUTHEAST_ALASKA_TOURS,
   findEvaluatedPortCategory,
@@ -16,7 +27,12 @@ import {
   resolveSoutheastAlaskaTourDirectRezgoHref,
 } from "../../../../../../lib/dcc/shared/southeastAlaskaDirectoryOperatorsAndTours";
 
-const SITE = "https://www.lastfrontiershoreexcursions.com";
+const JUNEAU_AVIATION_OPERATORS = new Set([
+  "temsco-helicopters",
+  "coastal-helicopters",
+  "northstar-trekking",
+  "wings-airways",
+]);
 
 export function generateStaticParams() {
   return SOUTHEAST_ALASKA_TOURS.map((tour) => ({
@@ -34,7 +50,6 @@ function resolveTourOrLegacyCatalogItem(operatorSlug: string, tourSlug: string) 
     return { kind: "canonical" as const, tour: canonicalTour };
   }
 
-  // Fallback for any legacy /tours/[company]/[productId] hit against AFFILIATE_CATALOG
   const normItem = tourSlug.trim().toLowerCase();
   const legacyItem = AFFILIATE_CATALOG.find(
     (ex) =>
@@ -62,7 +77,7 @@ export async function generateMetadata({
     return {
       title: `${ex.title} | ${ex.provider} (${ex.portSlug})`,
       description: ex.description,
-      alternates: { canonical: `${SITE}/tours/${operatorSlug}/${tourSlug}` },
+      alternates: { canonical: `${LFSE_SITE_URL}/tours/${operatorSlug}/${tourSlug}` },
     };
   }
 
@@ -73,9 +88,9 @@ export async function generateMetadata({
 
   return {
     title: `${tour.title} | ${tour.operatorName} (${tour.portSlug.toUpperCase()})`,
-    description: `${tour.title} operated by ${tour.operatorName}: ${tour.durationLabel}, ${tour.priceDisplayLabel}, meeting point, and 2-hour cruise all-aboard buffer check.`,
+    description: `${tour.title} operated by ${tour.operatorName}: ${tour.durationLabel}, ${tour.priceDisplayLabel}, meeting point, and two-hour cruise all-aboard buffer check.`,
     alternates: {
-      canonical: `${SITE}/tours/${tour.operatorSlug}/${tour.tourSlug}`,
+      canonical: `${LFSE_SITE_URL}/tours/${tour.operatorSlug}/${tour.tourSlug}`,
     },
     robots: {
       index: indexable,
@@ -84,12 +99,12 @@ export async function generateMetadata({
     openGraph: {
       title: `${tour.title} | ${tour.operatorName}`,
       description: tour.summary,
-      url: `${SITE}/tours/${tour.operatorSlug}/${tour.tourSlug}`,
+      url: `${LFSE_SITE_URL}/tours/${tour.operatorSlug}/${tour.tourSlug}`,
       siteName: "Last Frontier Shore Excursions",
       type: "website",
       images: [
         {
-          url: `${SITE}${tour.image}`,
+          url: `${LFSE_SITE_URL}${tour.image}`,
           width: 1200,
           height: 800,
           alt: tour.imageAlt,
@@ -112,9 +127,7 @@ export default async function TourDetailPage({
 
   if (resolved.kind === "legacy_affiliate") {
     const ex = resolved.legacyItem;
-    const matchedOp = findSoutheastAlaskaOperatorBySlugOrAlias(
-      operatorSlug,
-    );
+    const matchedOp = findSoutheastAlaskaOperatorBySlugOrAlias(operatorSlug);
     const handoffHref = buildDccHandoffAffiliateUrl({
       source: ex.source,
       destinationUrl: ex.officialUrl,
@@ -123,7 +136,7 @@ export default async function TourDetailPage({
     });
     return (
       <main>
-        <section className="port-hero" style={{ padding: "40px 0" }}>
+        <section className="port-hero">
           <div className="shell">
             <nav className="breadcrumbs" aria-label="Breadcrumbs">
               <Link href="/">Home</Link>
@@ -146,7 +159,7 @@ export default async function TourDetailPage({
                 </Link>
               )}
               <Link className="button secondary" href={`/ports/${ex.portSlug}`}>
-                Port Directory
+                Port Guide
               </Link>
               <a
                 className="button"
@@ -166,7 +179,6 @@ export default async function TourDetailPage({
 
   const { tour } = resolved;
 
-  // Redirect legacy /tours/[company]/[item] alias to canonical /tours/[operatorSlug]/[tourSlug]
   if (
     operatorSlug.trim().toLowerCase() !== tour.operatorSlug ||
     tourSlug.trim().toLowerCase() !== tour.tourSlug
@@ -181,10 +193,17 @@ export default async function TourDetailPage({
     tour.categorySlug,
   );
 
-  const portName = placeEntry?.place.name || tour.portSlug;
+  const portName = placeEntry
+    ? formatCleanPlaceBaseName(placeEntry.place.name)
+    : tour.portSlug;
   const categoryLabel =
     portCategoryBundle?.category.shortLabel ||
     tour.categorySlug.replace(/-/g, " ");
+
+  const isJuneauAviationTour =
+    tour.portSlug === "juneau" &&
+    (tour.categorySlug === "helicopter-glacier-tours" ||
+      JUNEAU_AVIATION_OPERATORS.has(tour.operatorSlug));
 
   const juneauFeed = tour.authorizedSupplierBinding
     ? await loadLfseJuneauNormalizedSupplierFeed({
@@ -232,45 +251,17 @@ export default async function TourDetailPage({
         })
       : tour.officialProductUrl;
 
-  // Truthful WebPage + BreadcrumbList JSON-LD (Offer/price/Review/AggregateRating disabled per policy)
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": `${SITE}/tours/${tour.operatorSlug}/${tour.tourSlug}#webpage`,
-        url: `${SITE}/tours/${tour.operatorSlug}/${tour.tourSlug}`,
-        name: `${tour.title} — ${tour.operatorName}`,
-        description: tour.summary,
-        isPartOf: { "@id": `${SITE}/#website` },
-        ...(tour.verifiedAt ? { dateModified: tour.lastModifiedAt } : {}),
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: portName,
-            item: `${SITE}/ports/${tour.portSlug}`,
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: tour.operatorName,
-            item: `${SITE}/operators/${tour.operatorSlug}`,
-          },
-          {
-            "@type": "ListItem",
-            position: 4,
-            name: tour.title,
-            item: `${SITE}/tours/${tour.operatorSlug}/${tour.tourSlug}`,
-          },
-        ],
-      },
-    ],
-  };
+  const jsonLd = buildTourDetailJsonLd({
+    operatorSlug: tour.operatorSlug,
+    operatorName: tour.operatorName,
+    operatorOfficialWebsite: operatorEntry?.operator.officialWebsite,
+    tourSlug: tour.tourSlug,
+    tourTitle: tour.title,
+    summary: tour.summary,
+    portSlug: tour.portSlug,
+    portName,
+    lastModifiedAt: tour.lastModifiedAt,
+  });
 
   return (
     <main>
@@ -290,7 +281,7 @@ export default async function TourDetailPage({
         >
           <div className="shell">
             <strong style={{ color: "#7a4500" }}>
-              Held Excursion Record (Unindexed · noindex, follow):
+              Held Excursion Record (noindex, follow):
             </strong>{" "}
             <span style={{ fontSize: 14, color: "#5c3b09" }}>
               {tour.commercialHoldReason ||
@@ -300,7 +291,7 @@ export default async function TourDetailPage({
         </section>
       )}
 
-      <section className="port-hero" style={{ padding: "40px 0 36px" }}>
+      <section className="port-hero">
         <div className="shell">
           <nav className="breadcrumbs" aria-label="Breadcrumbs">
             <Link href="/">Home</Link>
@@ -315,21 +306,18 @@ export default async function TourDetailPage({
               <span>{categoryLabel}</span>
             )}
             <span>›</span>
-            <Link href={`/operators/${tour.operatorSlug}`}>{tour.operatorName}</Link>
+            {operatorEntry?.gate.indexable ? (
+              <Link href={`/operators/${tour.operatorSlug}`}>{tour.operatorName}</Link>
+            ) : (
+              <span>{tour.operatorName}</span>
+            )}
             <span>›</span>
             <span>{tour.title}</span>
           </nav>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-              gap: 32,
-              alignItems: "center",
-            }}
-          >
+          <div className="lfse-split-hero">
             <div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+              <div className="lfse-card-meta-row">
                 <span className="badge badge-safety">{tour.durationLabel}</span>
                 <span className="chip">{tour.priceDisplayLabel}</span>
                 <span className="chip">
@@ -340,7 +328,7 @@ export default async function TourDetailPage({
                 </span>
               </div>
 
-              <h1 style={{ marginTop: 4, marginBottom: 10 }}>{tour.title}</h1>
+              <h1>{tour.title}</h1>
               <p
                 style={{
                   fontSize: 15,
@@ -351,12 +339,16 @@ export default async function TourDetailPage({
                 }}
               >
                 Operated by{" "}
-                <Link href={`/operators/${tour.operatorSlug}`}>
-                  {tour.operatorName}
-                </Link>{" "}
+                {operatorEntry?.gate.indexable ? (
+                  <Link href={`/operators/${tour.operatorSlug}`}>
+                    {tour.operatorName}
+                  </Link>
+                ) : (
+                  <span>{tour.operatorName}</span>
+                )}{" "}
                 in <Link href={`/ports/${tour.portSlug}`}>{portName}, Alaska</Link>
               </p>
-              <p className="lead" style={{ color: "#485b63", marginBottom: 20 }}>
+              <p className="lead" style={{ color: "#42555d", marginBottom: 20 }}>
                 {tour.summary}
               </p>
 
@@ -388,14 +380,16 @@ export default async function TourDetailPage({
                     Check Live Port-Day Times ↓
                   </a>
                 )}
-                <Link
-                  className="button secondary"
-                  href={`/operators/${tour.operatorSlug}`}
-                >
-                  Operator Profile
-                </Link>
+                {operatorEntry?.gate.indexable && (
+                  <Link
+                    className="button secondary"
+                    href={`/operators/${tour.operatorSlug}`}
+                  >
+                    Operator Profile
+                  </Link>
+                )}
                 <Link className="button secondary" href={`/ports/${tour.portSlug}`}>
-                  {portName} Port Guide
+                  {`${portName} Port Guide`}
                 </Link>
               </div>
               <TrustDisclosure compact />
@@ -404,12 +398,12 @@ export default async function TourDetailPage({
             <div
               style={{
                 position: "relative",
-                borderRadius: 14,
+                borderRadius: 16,
                 overflow: "hidden",
                 border: "1px solid var(--line)",
                 boxShadow: "var(--card-shadow)",
                 aspectRatio: "16 / 10",
-                background: "#eef5f6",
+                background: "var(--ice)",
               }}
             >
               <img
@@ -420,26 +414,13 @@ export default async function TourDetailPage({
                 loading="eager"
                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
               />
-              <span
-                style={{
-                  position: "absolute",
-                  bottom: 8,
-                  right: 10,
-                  background: "rgba(14, 26, 31, 0.75)",
-                  color: "#fff",
-                  fontSize: 11,
-                  padding: "3px 8px",
-                  borderRadius: 4,
-                }}
-              >
-                {tour.imageCredit}
-              </span>
+              <span className="lfse-card-credit">{tour.imageCredit}</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Upward Knowledge Graph Connections */}
+      {/* Operator, Port & Category Attribution Cards */}
       <section
         className="section"
         data-testid="tour-upward-connections"
@@ -450,32 +431,36 @@ export default async function TourDetailPage({
         }}
       >
         <div className="shell">
-          <div
-            className="grid"
-            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}
-          >
-            <div className="card" style={{ background: "#f8fbfb" }}>
+          <div className="lfse-cards-grid">
+            <div className="card">
               <span className="badge badge-safety" style={{ alignSelf: "flex-start" }}>
                 Local Operator
               </span>
-              <h2 style={{ fontSize: 18, margin: "8px 0 6px" }}>
-                <Link href={`/operators/${tour.operatorSlug}`}>
-                  {tour.operatorName} →
-                </Link>
-              </h2>
+              <div className="lfse-operator-card-heading" style={{ marginTop: 10 }}>
+                <OperatorIdentityMark name={tour.operatorName} size="md" />
+                <h2 style={{ fontSize: 18, margin: 0 }}>
+                  {operatorEntry?.gate.indexable ? (
+                    <Link href={`/operators/${tour.operatorSlug}`}>
+                      {tour.operatorName} →
+                    </Link>
+                  ) : (
+                    <span>{tour.operatorName}</span>
+                  )}
+                </h2>
+              </div>
               <p style={{ margin: 0, fontSize: 13.5, color: "var(--muted)" }}>
                 {operatorEntry?.operator.tagline ||
-                  "View company background, dock pickup rules, and policies."}
+                  "View company background, dock pickup rules, and passenger policies."}
               </p>
             </div>
 
-            <div className="card" style={{ background: "#f8fbfb" }}>
+            <div className="card">
               <span className="badge badge-safety" style={{ alignSelf: "flex-start" }}>
                 Port &amp; Community
               </span>
-              <h2 style={{ fontSize: 18, margin: "8px 0 6px" }}>
+              <h2 style={{ fontSize: 18, margin: "10px 0 6px" }}>
                 <Link href={`/ports/${tour.portSlug}`}>
-                  {portName} Port Directory →
+                  {portName} Port Guide →
                 </Link>
               </h2>
               <p style={{ margin: 0, fontSize: 13.5, color: "var(--muted)" }}>
@@ -483,11 +468,11 @@ export default async function TourDetailPage({
               </p>
             </div>
 
-            <div className="card" style={{ background: "#f8fbfb" }}>
+            <div className="card">
               <span className="badge badge-safety" style={{ alignSelf: "flex-start" }}>
                 Category Comparison
               </span>
-              <h2 style={{ fontSize: 18, margin: "8px 0 6px" }}>
+              <h2 style={{ fontSize: 18, margin: "10px 0 6px" }}>
                 <Link
                   href={
                     portCategoryBundle?.gate.indexable
@@ -506,7 +491,7 @@ export default async function TourDetailPage({
                     (Also listed in{" "}
                     <Link
                       href={tour.legacyPortActivityHref}
-                      style={{ fontWeight: 700, color: "var(--forest)" }}
+                      style={{ fontWeight: 700, color: "var(--forest)", textDecoration: "underline" }}
                     >
                       port-window activity guide
                     </Link>
@@ -516,6 +501,13 @@ export default async function TourDetailPage({
               </p>
             </div>
           </div>
+
+          {isJuneauAviationTour && (
+            <JuneauFlightDeckPlanningCallout
+              heading="Juneau Glacier Flight Weather, Weight Rules & Backup Plans"
+              contextLabel="Juneau Flight Deck · Aviation Planning Guides"
+            />
+          )}
         </div>
       </section>
 
@@ -533,17 +525,11 @@ export default async function TourDetailPage({
       )}
 
       {/* Logistics, Pickup, Accessibility & Weight/Age */}
-      <section className="section" style={{ background: "#f8fbfb" }}>
+      <section className="section">
         <div className="shell">
           <h2>Cruise Pickup, Departures &amp; Passenger Requirements</h2>
-          <div
-            className="grid"
-            style={{
-              marginTop: 18,
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            }}
-          >
-            <div className="card" style={{ background: "#ffffff" }}>
+          <div className="lfse-cards-grid" style={{ marginTop: 18 }}>
+            <div className="card">
               <h3 style={{ fontSize: 17, marginTop: 0 }}>
                 Meeting Point &amp; Cruise Pickup
               </h3>
@@ -555,13 +541,13 @@ export default async function TourDetailPage({
               </p>
             </div>
 
-            <div className="card" style={{ background: "#ffffff" }}>
+            <div className="card">
               <h3 style={{ fontSize: 17, marginTop: 0 }}>
                 Schedule &amp; Return Buffer
               </h3>
               <p style={{ fontSize: 14, color: "var(--ink)", marginBottom: 8 }}>
                 <strong>Typical Departures:</strong>{" "}
-                {tour.typicalDepartureTimes.join(", ")}
+                {tour.typicalDepartureTimes.join(", ") || "Check operator calendar"}
               </p>
               <p style={{ fontSize: 14, color: "var(--muted)", margin: 0 }}>
                 Includes +{tour.transferBufferMinutesEachWay}m pier transfer allowance
@@ -570,7 +556,7 @@ export default async function TourDetailPage({
               </p>
             </div>
 
-            <div className="card" style={{ background: "#ffffff" }}>
+            <div className="card">
               <h3 style={{ fontSize: 17, marginTop: 0 }}>
                 Mobility, Weight &amp; Age Policies
               </h3>
@@ -583,8 +569,18 @@ export default async function TourDetailPage({
             </div>
           </div>
 
+          <div className="lfse-return-standard-box" style={{ marginTop: 22 }}>
+            <strong>2-Hour Return Planning Standard:</strong>
+            <p>
+              {STANDARDIZED_TWO_HOUR_PLANNING_NOTE} This is an independent planning
+              standard—not an operator guarantee or cruise-line rule. Confirm your
+              operator&apos;s check-in deadline, cancellation cutoff, and your ship&apos;s
+              published all-aboard time separately.
+            </p>
+          </div>
+
           {placeEntry && !tour.isCommerciallyHeld && (
-            <div style={{ marginTop: 28 }}>
+            <div style={{ marginTop: 26 }}>
               <PortSailingTimingFitPanel
                 portName={portName}
                 docks={placeEntry.place.docksAndAccessPoints}
@@ -592,6 +588,44 @@ export default async function TourDetailPage({
               />
             </div>
           )}
+
+          <div style={{ marginTop: 24 }}>
+            <details
+              className="lfse-sources-details"
+              data-testid="tour-sources-and-freshness"
+            >
+              <summary>Sources and freshness</summary>
+              <div className="lfse-sources-body">
+                <p style={{ margin: 0 }}>
+                  <strong>Last verified:</strong>{" "}
+                  {tour.verifiedAt || "Pending verification"}. Departure windows, meeting
+                  points, and passenger restrictions are compiled from{" "}
+                  {tour.officialProductUrl ? (
+                    <a
+                      href={tour.officialProductUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {tour.operatorName}&apos;s official product schedule ↗
+                    </a>
+                  ) : (
+                    `${tour.operatorName}'s published schedule`
+                  )}{" "}
+                  and municipal harbor berth guides.
+                </p>
+                <p style={{ margin: 0 }}>
+                  <strong>Regional data provenance:</strong>{" "}
+                  <a
+                    href={DCC_ALASKA_DIRECTORY_API_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Destination Command Center Southeast Alaska Regional Directory ↗
+                  </a>
+                </p>
+              </div>
+            </details>
+          </div>
         </div>
       </section>
     </main>

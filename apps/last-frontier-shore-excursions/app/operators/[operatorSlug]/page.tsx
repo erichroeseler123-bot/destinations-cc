@@ -5,9 +5,21 @@ import { buildDccHandoffAffiliateUrl } from "@/lib/affiliate/links";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 import { OperatorProfileClaimPanel } from "@/components/OperatorProfileClaimPanel";
 import { OperatorEntityReviewsTabs } from "@/components/OperatorEntityReviewsTabs";
+import { OperatorIdentityMark } from "@/components/OperatorIdentityMark";
 import { JuneauNormalizedSupplierFeedSection } from "@/components/JuneauNormalizedSupplierFeedSection";
+import { JuneauFlightDeckPlanningCallout } from "@/components/JuneauFlightDeckPlanningCallout";
 import { loadLfseJuneauNormalizedSupplierFeed } from "@/lib/dccJuneauSupplierFeed";
 import {
+  formatCleanPlaceBaseName,
+  STANDARDIZED_TWO_HOUR_PLANNING_NOTE,
+} from "@/lib/directoryDisplay";
+import {
+  buildOperatorProfileJsonLd,
+  DCC_ALASKA_DIRECTORY_API_URL,
+  LFSE_SITE_URL,
+} from "@/lib/structuredData";
+import {
+  UNCLAIMED_OPERATOR_PROFILE_NOTICE,
   isOperatorDirectCheckoutConnected,
   isOperatorLiveAvailabilityConnected,
 } from "../../../../../lib/dcc/shared/southeastAlaskaDirectoryContract";
@@ -17,8 +29,6 @@ import {
   getSoutheastAlaskaDirectorySnapshot,
   resolveSoutheastAlaskaTourDirectRezgoHref,
 } from "../../../../../lib/dcc/shared/southeastAlaskaDirectoryOperatorsAndTours";
-
-const SITE = "https://www.lastfrontiershoreexcursions.com";
 
 export function generateStaticParams() {
   return SOUTHEAST_ALASKA_OPERATORS.map((op) => ({ operatorSlug: op.slug }));
@@ -40,7 +50,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: `${SITE}/operators/${operator.slug}` },
+    alternates: { canonical: `${LFSE_SITE_URL}/operators/${operator.slug}` },
     robots: {
       index: gate.indexable,
       follow: true,
@@ -48,12 +58,12 @@ export async function generateMetadata({
     openGraph: {
       title: `${operator.name} | Last Frontier Shore Excursions`,
       description,
-      url: `${SITE}/operators/${operator.slug}`,
+      url: `${LFSE_SITE_URL}/operators/${operator.slug}`,
       siteName: "Last Frontier Shore Excursions",
       type: "website",
       images: [
         {
-          url: `${SITE}${operator.heroImage}`,
+          url: `${LFSE_SITE_URL}${operator.heroImage}`,
           width: 1200,
           height: 800,
           alt: operator.heroImageAlt,
@@ -76,7 +86,6 @@ export default async function OperatorProfilePage({
 
   const { operator, tours, gate } = entry;
 
-  // Redirect legacy FareHarbor shortname alias to canonical /operators/[slug]
   if (operatorSlug.trim().toLowerCase() !== operator.slug) {
     permanentRedirect(`/operators/${operator.slug}`);
   }
@@ -111,57 +120,20 @@ export default async function OperatorProfilePage({
     operator.publicPortSlugs.includes("juneau") &&
     operator.categorySlugs.includes("helicopter-glacier-tours");
 
-  // JSON-LD: Truthful Organization + BreadcrumbList (NO automatic Offer, Review, or AggregateRating!)
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": `${SITE}/operators/${operator.slug}#webpage`,
-        url: `${SITE}/operators/${operator.slug}`,
-        name: `${operator.name} — Southeast Alaska Operator Profile`,
-        description: operator.tagline,
-        isPartOf: { "@id": `${SITE}/#website` },
-        ...(operator.verifiedAt ? { dateModified: operator.lastModifiedAt } : {}),
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Southeast Alaska",
-            item: `${SITE}/southeast-alaska`,
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: "Local Operators",
-            item: `${SITE}/operators`,
-          },
-          {
-            "@type": "ListItem",
-            position: 4,
-            name: operator.name,
-            item: `${SITE}/operators/${operator.slug}`,
-          },
-        ],
-      },
-      {
-        "@type": "LocalBusiness",
-        "@id": `${SITE}/operators/${operator.slug}#operator`,
-        name: operator.name,
-        description: operator.companyOverview,
-        ...(operator.officialWebsite ? { sameAs: [operator.officialWebsite] } : {}),
-        ...(operator.officialPhone ? { telephone: operator.officialPhone } : {}),
-        areaServed: servedPlaces.map(({ place }) => ({
-          "@type": "Place",
-          name: `${place.name}, Alaska`,
-        })),
-      },
-    ],
-  };
+  const verifiedTours = tours.filter((t) => !t.isCommerciallyHeld);
+
+  const jsonLd = buildOperatorProfileJsonLd({
+    slug: operator.slug,
+    name: operator.name,
+    tagline: operator.tagline,
+    companyOverview: operator.companyOverview,
+    officialWebsite: operator.officialWebsite,
+    officialPhone: operator.officialPhone,
+    servedPlaceNames: servedPlaces.map(({ place }) =>
+      formatCleanPlaceBaseName(place.name),
+    ),
+    lastModifiedAt: operator.lastModifiedAt,
+  });
 
   return (
     <main>
@@ -182,7 +154,7 @@ export default async function OperatorProfilePage({
         >
           <div className="shell">
             <strong style={{ color: "#7a4500" }}>
-              Operator Research Queue Record (Unindexed · noindex, follow):
+              Unindexed Operator Record (noindex, follow):
             </strong>{" "}
             <span style={{ fontSize: 14, color: "#5c3b09" }}>
               {gate.holdDetails.join(" ")}
@@ -191,8 +163,8 @@ export default async function OperatorProfilePage({
         </section>
       )}
 
-      {/* 1. Operator Hero */}
-      <section className="port-hero" style={{ padding: "40px 0 36px" }}>
+      {/* 1. Operator Hero — Overview, Neutral Monogram & Primary Traveler Actions First */}
+      <section className="port-hero">
         <div className="shell">
           <nav className="breadcrumbs" aria-label="Breadcrumbs">
             <Link href="/">Home</Link>
@@ -204,16 +176,14 @@ export default async function OperatorProfilePage({
             <span>{operator.name}</span>
           </nav>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-              gap: 32,
-              alignItems: "center",
-            }}
-          >
+          <div className="lfse-split-hero">
             <div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+              <div className="lfse-card-meta-row">
+                {verifiedLiveAvail && verifiedDirectCheckout && (
+                  <span className="badge badge-safety">
+                    Live Availability + Direct Checkout
+                  </span>
+                )}
                 {operator.verifiedOwnershipBadges.map((badge) => (
                   <a
                     key={badge.tag}
@@ -229,27 +199,45 @@ export default async function OperatorProfilePage({
                 {operator.yearEstablished && (
                   <span className="chip">Est. {operator.yearEstablished}</span>
                 )}
-                {operator.verifiedAt && (
-                  <span className="chip" data-testid="operator-last-verified">
-                    Last verified: {operator.verifiedAt}
-                  </span>
-                )}
               </div>
 
-              <h1 style={{ marginTop: 4, marginBottom: 10 }}>{operator.name}</h1>
-              <p className="lead" style={{ color: "#485b63", marginBottom: 14 }}>
+              <div className="lfse-operator-hero-heading">
+                <OperatorIdentityMark name={operator.name} size="lg" />
+                <h1>{operator.name}</h1>
+              </div>
+
+              <p className="lead" style={{ color: "#42555d", marginBottom: 12 }}>
                 {operator.tagline}
               </p>
-              <p style={{ fontSize: 15, color: "var(--muted)", marginBottom: 20 }}>
+              <p style={{ fontSize: 15, color: "var(--muted)", marginBottom: 14 }}>
                 {operator.companyOverview}
               </p>
 
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "var(--muted)",
+                  margin: "0 0 18px",
+                  padding: "8px 12px",
+                  borderRadius: 10,
+                  background: "rgba(255, 255, 255, 0.72)",
+                  border: "1px solid var(--line)",
+                }}
+              >
+                {operator.claimStatus === "claimed_verified"
+                  ? `${operator.name} has verified ownership of this company profile.`
+                  : UNCLAIMED_OPERATOR_PROFILE_NOTICE}
+              </p>
+
               <div className="cta-row">
-                {tours.length > 0 && (
+                {verifiedTours.length > 0 && (
                   <a className="button" href="#operator-tours">
-                    View {operator.name} Tours ({tours.length}) ↓
+                    {`View ${operator.name} Tours (${verifiedTours.length}) ↓`}
                   </a>
                 )}
+                <a className="button secondary" href="#pickup-and-policies">
+                  Cruise Pickup &amp; Policies
+                </a>
                 {operator.officialWebsite && (
                   <a
                     className="button secondary"
@@ -260,9 +248,6 @@ export default async function OperatorProfilePage({
                     Official Website ↗
                   </a>
                 )}
-                <a className="button secondary" href="#claim-operator-profile">
-                  Claim Free Profile
-                </a>
               </div>
               <TrustDisclosure compact />
             </div>
@@ -270,12 +255,12 @@ export default async function OperatorProfilePage({
             <div
               style={{
                 position: "relative",
-                borderRadius: 14,
+                borderRadius: 16,
                 overflow: "hidden",
                 border: "1px solid var(--line)",
                 boxShadow: "var(--card-shadow)",
                 aspectRatio: "16 / 10",
-                background: "#eef5f6",
+                background: "var(--ice)",
               }}
             >
               <img
@@ -286,37 +271,24 @@ export default async function OperatorProfilePage({
                 loading="eager"
                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
               />
-              <span
-                style={{
-                  position: "absolute",
-                  bottom: 8,
-                  right: 10,
-                  background: "rgba(14, 26, 31, 0.75)",
-                  color: "#fff",
-                  fontSize: 11,
-                  padding: "3px 8px",
-                  borderRadius: 4,
-                }}
-              >
-                {operator.heroImageCredit}
-              </span>
+              <span className="lfse-card-credit">{operator.heroImageCredit}</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Separate-Entity Governance Note (e.g., Alaska Travel Adventures vs. Gastineau Guiding) */}
+      {/* Separate-Entity Note (e.g., Alaska Travel Adventures vs. Gastineau Guiding) */}
       {operator.separationGovernanceNote && (
         <section
           data-testid="operator-separation-note"
           style={{
-            background: "#f4f9f9",
+            background: "#eef5f5",
             borderBottom: "1px solid var(--line)",
-            padding: "16px 0",
+            padding: "14px 0",
           }}
         >
           <div className="shell">
-            <strong style={{ color: "var(--deep)" }}>Independent Entity Note:</strong>{" "}
+            <strong style={{ color: "var(--deep)" }}>Independent Company Note:</strong>{" "}
             <span style={{ fontSize: 14.5, color: "var(--ink)" }}>
               {operator.separationGovernanceNote}
             </span>
@@ -324,7 +296,7 @@ export default async function OperatorProfilePage({
         </section>
       )}
 
-      {/* 2. Communities Served, Categories & Connection Status */}
+      {/* 2. Port & Harbor Pickup Context + Categories Served */}
       <section
         className="section"
         style={{
@@ -334,20 +306,17 @@ export default async function OperatorProfilePage({
         }}
       >
         <div className="shell">
-          <div
-            className="grid"
-            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}
-          >
-            <div className="card" style={{ background: "#f8fbfb" }}>
+          <div className="lfse-cards-grid">
+            <div className="card">
               <strong
                 style={{
-                  fontSize: 12.5,
+                  fontSize: 12,
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
                   color: "var(--muted)",
                 }}
               >
-                Towns, Terminals &amp; Harbors Served
+                Ports, Terminals &amp; Harbors Served
               </strong>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
                 {servedPlaces.map(({ place, gate: placeGate }) =>
@@ -357,27 +326,43 @@ export default async function OperatorProfilePage({
                       href={`/ports/${place.publicPortSlug}`}
                       className="button small secondary"
                     >
-                      {place.name} ({place.placeType.replace(/_/g, " ")})
+                      {formatCleanPlaceBaseName(place.name)}
                     </Link>
                   ) : (
                     <span key={place.placeId} className="chip">
-                      {place.name}
+                      {formatCleanPlaceBaseName(place.name)}
                     </span>
                   ),
                 )}
               </div>
             </div>
 
-            <div className="card" style={{ background: "#f8fbfb" }}>
+            <div className="card">
               <strong
                 style={{
-                  fontSize: 12.5,
+                  fontSize: 12,
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
                   color: "var(--muted)",
                 }}
               >
-                Excursion Categories
+                Cruise Pier &amp; Harbor Pickup Summary
+              </strong>
+              <p style={{ margin: "10px 0 0", fontSize: 14, color: "var(--ink)" }}>
+                {operator.cruiseLogisticsSummary}
+              </p>
+            </div>
+
+            <div className="card">
+              <strong
+                style={{
+                  fontSize: 12,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  color: "var(--muted)",
+                }}
+              >
+                Excursion Categories &amp; Direct Contact
               </strong>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
                 {operator.categorySlugs.map((catSlug) => {
@@ -392,8 +377,7 @@ export default async function OperatorProfilePage({
                     <Link
                       key={catSlug}
                       href={`/ports/${qualifiedPc.portSlug}/${catSlug}`}
-                      className="chip"
-                      style={{ fontWeight: 700, color: "var(--forest)" }}
+                      className="chip lfse-chip-link"
                     >
                       {cat?.shortLabel || catSlug}
                     </Link>
@@ -404,88 +388,19 @@ export default async function OperatorProfilePage({
                   );
                 })}
               </div>
-            </div>
-
-            <div
-              className="card"
-              style={{ background: "#f8fbfb" }}
-              data-testid="operator-integration-status-card"
-            >
-              <strong
-                style={{
-                  fontSize: 12.5,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  color: "var(--muted)",
-                }}
-              >
-                Contact, Platform &amp; Integration Status
-              </strong>
-              <ul
-                style={{
-                  margin: "10px 0 0",
-                  paddingLeft: 18,
-                  fontSize: 13.5,
-                  display: "grid",
-                  gap: 5,
-                }}
-              >
-                {operator.officialPhone && (
-                  <li>
-                    <strong>Phone:</strong> {operator.officialPhone}
-                  </li>
-                )}
-                <li>
-                  <strong>Reservation Platform:</strong> {operator.bookingPlatform}
-                </li>
-                <li>
-                  <strong>Live Availability API:</strong>{" "}
-                  {verifiedLiveAvail
-                    ? "Connected (Authorized Rezgo Live Feed)"
-                    : "Not yet connected"}
-                </li>
-                <li>
-                  <strong>Direct Checkout:</strong>{" "}
-                  {verifiedDirectCheckout
-                    ? `Connected (Direct Checkout with ${operator.name} · Supplier-Hosted Rezgo)`
-                    : "Not connected (Official Site / Partner Reference)"}
-                </li>
-                {verifiedDirectCheckout && (
-                  <li>
-                    <strong>Commercial Settlement:</strong> {operator.name} is Merchant of
-                    Record (supplier-hosted payment; 10% post-completion invoicing)
-                  </li>
-                )}
-              </ul>
+              {operator.officialPhone && (
+                <p style={{ margin: "10px 0 0", fontSize: 13.5, color: "var(--ink)" }}>
+                  <strong>Operator Phone:</strong> {operator.officialPhone}
+                </p>
+              )}
             </div>
           </div>
 
           {isJuneauAviation && (
-            <div
-              className="card"
-              style={{
-                marginTop: 18,
-                background: "#eef6fb",
-                border: "1px solid #bcd8ec",
-              }}
-            >
-              <span className="badge badge-safety" style={{ alignSelf: "flex-start" }}>
-                Juneau Aviation Weather &amp; Ceiling Resource
-              </span>
-              <p style={{ margin: "6px 0 0", fontSize: 14, color: "var(--ink)" }}>
-                Planning a Juneau glacier flight with {operator.name}? Check{" "}
-                <a
-                  href="https://juneauflightdeck.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ fontWeight: 700, color: "var(--forest)" }}
-                >
-                  Juneau Flight Deck (juneauflightdeck.com) ↗
-                </a>{" "}
-                for cloud-ceiling guidance, morning vs. afternoon visibility tips, and
-                specialist flight-desk coordination.
-              </p>
-            </div>
+            <JuneauFlightDeckPlanningCallout
+              heading={`Planning a Juneau Flight with ${operator.name}?`}
+              contextLabel="Juneau Flight Deck · Aviation Weather & Weight Guides"
+            />
           )}
         </div>
       </section>
@@ -497,25 +412,25 @@ export default async function OperatorProfilePage({
         </div>
       )}
 
-      {/* 3. Tour Lineup */}
+      {/* 3. Verified Tour Lineup */}
       <section
         className="section"
         id="operator-tours"
-        style={{ background: "#f8fbfb", borderBottom: "1px solid var(--line)" }}
+        style={{ borderBottom: "1px solid var(--line)" }}
       >
         <div className="shell">
           <h2>{operator.name} Excursion Lineup</h2>
-          {tours.length === 0 ? (
-            <div className="card" style={{ background: "#ffffff", marginTop: 16 }}>
+          {verifiedTours.length === 0 ? (
+            <div className="card" style={{ marginTop: 16 }}>
               <p style={{ margin: 0, fontSize: 14.5, color: "var(--muted)" }}>
-                Individual excursion records for {operator.name} are currently held in
-                our verification queue until standalone departure times and pier pickup
-                rules are primary-source confirmed.
+                Standalone excursion schedules for {operator.name} are currently pending
+                current-season schedule verification. Visit the official operator website
+                above for direct inquiries.
               </p>
             </div>
           ) : (
-            <div className="grid" style={{ marginTop: 18 }}>
-              {tours.map((tour) => {
+            <div className="lfse-cards-grid" style={{ marginTop: 18 }}>
+              {verifiedTours.map((tour) => {
                 const matchedLiveRezgoTour =
                   verifiedLiveAvail && tour.authorizedSupplierBinding
                     ? juneauFeed?.tours.find(
@@ -554,40 +469,33 @@ export default async function OperatorProfilePage({
                 return (
                   <div
                     key={tour.tourId}
-                    className="card"
-                    style={{
-                      background: "#ffffff",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                    }}
+                    className="card lfse-directory-card"
                   >
                     <div>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+                      <div className="lfse-card-meta-row">
                         <span className="badge badge-safety">{tour.durationLabel}</span>
                         <span className="chip">{tour.priceDisplayLabel}</span>
-                        <Link href={`/ports/${tour.portSlug}`} className="chip">
-                          Port: {tour.portSlug}
+                        <Link
+                          href={`/ports/${tour.portSlug}`}
+                          className="chip lfse-chip-link"
+                        >
+                          {tour.portSlug}
                         </Link>
                       </div>
                       <h3 style={{ marginTop: 4, marginBottom: 6 }}>
-                        {!tour.isCommerciallyHeld ? (
-                          <Link
-                            href={`/tours/${operator.slug}/${tour.tourSlug}`}
-                            style={{ color: "var(--deep)" }}
-                          >
-                            {tour.title}
-                          </Link>
-                        ) : (
-                          <span>{tour.title}</span>
-                        )}
+                        <Link
+                          href={`/tours/${operator.slug}/${tour.tourSlug}`}
+                          style={{ color: "var(--deep)" }}
+                        >
+                          {tour.title}
+                        </Link>
                       </h3>
                       <p style={{ fontSize: 14, color: "var(--muted)", marginBottom: 10 }}>
                         {tour.summary}
                       </p>
                       <p style={{ fontSize: 13, color: "var(--ink)", margin: "0 0 6px" }}>
                         <strong>Typical Departures:</strong>{" "}
-                        {tour.typicalDepartureTimes.join(", ") || "Pending verification"}
+                        {tour.typicalDepartureTimes.join(", ") || "Check operator calendar"}
                       </p>
                       <p style={{ fontSize: 13, color: "var(--ink)", margin: 0 }}>
                         <strong>Meeting Point:</strong> {tour.meetingPoint}
@@ -595,45 +503,35 @@ export default async function OperatorProfilePage({
                     </div>
 
                     <div
+                      className="lfse-card-footer"
                       style={{
-                        marginTop: 14,
-                        paddingTop: 12,
-                        borderTop: "1px solid var(--line)",
                         display: "flex",
                         gap: 10,
                         flexWrap: "wrap",
                       }}
                     >
-                      {!tour.isCommerciallyHeld && (
-                        <Link
-                          className="button small secondary"
-                          href={`/tours/${operator.slug}/${tour.tourSlug}`}
-                        >
-                          Full Tour &amp; Buffer Page
-                        </Link>
-                      )}
-                      {!tour.isCommerciallyHeld ? (
-                        <a
-                          className="button small"
-                          href={bookingHref}
-                          target="_blank"
-                          rel={
-                            isViatorFallback
-                              ? "noopener noreferrer sponsored"
-                              : "noopener noreferrer"
-                          }
-                        >
-                          {directRezgoHref
-                            ? `Direct Checkout with ${operator.name} ↗`
-                            : isViatorFallback
-                              ? "Check Partner Availability ↗"
-                              : "Official Tour Page ↗"}
-                        </a>
-                      ) : (
-                        <span className="badge badge-warning">
-                          Checkout Held Pending Verification
-                        </span>
-                      )}
+                      <Link
+                        className="button small secondary"
+                        href={`/tours/${operator.slug}/${tour.tourSlug}`}
+                      >
+                        Full Tour &amp; Buffer Page
+                      </Link>
+                      <a
+                        className="button small"
+                        href={bookingHref}
+                        target="_blank"
+                        rel={
+                          isViatorFallback
+                            ? "noopener noreferrer sponsored"
+                            : "noopener noreferrer"
+                        }
+                      >
+                        {directRezgoHref
+                          ? `Direct Checkout with ${operator.name} ↗`
+                          : isViatorFallback
+                            ? "Check Partner Availability ↗"
+                            : "Official Tour Page ↗"}
+                      </a>
                     </div>
                   </div>
                 );
@@ -646,6 +544,7 @@ export default async function OperatorProfilePage({
       {/* 4. Cruise Dock Pickup Rules, Accessibility & Weight/Age Policies */}
       <section
         className="section"
+        id="pickup-and-policies"
         style={{ background: "#ffffff", borderBottom: "1px solid var(--line)" }}
       >
         <div className="shell">
@@ -655,7 +554,7 @@ export default async function OperatorProfilePage({
           </p>
 
           {operator.dockPickupRules.length > 0 && (
-            <div className="table-wrap" style={{ marginTop: 16, marginBottom: 24 }}>
+            <div className="table-wrap" style={{ marginTop: 16, marginBottom: 22 }}>
               <table>
                 <thead>
                   <tr>
@@ -679,7 +578,7 @@ export default async function OperatorProfilePage({
                         >
                           {rule.pickupProvided
                             ? "Pickup Provided"
-                            : "Independent Walk / Port Shuttle"}
+                            : "Walk / Port Shuttle"}
                         </span>
                       </td>
                       <td>{rule.meetingPointInstructions}</td>
@@ -691,11 +590,8 @@ export default async function OperatorProfilePage({
             </div>
           )}
 
-          <div
-            className="grid"
-            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}
-          >
-            <div className="card" style={{ background: "#f8fbfb" }}>
+          <div className="lfse-two-col">
+            <div className="card">
               <h3 style={{ fontSize: 17, marginTop: 0 }}>
                 Accessibility &amp; Mobility Notes
               </h3>
@@ -704,7 +600,7 @@ export default async function OperatorProfilePage({
               </p>
             </div>
 
-            <div className="card" style={{ background: "#f8fbfb" }}>
+            <div className="card">
               <h3 style={{ fontSize: 17, marginTop: 0 }}>
                 Weight, Age &amp; Capacity Policies
               </h3>
@@ -713,65 +609,32 @@ export default async function OperatorProfilePage({
               </p>
             </div>
           </div>
+
+          <div className="lfse-return-standard-box" style={{ marginTop: 22 }}>
+            <strong>2-Hour Return Planning Standard:</strong>
+            <p>
+              {STANDARDIZED_TWO_HOUR_PLANNING_NOTE} This is an independent planning
+              standard—not an operator guarantee or cruise-line rule. Confirm your
+              operator&apos;s check-in deadline, cancellation cutoff, and your ship&apos;s
+              published all-aboard time separately.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* 5. Entity-Separated Reviews + Primary Sources + Free Operator Claim Panel */}
-      <section className="section" style={{ background: "#f8fbfb" }}>
-        <div className="shell" style={{ display: "grid", gap: 24 }}>
+      {/* 5. Entity-Separated Reviews, Calm Operator Claim Panel & "Sources and freshness" Disclosure */}
+      <section className="section">
+        <div className="shell" style={{ display: "grid", gap: 22 }}>
           <OperatorEntityReviewsTabs
             operatorName={operator.name}
             operatorSlug={operator.slug}
             operatorReviews={operator.operatorReviews}
-            tourReviewBundles={tours.map((t) => ({
+            tourReviewBundles={verifiedTours.map((t) => ({
               tourSlug: t.tourSlug,
               tourTitle: t.title,
               reviews: t.tourReviews,
             }))}
           />
-
-          <div className="card" style={{ background: "#ffffff" }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "baseline",
-                flexWrap: "wrap",
-                gap: 10,
-                marginBottom: 10,
-              }}
-            >
-              <h3 style={{ margin: 0 }}>Primary Sources &amp; Verification Record</h3>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--forest)" }}>
-                {operator.verifiedAt
-                  ? `Last verified: ${operator.verifiedAt}`
-                  : "Held in Research Queue"}
-              </span>
-            </div>
-            {operator.sources.length > 0 ? (
-              <ul style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 6 }}>
-                {operator.sources.map((src) => (
-                  <li key={src.url} style={{ fontSize: 14 }}>
-                    <a
-                      href={src.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ fontWeight: 700, color: "var(--forest)" }}
-                    >
-                      {src.label} ↗
-                    </a>{" "}
-                    <span style={{ fontSize: 12.5, color: "var(--muted)" }}>
-                      ({src.sourceKind.replace(/_/g, " ")} · checked {src.checkedAt})
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p style={{ margin: 0, fontSize: 14, color: "var(--muted)" }}>
-                Primary sources pending verification before search indexing is enabled.
-              </p>
-            )}
-          </div>
 
           <OperatorProfileClaimPanel
             operatorId={operator.operatorId}
@@ -782,6 +645,104 @@ export default async function OperatorProfilePage({
             bookingPlatform={operator.bookingPlatform}
             claimStatus={operator.claimStatus}
           />
+
+          <details
+            className="lfse-sources-details"
+            data-testid="operator-sources-and-freshness"
+          >
+            <summary>Sources and freshness</summary>
+            <div className="lfse-sources-body">
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+                <strong style={{ color: "var(--deep)" }}>
+                  Primary Sources &amp; Integration Record
+                </strong>
+                {operator.verifiedAt ? (
+                  <span className="chip" data-testid="operator-last-verified">
+                    Last verified: {operator.verifiedAt}
+                  </span>
+                ) : (
+                  <span className="chip">Verification pending</span>
+                )}
+              </div>
+
+              <div
+                className="card"
+                style={{ background: "#ffffff", padding: "14px 16px" }}
+                data-testid="operator-integration-status-card"
+              >
+                <strong
+                  style={{
+                    fontSize: 12,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    color: "var(--muted)",
+                  }}
+                >
+                  Reservation &amp; Feed Connection Status
+                </strong>
+                <ul
+                  style={{
+                    margin: "8px 0 0",
+                    paddingLeft: 18,
+                    fontSize: 13.5,
+                    color: "var(--ink)",
+                    display: "grid",
+                    gap: 4,
+                  }}
+                >
+                  <li>
+                    <strong>Reservation System:</strong> {operator.bookingPlatform}
+                  </li>
+                  <li>
+                    <strong>Live Availability Feed:</strong>{" "}
+                    {verifiedLiveAvail
+                      ? "Connected (Authorized Rezgo Live Feed)"
+                      : "Not connected (static source-backed schedule summary)"}
+                  </li>
+                  <li>
+                    <strong>Direct Checkout:</strong>{" "}
+                    {verifiedDirectCheckout
+                      ? `Connected (Direct checkout hosted by ${operator.name}; operator is merchant of record)`
+                      : "Not connected (bookings completed on official operator website or listed booking partner)"}
+                  </li>
+                </ul>
+              </div>
+
+              {operator.sources.length > 0 ? (
+                <ul style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 6 }}>
+                  {operator.sources.map((src) => (
+                    <li key={src.url}>
+                      <a
+                        href={src.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {src.label} ↗
+                      </a>{" "}
+                      <span>
+                        ({src.sourceKind.replace(/_/g, " ")} · checked {src.checkedAt})
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p style={{ margin: 0 }}>
+                  Primary sources pending verification before search indexing is enabled.
+                </p>
+              )}
+
+              <p style={{ margin: 0 }}>
+                <strong>Regional data provenance:</strong>{" "}
+                <a
+                  href={DCC_ALASKA_DIRECTORY_API_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Destination Command Center Southeast Alaska Regional Directory ↗
+                </a>
+              </p>
+            </div>
+          </details>
         </div>
       </section>
     </main>

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
-import { PORT_ACTIVITIES } from "@/lib/portActivities";
-import { DECISION_PAGES } from "@/lib/decisionPages";
-import { getAllAlaskaShips } from "@/lib/alaska-ships";
+import { PORT_ACTIVITIES } from "../lib/portActivities";
+import { DECISION_PAGES } from "../lib/decisionPages";
+import { getAllAlaskaShips } from "../lib/alaska-ships";
 import { getSoutheastAlaskaDirectorySnapshot } from "../../../lib/dcc/shared/southeastAlaskaDirectoryOperatorsAndTours";
 
 const SITE = "https://www.lastfrontiershoreexcursions.com";
