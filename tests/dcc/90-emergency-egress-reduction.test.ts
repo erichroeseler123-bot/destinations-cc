@@ -11,6 +11,7 @@ import {
   getDurableCatalogSummaryReport,
   getDurableTourByIdOrAlias,
   getLatestDestinationBackfillCheckpoint,
+  mapPgRowToDurableTourRecord,
   normalizeCatalogBatchPickupAndMeeting,
   normalizeCatalogTourPickupAndMeeting,
   paginateAllDurableTourCatalogPages,
@@ -771,4 +772,180 @@ test("4. Per-event telemetry appendCorridorEventDurably appends only the single 
   assert.equal(res.ok, true);
   assert.equal(res.stored, true);
   assert.equal(res.corridorId, "wno-commerce");
+});
+
+test("5. Pickup fulfillment normalization regression fixture: never infers self_drive solely from has_hotel_pickup = false across all 5 fulfillment states", () => {
+  const catalogStoreSrc = readRepoFile("lib/dcc/catalog/durableCatalogStore.ts");
+
+  // SQL summary query must explicitly COALESCE raw_pf to 'unknown' and never infer self_drive or MEETING_POINT_ONLY from has_hotel_pickup = false
+  assert.match(
+    catalogStoreSrc,
+    /COALESCE\(\s*NULLIF\(service_details_json->>'pickupFulfillmentType',\s*''\),[\s\S]*?'unknown'\s*\)\s*AS raw_pf/,
+    "getDurableCatalogSummaryReport SQL must COALESCE raw_pf to 'unknown'",
+  );
+  assert.doesNotMatch(
+    catalogStoreSrc,
+    /WHEN\s+has_hotel_pickup\s+IS\s+FALSE\s+THEN\s+'self_drive'/i,
+    "SQL summary must never infer self_drive solely from has_hotel_pickup = false",
+  );
+  assert.doesNotMatch(
+    catalogStoreSrc,
+    /WHEN\s+has_hotel_pickup\s+IS\s+FALSE\s+THEN\s+'MEETING_POINT_ONLY'/i,
+    "SQL summary must never infer MEETING_POINT_ONLY solely from has_hotel_pickup = false",
+  );
+
+  const makeBasePgRow = (overrides: Record<string, any>): Record<string, any> => ({
+    tour_id: "dcc:tour:viator:FIXTURE1",
+    compatibility_aliases: ["FIXTURE1"],
+    destination_slug: "seward",
+    port_slug: "seward",
+    earthos_destination_node_id: "earthos:node:us-ak-seward",
+    time_zone: "America/Anchorage",
+    title: "Fixture Tour",
+    summary: null,
+    category: "Tours",
+    tags: [],
+    primary_provider: "viator",
+    provider_product_code: "FIXTURE1",
+    operator_name: null,
+    operator_code: null,
+    capability_tier: "live_check_referral",
+    commission_authorized: true,
+    duration_minutes: 180,
+    duration_raw_text: "3h",
+    from_price_cents: 15000,
+    price_basis: "per_person",
+    currency: "USD",
+    free_cancellation: true,
+    cancellation_policy_type: "STANDARD",
+    cancellation_cutoff_hours: 24,
+    cancellation_summary: null,
+    has_hotel_pickup: null,
+    lowest_price_includes_pickup: null,
+    pickup_type: null,
+    pickup_summary: null,
+    meeting_point_name: null,
+    meeting_point_address: null,
+    meeting_point_lat: null,
+    meeting_point_lng: null,
+    location_precision: "unknown",
+    pickup_locations_json: [],
+    age_bands_json: [],
+    constraints_json: {},
+    channel_offers_json: [],
+    product_options_json: [],
+    service_details_json: {},
+    inclusions_json: [],
+    exclusions_json: [],
+    primary_image_url: null,
+    rating_average: null,
+    review_count: null,
+    booking_url: "https://www.viator.com/tours/Seward/Fixture/d4368-FIXTURE1",
+    provenance_json: {},
+    quarantined: false,
+    quarantine_reason: null,
+    active: true,
+    last_verified_at: "2026-11-18T00:00:00.000Z",
+    updated_at: "2026-11-18T00:00:00.000Z",
+    created_at: "2026-11-18T00:00:00.000Z",
+    ...overrides,
+  });
+
+  // Case 1a: has_hotel_pickup = false + missing fulfillment type (pickup_type = null, service_details_json = {}) -> unknown
+  const case1Missing = normalizeCatalogTourPickupAndMeeting(
+    mapPgRowToDurableTourRecord(
+      makeBasePgRow({
+        tour_id: "dcc:tour:viator:70700P1_SIM",
+        has_hotel_pickup: false,
+        pickup_type: null,
+        service_details_json: {},
+      }),
+    ),
+  );
+  assert.equal(case1Missing.normalizedRecord.pickupFulfillmentType, "unknown");
+  assert.equal(case1Missing.normalizedRecord.pickupType, "UNKNOWN");
+  assert.equal(
+    case1Missing.exceptions.some((e) => e.exceptionCode === "missing_meeting_point_identity"),
+    false,
+    "Must not fabricate missing_meeting_point_identity from has_hotel_pickup = false alone",
+  );
+
+  // Case 1b: has_hotel_pickup = false + unrecognized fulfillment string -> unknown (not self_drive)
+  const case1Unrecognized = normalizeCatalogTourPickupAndMeeting({
+    ...mapPgRowToDurableTourRecord(
+      makeBasePgRow({
+        tour_id: "dcc:tour:viator:UNREC_SIM",
+        has_hotel_pickup: false,
+        pickup_type: "INVALID_RAW_VALUE",
+      }),
+    ),
+    pickupFulfillmentType: "unrecognized_mode" as any,
+  });
+  assert.equal(case1Unrecognized.normalizedRecord.pickupFulfillmentType, "unknown");
+  assert.equal(case1Unrecognized.normalizedRecord.pickupType, "UNKNOWN");
+
+  // Case 2: Explicit self_drive -> self_drive
+  const case2SelfDrive = normalizeCatalogTourPickupAndMeeting(
+    mapPgRowToDurableTourRecord(
+      makeBasePgRow({
+        tour_id: "dcc:tour:viator:SELF_DRIVE_SIM",
+        has_hotel_pickup: false,
+        pickup_type: "MEETING_POINT_ONLY",
+        service_details_json: { pickupFulfillmentType: "self_drive" },
+      }),
+    ),
+  );
+  assert.equal(case2SelfDrive.normalizedRecord.pickupFulfillmentType, "self_drive");
+
+  // Case 3: Explicit meeting-point fulfillment (walkable_from_pier & downtown_shuttle_departure) -> stated value
+  const case3Walkable = normalizeCatalogTourPickupAndMeeting(
+    mapPgRowToDurableTourRecord(
+      makeBasePgRow({
+        tour_id: "dcc:tour:viator:WALKABLE_SIM",
+        has_hotel_pickup: false,
+        pickup_type: "MEETING_POINT_ONLY",
+        service_details_json: { pickupFulfillmentType: "walkable_from_pier" },
+      }),
+    ),
+  );
+  assert.equal(case3Walkable.normalizedRecord.pickupFulfillmentType, "walkable_from_pier");
+
+  const case3Shuttle = normalizeCatalogTourPickupAndMeeting(
+    mapPgRowToDurableTourRecord(
+      makeBasePgRow({
+        tour_id: "dcc:tour:viator:SHUTTLE_SIM",
+        has_hotel_pickup: true,
+        pickup_type: "DOWNTOWN_SHUTTLE_DEPARTURE",
+        service_details_json: { pickupFulfillmentType: "downtown_shuttle_departure" },
+      }),
+    ),
+  );
+  assert.equal(case3Shuttle.normalizedRecord.pickupFulfillmentType, "downtown_shuttle_departure");
+
+  // Case 4: Explicit port/pier pickup -> pier_pickup
+  const case4Pier = normalizeCatalogTourPickupAndMeeting(
+    mapPgRowToDurableTourRecord(
+      makeBasePgRow({
+        tour_id: "dcc:tour:viator:PIER_SIM",
+        has_hotel_pickup: false,
+        pickup_type: "CRUISE_PIER_PICKUP",
+        service_details_json: { pickupFulfillmentType: "pier_pickup" },
+      }),
+    ),
+  );
+  assert.equal(case4Pier.normalizedRecord.pickupFulfillmentType, "pier_pickup");
+
+  // Case 5: Null or incomplete data -> unknown
+  const case5Null = normalizeCatalogTourPickupAndMeeting(
+    mapPgRowToDurableTourRecord(
+      makeBasePgRow({
+        tour_id: "dcc:tour:viator:NULL_SIM",
+        has_hotel_pickup: null,
+        pickup_type: null,
+        service_details_json: {},
+      }),
+    ),
+  );
+  assert.equal(case5Null.normalizedRecord.pickupFulfillmentType, "unknown");
+  assert.equal(case5Null.normalizedRecord.pickupType, "UNKNOWN");
 });

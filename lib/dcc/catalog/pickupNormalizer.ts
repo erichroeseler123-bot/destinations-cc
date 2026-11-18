@@ -225,9 +225,7 @@ export function normalizeCatalogTourPickupAndMeeting(
     normalizedPickupType =
       normalizedHasHotelPickup === true
         ? "HOTEL_PICKUP"
-        : normalizedHasHotelPickup === false
-          ? "MEETING_POINT_ONLY"
-          : "UNKNOWN";
+        : "UNKNOWN";
   }
 
   let normalizedFulfillment: PickupFulfillmentType =
@@ -249,8 +247,6 @@ export function normalizeCatalogTourPickupAndMeeting(
       normalizedFulfillment = "downtown_shuttle_departure";
     } else if (normalizedHasHotelPickup === true) {
       normalizedFulfillment = "hotel_pickup";
-    } else if (normalizedHasHotelPickup === false) {
-      normalizedFulfillment = "self_drive";
     } else {
       normalizedFulfillment = "unknown";
     }

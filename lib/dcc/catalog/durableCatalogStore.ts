@@ -937,7 +937,7 @@ function sanitizeProvenanceObject(
   };
 }
 
-function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecord {
+export function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecord {
   const tourId = String(row.tour_id);
   const quarantined = Boolean(row.quarantined) || QUARANTINED_TOUR_IDS.has(tourId);
   const sdFulfillment =
@@ -6904,9 +6904,9 @@ export async function getDurableCatalogSummaryReport() {
               meeting_point_lng,
               location_precision,
               CASE
-                WHEN pickup_type IN ('HOTEL_PICKUP','MEETING_POINT_ONLY','HOTEL_OR_MEETING_POINT','CRUISE_PIER_PICKUP','DOWNTOWN_SHUTTLE_DEPARTURE','UNKNOWN') THEN pickup_type
+                WHEN COALESCE(NULLIF(pickup_type, ''), 'UNKNOWN') IN ('HOTEL_PICKUP','MEETING_POINT_ONLY','HOTEL_OR_MEETING_POINT','CRUISE_PIER_PICKUP','DOWNTOWN_SHUTTLE_DEPARTURE','UNKNOWN')
+                  THEN COALESCE(NULLIF(pickup_type, ''), 'UNKNOWN')
                 WHEN has_hotel_pickup IS TRUE THEN 'HOTEL_PICKUP'
-                WHEN has_hotel_pickup IS FALSE THEN 'MEETING_POINT_ONLY'
                 ELSE 'UNKNOWN'
               END AS norm_pickup_type,
               COALESCE(
@@ -6917,7 +6917,8 @@ export async function getDurableCatalogSummaryReport() {
                   WHEN 'HOTEL_PICKUP' THEN 'hotel_pickup'
                   WHEN 'MEETING_POINT_ONLY' THEN 'self_drive'
                   ELSE NULL
-                END
+                END,
+                'unknown'
               ) AS raw_pf,
               ((constraints_json->>'cruiseBufferBeforeMinutes') IS NOT NULL
                 AND COALESCE(BTRIM(constraints_json->>'transferEvidenceSource'), '') <> ''
@@ -6955,7 +6956,6 @@ export async function getDurableCatalogSummaryReport() {
                 WHEN norm_pickup_type = 'CRUISE_PIER_PICKUP' THEN 'pier_pickup'
                 WHEN norm_pickup_type = 'DOWNTOWN_SHUTTLE_DEPARTURE' THEN 'downtown_shuttle_departure'
                 WHEN has_hotel_pickup IS TRUE THEN 'hotel_pickup'
-                WHEN has_hotel_pickup IS FALSE THEN 'self_drive'
                 ELSE 'unknown'
               END AS norm_pf,
               has_verified_transfer,
