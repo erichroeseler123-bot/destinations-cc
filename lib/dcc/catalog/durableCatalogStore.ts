@@ -4,6 +4,14 @@ import { neon } from "@neondatabase/serverless";
 import { DCC_VIATOR_PRODUCT_MAPPINGS } from "@/lib/viator/mappings";
 import { getWidgetPlacementReport } from "./widgetPlacements";
 import {
+  DESTINATION_SCHEDULE_REFRESH_PROVIDER,
+  assertValidCheckpointScope,
+  buildDestinationScheduleRefreshStreamKey,
+  isGlobalModifiedSinceStreamKey,
+  normalizeCheckpointDestinationSlug,
+  type GlobalModifiedSinceStreamKey,
+} from "./checkpointContract";
+import {
   deduplicatePickupExceptionsForReviewDesk,
   enrichTourRecordFromViatorProductDetailAndLocations,
   extractViatorLocationRefsFromProductDetail,
@@ -815,6 +823,58 @@ export async function ensureCatalogSchema(): Promise<void> {
       await sql.query(
         `CREATE INDEX IF NOT EXISTS dcc_catalog_refresh_checkpoints_provider_idx ON dcc_catalog_refresh_checkpoints (provider, destination_slug)`,
       );
+      await sql.query(`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conrelid = 'public.dcc_catalog_refresh_checkpoints'::regclass
+              AND conname = 'dcc_catalog_refresh_checkpoints_global_keys_chk'
+          ) THEN
+            ALTER TABLE dcc_catalog_refresh_checkpoints
+              ADD CONSTRAINT dcc_catalog_refresh_checkpoints_global_keys_chk
+              CHECK (
+                CASE
+                  WHEN stream_key IN (
+                    'viator_products_modified_since',
+                    'viator_availability_schedules_modified_since'
+                  )
+                  OR stream_key LIKE '%\\_modified\\_since' ESCAPE '\\'
+                  OR provider IN ('viator_incremental', 'viator_schedule_pricing')
+                  THEN destination_slug IS NULL
+                  ELSE destination_slug IS NOT NULL
+                       AND btrim(destination_slug) <> ''
+                       AND destination_slug = lower(btrim(destination_slug))
+                END
+              );
+          END IF;
+
+          IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conrelid = 'public.dcc_catalog_refresh_checkpoints'::regclass
+              AND conname = 'dcc_catalog_refresh_checkpoints_dest_schedule_key_chk'
+          ) THEN
+            ALTER TABLE dcc_catalog_refresh_checkpoints
+              ADD CONSTRAINT dcc_catalog_refresh_checkpoints_dest_schedule_key_chk
+              CHECK (
+                (
+                  stream_key NOT LIKE 'viator_destination_schedule_refresh:%'
+                  AND provider <> 'viator_destination_schedule_refresh'
+                )
+                OR (
+                  provider = 'viator_destination_schedule_refresh'
+                  AND destination_slug IS NOT NULL
+                  AND btrim(destination_slug) <> ''
+                  AND destination_slug = lower(btrim(destination_slug))
+                  AND stream_key = ('viator_destination_schedule_refresh:' || destination_slug)
+                )
+              );
+          END IF;
+        END
+        $$
+      `);
     })().catch((err) => {
       pgSchemaReadyPromise = null;
       throw err;
@@ -6504,51 +6564,121 @@ export async function loadSyncRunsWithPgHydration(limit = 50): Promise<CatalogSy
 export async function upsertRefreshCheckpoint(
   checkpoint: Omit<CatalogRefreshCheckpointRecord, "updatedAt"> & { updatedAt?: string },
 ): Promise<CatalogRefreshCheckpointRecord> {
+  const validatedScope = assertValidCheckpointScope({
+    streamKey: checkpoint.streamKey,
+    provider: checkpoint.provider,
+    destinationSlug: checkpoint.destinationSlug,
+  });
+
+  const existingInMem = memoryCheckpointsByStream.get(validatedScope.streamKey);
+  if (existingInMem && existingInMem.destinationSlug !== validatedScope.destinationSlug) {
+    throw new Error(
+      `checkpoint_scope_violation: cannot mutate destination_slug on existing stream_key '${validatedScope.streamKey}'`,
+    );
+  }
+
   const nowIso = checkpoint.updatedAt || new Date().toISOString();
   const full: CatalogRefreshCheckpointRecord = {
     ...checkpoint,
+    streamKey: validatedScope.streamKey,
+    provider: validatedScope.provider,
+    destinationSlug: validatedScope.destinationSlug,
     updatedAt: nowIso,
   };
-  memoryCheckpointsByStream.set(full.streamKey, full);
 
   if (shouldUsePostgres()) {
-    try {
-      await executeCatalogSql(
-        `
-          INSERT INTO dcc_catalog_refresh_checkpoints (
-            stream_key, provider, destination_slug, cursor_value,
-            next_start_offset, provider_total_count, status, metadata_json, updated_at
-          ) VALUES (
-            $1, $2, $3, $4,
-            $5, $6, $7, $8::jsonb, $9::timestamptz
-          )
-          ON CONFLICT (stream_key) DO UPDATE SET
-            provider = EXCLUDED.provider,
-            destination_slug = EXCLUDED.destination_slug,
-            cursor_value = EXCLUDED.cursor_value,
-            next_start_offset = EXCLUDED.next_start_offset,
-            provider_total_count = EXCLUDED.provider_total_count,
-            status = EXCLUDED.status,
-            metadata_json = EXCLUDED.metadata_json,
-            updated_at = EXCLUDED.updated_at
-        `,
-        [
-          full.streamKey,
-          full.provider,
-          full.destinationSlug,
-          full.cursorValue,
-          full.nextStartOffset,
-          full.providerTotalCount,
-          full.status,
-          JSON.stringify(full.metadata),
-          full.updatedAt,
-        ],
-      );
-    } catch (err) {
-      console.warn("[durableCatalogStore] Failed upserting refresh checkpoint to Postgres:", err);
-    }
+    await executeCatalogSql(
+      `
+        INSERT INTO dcc_catalog_refresh_checkpoints (
+          stream_key, provider, destination_slug, cursor_value,
+          next_start_offset, provider_total_count, status, metadata_json, updated_at
+        ) VALUES (
+          $1, $2, $3, $4,
+          $5, $6, $7, $8::jsonb, $9::timestamptz
+        )
+        ON CONFLICT (stream_key) DO UPDATE SET
+          provider = EXCLUDED.provider,
+          destination_slug = EXCLUDED.destination_slug,
+          cursor_value = EXCLUDED.cursor_value,
+          next_start_offset = EXCLUDED.next_start_offset,
+          provider_total_count = EXCLUDED.provider_total_count,
+          status = EXCLUDED.status,
+          metadata_json = EXCLUDED.metadata_json,
+          updated_at = EXCLUDED.updated_at
+      `,
+      [
+        full.streamKey,
+        full.provider,
+        full.destinationSlug,
+        full.cursorValue,
+        full.nextStartOffset,
+        full.providerTotalCount,
+        full.status,
+        JSON.stringify(full.metadata),
+        full.updatedAt,
+      ],
+    );
   }
+
+  memoryCheckpointsByStream.set(full.streamKey, full);
   return full;
+}
+
+export async function getGlobalRefreshCheckpoint(
+  streamKey: GlobalModifiedSinceStreamKey,
+): Promise<CatalogRefreshCheckpointRecord | null> {
+  if (!isGlobalModifiedSinceStreamKey(streamKey)) {
+    throw new Error(`checkpoint_scope_violation: '${streamKey}' is not a global modified-since key`);
+  }
+  const ckpt = await getRefreshCheckpoint(streamKey);
+  if (ckpt && ckpt.destinationSlug !== null) {
+    throw new Error(
+      `checkpoint_scope_violation: global checkpoint '${streamKey}' carries non-null destination_slug '${ckpt.destinationSlug}'`,
+    );
+  }
+  return ckpt;
+}
+
+export async function upsertGlobalRefreshCheckpoint(
+  checkpoint: Omit<CatalogRefreshCheckpointRecord, "destinationSlug" | "updatedAt"> & {
+    streamKey: GlobalModifiedSinceStreamKey;
+    updatedAt?: string;
+  },
+): Promise<CatalogRefreshCheckpointRecord> {
+  return upsertRefreshCheckpoint({
+    ...checkpoint,
+    destinationSlug: null,
+  });
+}
+
+export async function getDestinationScheduleRefreshCheckpoint(
+  destinationSlug: string,
+): Promise<CatalogRefreshCheckpointRecord | null> {
+  const normSlug = normalizeCheckpointDestinationSlug(destinationSlug);
+  const streamKey = buildDestinationScheduleRefreshStreamKey(normSlug);
+  const ckpt = await getRefreshCheckpoint(streamKey);
+  if (ckpt && ckpt.destinationSlug !== normSlug) {
+    throw new Error(
+      `checkpoint_scope_violation: destination checkpoint '${streamKey}' carries mismatched destination_slug '${String(ckpt.destinationSlug)}'`,
+    );
+  }
+  return ckpt;
+}
+
+export async function upsertDestinationScheduleRefreshCheckpoint(
+  destinationSlug: string,
+  checkpoint: Omit<
+    CatalogRefreshCheckpointRecord,
+    "streamKey" | "provider" | "destinationSlug" | "updatedAt"
+  > & { updatedAt?: string },
+): Promise<CatalogRefreshCheckpointRecord> {
+  const normSlug = normalizeCheckpointDestinationSlug(destinationSlug);
+  return upsertRefreshCheckpoint({
+    ...checkpoint,
+    streamKey: buildDestinationScheduleRefreshStreamKey(normSlug),
+    provider: DESTINATION_SCHEDULE_REFRESH_PROVIDER,
+    destinationSlug: normSlug,
+  });
 }
 
 export async function getRefreshCheckpoint(
