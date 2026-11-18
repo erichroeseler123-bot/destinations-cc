@@ -31,21 +31,22 @@ const siteJsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "LocalBusiness",
+      "@type": "Organization",
       "@id": "https://juneauflightdeck.com/#organization",
       name: "Juneau Flight Deck",
       url: "https://juneauflightdeck.com",
-      description: SITE_DESCRIPTION,
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: "Juneau",
-        addressRegion: "AK",
-        addressCountry: "US",
-      },
+      description:
+        "Independent Juneau flightseeing weather-education, cruise port-buffer, and concierge planning guide. Juneau Flight Deck is an independent editorial and concierge resource and is not an aircraft owner or FAA Part 135 air carrier.",
       areaServed: [
         { "@type": "City", name: "Juneau" },
         { "@type": "City", name: "Skagway" },
         { "@type": "AdministrativeArea", name: "Alaska" },
+      ],
+      knowsAbout: [
+        "Juneau glacier helicopter tour comparisons",
+        "Juneau Airport (PAJN) and FAA WeatherCams visibility",
+        "Cruise ship port return-buffer planning",
+        "Juneau weather backup shore excursions",
       ],
     },
     {
@@ -54,6 +55,7 @@ const siteJsonLd = {
       name: "Juneau Flight Deck",
       url: "https://juneauflightdeck.com",
       description: SITE_DESCRIPTION,
+      inLanguage: "en-US",
       publisher: { "@id": "https://juneauflightdeck.com/#organization" },
     },
     {
@@ -67,46 +69,6 @@ const siteJsonLd = {
           item: "https://juneauflightdeck.com/",
         },
       ],
-    },
-    {
-      "@type": "Service",
-      "@id": "https://juneauflightdeck.com/#service-helicopter",
-      name: "Juneau Helicopter & Shore Excursion Booking & Comparison",
-      url: "https://juneauflightdeck.com/helicopter",
-      description: SITE_DESCRIPTION,
-      provider: { "@id": "https://juneauflightdeck.com/#organization" },
-      areaServed: [
-        { "@type": "City", name: "Juneau" },
-        { "@type": "City", name: "Skagway" },
-        { "@type": "AdministrativeArea", name: "Alaska" },
-      ],
-      hasOfferCatalog: {
-        "@type": "OfferCatalog",
-        name: "Glacier Flight & Backup Services",
-        itemListElement: [
-          {
-            "@type": "Offer",
-            itemOffered: {
-              "@type": "Service",
-              name: "FAA Part 135 Helicopter Glacier Flights",
-            },
-          },
-          {
-            "@type": "Offer",
-            itemOffered: {
-              "@type": "Service",
-              name: "Availability Requests for Unavailable Dates",
-            },
-          },
-          {
-            "@type": "Offer",
-            itemOffered: {
-              "@type": "Service",
-              name: "Weather Alternative Planning Guidance",
-            },
-          },
-        ],
-      },
     },
   ],
 };

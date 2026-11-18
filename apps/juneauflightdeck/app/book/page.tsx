@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
-import SiteHeader from "../components/SiteHeader";
-import SiteFooter from "../components/SiteFooter";
 import {
   extractHandoffIdFromQueryOrRef,
   getOrCreateCheckoutSession,
@@ -10,6 +8,7 @@ import {
   loadAuthoritativeDccHandoffForCheckout,
   safeJsonSerializeForScriptTag,
 } from "../../lib/dccContext";
+import { VERBATIM_TWO_HOUR_BUFFER_RULE } from "../../lib/verifiedOperatorPricing";
 
 interface BookPageSearchParams {
   ctx?: string;
@@ -311,8 +310,7 @@ export default async function BookPage(props: BookPageProps) {
 
   return (
     <div className="site-shell-wrapper">
-      <SiteHeader />
-      <main className="site-main py-10">
+      <main id="main-content" className="site-main py-10">
         <div className="site-shell max-w-4xl mx-auto px-4">
           {checkoutBindingPayload && (
             <script
@@ -326,29 +324,35 @@ export default async function BookPage(props: BookPageProps) {
 
           <div className="mb-8">
             <span className="text-xs font-bold tracking-widest text-sky-600 uppercase">
-              Specialist Referral Portal • Juneau Flight Deck → Viator
+              Independent Referral Review • Juneau Flight Deck → Viator
             </span>
             <h1 className="text-3xl font-extrabold text-slate-900 mt-1">
               Juneau Helicopter Tour Referral &amp; Pre-Booking Review
             </h1>
             <p className="text-slate-600 mt-2">
-              <strong>DCC evaluates tour suitability; Juneau Flight Deck explains the options; Viator handles the booking and applicable booking protections.</strong>{" "}
-              Confirm final price and availability in Viator.
+              <strong>
+                Juneau Flight Deck is an independent flightseeing guide; your selected FAA Part 135
+                operator runs the flight, and Viator handles partner checkout and applicable booking
+                protections.
+              </strong>{" "}
+              Confirm final price and calendar availability in Viator.
             </p>
           </div>
 
           {/* Role & Back-to-Ship Guarantee Disclosure Banner */}
           <div className="p-5 mb-8 rounded-xl bg-emerald-50 border border-emerald-200 text-slate-900 shadow-sm">
             <div className="text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1">
-              Back-to-Ship Protection &amp; Role Separation
+              Back-to-Ship Protection &amp; 2-Hour Return Planning Standard
             </div>
             <p className="text-sm text-slate-800 leading-relaxed">
-              Qualifying Viator tours marked{" "}
+              <strong>{VERBATIM_TWO_HOUR_BUFFER_RULE}</strong>{" "}
+              This is an independent planning standard—not an operator guarantee or a cruise-line
+              rule. Qualifying Viator tours marked{" "}
               <strong>&ldquo;Worry-free Shore Excursion&rdquo;</strong> (such as{" "}
               <code className="font-mono text-xs bg-white px-1.5 py-0.5 rounded border border-emerald-200">
                 6251SHOREXICEWALK
               </code>
-              , Viator Tag <code className="font-mono text-xs">367649</code>) are covered by{" "}
+              ) are covered separately by{" "}
               <a
                 href="https://www.viator.com/support/termsAndConditions"
                 target="_blank"
@@ -357,15 +361,8 @@ export default async function BookPage(props: BookPageProps) {
               >
                 Viator Terms of Use Section 20 (&ldquo;Worry-free Shore Excursions&rdquo;)
               </a>{" "}
-              when you provide accurate ship arrival/departure information to Viator, select a
-              tour ending at least <strong>2 hours (120 minutes) before ship departure</strong>,
-              and are not delayed by your own actions (up to{" "}
-              <strong>US$1,000 per person</strong> next-port transport;{" "}
-              <strong>14-day refund window</strong> if your ship misses or is delayed into port).{" "}
-              <strong>
-                DCC&apos;s cruise-timing buffer calculation evaluates schedule suitability only —
-                DCC itself does not provide a back-to-ship guarantee.
-              </strong>
+              when you supply accurate ship arrival/departure information to Viator and select a
+              tour ending at least <strong>2 hours (120 minutes) before ship departure</strong>.
             </p>
           </div>
 
@@ -584,27 +581,18 @@ export default async function BookPage(props: BookPageProps) {
             {/* Explicit disclosure of what transfers in the URL vs what must be reselected in Viator */}
             <div className="mb-6 p-4 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-2">
               <div className="font-bold text-slate-900 uppercase tracking-wide">
-                What Transfers in the Viator Referral Link vs. What You Must Reselect in Viator
+                What Transfers in the Partner Link vs. What You Confirm in Viator
               </div>
               <p>
-                <strong>Carried in Viator URL query parameters:</strong> Exact Viator product (
-                <code className="font-mono">d941-6251SHOREXICEWALK</code>), affiliate attribution (
-                <code className="font-mono">pid=P00058396</code>,{" "}
-                <code className="font-mono">mcid=42383</code>,{" "}
-                <code className="font-mono">medium=api</code>,{" "}
-                <code className="font-mono">campaign=...__{handoffId || "<handoff_id>"}</code>),{" "}
-                <code className="font-mono">startDate={intendedDate || "YYYY-MM-DD"}</code>, and{" "}
-                <code className="font-mono">numTravelers={partySize ?? 2}</code>.
+                <strong>Carried in your referral link:</strong> Selected Viator tour listing,
+                disclosed partner attribution, target port date ({intendedDate || "your date"}), and
+                party size ({partySize ?? 2}).
               </p>
               <p>
-                <strong>Must be confirmed or reselected inside Viator&apos;s booking widget:</strong>{" "}
-                (1) Verify your travel date and guest count in Viator&apos;s availability calendar,
-                (2) select your specific departure time slot (ending at least 2 hours before ship
-                departure for Section 20 Worry-free Shore Excursion coverage), (3) select the
-                required passenger weight-tier option (
-                <code className="font-mono">DEFAULT</code> 1–259 lbs,{" "}
-                <code className="font-mono">TG1</code> 260–299 lbs half-seat surcharge, or{" "}
-                <code className="font-mono">TG2</code> 300+ lbs second seat per{" "}
+                <strong>Confirm directly inside Viator&apos;s booking calendar:</strong> (1) Verify
+                your travel date and guest count, (2) choose a departure slot ending at least 2
+                hours before ship departure, (3) select the required clothed passenger weight tier
+                (for Coastal: 1–259 lbs Standard, 260–299 lbs Standard Plus, or 300+ lbs Premium per{" "}
                 <a
                   href="https://coastalhelicopters.com/faq/"
                   target="_blank"
@@ -613,8 +601,8 @@ export default async function BookPage(props: BookPageProps) {
                 >
                   Coastal Helicopters FAQ
                 </a>
-                ), and (4) enter each traveler&apos;s individual clothed weight and cruise ship
-                arrival/departure details at Viator checkout.
+                ), and (4) enter each traveler&apos;s clothed weight and cruise ship arrival/all-aboard
+                details at checkout.
               </p>
             </div>
 
@@ -731,8 +719,9 @@ export default async function BookPage(props: BookPageProps) {
                       Juneau Shore Excursion Helicopter Tour &amp; Guided Icefield Walk
                     </div>
                     <div className="text-xs text-slate-600 mt-1">
-                      Viator <code className="font-mono">6251SHOREXICEWALK</code> • Published Base:
-                      $459/person • 260–299 lb (+$150 TG1) / 300+ lb (TG2) tiers
+                      Viator <code className="font-mono">6251SHOREXICEWALK</code> • Verified Base:
+                      $459 Standard (1–259 lbs), $609 (260–299 lbs), $918 (300+ lbs, 2 seats), as of
+                      November 18, 2026 + CBJ sales tax &amp; fees
                     </div>
                   </div>
                   <div className="mt-4 space-y-2">
@@ -751,7 +740,7 @@ export default async function BookPage(props: BookPageProps) {
                       rel="noopener noreferrer"
                       className="block text-center text-[11px] font-semibold text-slate-600 hover:underline"
                     >
-                      Operator Policy Reference (Coastal Helicopters) ↗
+                      Official Tariff Reference (Coastal Helicopters) ↗
                     </a>
                   </div>
                 </div>
@@ -762,11 +751,11 @@ export default async function BookPage(props: BookPageProps) {
                       TEMSCO Helicopters
                     </div>
                     <div className="font-bold text-slate-900 mt-1">
-                      Mendenhall Glacier &amp; Guided Walk
+                      Mendenhall Glacier &amp; Guided Walk (2h 15m)
                     </div>
                     <div className="text-xs text-slate-600 mt-1">
-                      Published Policy Base: $449/person • 250 lb weight surcharge (+$150) • Verify
-                      Section 20 Worry-free badge on Viator listing
+                      Verified Base: $449/person (ages 2+), as of November 18, 2026 • +$150 at 250+
+                      lbs clothed • + CBJ sales tax &amp; fees
                     </div>
                   </div>
                   <div className="mt-4 space-y-2">
@@ -780,12 +769,12 @@ export default async function BookPage(props: BookPageProps) {
                       Search Mendenhall Helicopter Options on Viator ↗
                     </a>
                     <a
-                      href="https://temscoair.com/tours/pilots-choice-exploration/"
+                      href="https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block text-center text-[11px] font-semibold text-slate-600 hover:underline"
                     >
-                      Operator Policy Reference (TEMSCO) ↗
+                      Official Tariff Reference (TEMSCO) ↗
                     </a>
                   </div>
                 </div>
@@ -796,11 +785,11 @@ export default async function BookPage(props: BookPageProps) {
                       NorthStar Trekking
                     </div>
                     <div className="font-bold text-slate-900 mt-1">
-                      Helicopter Glacier Walkabout (1 Hour on Ice)
+                      Helicopter Glacier Walkabout (3h 15m, ~1h on Ice)
                     </div>
                     <div className="text-xs text-slate-600 mt-1">
-                      Published Policy Base: $499/person • 250 lb weight surcharge (+$150) • Min age
-                      8 • Verify Section 20 Worry-free badge on Viator listing
+                      Verified Base: $539/person (ages 8+), as of November 18, 2026 • +$250 at 250+
+                      lbs clothed • + CBJ sales tax &amp; fees
                     </div>
                   </div>
                   <div className="mt-4 space-y-2">
@@ -814,12 +803,12 @@ export default async function BookPage(props: BookPageProps) {
                       Search Glacier Walkabout Options on Viator ↗
                     </a>
                     <a
-                      href="https://northstartrekking.com/treks/tours/helicopter-glacier-walkabout/"
+                      href="https://northstartrekking.com/adventures/helicopter-glacier-walkabout/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block text-center text-[11px] font-semibold text-slate-600 hover:underline"
                     >
-                      Operator Policy Reference (NorthStar) ↗
+                      Official Tariff Reference (NorthStar) ↗
                     </a>
                   </div>
                 </div>
@@ -828,7 +817,6 @@ export default async function BookPage(props: BookPageProps) {
           </div>
         </div>
       </main>
-      <SiteFooter />
     </div>
   );
 }

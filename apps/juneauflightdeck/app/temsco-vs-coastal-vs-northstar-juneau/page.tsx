@@ -1,19 +1,45 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import IcefieldGlacierMap from "../components/IcefieldGlacierMap";
+import OperatorIdentityMark from "../components/OperatorIdentityMark";
+import SourcesAndFreshness from "../components/SourcesAndFreshness";
+import { buildFlightGuideJsonLd } from "@/lib/operatorSchema";
+import {
+  LFSE_CANONICAL_LINKS,
+  TWO_HOUR_BUFFER_CLARIFICATION,
+  VERBATIM_TWO_HOUR_BUFFER_RULE,
+  VERIFIED_TARIFF_DATE_LONG,
+} from "@/lib/verifiedOperatorPricing";
 
 export const metadata: Metadata = {
   title: "TEMSCO vs Coastal vs NorthStar: Juneau Helicopter Tour Comparison",
   description:
-    "Compare Juneau's 3 FAA Part 135 glacier helicopter operators by specific tour: glacier walkabouts, dog sledding, and ice treks. Total pricing, cruise timing, and direct booking links.",
-  alternates: { canonical: "https://juneauflightdeck.com/temsco-vs-coastal-vs-northstar-juneau" },
+    "Independent comparison of Juneau's 3 licensed FAA Part 135 glacier helicopter operators—TEMSCO, Coastal, and NorthStar—with verified base tariffs as of November 18, 2026, clothed weight rules, and 2-hour cruise return planning.",
+  alternates: {
+    canonical: "https://juneauflightdeck.com/temsco-vs-coastal-vs-northstar-juneau",
+  },
   openGraph: {
     title: "TEMSCO vs Coastal vs NorthStar: Juneau Helicopter Tour Comparison",
     description:
-      "Detailed comparison of Juneau's 3 licensed glacier helicopter operators. Compare landing time, dog sledding, physical effort, pricing, cruise dock pickups, and weather terms.",
+      "Compare glacier walks, seasonal dog sledding, and crampon ice treks across TEMSCO, Coastal, and NorthStar with verified November 18, 2026 tariffs.",
     url: "https://juneauflightdeck.com/temsco-vs-coastal-vs-northstar-juneau",
   },
 };
+
+const comparisonPageSchema = buildFlightGuideJsonLd({
+  url: "https://juneauflightdeck.com/temsco-vs-coastal-vs-northstar-juneau",
+  name: "TEMSCO vs Coastal vs NorthStar: Juneau Helicopter Operator Comparison",
+  description:
+    "Independent comparison by Juneau Flight Deck of TEMSCO Helicopters, Coastal Helicopters, and NorthStar Trekking (plus Wings Airways floatplane context), with official tariffs verified November 18, 2026.",
+  breadcrumbs: [
+    { name: "Home", url: "https://juneauflightdeck.com/" },
+    {
+      name: "TEMSCO vs Coastal vs NorthStar",
+      url: "https://juneauflightdeck.com/temsco-vs-coastal-vs-northstar-juneau",
+    },
+  ],
+  comparedOperators: ["temsco", "coastal", "northstar", "wings"],
+});
 
 const comparisonFaqSchema = {
   "@context": "https://schema.org",
@@ -21,10 +47,10 @@ const comparisonFaqSchema = {
   mainEntity: [
     {
       "@type": "Question",
-      name: "What is the difference between a glacier landing, a guided walk, and an ice trek?",
+      name: "What is the difference between a glacier landing, a guided walkabout, and an ice trek?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "A standard glacier landing or walkabout (offered by TEMSCO for 20-25 min and Coastal for 25-30 min) involves walking on gentle, level ice near the helicopter in slip-on traction overboots. NorthStar offers a 1-hour Glacier Walkabout equipped with crampons and trekking poles for moderate walkers (ages 8+), as well as a technical Level 1 Ice Trek spending 2 hours hiking deep ice formations with mountaineering boots, steel crampons, and harnesses (ages 12+). While most treks use Mendenhall Glacier, landing locations can change with weather and glacier conditions to ensure safety.",
+        text: "A standard glacier landing walk (TEMSCO 2h 15m total at $449/person base, or Coastal ~2h 35m total at $459 Standard base, as of November 18, 2026) walks on gentle ice near the helicopter in traction overboots. NorthStar Trekking offers a 3h 15m Helicopter Glacier Walkabout (~1 hour on ice, ages 8+, $539/person base as of November 18, 2026) and a 4h 15m Helicopter Glacier Trek (~2 hours technical hike with crampons and boots, ages 12+, $599/person base as of November 18, 2026). All rates exclude CBJ sales tax, fees, and weight surcharges.",
       },
     },
     {
@@ -32,7 +58,7 @@ const comparisonFaqSchema = {
       name: "Which Juneau helicopter companies offer glacier dog sledding?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "All three licensed Juneau helicopter operators offer glacier dog sledding excursions during the summer snow season (mid-May to mid-to-late August): TEMSCO operates its camp on Herbert Glacier snowfields ($659 published base rate), Coastal Helicopters operates on Herbert Glacier ($709 published base rate), and NorthStar Trekking operates its Glacier Dogsled Adventure on Norris Glacier ($739 published base rate, departing from its Douglas Island base). Dog sledding is not offered in September once high-altitude snow melts.",
+        text: "All three licensed Juneau helicopter operators offer seasonal glacier dog sledding (typically May through August depending on upper snowpack). As of November 18, 2026, direct base rates before CBJ sales tax, fees, and weight surcharges are: TEMSCO Mendenhall Glacier Dog Sledding ($759/person, 2h 45m), Coastal Dog Sled Tour on Herbert Glacier ($769 Standard 1–259 lbs / $919 260–299 lbs / $1,538 300+ lbs, 3h 15m), and NorthStar Helicopter & Dog Sled Glacier Trek ($789/person, 3h 15m, +$250 at 250+ lbs clothed).",
       },
     },
     {
@@ -40,72 +66,105 @@ const comparisonFaqSchema = {
       name: "Do TEMSCO, Coastal, and NorthStar provide pickup from cruise ship docks?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Direct-booking cruise passengers should check their confirmation for specific meeting points rather than expecting universal ship gangway pickup. NorthStar and Coastal direct-booking guests meet at the Goldbelt Tramway (490 S Franklin St) in downtown Juneau. TEMSCO provides transfers from a central downtown meeting location. In addition, NorthStar operates two separate facilities: its Airport Base for glacier trekking and walkabouts, and its Douglas Island Heliport for dog sledding and airboat adventures.",
+        text: "Direct-booking cruise passengers meet operator shuttles at designated downtown Juneau hubs specified on their confirmation (such as the Goldbelt Tramway at 490 S Franklin St for Coastal and NorthStar, or TEMSCO's central downtown meeting location) rather than universal gangway pickup.",
       },
     },
     {
       "@type": "Question",
-      name: "What happens if a helicopter flight is cancelled due to weather?",
+      name: "How much return buffer should cruise passengers plan before all-aboard?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "If an operator cancels your flight due to mountain pass clouds, fog, high winds, or FAA flight minimums, you receive a 100% full refund. Juneau Flight Deck also monitors real-time pass conditions and coordinates same-day backup tours like whale watching or Mendenhall Visitor Center ground shuttles.",
+        text: `${VERBATIM_TWO_HOUR_BUFFER_RULE} ${TWO_HOUR_BUFFER_CLARIFICATION}`,
       },
-    },
-    {
-      "@type": "Question",
-      name: "How much buffer time do I need between my cruise ship docking and my helicopter flight?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "We recommend scheduling your departure at least 60 to 90 minutes after your ship's scheduled arrival time to clear the gangway, and selecting a tour that returns to the dock at least 60 to 90 minutes before your ship's All Aboard time.",
-      },
-    },
-  ],
-};
-
-const breadcrumbSchema = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: [
-    {
-      "@type": "ListItem",
-      position: 1,
-      name: "Home",
-      item: "https://juneauflightdeck.com/",
-    },
-    {
-      "@type": "ListItem",
-      position: 2,
-      name: "Operator Comparison",
-      item: "https://juneauflightdeck.com/temsco-vs-coastal-vs-northstar-juneau",
     },
   ],
 };
 
 export default function OperatorComparisonPage() {
   return (
-    <main className="page-shell" style={{ maxWidth: 1040, margin: "auto", padding: "40px 20px 80px" }}>
+    <main
+      id="main-content"
+      className="page-shell"
+      style={{ maxWidth: 1040, margin: "auto", padding: "40px 20px 80px" }}
+    >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(comparisonPageSchema) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(comparisonFaqSchema) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
 
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
-        <p className="eyebrow" style={{ color: "var(--accent, #f0b35b)", textTransform: "uppercase", fontSize: "0.8rem", fontWeight: 800, letterSpacing: "0.1em" }}>
-          Juneau Flight Deck • Operator Decision Guide
+        <p
+          className="eyebrow"
+          style={{
+            color: "var(--accent, #f0b35b)",
+            textTransform: "uppercase",
+            fontSize: "0.8rem",
+            fontWeight: 800,
+            letterSpacing: "0.1em",
+          }}
+        >
+          Independent Operator Guide · Verified {VERIFIED_TARIFF_DATE_LONG}
         </p>
-        <h1 style={{ fontSize: "clamp(2rem, 4vw, 2.75rem)", fontWeight: 900, lineHeight: 1.2, margin: "10px 0 16px", color: "var(--text, #ffffff)" }}>
+        <h1
+          style={{
+            fontSize: "clamp(2rem, 4vw, 2.75rem)",
+            fontWeight: 900,
+            lineHeight: 1.2,
+            margin: "10px 0 16px",
+            color: "var(--text, #ffffff)",
+          }}
+        >
           TEMSCO vs Coastal vs NorthStar: Juneau Helicopter Comparison
         </h1>
-        <p style={{ fontSize: "1.1rem", lineHeight: 1.6, color: "var(--ice, #e0f2fe)", marginBottom: "14px" }}>
-          Every passenger flying to a glacier in Juneau is flown by one of exactly three FAA Part 135 licensed commercial helicopter operators: <strong>TEMSCO Helicopters</strong>, <strong>Coastal Helicopters</strong>, or <strong>NorthStar Trekking</strong>.
+        <p
+          style={{
+            fontSize: "1.06rem",
+            lineHeight: 1.6,
+            color: "var(--ice, #e0f2fe)",
+            marginBottom: "14px",
+          }}
+        >
+          Juneau Flight Deck is an independent flightseeing education and concierge planning site—not
+          an aircraft operator. Every glacier helicopter tour out of Juneau is flown by one of three
+          licensed FAA Part 135 carriers:{" "}
+          <a
+            href={LFSE_CANONICAL_LINKS.temsco}
+            style={{ color: "#9ed9ff", textDecoration: "underline", fontWeight: 700 }}
+          >
+            TEMSCO Helicopters ↗
+          </a>
+          ,{" "}
+          <a
+            href={LFSE_CANONICAL_LINKS.coastal}
+            style={{ color: "#9ed9ff", textDecoration: "underline", fontWeight: 700 }}
+          >
+            Coastal Helicopters ↗
+          </a>
+          , or{" "}
+          <a
+            href={LFSE_CANONICAL_LINKS.northstar}
+            style={{ color: "#9ed9ff", textDecoration: "underline", fontWeight: 700 }}
+          >
+            NorthStar Trekking ↗
+          </a>
+          .
         </p>
         <p style={{ fontSize: "0.95rem", lineHeight: 1.6, color: "var(--muted, #94a3b8)", margin: 0 }}>
-          Because each operator specializes in distinct experiences—from family-friendly gentle walkabouts to high-altitude dog sledding and crampon ice treks—this guide compares their specific tours across the five factors that actually affect your booking decision.
+          Compare verified direct tariffs (as of {VERIFIED_TARIFF_DATE_LONG}), clothed weight
+          surcharge tiers, time on ice, downtown shuttle logistics, and weather cancellation rules
+          below—or browse the full{" "}
+          <a
+            href={LFSE_CANONICAL_LINKS.juneauHelicopterCategory}
+            style={{ color: "#9ed9ff", textDecoration: "underline", fontWeight: 700 }}
+          >
+            Juneau Helicopter &amp; Glacier Tour Directory on Last Frontier Shore Excursions ↗
+          </a>
+          .
         </p>
         <div
           style={{
@@ -123,21 +182,134 @@ export default function OperatorComparisonPage() {
             alt="Flightseeing helicopter soaring over an Alaska glacier valley and snow-capped peaks"
             width={1440}
             height={900}
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 46%", display: "block" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "50% 46%",
+              display: "block",
+            }}
           />
         </div>
       </div>
 
       {/* Navigation Quick Bar */}
-      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "36px", padding: "14px 18px", background: "rgba(15, 23, 42, 0.6)", borderRadius: "var(--radius-md, 12px)", border: "1px solid var(--line, #334155)" }}>
-        <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--accent, #f0b35b)", alignSelf: "center", marginRight: 6 }}>Jump to:</span>
-        <a href="#icefield-map" style={{ fontSize: "0.85rem", color: "var(--accent, #f0b35b)", textDecoration: "none", padding: "4px 10px", background: "rgba(240, 179, 91, 0.12)", borderRadius: 6, fontWeight: 700 }}>🗺️ Icefield &amp; Glacier Map</a>
-        <a href="#effort-comparison" style={{ fontSize: "0.85rem", color: "var(--ice, #e0f2fe)", textDecoration: "none", padding: "4px 10px", background: "rgba(255,255,255,0.06)", borderRadius: 6 }}>1. Walk vs. Trek</a>
-        <a href="#dog-sledding-options" style={{ fontSize: "0.85rem", color: "var(--ice, #e0f2fe)", textDecoration: "none", padding: "4px 10px", background: "rgba(255,255,255,0.06)", borderRadius: 6 }}>2. Dog Sledding</a>
-        <a href="#pricing-inclusions" style={{ fontSize: "0.85rem", color: "var(--ice, #e0f2fe)", textDecoration: "none", padding: "4px 10px", background: "rgba(255,255,255,0.06)", borderRadius: 6 }}>3. Prices &amp; Inclusions</a>
-        <a href="#cruise-timing-pickup" style={{ fontSize: "0.85rem", color: "var(--ice, #e0f2fe)", textDecoration: "none", padding: "4px 10px", background: "rgba(255,255,255,0.06)", borderRadius: 6 }}>4. Port Timing &amp; Docks</a>
-        <a href="#cancellation-weather" style={{ fontSize: "0.85rem", color: "var(--ice, #e0f2fe)", textDecoration: "none", padding: "4px 10px", background: "rgba(255,255,255,0.06)", borderRadius: 6 }}>5. Weather &amp; Refunds</a>
-        <a href="#recommendations" style={{ fontSize: "0.85rem", color: "var(--accent, #f0b35b)", fontWeight: 700, textDecoration: "none", padding: "4px 10px", background: "rgba(240, 179, 91, 0.15)", borderRadius: 6 }}>Top Recommendations ↓</a>
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          flexWrap: "wrap",
+          marginBottom: "36px",
+          padding: "14px 18px",
+          background: "rgba(15, 23, 42, 0.6)",
+          borderRadius: "var(--radius-md, 12px)",
+          border: "1px solid var(--line, #334155)",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "0.85rem",
+            fontWeight: 700,
+            color: "var(--accent, #f0b35b)",
+            alignSelf: "center",
+            marginRight: 6,
+          }}
+        >
+          Jump to:
+        </span>
+        <a
+          href="#icefield-map"
+          style={{
+            fontSize: "0.85rem",
+            color: "var(--accent, #f0b35b)",
+            textDecoration: "none",
+            padding: "4px 10px",
+            background: "rgba(240, 179, 91, 0.12)",
+            borderRadius: 6,
+            fontWeight: 700,
+          }}
+        >
+          🗺️ Icefield Map
+        </a>
+        <a
+          href="#effort-comparison"
+          style={{
+            fontSize: "0.85rem",
+            color: "var(--ice, #e0f2fe)",
+            textDecoration: "none",
+            padding: "4px 10px",
+            background: "rgba(255,255,255,0.06)",
+            borderRadius: 6,
+          }}
+        >
+          1. Walk vs. Trek
+        </a>
+        <a
+          href="#dog-sledding-options"
+          style={{
+            fontSize: "0.85rem",
+            color: "var(--ice, #e0f2fe)",
+            textDecoration: "none",
+            padding: "4px 10px",
+            background: "rgba(255,255,255,0.06)",
+            borderRadius: 6,
+          }}
+        >
+          2. Dog Sledding
+        </a>
+        <a
+          href="#pricing-inclusions"
+          style={{
+            fontSize: "0.85rem",
+            color: "var(--ice, #e0f2fe)",
+            textDecoration: "none",
+            padding: "4px 10px",
+            background: "rgba(255,255,255,0.06)",
+            borderRadius: 6,
+          }}
+        >
+          3. Verified Prices
+        </a>
+        <a
+          href="#cruise-timing-pickup"
+          style={{
+            fontSize: "0.85rem",
+            color: "var(--ice, #e0f2fe)",
+            textDecoration: "none",
+            padding: "4px 10px",
+            background: "rgba(255,255,255,0.06)",
+            borderRadius: 6,
+          }}
+        >
+          4. 2-Hour Port Buffer
+        </a>
+        <a
+          href="#cancellation-weather"
+          style={{
+            fontSize: "0.85rem",
+            color: "var(--ice, #e0f2fe)",
+            textDecoration: "none",
+            padding: "4px 10px",
+            background: "rgba(255,255,255,0.06)",
+            borderRadius: 6,
+          }}
+        >
+          5. Weather &amp; Refunds
+        </a>
+        <a
+          href="#recommendations"
+          style={{
+            fontSize: "0.85rem",
+            color: "var(--accent, #f0b35b)",
+            fontWeight: 700,
+            textDecoration: "none",
+            padding: "4px 10px",
+            background: "rgba(240, 179, 91, 0.15)",
+            borderRadius: 6,
+          }}
+        >
+          Recommendations ↓
+        </a>
       </div>
 
       {/* INTERACTIVE ICEFIELD & GLACIER MAP */}
@@ -147,285 +319,551 @@ export default function OperatorComparisonPage() {
 
       {/* MASTER SPECIFIC TOUR COMPARISON TABLE */}
       <section style={{ marginBottom: "48px" }}>
-        <h2 style={{ fontSize: "1.45rem", fontWeight: 800, color: "var(--text, #ffffff)", marginBottom: "16px" }}>
-          Master Tour Comparison Matrix (Specific Verified Excursions)
+        <h2
+          style={{
+            fontSize: "1.45rem",
+            fontWeight: 800,
+            color: "var(--text, #ffffff)",
+            marginBottom: "16px",
+          }}
+        >
+          Master Tour Comparison Matrix (Verified {VERIFIED_TARIFF_DATE_LONG})
         </h2>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860, background: "var(--panel, #0f172a)", borderRadius: "var(--radius-md, 12px)", overflow: "hidden", border: "1px solid var(--line, #334155)" }}>
+        <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              minWidth: 820,
+              background: "var(--panel, #0f172a)",
+              borderRadius: "var(--radius-md, 12px)",
+              overflow: "hidden",
+              border: "1px solid var(--line, #334155)",
+            }}
+          >
             <thead>
-              <tr style={{ background: "rgba(3, 14, 23, 0.9)", borderBottom: "1px solid var(--line, #334155)" }}>
-                <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--accent, #f0b35b)", fontSize: "0.85rem" }}>Operator &amp; Specific Tour</th>
-                <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--text, #ffffff)", fontSize: "0.85rem" }}>Glacier Time &amp; Location</th>
-                <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--text, #ffffff)", fontSize: "0.85rem" }}>Physical Effort</th>
-                <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--text, #ffffff)", fontSize: "0.85rem" }}>Base Price / Person</th>
-                <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--text, #ffffff)", fontSize: "0.85rem" }}>Best For</th>
+              <tr
+                style={{
+                  background: "rgba(3, 14, 23, 0.9)",
+                  borderBottom: "1px solid var(--line, #334155)",
+                }}
+              >
+                <th
+                  style={{
+                    padding: "14px 16px",
+                    textAlign: "left",
+                    color: "var(--accent, #f0b35b)",
+                    fontSize: "0.82rem",
+                  }}
+                >
+                  Operator &amp; Tour
+                </th>
+                <th
+                  style={{
+                    padding: "14px 16px",
+                    textAlign: "left",
+                    color: "var(--text, #ffffff)",
+                    fontSize: "0.82rem",
+                  }}
+                >
+                  Total Duration &amp; Glacier
+                </th>
+                <th
+                  style={{
+                    padding: "14px 16px",
+                    textAlign: "left",
+                    color: "var(--text, #ffffff)",
+                    fontSize: "0.82rem",
+                  }}
+                >
+                  Age &amp; Effort
+                </th>
+                <th
+                  style={{
+                    padding: "14px 16px",
+                    textAlign: "left",
+                    color: "var(--text, #ffffff)",
+                    fontSize: "0.82rem",
+                  }}
+                >
+                  Base Price (as of Nov 18, 2026)
+                </th>
+                <th
+                  style={{
+                    padding: "14px 16px",
+                    textAlign: "left",
+                    color: "var(--text, #ffffff)",
+                    fontSize: "0.82rem",
+                  }}
+                >
+                  Weight Surcharge &amp; Tax
+                </th>
               </tr>
             </thead>
-            <tbody style={{ fontSize: "0.9rem" }}>
-              {/* TEMSCO WALK */}
+            <tbody style={{ fontSize: "0.88rem" }}>
               <tr style={{ borderBottom: "1px solid var(--line, #334155)" }}>
-                <td style={{ padding: "14px 16px", fontWeight: 700, color: "#ffffff" }}>
-                  <strong>TEMSCO</strong><br />
-                  <span style={{ color: "var(--ice, #93c5fd)", fontSize: "0.82rem" }}>Mendenhall Glacier Guided Walk</span>
+                <td style={{ padding: "14px 16px", color: "#ffffff" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <OperatorIdentityMark operator="temsco" size="sm" />
+                    <div>
+                      <strong>TEMSCO Helicopters</strong>
+                      <br />
+                      <span style={{ color: "var(--ice, #93c5fd)", fontSize: "0.8rem" }}>
+                        Mendenhall Glacier &amp; Guided Walk
+                      </span>
+                    </div>
+                  </div>
                 </td>
                 <td style={{ padding: "14px 16px", color: "var(--muted, #cbd5e1)" }}>
-                  20–25 min on ice<br />
-                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Mendenhall Glacier (Conditions dictate site)</span>
+                  2h 15m door-to-door
+                  <br />
+                  <span style={{ fontSize: "0.78rem", color: "#94a3b8" }}>
+                    Mendenhall Glacier (~20–25m walk)
+                  </span>
                 </td>
                 <td style={{ padding: "14px 16px", color: "var(--muted, #cbd5e1)" }}>
-                  <strong>Easy / Gentle</strong><br />
-                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Pull-on overboots</span>
+                  Ages 2+ · Easy walk
                 </td>
                 <td style={{ padding: "14px 16px", color: "#10b981", fontWeight: 700 }}>
-                  $409 base rate<br />
-                  <span style={{ fontSize: "0.75rem", color: "#64748b" }}>+ 5% CBJ tax &amp; fees at checkout</span>
+                  $449 / person
+                  <br />
+                  <span style={{ fontSize: "0.74rem", color: "#94a3b8" }}>
+                    as of Nov 18, 2026
+                  </span>
                 </td>
-                <td style={{ padding: "14px 16px", color: "var(--accent, #f0b35b)", fontWeight: 600 }}>
-                  First-time flyers, families, multi-generational groups
+                <td style={{ padding: "14px 16px", color: "#cbd5e1", fontSize: "0.8rem" }}>
+                  +$150 at 250+ lbs clothed · + CBJ sales tax &amp; fees
                 </td>
               </tr>
 
-              {/* COASTAL LANDING */}
               <tr style={{ borderBottom: "1px solid var(--line, #334155)" }}>
-                <td style={{ padding: "14px 16px", fontWeight: 700, color: "#ffffff" }}>
-                  <strong>Coastal</strong><br />
-                  <span style={{ color: "var(--ice, #93c5fd)", fontSize: "0.82rem" }}>Icefield Tour with Glacier Landing</span>
+                <td style={{ padding: "14px 16px", color: "#ffffff" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <OperatorIdentityMark operator="coastal" size="sm" />
+                    <div>
+                      <strong>Coastal Helicopters</strong>
+                      <br />
+                      <span style={{ color: "var(--ice, #93c5fd)", fontSize: "0.8rem" }}>
+                        Icefield Excursion / Herbert Glacier Landing
+                      </span>
+                    </div>
+                  </div>
                 </td>
                 <td style={{ padding: "14px 16px", color: "var(--muted, #cbd5e1)" }}>
-                  25–30 min on ice<br />
-                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Herbert Glacier (Geographic location)</span>
+                  ~2h 35m door-to-door
+                  <br />
+                  <span style={{ fontSize: "0.78rem", color: "#94a3b8" }}>
+                    Herbert Glacier / Juneau Icefield
+                  </span>
                 </td>
                 <td style={{ padding: "14px 16px", color: "var(--muted, #cbd5e1)" }}>
-                  <strong>Easy / Gentle</strong><br />
-                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Glacier boots provided</span>
+                  All ages · Easy walk
                 </td>
                 <td style={{ padding: "14px 16px", color: "#10b981", fontWeight: 700 }}>
-                  $429 base rate<br />
-                  <span style={{ fontSize: "0.75rem", color: "#64748b" }}>+ 5% CBJ tax &amp; fees at checkout</span>
+                  $459 Standard (1–259 lbs)
+                  <br />
+                  <span style={{ fontSize: "0.74rem", color: "#94a3b8" }}>
+                    as of Nov 18, 2026
+                  </span>
                 </td>
-                <td style={{ padding: "14px 16px", color: "var(--accent, #f0b35b)", fontWeight: 600 }}>
-                  Scenic flight enthusiasts &amp; boutique Herbert Glacier landings
+                <td style={{ padding: "14px 16px", color: "#cbd5e1", fontSize: "0.8rem" }}>
+                  $609 (260–299 lbs, +$150) · $918 (300+ lbs, 2 seats) · + CBJ sales tax &amp; fees
                 </td>
               </tr>
 
-              {/* NORTHSTAR WALKABOUT */}
               <tr style={{ borderBottom: "1px solid var(--line, #334155)" }}>
-                <td style={{ padding: "14px 16px", fontWeight: 700, color: "#ffffff" }}>
-                  <strong>NorthStar</strong><br />
-                  <span style={{ color: "var(--ice, #93c5fd)", fontSize: "0.82rem" }}>Helicopter Glacier Walkabout</span>
+                <td style={{ padding: "14px 16px", color: "#ffffff" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <OperatorIdentityMark operator="northstar" size="sm" />
+                    <div>
+                      <strong>NorthStar Trekking</strong>
+                      <br />
+                      <span style={{ color: "var(--ice, #93c5fd)", fontSize: "0.8rem" }}>
+                        Helicopter Glacier Walkabout
+                      </span>
+                    </div>
+                  </div>
                 </td>
                 <td style={{ padding: "14px 16px", color: "var(--muted, #cbd5e1)" }}>
-                  <strong>Full 1 hour on ice</strong><br />
-                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Mendenhall (Conditions dictate site)</span>
+                  3h 15m door-to-door
+                  <br />
+                  <span style={{ fontSize: "0.78rem", color: "#94a3b8" }}>
+                    ~1h guided ice walk (crampons)
+                  </span>
                 </td>
                 <td style={{ padding: "14px 16px", color: "var(--muted, #cbd5e1)" }}>
-                  <strong>Moderate Walking</strong><br />
-                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Crampons &amp; pole (Ages 8+)</span>
+                  Ages 8+ · Moderate
                 </td>
                 <td style={{ padding: "14px 16px", color: "#10b981", fontWeight: 700 }}>
-                  $499 base rate<br />
-                  <span style={{ fontSize: "0.75rem", color: "#64748b" }}>+ 5% CBJ tax &amp; fees at checkout</span>
+                  $539 / person
+                  <br />
+                  <span style={{ fontSize: "0.74rem", color: "#94a3b8" }}>
+                    as of Nov 18, 2026
+                  </span>
                 </td>
-                <td style={{ padding: "14px 16px", color: "var(--accent, #f0b35b)", fontWeight: 600 }}>
-                  Active guests wanting 1 full hr on ice without technical climbing
+                <td style={{ padding: "14px 16px", color: "#cbd5e1", fontSize: "0.8rem" }}>
+                  +$250 at 250+ lbs clothed · + CBJ sales tax &amp; fees
                 </td>
               </tr>
 
-              {/* NORTHSTAR TREK */}
               <tr style={{ borderBottom: "1px solid var(--line, #334155)" }}>
-                <td style={{ padding: "14px 16px", fontWeight: 700, color: "#ffffff" }}>
-                  <strong>NorthStar</strong><br />
-                  <span style={{ color: "var(--ice, #93c5fd)", fontSize: "0.82rem" }}>Level 1 Glacier Ice Trek</span>
+                <td style={{ padding: "14px 16px", color: "#ffffff" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <OperatorIdentityMark operator="northstar" size="sm" />
+                    <div>
+                      <strong>NorthStar Trekking</strong>
+                      <br />
+                      <span style={{ color: "var(--ice, #93c5fd)", fontSize: "0.8rem" }}>
+                        Helicopter Glacier Trek
+                      </span>
+                    </div>
+                  </div>
                 </td>
                 <td style={{ padding: "14px 16px", color: "var(--muted, #cbd5e1)" }}>
-                  <strong>2 hours on ice</strong><br />
-                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Mendenhall Deep Ice (Conditions dictate site)</span>
+                  4h 15m door-to-door
+                  <br />
+                  <span style={{ fontSize: "0.78rem", color: "#94a3b8" }}>
+                    ~2h technical trek on glacier
+                  </span>
                 </td>
                 <td style={{ padding: "14px 16px", color: "var(--muted, #cbd5e1)" }}>
-                  <strong>Active Mountaineering</strong><br />
-                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Steel crampons, boots, harness</span>
+                  Ages 12+ · Active trek
                 </td>
                 <td style={{ padding: "14px 16px", color: "#10b981", fontWeight: 700 }}>
-                  $549 base rate<br />
-                  <span style={{ fontSize: "0.75rem", color: "#64748b" }}>+ 5% CBJ tax &amp; fees at checkout</span>
+                  $599 / person
+                  <br />
+                  <span style={{ fontSize: "0.74rem", color: "#94a3b8" }}>
+                    as of Nov 18, 2026
+                  </span>
                 </td>
-                <td style={{ padding: "14px 16px", color: "var(--accent, #f0b35b)", fontWeight: 600 }}>
-                  Hikers exploring deep crevasses, moulins, and blue ice walls
+                <td style={{ padding: "14px 16px", color: "#cbd5e1", fontSize: "0.8rem" }}>
+                  +$250 at 250+ lbs clothed · + CBJ sales tax &amp; fees
                 </td>
               </tr>
 
-              {/* TEMSCO DOG SLED */}
               <tr style={{ borderBottom: "1px solid var(--line, #334155)" }}>
-                <td style={{ padding: "14px 16px", fontWeight: 700, color: "#ffffff" }}>
-                  <strong>TEMSCO</strong><br />
-                  <span style={{ color: "var(--ice, #93c5fd)", fontSize: "0.82rem" }}>Glacier Dog Sledding Tour</span>
+                <td style={{ padding: "14px 16px", color: "#ffffff" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <OperatorIdentityMark operator="temsco" size="sm" />
+                    <div>
+                      <strong>TEMSCO Helicopters</strong>
+                      <br />
+                      <span style={{ color: "var(--ice, #93c5fd)", fontSize: "0.8rem" }}>
+                        Mendenhall Glacier Dog Sledding
+                      </span>
+                    </div>
+                  </div>
                 </td>
                 <td style={{ padding: "14px 16px", color: "var(--muted, #cbd5e1)" }}>
-                  ~1 hr at alpine camp<br />
-                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Herbert Glacier (Approx. seasonal camp)</span>
+                  2h 45m total (May–Aug seasonal)
+                  <br />
+                  <span style={{ fontSize: "0.78rem", color: "#94a3b8" }}>
+                    Upper snowfield mushing camp
+                  </span>
                 </td>
                 <td style={{ padding: "14px 16px", color: "var(--muted, #cbd5e1)" }}>
-                  <strong>Easy / Moderate</strong><br />
-                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Ride sled or stand on runners</span>
+                  Ages 2+ · Easy/Moderate
                 </td>
                 <td style={{ padding: "14px 16px", color: "#10b981", fontWeight: 700 }}>
-                  $659 base rate<br />
-                  <span style={{ fontSize: "0.75rem", color: "#64748b" }}>+ 5% CBJ tax &amp; fees at checkout</span>
+                  $759 / person
+                  <br />
+                  <span style={{ fontSize: "0.74rem", color: "#94a3b8" }}>
+                    as of Nov 18, 2026
+                  </span>
                 </td>
-                <td style={{ padding: "14px 16px", color: "var(--accent, #f0b35b)", fontWeight: 600 }}>
-                  Iconic dog sledding with Iditarod mushers on Herbert Glacier
+                <td style={{ padding: "14px 16px", color: "#cbd5e1", fontSize: "0.8rem" }}>
+                  May–Aug snowpack · +$150 at 250+ lbs clothed · + CBJ sales tax &amp; fees
                 </td>
               </tr>
 
-              {/* COASTAL DOG SLED */}
               <tr style={{ borderBottom: "1px solid var(--line, #334155)" }}>
-                <td style={{ padding: "14px 16px", fontWeight: 700, color: "#ffffff" }}>
-                  <strong>Coastal</strong><br />
-                  <span style={{ color: "var(--ice, #93c5fd)", fontSize: "0.82rem" }}>Dog Sled Tour on Herbert Glacier</span>
+                <td style={{ padding: "14px 16px", color: "#ffffff" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <OperatorIdentityMark operator="coastal" size="sm" />
+                    <div>
+                      <strong>Coastal Helicopters</strong>
+                      <br />
+                      <span style={{ color: "var(--ice, #93c5fd)", fontSize: "0.8rem" }}>
+                        Dog Sled Tour on Herbert Glacier
+                      </span>
+                    </div>
+                  </div>
                 </td>
                 <td style={{ padding: "14px 16px", color: "var(--muted, #cbd5e1)" }}>
-                  ~1 hr at alpine camp<br />
-                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Herbert Glacier (Approx. seasonal camp)</span>
+                  3h 15m total (May–Aug seasonal)
+                  <br />
+                  <span style={{ fontSize: "0.78rem", color: "#94a3b8" }}>
+                    Herbert Glacier snow camp
+                  </span>
                 </td>
                 <td style={{ padding: "14px 16px", color: "var(--muted, #cbd5e1)" }}>
-                  <strong>Easy / Moderate</strong><br />
-                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Ride sled or stand on runners</span>
+                  All ages · Easy/Moderate
                 </td>
                 <td style={{ padding: "14px 16px", color: "#10b981", fontWeight: 700 }}>
-                  $709 base rate<br />
-                  <span style={{ fontSize: "0.75rem", color: "#64748b" }}>+ 5% CBJ tax &amp; fees at checkout</span>
+                  $769 Standard (1–259 lbs)
+                  <br />
+                  <span style={{ fontSize: "0.74rem", color: "#94a3b8" }}>
+                    as of Nov 18, 2026
+                  </span>
                 </td>
-                <td style={{ padding: "14px 16px", color: "var(--accent, #f0b35b)", fontWeight: 600 }}>
-                  Boutique small-group dog sledding on Herbert Glacier
+                <td style={{ padding: "14px 16px", color: "#cbd5e1", fontSize: "0.8rem" }}>
+                  May–Aug · $919 (260–299 lbs) · $1,538 (300+ lbs) · + CBJ sales tax &amp; fees
                 </td>
               </tr>
 
-              {/* NORTHSTAR DOG SLED */}
               <tr>
-                <td style={{ padding: "14px 16px", fontWeight: 700, color: "#ffffff" }}>
-                  <strong>NorthStar</strong><br />
-                  <span style={{ color: "var(--ice, #93c5fd)", fontSize: "0.82rem" }}>Glacier Dogsled Adventure</span>
+                <td style={{ padding: "14px 16px", color: "#ffffff" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <OperatorIdentityMark operator="northstar" size="sm" />
+                    <div>
+                      <strong>NorthStar Trekking</strong>
+                      <br />
+                      <span style={{ color: "var(--ice, #93c5fd)", fontSize: "0.8rem" }}>
+                        Helicopter &amp; Dog Sled Glacier Trek
+                      </span>
+                    </div>
+                  </div>
                 </td>
                 <td style={{ padding: "14px 16px", color: "var(--muted, #cbd5e1)" }}>
-                  ~1 hr at alpine camp<br />
-                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Norris Glacier (Approx. seasonal camp · Departs Douglas Base)</span>
+                  3h 15m total (May–Aug seasonal)
+                  <br />
+                  <span style={{ fontSize: "0.78rem", color: "#94a3b8" }}>
+                    Norris Glacier camp · Douglas Heliport
+                  </span>
                 </td>
                 <td style={{ padding: "14px 16px", color: "var(--muted, #cbd5e1)" }}>
-                  <strong>Easy / Moderate</strong><br />
-                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Ride sled with partner musher (Ages 2+)</span>
+                  Ages 2+ · Easy/Moderate
                 </td>
                 <td style={{ padding: "14px 16px", color: "#10b981", fontWeight: 700 }}>
-                  $739 base rate<br />
-                  <span style={{ fontSize: "0.75rem", color: "#64748b" }}>+ 5% CBJ tax &amp; fees at checkout</span>
+                  $789 / person
+                  <br />
+                  <span style={{ fontSize: "0.74rem", color: "#94a3b8" }}>
+                    as of Nov 18, 2026
+                  </span>
                 </td>
-                <td style={{ padding: "14px 16px", color: "var(--accent, #f0b35b)", fontWeight: 600 }}>
-                  Exclusive Norris Glacier mushing camp adventure
+                <td style={{ padding: "14px 16px", color: "#cbd5e1", fontSize: "0.8rem" }}>
+                  May–Aug snowpack · +$250 at 250+ lbs clothed · + CBJ sales tax &amp; fees
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
         <p style={{ fontSize: "0.82rem", color: "#94a3b8", lineHeight: 1.5, margin: "10px 0 0" }}>
-          * Published direct base rates shown. Local City and Borough of Juneau sales tax (5%) and provider processing fees are calculated by each operator at final checkout. Most glacier treks use Mendenhall Glacier, but actual landing locations can change based on weather and ice safety conditions. Dog sled camps on Herbert and Norris are approximate seasonal locations (mid-May to August).
+          * Direct operator base tariffs verified on {VERIFIED_TARIFF_DATE_LONG}. City and Borough
+          of Juneau (CBJ) sales tax, port/landing fees, and clothed weight surcharges are added at
+          provider checkout. Actual landing sites adjust daily for cloud ceilings and ice safety.
         </p>
-        <div style={{ marginTop: 12, padding: "12px 16px", background: "rgba(15, 23, 42, 0.8)", border: "1px solid #1e293b", borderRadius: 8, fontSize: "0.82rem", color: "#94a3b8", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-          <div>
-            <strong style={{ color: "#38bdf8" }}>Official Operator Sources &amp; Verification:</strong> Checked on <strong>October 7, 2026</strong> directly against published operator listings:
-            <span style={{ marginLeft: 6 }}>
-              <a href="https://temscoair.com/juneau-faq/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>TEMSCO Juneau FAQ</a> •{" "}
-              <a href="https://coastalhelicopters.com/tours/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>Coastal Tours</a> •{" "}
-              <a href="https://northstartrekking.com/faqs/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>NorthStar FAQ</a> •{" "}
-              <a href="https://wingsairways.com/world-of-wings-airways/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>Wings Airways</a>
-            </span>
-          </div>
-          <span style={{ color: "#64748b", fontSize: "0.75rem" }}>Rates &amp; logistics subject to provider change</span>
-        </div>
       </section>
 
-      {/* QUESTION 1: GLACIER LANDING VS GUIDED WALK VS ICE TREK */}
-      <section id="effort-comparison" style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid var(--line, #334155)", borderRadius: "var(--radius-lg, 16px)", padding: "28px", marginBottom: "36px" }}>
-        <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--accent, #f0b35b)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+      {/* FACTOR 1: WALK VS WALKABOUT VS TREK */}
+      <section
+        id="effort-comparison"
+        style={{
+          background: "rgba(15, 23, 42, 0.7)",
+          border: "1px solid var(--line, #334155)",
+          borderRadius: "var(--radius-lg, 16px)",
+          padding: "28px",
+          marginBottom: "36px",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "0.75rem",
+            fontWeight: 800,
+            color: "var(--accent, #f0b35b)",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+          }}
+        >
           Decision Factor 1
         </span>
         <h2 style={{ fontSize: "1.5rem", color: "#ffffff", margin: "6px 0 14px" }}>
-          Glacier Landing vs. Guided Walk vs. Ice Trek: How Much Walking &amp; Effort Do You Want?
+          Glacier Landing vs. Walkabout vs. Ice Trek: How Much Time &amp; Effort on Ice?
         </h2>
-        <p style={{ lineHeight: 1.6, color: "var(--muted, #cbd5e1)", marginBottom: "16px" }}>
-          Understanding physical demands and ice duration prevents mismatches. Juneau helicopter excursions fall into three distinct activity tiers. <em>Note: While most treks and walkabouts land on Mendenhall Glacier, pilots and lead guides evaluate weather, cloud ceilings, and ice safety daily—landing locations may adjust to alternate icefield zones (such as Lemon Creek or Herbert Glacier) when necessary.</em>
-        </p>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: "18px", marginBottom: "16px" }}>
-          <div style={{ background: "#0c121e", border: "1px solid #1e293b", borderRadius: "10px", padding: "18px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+            gap: "18px",
+          }}
+        >
+          <div
+            style={{
+              background: "#0c121e",
+              border: "1px solid #1e293b",
+              borderRadius: "10px",
+              padding: "18px",
+            }}
+          >
             <h3 style={{ fontSize: "1.05rem", color: "#93c5fd", margin: "0 0 6px" }}>
-              Tier 1: Standard Glacier Landing (20–30 min)
+              Tier 1: Standard Glacier Landing (20–40 min on ice)
             </h3>
             <p style={{ fontSize: "0.82rem", color: "#e2e8f0", margin: "0 0 10px" }}>
-              <strong>Offered by:</strong> TEMSCO ($409 base, Mendenhall) &amp; Coastal ($429 base, Herbert)
+              <strong>TEMSCO</strong> ($449 base, 2h 15m) &amp; <strong>Coastal</strong> ($459
+              Standard base, ~2h 35m), as of {VERIFIED_TARIFF_DATE_LONG}
             </p>
-            <ul style={{ fontSize: "0.85rem", color: "var(--muted, #94a3b8)", lineHeight: 1.55, paddingLeft: 18, margin: 0 }}>
-              <li><strong>Time on Ice:</strong> 20 to 30 minutes.</li>
-              <li><strong>Footwear:</strong> Slip-on rubber/neoprene overboots with traction soles fitting over your sneakers.</li>
-              <li><strong>Terrain:</strong> Gentle, level ice near the helicopter skids.</li>
-              <li><strong>Physical Demand:</strong> Minimal. If you can walk three city blocks, you can comfortably do this tour. Suitable for all ages (2+) and multi-generational families.</li>
+            <ul
+              style={{
+                fontSize: "0.85rem",
+                color: "var(--muted, #94a3b8)",
+                lineHeight: 1.55,
+                paddingLeft: 18,
+                margin: 0,
+              }}
+            >
+              <li>Slip-on traction overboots provided at the heliport.</li>
+              <li>Gentle, relatively level ice walk near the landing zone.</li>
+              <li>Family-accessible (TEMSCO ages 2+; Coastal all ages).</li>
             </ul>
           </div>
 
-          <div style={{ background: "#0c121e", border: "1px solid #1e293b", borderRadius: "10px", padding: "18px" }}>
+          <div
+            style={{
+              background: "#0c121e",
+              border: "1px solid #1e293b",
+              borderRadius: "10px",
+              padding: "18px",
+            }}
+          >
             <h3 style={{ fontSize: "1.05rem", color: "#f0b35b", margin: "0 0 6px" }}>
-              Tier 2: Glacier Walkabout (1 Full Hour on Ice)
+              Tier 2: Glacier Walkabout (~1 Hour on Ice)
             </h3>
             <p style={{ fontSize: "0.82rem", color: "#e2e8f0", margin: "0 0 10px" }}>
-              <strong>Offered by:</strong> NorthStar Trekking ($499 published base, Airport Base)
+              <strong>NorthStar Trekking</strong> ($539 base, 3h 15m total, ages 8+, as of{" "}
+              {VERIFIED_TARIFF_DATE_LONG}; +$250 at 250+ lbs)
             </p>
-            <ul style={{ fontSize: "0.85rem", color: "var(--muted, #94a3b8)", lineHeight: 1.55, paddingLeft: 18, margin: 0 }}>
-              <li><strong>Time on Ice:</strong> Full 60 minutes exploring.</li>
-              <li><strong>Footwear &amp; Gear:</strong> Traction crampons and trekking pole for enhanced stability.</li>
-              <li><strong>Terrain:</strong> Natural undulating ice formations, meltwater pools, and blue crevasse edges.</li>
-              <li><strong>Physical Demand:</strong> Moderate. Ideal for active travelers who want more than 20 minutes on ice without requiring technical climbing harnesses. Minimum age 8+.</li>
+            <ul
+              style={{
+                fontSize: "0.85rem",
+                color: "var(--muted, #94a3b8)",
+                lineHeight: 1.55,
+                paddingLeft: 18,
+                margin: 0,
+              }}
+            >
+              <li>Roughly 60 minutes exploring undulating glacier ice and meltwater features.</li>
+              <li>Outfitted with mountaineering boots, crampons, helmet, and trekking pole.</li>
+              <li>Moderate walking pace without technical ice climbing.</li>
             </ul>
           </div>
 
-          <div style={{ background: "#0c121e", border: "1px solid #1e293b", borderRadius: "10px", padding: "18px" }}>
+          <div
+            style={{
+              background: "#0c121e",
+              border: "1px solid #1e293b",
+              borderRadius: "10px",
+              padding: "18px",
+            }}
+          >
             <h3 style={{ fontSize: "1.05rem", color: "#38bdf8", margin: "0 0 6px" }}>
-              Tier 3: Guided Ice Trek &amp; Climb (2+ Hours)
+              Tier 3: Helicopter Glacier Trek (~2 Hours on Ice)
             </h3>
             <p style={{ fontSize: "0.82rem", color: "#e2e8f0", margin: "0 0 10px" }}>
-              <strong>Offered by:</strong> NorthStar Trekking ($549 Trek / $599 Climb, Airport Base)
+              <strong>NorthStar Trekking</strong> ($599 base, 4h 15m total, ages 12+, as of{" "}
+              {VERIFIED_TARIFF_DATE_LONG}; +$250 at 250+ lbs)
             </p>
-            <ul style={{ fontSize: "0.85rem", color: "var(--muted, #94a3b8)", lineHeight: 1.55, paddingLeft: 18, margin: 0 }}>
-              <li><strong>Time on Ice:</strong> 2 to 2.5 hours deep on the glacier.</li>
-              <li><strong>Footwear &amp; Gear:</strong> Sturdy mountain boots, steel crampons, harness, rainwear, and trekking poles (plus ice axes/ropes for climbing).</li>
-              <li><strong>Terrain:</strong> Hiking ridges, peering down moulins, navigating deep blue ice labyrinths.</li>
-              <li><strong>Physical Demand:</strong> Strenuous. Requires solid fitness and cardio endurance. Minimum age 12+.</li>
+            <ul
+              style={{
+                fontSize: "0.85rem",
+                color: "var(--muted, #94a3b8)",
+                lineHeight: 1.55,
+                paddingLeft: 18,
+                margin: 0,
+              }}
+            >
+              <li>2 hours hiking deeper crevasse ridges, moulins, and blue ice walls.</li>
+              <li>Full boots, steel crampons, rain gear, helmet, and guide equipment included.</li>
+              <li>Active hike requiring steady endurance and 7+ hour cruise port calls.</li>
             </ul>
           </div>
         </div>
       </section>
 
-      {/* QUESTION 2: GLACIER DOG SLEDDING OPTIONS */}
-      <section id="dog-sledding-options" style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid var(--line, #334155)", borderRadius: "var(--radius-lg, 16px)", padding: "28px", marginBottom: "36px" }}>
-        <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--accent, #f0b35b)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+      {/* FACTOR 2: DOG SLEDDING */}
+      <section
+        id="dog-sledding-options"
+        style={{
+          background: "rgba(15, 23, 42, 0.7)",
+          border: "1px solid var(--line, #334155)",
+          borderRadius: "var(--radius-lg, 16px)",
+          padding: "28px",
+          marginBottom: "36px",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "0.75rem",
+            fontWeight: 800,
+            color: "var(--accent, #f0b35b)",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+          }}
+        >
           Decision Factor 2
         </span>
         <h2 style={{ fontSize: "1.5rem", color: "#ffffff", margin: "6px 0 14px" }}>
-          Glacier Dog Sledding: Which Specific Tours Offer It and What’s Included?
+          Seasonal Glacier Dog Sledding (May–August Snowpack Window)
         </h2>
-        <p style={{ fontSize: "0.95rem", color: "var(--muted, #cbd5e1)", lineHeight: 1.6, marginBottom: 18 }}>
-          <strong>All three Juneau helicopter operators offer glacier dog sledding excursions</strong> during the snow season (mid-May to mid-to-late August). Each operator flies to a dedicated summer alpine snowfield camp (camp locations are approximate and relocated seasonally based on high-altitude snow conditions):
+        <p
+          style={{
+            fontSize: "0.95rem",
+            color: "var(--muted, #cbd5e1)",
+            lineHeight: 1.6,
+            marginBottom: 18,
+          }}
+        >
+          All three Juneau helicopter carriers operate summer snow-camp mushing tours during the
+          May–August snowpack window (rates below are direct base prices as of{" "}
+          {VERIFIED_TARIFF_DATE_LONG} before CBJ sales tax &amp; fees):
         </p>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 290px), 1fr))", gap: 16, marginBottom: 18 }}>
-          {/* TEMSCO DOG SLED */}
-          <div style={{ background: "#0c121e", border: "1px solid #1e293b", borderRadius: "10px", padding: "18px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+            gap: 16,
+          }}
+        >
+          <div
+            style={{
+              background: "#0c121e",
+              border: "1px solid #1e293b",
+              borderRadius: "10px",
+              padding: "18px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <OperatorIdentityMark operator="temsco" size="sm" />
               <div>
-                <span style={{ fontSize: "0.72rem", color: "var(--accent, #f0b35b)", fontWeight: 800, textTransform: "uppercase" }}>TEMSCO Helicopters</span>
-                <h3 style={{ fontSize: "1.05rem", color: "#ffffff", margin: "2px 0 0" }}>Herbert Glacier Dog Sledding</h3>
+                <span
+                  style={{
+                    fontSize: "0.72rem",
+                    color: "var(--accent, #f0b35b)",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  TEMSCO Helicopters
+                </span>
+                <h3 style={{ fontSize: "1.02rem", color: "#ffffff", margin: 0 }}>
+                  Mendenhall Glacier Dog Sledding
+                </h3>
               </div>
-              <span style={{ fontSize: "1rem", fontWeight: 800, color: "#10b981" }}>$659 base rate</span>
             </div>
-            <p style={{ fontSize: "0.82rem", color: "var(--muted, #94a3b8)", lineHeight: 1.5, margin: "0 0 10px" }}>
-              Fly over the icefield to a camp of 100+ Alaskan huskies on Herbert Glacier snowfields. Spend ~1 hour at camp with a 20-minute sled run and time with puppies. Operates mid-May through late August from TEMSCO&apos;s airport base.
+            <p style={{ fontSize: "0.92rem", fontWeight: 800, color: "#10b981", margin: "0 0 6px" }}>
+              $759 / person (ages 2+, as of Nov 18, 2026)
+            </p>
+            <p
+              style={{
+                fontSize: "0.82rem",
+                color: "var(--muted, #94a3b8)",
+                lineHeight: 1.5,
+                margin: "0 0 12px",
+              }}
+            >
+              2h 45m total · May–August seasonal · +$150 weight surcharge at 250+ lbs clothed · +
+              CBJ sales tax &amp; fees. (Also operates in Skagway at $649/person base, 2h total, as
+              of Nov 18, 2026.)
             </p>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               <a
@@ -438,28 +876,56 @@ export default function OperatorComparisonPage() {
                 Search on Viator →
               </a>
               <a
-                href="https://temscoair.com/tours/juneau-tours/"
+                href="https://temscoair.com/juneau-helicopter-tours/dog-sled/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-card"
                 style={{ fontSize: "0.75rem", padding: "6px 10px" }}
               >
-                TEMSCO Tour Details ↗
+                Official Tariff ↗
               </a>
             </div>
           </div>
 
-          {/* COASTAL DOG SLED */}
-          <div style={{ background: "#0c121e", border: "1px solid #1e293b", borderRadius: "10px", padding: "18px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+          <div
+            style={{
+              background: "#0c121e",
+              border: "1px solid #1e293b",
+              borderRadius: "10px",
+              padding: "18px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <OperatorIdentityMark operator="coastal" size="sm" />
               <div>
-                <span style={{ fontSize: "0.72rem", color: "var(--accent, #f0b35b)", fontWeight: 800, textTransform: "uppercase" }}>Coastal Helicopters</span>
-                <h3 style={{ fontSize: "1.05rem", color: "#ffffff", margin: "2px 0 0" }}>Herbert Glacier Dog Sled Tour</h3>
+                <span
+                  style={{
+                    fontSize: "0.72rem",
+                    color: "var(--accent, #f0b35b)",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Coastal Helicopters
+                </span>
+                <h3 style={{ fontSize: "1.02rem", color: "#ffffff", margin: 0 }}>
+                  Dog Sled Tour on Herbert Glacier
+                </h3>
               </div>
-              <span style={{ fontSize: "1rem", fontWeight: 800, color: "#10b981" }}>$709 base rate</span>
             </div>
-            <p style={{ fontSize: "0.82rem", color: "var(--muted, #94a3b8)", lineHeight: 1.5, margin: "0 0 10px" }}>
-              Helicopter flight to Coastal&apos;s dedicated dog camp on Herbert Glacier snowfields. Meet professional racing mushers, cuddle huskies, and ride across snowfields. Operates mid-May to mid-August from Coastal&apos;s base on Alex Holden Way.
+            <p style={{ fontSize: "0.92rem", fontWeight: 800, color: "#10b981", margin: "0 0 6px" }}>
+              $769 Standard (1–259 lbs, as of Nov 18, 2026)
+            </p>
+            <p
+              style={{
+                fontSize: "0.82rem",
+                color: "var(--muted, #94a3b8)",
+                lineHeight: 1.5,
+                margin: "0 0 12px",
+              }}
+            >
+              3h 15m total · May–August seasonal · $919 Standard Plus (260–299 lbs) · $1,538 Premium
+              (300+ lbs) · + CBJ sales tax &amp; fees.
             </p>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               <a
@@ -478,22 +944,50 @@ export default function OperatorComparisonPage() {
                 className="button button-card"
                 style={{ fontSize: "0.75rem", padding: "6px 10px" }}
               >
-                Coastal Tour Details ↗
+                Official Tariff ↗
               </a>
             </div>
           </div>
 
-          {/* NORTHSTAR DOG SLED */}
-          <div style={{ background: "#0c121e", border: "1px solid #1e293b", borderRadius: "10px", padding: "18px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+          <div
+            style={{
+              background: "#0c121e",
+              border: "1px solid #1e293b",
+              borderRadius: "10px",
+              padding: "18px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <OperatorIdentityMark operator="northstar" size="sm" />
               <div>
-                <span style={{ fontSize: "0.72rem", color: "var(--accent, #f0b35b)", fontWeight: 800, textTransform: "uppercase" }}>NorthStar Trekking</span>
-                <h3 style={{ fontSize: "1.05rem", color: "#ffffff", margin: "2px 0 0" }}>Norris Glacier Dogsled Adventure</h3>
+                <span
+                  style={{
+                    fontSize: "0.72rem",
+                    color: "var(--accent, #f0b35b)",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  NorthStar Trekking
+                </span>
+                <h3 style={{ fontSize: "1.02rem", color: "#ffffff", margin: 0 }}>
+                  Helicopter &amp; Dog Sled Glacier Trek
+                </h3>
               </div>
-              <span style={{ fontSize: "1rem", fontWeight: 800, color: "#10b981" }}>$739 base rate</span>
             </div>
-            <p style={{ fontSize: "0.82rem", color: "var(--muted, #94a3b8)", lineHeight: 1.5, margin: "0 0 10px" }}>
-              Departs from NorthStar&apos;s <strong>Douglas Island Heliport</strong> (6910 N Douglas Hwy). Helicopter flight to Norris Glacier snowfields for an Iditarod musher partner camp excursion. Total tour 3.25 hours, suitable for ages 2+. Operates mid-May to late August.
+            <p style={{ fontSize: "0.92rem", fontWeight: 800, color: "#10b981", margin: "0 0 6px" }}>
+              $789 / person (as of Nov 18, 2026)
+            </p>
+            <p
+              style={{
+                fontSize: "0.82rem",
+                color: "var(--muted, #94a3b8)",
+                lineHeight: 1.5,
+                margin: "0 0 12px",
+              }}
+            >
+              3h 15m total (departs Douglas Island Heliport) · May–August seasonal · +$250 weight
+              surcharge at 250+ lbs clothed · + CBJ sales tax &amp; fees.
             </p>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               <a
@@ -506,236 +1000,360 @@ export default function OperatorComparisonPage() {
                 Search on Viator →
               </a>
               <a
-                href="https://northstartrekking.com/adventures/helicopter-glacier-dogsled-adventure/"
+                href="https://northstartrekking.com/adventures/juneau-glacier-dog-sled-adventure/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-card"
                 style={{ fontSize: "0.75rem", padding: "6px 10px" }}
               >
-                NorthStar Tour Details ↗
+                Official Tariff ↗
               </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* QUESTION 3: TOTAL PRICE AND INCLUSIONS */}
-      <section id="pricing-inclusions" style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid var(--line, #334155)", borderRadius: "var(--radius-lg, 16px)", padding: "28px", marginBottom: "36px" }}>
-        <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--accent, #f0b35b)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+      {/* FACTOR 3: WEIGHT SURCHARGE & FEE COMPARISON */}
+      <section
+        id="pricing-inclusions"
+        style={{
+          background: "rgba(15, 23, 42, 0.7)",
+          border: "1px solid var(--line, #334155)",
+          borderRadius: "var(--radius-lg, 16px)",
+          padding: "28px",
+          marginBottom: "36px",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "0.75rem",
+            fontWeight: 800,
+            color: "var(--accent, #f0b35b)",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+          }}
+        >
           Decision Factor 3
         </span>
         <h2 style={{ fontSize: "1.5rem", color: "#ffffff", margin: "6px 0 14px" }}>
-          Total Price &amp; Inclusions: Direct Published Base Rates
+          Weight Surcharges, Taxes &amp; Cruise Portal Comparisons
         </h2>
-        <p style={{ lineHeight: 1.6, color: "var(--muted, #cbd5e1)", marginBottom: "16px" }}>
-          Helicopter tour pricing includes aviation turbine fuel, pilot staffing, insurance, and Forest Service landing permits. Each operator publishes standard direct base rates:
+        <p style={{ lineHeight: 1.6, color: "var(--muted, #cbd5e1)", marginBottom: "14px" }}>
+          Each operator enforces FAA Part 135 weight-and-balance rules based on clothed passenger
+          weight (with shoes and daypack), verified {VERIFIED_TARIFF_DATE_LONG}:
         </p>
-
-        <div style={{ overflowX: "auto", marginBottom: "18px" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 680, background: "#0c121e", borderRadius: 8, overflow: "hidden", fontSize: "0.88rem" }}>
-            <thead>
-              <tr style={{ background: "#1e293b", borderBottom: "1px solid #334155", color: "#ffffff" }}>
-                <th style={{ padding: "10px 14px", textAlign: "left" }}>Tour Category</th>
-                <th style={{ padding: "10px 14px", textAlign: "left" }}>Operator &amp; Tour</th>
-                <th style={{ padding: "10px 14px", textAlign: "left" }}>Direct Published Base Rate</th>
-                <th style={{ padding: "10px 14px", textAlign: "left" }}>Operating Base &amp; Meeting Point</th>
-                <th style={{ padding: "10px 14px", textAlign: "left" }}>Inclusions &amp; Gear</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style={{ borderBottom: "1px solid #1e293b" }}>
-                <td style={{ padding: "10px 14px", fontWeight: 700, color: "#93c5fd" }}>Glacier Landing Walk</td>
-                <td style={{ padding: "10px 14px", color: "#e2e8f0" }}>TEMSCO Mendenhall Walk</td>
-                <td style={{ padding: "10px 14px", color: "#10b981", fontWeight: 700 }}>$409 base rate</td>
-                <td style={{ padding: "10px 14px", color: "#cbd5e1" }}>Maplesden Way Base (Downtown transfer)</td>
-                <td style={{ padding: "10px 14px", color: "#94a3b8" }}>Overboots + flight guide</td>
-              </tr>
-              <tr style={{ borderBottom: "1px solid #1e293b" }}>
-                <td style={{ padding: "10px 14px", fontWeight: 700, color: "#93c5fd" }}>Glacier Landing Walk</td>
-                <td style={{ padding: "10px 14px", color: "#e2e8f0" }}>Coastal Icefield Landing</td>
-                <td style={{ padding: "10px 14px", color: "#10b981", fontWeight: 700 }}>$429 base rate</td>
-                <td style={{ padding: "10px 14px", color: "#cbd5e1" }}>Alex Holden Base (Goldbelt Tram pickup)</td>
-                <td style={{ padding: "10px 14px", color: "#94a3b8" }}>Glacier boots + flight guide</td>
-              </tr>
-              <tr style={{ borderBottom: "1px solid #1e293b" }}>
-                <td style={{ padding: "10px 14px", fontWeight: 700, color: "#f0b35b" }}>Glacier Walkabout</td>
-                <td style={{ padding: "10px 14px", color: "#e2e8f0" }}>NorthStar Glacier Walkabout</td>
-                <td style={{ padding: "10px 14px", color: "#10b981", fontWeight: 700 }}>$499 base rate</td>
-                <td style={{ padding: "10px 14px", color: "#cbd5e1" }}>Airport Base (Goldbelt Tram pickup)</td>
-                <td style={{ padding: "10px 14px", color: "#94a3b8" }}>Crampons &amp; pole (1 hr ice)</td>
-              </tr>
-              <tr style={{ borderBottom: "1px solid #1e293b" }}>
-                <td style={{ padding: "10px 14px", fontWeight: 700, color: "#38bdf8" }}>Glacier Ice Trek</td>
-                <td style={{ padding: "10px 14px", color: "#e2e8f0" }}>NorthStar Level 1 Trek</td>
-                <td style={{ padding: "10px 14px", color: "#10b981", fontWeight: 700 }}>$549 base rate</td>
-                <td style={{ padding: "10px 14px", color: "#cbd5e1" }}>Airport Base (Goldbelt Tram pickup)</td>
-                <td style={{ padding: "10px 14px", color: "#94a3b8" }}>Boots, crampons, harness (2 hr ice)</td>
-              </tr>
-              <tr style={{ borderBottom: "1px solid #1e293b" }}>
-                <td style={{ padding: "10px 14px", fontWeight: 700, color: "#a855f7" }}>Glacier Dog Sledding</td>
-                <td style={{ padding: "10px 14px", color: "#e2e8f0" }}>TEMSCO Herbert Glacier</td>
-                <td style={{ padding: "10px 14px", color: "#10b981", fontWeight: 700 }}>$659 base rate</td>
-                <td style={{ padding: "10px 14px", color: "#cbd5e1" }}>Maplesden Way Base (Downtown transfer)</td>
-                <td style={{ padding: "10px 14px", color: "#94a3b8" }}>Snow camp boots + sled ride</td>
-              </tr>
-              <tr style={{ borderBottom: "1px solid #1e293b" }}>
-                <td style={{ padding: "10px 14px", fontWeight: 700, color: "#a855f7" }}>Glacier Dog Sledding</td>
-                <td style={{ padding: "10px 14px", color: "#e2e8f0" }}>Coastal Herbert Glacier</td>
-                <td style={{ padding: "10px 14px", color: "#10b981", fontWeight: 700 }}>$709 base rate</td>
-                <td style={{ padding: "10px 14px", color: "#cbd5e1" }}>Alex Holden Base (Goldbelt Tram pickup)</td>
-                <td style={{ padding: "10px 14px", color: "#94a3b8" }}>Mushing gear + sled ride</td>
-              </tr>
-              <tr>
-                <td style={{ padding: "10px 14px", fontWeight: 700, color: "#a855f7" }}>Glacier Dog Sledding</td>
-                <td style={{ padding: "10px 14px", color: "#e2e8f0" }}>NorthStar Norris Glacier</td>
-                <td style={{ padding: "10px 14px", color: "#10b981", fontWeight: 700 }}>$739 base rate</td>
-                <td style={{ padding: "10px 14px", color: "#cbd5e1" }}>Douglas Island Base (Goldbelt Tram pickup)</td>
-                <td style={{ padding: "10px 14px", color: "#94a3b8" }}>Mushing gear + partner musher sled</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div style={{ marginTop: 14, padding: "14px 18px", background: "#0c121e", border: "1px solid #1e293b", borderRadius: 8 }}>
-          <p style={{ fontSize: "0.85rem", color: "#cbd5e1", lineHeight: 1.5, margin: "0 0 10px" }}>
-            <strong>Fee Breakdown &amp; Published Rate Terms:</strong> All three operators publish direct base rates. Local City and Borough of Juneau sales tax (5%) and provider processing fees are calculated by each operator at final checkout. Standard FAA weight and balance regulations apply across all three operators for guests weighing 250 lbs or more.
-          </p>
-          <div style={{ fontSize: "0.8rem", color: "#94a3b8", lineHeight: 1.5, borderTop: "1px solid #1e293b", paddingTop: 10, display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-            <div>
-              📅 <strong>Checked on: October 7, 2026</strong> • Official published pricing sources:{" "}
-              <a href="https://temscoair.com/juneau-faq/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>TEMSCO Pricing FAQ</a> |{" "}
-              <a href="https://coastalhelicopters.com/tours/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>Coastal Tours Directory</a> |{" "}
-              <a href="https://northstartrekking.com/treks/tours/helicopter-glacier-walkabout/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>NorthStar Walkabout</a> |{" "}
-              <a href="https://northstartrekking.com/adventures/helicopter-glacier-dogsled-adventure/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>NorthStar Dogsled</a>
-            </div>
-            <span style={{ color: "#64748b", fontSize: "0.75rem" }}>Rates verified from current operator schedules</span>
-          </div>
-        </div>
+        <ul style={{ fontSize: "0.88rem", color: "#cbd5e1", lineHeight: 1.65, paddingLeft: 20 }}>
+          <li>
+            <strong>TEMSCO Helicopters:</strong> +$150 weight surcharge at 250+ lbs clothed (Juneau
+            &amp; Skagway) + municipal sales tax &amp; fees.
+          </li>
+          <li>
+            <strong>Coastal Helicopters:</strong> Tiered clothed weight pricing—Standard (1–259
+            lbs), Standard Plus (260–299 lbs: $609 on Icefield / $919 on Dog Sled), and Premium
+            (300+ lbs, 2 seats: $918 on Icefield / $1,538 on Dog Sled) + CBJ sales tax &amp; fees.
+          </li>
+          <li>
+            <strong>NorthStar Trekking:</strong> +$250 weight surcharge at 250+ lbs clothed across
+            Walkabout ($539 base), Trek ($599 base), and Dog Sled ($789 base) + CBJ sales tax &amp;
+            fees.
+          </li>
+          <li>
+            <strong>Cruise-Line Excursion Portals:</strong> Check current cruise-line price in your
+            sailing portal, or use our{" "}
+            <Link
+              href="/juneau/cruise-excursions-vs-independent"
+              style={{ color: "#9ed9ff", textDecoration: "underline", fontWeight: 700 }}
+            >
+              Cruise Portal vs. Direct Tariff Calculator
+            </Link>{" "}
+            to compare your ship&apos;s exact quote.
+          </li>
+        </ul>
       </section>
 
-      {/* QUESTION 4: CRUISE TIMING AND PICKUP */}
-      <section id="cruise-timing-pickup" style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid var(--line, #334155)", borderRadius: "var(--radius-lg, 16px)", padding: "28px", marginBottom: "36px" }}>
-        <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--accent, #f0b35b)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+      {/* FACTOR 4: CRUISE TIMING & 2-HOUR BUFFER */}
+      <section
+        id="cruise-timing-pickup"
+        style={{
+          background: "rgba(15, 23, 42, 0.7)",
+          border: "1px solid var(--line, #334155)",
+          borderRadius: "var(--radius-lg, 16px)",
+          padding: "28px",
+          marginBottom: "36px",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "0.75rem",
+            fontWeight: 800,
+            color: "var(--accent, #f0b35b)",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+          }}
+        >
           Decision Factor 4
         </span>
         <h2 style={{ fontSize: "1.5rem", color: "#ffffff", margin: "6px 0 14px" }}>
-          Cruise Timing, Bases &amp; Pickup Logistics: Which Fits Your Port Day?
+          Cruise Port Return Buffer, Bases &amp; Meeting Points
         </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 16, marginBottom: 18 }}>
-          <div style={{ background: "#0c121e", border: "1px solid #1e293b", borderRadius: 8, padding: "16px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+            gap: 16,
+            marginBottom: 18,
+          }}
+        >
+          <div
+            style={{
+              background: "#0c121e",
+              border: "1px solid #1e293b",
+              borderRadius: 8,
+              padding: "16px",
+            }}
+          >
             <h3 style={{ fontSize: "1rem", color: "#93c5fd", margin: "0 0 8px" }}>
-              Provider-Specific Pickup &amp; Meeting Points
+              Downtown Meeting Hubs &amp; Two NorthStar Bases
             </h3>
-            <p style={{ fontSize: "0.85rem", color: "#cbd5e1", lineHeight: 1.5, margin: "0 0 8px" }}>
-              Direct-booking cruise passengers should check their confirmations rather than expecting universal ship gangway pickup:
-            </p>
-            <ul style={{ fontSize: "0.83rem", color: "#94a3b8", lineHeight: 1.5, paddingLeft: 18, margin: "0 0 10px" }}>
-              <li><strong>NorthStar Trekking:</strong> Operates two bases: <em>Airport Base</em> (1890 Renshaw Way) for ice treks/walkabouts, and <em>Douglas Island Heliport</em> (6910 N Douglas Hwy) for dog sledding and airboat tours. Direct-booking cruise guests meet at the <strong>Goldbelt Tramway (490 S Franklin St)</strong> (<a href="https://northstartrekking.com/faqs/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>NorthStar FAQ Source</a>).</li>
-              <li><strong>Coastal Helicopters:</strong> Base at 8995 Alex Holden Way near the airport. Cruise shuttle meets at the <strong>Goldbelt Mt. Roberts Tram</strong> scheduled 1 hour prior to flight takeoff (<a href="https://coastalhelicopters.com/tours/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>Coastal Tour Logistics Source</a>).</li>
-              <li><strong>TEMSCO Helicopters:</strong> Base at 1650 Maplesden Way near the airport. Shuttles transfer from a central downtown meeting location specified on confirmation, arriving 15 min prior to tour start (<a href="https://temscoair.com/juneau-faq/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>TEMSCO Juneau FAQ Source</a>).</li>
+            <ul
+              style={{
+                fontSize: "0.83rem",
+                color: "#94a3b8",
+                lineHeight: 1.55,
+                paddingLeft: 18,
+                margin: 0,
+              }}
+            >
+              <li>
+                <strong>NorthStar Trekking:</strong> Operates <em>Airport Base</em> (1890 Renshaw
+                Way) for Walkabout/Trek and <em>Douglas Island Heliport</em> (6910 N Douglas Hwy)
+                for Dog Sledding &amp; Airboat tours. Direct cruise guests typically meet at{" "}
+                <strong>Goldbelt Tramway (490 S Franklin St)</strong>.
+              </li>
+              <li>
+                <strong>Coastal Helicopters:</strong> Base at 8995 Alex Holden Way near JNU. Direct
+                cruise shuttle meets at <strong>Goldbelt Tramway</strong> ~1 hour prior to flight.
+              </li>
+              <li>
+                <strong>TEMSCO Helicopters:</strong> Base at 1650 Maplesden Way near JNU. Downtown
+                shuttle pickup point and exact check-in time are printed on your confirmation.
+              </li>
             </ul>
-            <div style={{ fontSize: "0.78rem", color: "#64748b", borderTop: "1px solid #1e293b", paddingTop: 8 }}>
-              📅 Meeting logistics verified on <strong>October 7, 2026</strong> directly with operator operational dispatch policies.
-            </div>
           </div>
 
-          <div style={{ background: "#0c121e", border: "1px solid #1e293b", borderRadius: 8, padding: "16px" }}>
+          <div
+            style={{
+              background: "#0c121e",
+              border: "1px solid #1e293b",
+              borderRadius: 8,
+              padding: "16px",
+            }}
+          >
             <h3 style={{ fontSize: "1rem", color: "#93c5fd", margin: "0 0 8px" }}>
-              The 60-to-90 Minute Port Buffer Rule
+              2-Hour Return Buffer Planning Standard
             </h3>
-            <p style={{ fontSize: "0.85rem", color: "#cbd5e1", lineHeight: 1.5, margin: "0 0 8px" }}>
-              Per operator guidance, direct-booking passengers should adhere to strict timing buffers:
+            <p style={{ fontSize: "0.86rem", color: "#ffffff", fontWeight: 700, lineHeight: 1.5, margin: "0 0 8px" }}>
+              {VERBATIM_TWO_HOUR_BUFFER_RULE}
             </p>
-            <ul style={{ fontSize: "0.83rem", color: "#94a3b8", lineHeight: 1.5, paddingLeft: 18, margin: 0 }}>
-              <li><strong>Departure:</strong> Book a flight that departs at least <strong>60 to 90 minutes after your ship docks</strong> to allow for gangway clearance and transit to the meeting point.</li>
-              <li><strong>Return:</strong> Select a tour returning to the downtown waterfront at least <strong>60 to 90 minutes before your ship&apos;s All Aboard time</strong> (NorthStar recommends concluding at least 45 minutes prior).</li>
-            </ul>
+            <p style={{ fontSize: "0.82rem", color: "#94a3b8", lineHeight: 1.55, margin: 0 }}>
+              {TWO_HOUR_BUFFER_CLARIFICATION} Allow 60–90 minutes after ship arrival to clear the
+              gangway and reach your downtown shuttle meeting point on time.
+            </p>
           </div>
         </div>
 
-        <div style={{ background: "#0c121e", border: "1px solid #1e293b", borderRadius: 8, padding: "14px", marginTop: 14 }}>
+        <div
+          style={{
+            background: "#0c121e",
+            border: "1px solid #1e293b",
+            borderRadius: 8,
+            padding: "14px",
+          }}
+        >
           <h4 style={{ fontSize: "0.92rem", color: "#f0b35b", margin: "0 0 6px" }}>
-            Clarification: Taku Glacier Tours vs. Taku Glacier Lodge Dining
+            Clarification: Taku Glacier Helicopter Tours vs. Wings Airways Floatplane Lodge
           </h4>
           <p style={{ fontSize: "0.83rem", color: "#cbd5e1", lineHeight: 1.5, margin: 0 }}>
-            Taku Glacier hosts two completely distinct excursions: <strong>NorthStar Trekking</strong> operates the <em>Taku Glacier Helicopter &amp; Airboat Adventure</em> (departing from NorthStar&apos;s Douglas Island base to explore Taku River and glacier terminus), while <strong>Wings Airways</strong> operates the iconic <em>Taku Glacier Lodge Flight &amp; Feast</em> via classic de Havilland seaplanes departing from downtown Juneau harbor.
+            <strong>NorthStar Trekking</strong> operates a helicopter + airboat adventure from
+            Douglas Island, whereas{" "}
+            <a
+              href={LFSE_CANONICAL_LINKS.wings}
+              style={{ color: "#9ed9ff", textDecoration: "underline", fontWeight: 700 }}
+            >
+              Wings Airways ↗
+            </a>{" "}
+            operates the historic de Havilland floatplane flight and feast to Taku Glacier Lodge
+            from downtown Juneau harbor (check current operator price).
           </p>
         </div>
       </section>
 
-      {/* QUESTION 5: CANCELLATION AND WEATHER TERMS */}
-      <section id="cancellation-weather" style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid var(--line, #334155)", borderRadius: "var(--radius-lg, 16px)", padding: "28px", marginBottom: "40px" }}>
-        <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--accent, #f0b35b)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+      {/* FACTOR 5: CANCELLATION & WEATHER */}
+      <section
+        id="cancellation-weather"
+        style={{
+          background: "rgba(15, 23, 42, 0.7)",
+          border: "1px solid var(--line, #334155)",
+          borderRadius: "var(--radius-lg, 16px)",
+          padding: "28px",
+          marginBottom: "40px",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "0.75rem",
+            fontWeight: 800,
+            color: "var(--accent, #f0b35b)",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+          }}
+        >
           Decision Factor 5
         </span>
         <h2 style={{ fontSize: "1.5rem", color: "#ffffff", margin: "6px 0 14px" }}>
-          Cancellation &amp; Weather Terms: What Happens If Plans Change or Fog Rolls In?
+          Voluntary Cancellation Cutoffs vs. Weather Refunds
         </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: 16, marginBottom: 18 }}>
-          <div style={{ background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.3)", borderRadius: 8, padding: "16px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))",
+            gap: 16,
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(16, 185, 129, 0.1)",
+              border: "1px solid rgba(16, 185, 129, 0.3)",
+              borderRadius: 8,
+              padding: "16px",
+            }}
+          >
             <h3 style={{ fontSize: "1rem", color: "#6ee7b7", margin: "0 0 6px" }}>
-              ✓ 100% Weather Refund Guarantee
+              ✓ Operator Weather Cancellations
             </h3>
             <p style={{ fontSize: "0.85rem", color: "#d1fae5", lineHeight: 1.5, margin: 0 }}>
-              If your flight is cancelled by TEMSCO, Coastal, or NorthStar due to weather or flight safety, you receive a <strong>100% full refund</strong>. You are never penalized for Alaska weather.
+              When TEMSCO, Coastal, or NorthStar cancels a departure for cloud ceilings, fog, or FAA
+              Part 135 VFR minimums, guests are offered a reschedule (if time allows) or a{" "}
+              <strong>100% full refund</strong>. Review same-day sea-level options in our{" "}
+              <Link
+                href="/juneau/what-to-do-if-helicopter-tour-canceled"
+                style={{ color: "#a7f3d0", textDecoration: "underline", fontWeight: 700 }}
+              >
+                canceled-flight backup guide
+              </Link>
+              .
             </p>
           </div>
 
-          <div style={{ background: "rgba(245, 158, 11, 0.1)", border: "1px solid rgba(245, 158, 11, 0.3)", borderRadius: 8, padding: "16px" }}>
+          <div
+            style={{
+              background: "rgba(245, 158, 11, 0.1)",
+              border: "1px solid rgba(245, 158, 11, 0.3)",
+              borderRadius: 8,
+              padding: "16px",
+            }}
+          >
             <h3 style={{ fontSize: "1rem", color: "#fcd34d", margin: "0 0 6px" }}>
-              ⚠️ Voluntary Cancellation &amp; Booking Channel Terms
+              ⚠️ Voluntary Traveler Cancellation Terms (Verified Nov 18, 2026)
             </h3>
-            <p style={{ fontSize: "0.85rem", color: "#fef3c7", lineHeight: 1.5, margin: "0 0 8px" }}>
-              Voluntary cancellation terms differ by operator and booking channel:
-            </p>
-            <ul style={{ fontSize: "0.82rem", color: "#fef3c7", lineHeight: 1.5, paddingLeft: 18, margin: "0 0 8px" }}>
-              <li><strong>TEMSCO Helicopters:</strong> 100% full refund with at least 48 hours advance notice; non-refundable within 48 hours.</li>
-              <li><strong>Coastal Helicopters:</strong> 100% full refund with at least 7 days advance notice; non-refundable within 7 days.</li>
-              <li><strong>NorthStar Trekking (Direct):</strong> Official published FAQ states cancellation more than 24 hours prior receives a refund minus 10%; non-refundable within 24 hours. (Third-party channels like Viator may specify standard 24-hour full refund windows—always check your specific booking channel terms).</li>
+            <ul
+              style={{
+                fontSize: "0.82rem",
+                color: "#fef3c7",
+                lineHeight: 1.5,
+                paddingLeft: 18,
+                margin: "0 0 8px",
+              }}
+            >
+              <li>
+                <strong>TEMSCO Direct:</strong> 100% refund 48+ hours prior; non-refundable within
+                48 hours.
+              </li>
+              <li>
+                <strong>Coastal Direct vs. Viator:</strong> 7+ days full refund direct; 24-hour
+                cancellation window on Viator listing <code>6251SHOREXICEWALK</code> (which also
+                carries Viator Terms §20 Worry-Free Shore Excursion protection when ending ≥2 hours
+                before ship departure).
+              </li>
+              <li>
+                <strong>NorthStar Direct:</strong> &gt;24 hours prior receives a refund minus a 10%
+                administrative fee; &lt;24 hours is non-refundable.
+              </li>
             </ul>
-            <p style={{ fontSize: "0.82rem", color: "#fef3c7", lineHeight: 1.4, margin: "6px 0 0" }}>
-              <em>Weather Grounding:</em> When an operator cancels a flight due to mountain pass clouds, fog, or FAA safety limits, a 100% refund is provided.
-            </p>
-            <p style={{ fontSize: "0.82rem", color: "#fef3c7", lineHeight: 1.4, margin: "6px 0 0" }}>
-              <em>Viator Worry-free Shore Excursion Guarantee vs. DCC Timing Calculations:</em> Under <a href="https://www.viator.com/support/termsAndConditions" target="_blank" rel="noopener noreferrer" style={{ color: "#fcd34d", textDecoration: "underline" }}>Viator Terms of Use Section 20 (&ldquo;Worry-free Shore Excursions&rdquo;)</a>, only products expressly marked &ldquo;Worry-free Shore Excursion&rdquo; on Viator (such as Coastal Helicopters&apos; <code>6251SHOREXICEWALK</code>, <code>tagId: 367649</code>) carry Viator&apos;s back-to-ship protection (up to US$1,000 per person next-port transport when scheduled to end at least 2 hours before ship departure, or a refund if requested within 14 days when a ship misses port). DCC calculates cruise-port timing buffers to evaluate suitability, but DCC itself does not provide a back-to-ship guarantee.
-            </p>
           </div>
         </div>
-
-        <p style={{ fontSize: "0.88rem", color: "#cbd5e1", lineHeight: 1.5, margin: 0 }}>
-          <strong>The JFD Weather Advantage:</strong> If morning pass cameras indicate your flight might be scrubbed, Juneau Flight Deck coordinators can immediately assist in rebooking you onto afternoon slots or securing same-day backup seats on whale-watching catamarans (which operate in rain and fog) so you don&apos;t waste your day in port.
-        </p>
       </section>
 
-      {/* RECOMMENDATIONS BY TRAVELER NEED WITH BOOKING BUTTONS */}
+      {/* RECOMMENDATIONS BY TRAVELER NEED */}
       <section id="recommendations" style={{ marginBottom: "48px" }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <p className="eyebrow" style={{ color: "var(--accent, #f0b35b)", textTransform: "uppercase", fontSize: "0.8rem", fontWeight: 800 }}>
-            Which Operator Should You Book?
+          <p
+            className="eyebrow"
+            style={{
+              color: "var(--accent, #f0b35b)",
+              textTransform: "uppercase",
+              fontSize: "0.8rem",
+              fontWeight: 800,
+            }}
+          >
+            Match Your Group to the Right Tour
           </p>
           <h2 style={{ fontSize: "1.85rem", color: "#ffffff", margin: "6px 0 10px" }}>
             Recommendations by Traveler Need
           </h2>
-          <p style={{ fontSize: "0.95rem", color: "var(--muted, #cbd5e1)", maxWidth: 680, margin: "auto" }}>
-            Match your group&apos;s physical appetite, bucket-list priorities, and budget to the right specific tour:
-          </p>
         </div>
 
-        <div style={{ display: "grid", gap: "24px" }}>
-          {/* NEED 1: FAMILIES & GENTLE WALK */}
-          <div style={{ background: "var(--panel, #0f172a)", border: "1px solid #1e293b", borderRadius: "var(--radius-md, 12px)", padding: "24px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
-              <div>
-                <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#10b981", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  Best Gentle Walk Experience
-                </span>
-                <h3 style={{ fontSize: "1.35rem", color: "#ffffff", margin: "4px 0" }}>
-                  TEMSCO: Mendenhall Glacier Guided Walk
-                </h3>
+        <div style={{ display: "grid", gap: "20px" }}>
+          <div
+            style={{
+              background: "var(--panel, #0f172a)",
+              border: "1px solid #1e293b",
+              borderRadius: "var(--radius-md, 12px)",
+              padding: "24px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                flexWrap: "wrap",
+                gap: 12,
+                marginBottom: 12,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <OperatorIdentityMark operator="temsco" />
+                <div>
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 800,
+                      color: "#10b981",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Best Gentle Family Glacier Walk
+                  </span>
+                  <h3 style={{ fontSize: "1.25rem", color: "#ffffff", margin: "2px 0" }}>
+                    TEMSCO: Mendenhall Glacier &amp; Guided Walk (2h 15m)
+                  </h3>
+                </div>
               </div>
-              <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "#10b981" }}>$409 published base</span>
+              <span style={{ fontSize: "1rem", fontWeight: 800, color: "#10b981" }}>
+                $449 / person (as of Nov 18, 2026)
+              </span>
             </div>
-            <p style={{ fontSize: "0.9rem", color: "var(--muted, #cbd5e1)", lineHeight: 1.6, marginBottom: 16 }}>
-              <strong>Why this wins:</strong> Accessible, low-stress, and iconic. You fly past rainforest valleys directly onto Mendenhall Glacier (or an alternate safe ice landing zone if conditions dictate). The 20–25 minutes on the ice are spent on gentle, level terrain with provided overboots. Perfect if you have kids (ages 2+) or grandparents who want the thrill of walking on ancient ice without strenuous hiking.
+            <p
+              style={{
+                fontSize: "0.9rem",
+                color: "var(--muted, #cbd5e1)",
+                lineHeight: 1.6,
+                marginBottom: 16,
+              }}
+            >
+              Ages 2+ welcome; +$150 at 250+ lbs clothed + CBJ sales tax &amp; fees. Frequent
+              departures and accessible overboot walking on Mendenhall Glacier.
             </p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
               <a
@@ -748,32 +1366,74 @@ export default function OperatorComparisonPage() {
                 Search on Viator →
               </a>
               <a
-                href="https://temscoair.com/tours/juneau-tours/"
+                href="https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-card"
                 style={{ fontSize: "0.82rem", padding: "8px 14px" }}
               >
-                🏢 TEMSCO Official Tour Info ↗
+                Official TEMSCO Tariff ↗
+              </a>
+              <a
+                href={LFSE_CANONICAL_LINKS.temsco}
+                style={{ fontSize: "0.82rem", color: "#9ed9ff", textDecoration: "underline", fontWeight: 700 }}
+              >
+                LFSE Profile ↗
               </a>
             </div>
           </div>
 
-          {/* NEED 2: SCENIC FLYING & HERBERT GLACIER */}
-          <div style={{ background: "var(--panel, #0f172a)", border: "1px solid #1e293b", borderRadius: "var(--radius-md, 12px)", padding: "24px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
-              <div>
-                <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#38bdf8", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  Best Scenic Icefield Flight &amp; Herbert Glacier Landing · Viator Worry-Free Shore Excursion
-                </span>
-                <h3 style={{ fontSize: "1.35rem", color: "#ffffff", margin: "4px 0" }}>
-                  Coastal Helicopters: Icefield Tour with Glacier Landing (6251SHOREXICEWALK)
-                </h3>
+          <div
+            style={{
+              background: "var(--panel, #0f172a)",
+              border: "1px solid #1e293b",
+              borderRadius: "var(--radius-md, 12px)",
+              padding: "24px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                flexWrap: "wrap",
+                gap: 12,
+                marginBottom: 12,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <OperatorIdentityMark operator="coastal" />
+                <div>
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 800,
+                      color: "#38bdf8",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Best Herbert Glacier Flight · Viator Worry-Free §20
+                  </span>
+                  <h3 style={{ fontSize: "1.25rem", color: "#ffffff", margin: "2px 0" }}>
+                    Coastal Helicopters: Icefield Excursion (6251SHOREXICEWALK)
+                  </h3>
+                </div>
               </div>
-              <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "#10b981" }}>$429 direct / $459 Viator</span>
+              <span style={{ fontSize: "1rem", fontWeight: 800, color: "#10b981" }}>
+                $459 Standard (as of Nov 18, 2026)
+              </span>
             </div>
-            <p style={{ fontSize: "0.9rem", color: "var(--muted, #cbd5e1)", lineHeight: 1.6, marginBottom: 16 }}>
-              <strong>Why this wins:</strong> Coastal excels at panoramic flightseeing through mountain passes directly to Herbert Glacier, offering 25 to 30 minutes on ancient blue ice away from high-traffic zones. On Viator (<code>6251SHOREXICEWALK</code>, <code>tagId: 367649</code>), this product is expressly designated a <strong>Worry-free Shore Excursion</strong> under <a href="https://www.viator.com/support/termsAndConditions" target="_blank" rel="noopener noreferrer" style={{ color: "#38bdf8", textDecoration: "underline" }}>Viator Terms of Use Section 20</a>.
+            <p
+              style={{
+                fontSize: "0.9rem",
+                color: "var(--muted, #cbd5e1)",
+                lineHeight: 1.6,
+                marginBottom: 16,
+              }}
+            >
+              ~2h 35m total; $459 Standard (1–259 lbs), $609 Standard Plus (260–299 lbs), $918
+              Premium (300+ lbs, 2 seats) + CBJ sales tax &amp; fees. Carries Viator §20 Worry-Free
+              Shore Excursion coverage when booked to end ≥2 hours before ship departure.
             </p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
               <a
@@ -783,7 +1443,7 @@ export default function OperatorComparisonPage() {
                 className="button button-primary"
                 style={{ fontSize: "0.85rem", padding: "8px 16px" }}
               >
-                Book on Viator (Worry-Free Shore Excursion) →
+                Book on Viator (Worry-Free §20) →
               </a>
               <a
                 href="https://coastalhelicopters.com/tours/icefield-excursion/"
@@ -792,82 +1452,67 @@ export default function OperatorComparisonPage() {
                 className="button button-card"
                 style={{ fontSize: "0.82rem", padding: "8px 14px" }}
               >
-                🏢 Coastal Official Tour Info ↗
+                Official Coastal Tariff ↗
+              </a>
+              <a
+                href={LFSE_CANONICAL_LINKS.coastal}
+                style={{ fontSize: "0.82rem", color: "#9ed9ff", textDecoration: "underline", fontWeight: 700 }}
+              >
+                LFSE Profile ↗
               </a>
             </div>
           </div>
 
-          {/* NEED 3: DOG SLEDDING COMPARISON */}
-          <div style={{ background: "var(--panel, #0f172a)", border: "1px solid #1e293b", borderRadius: "var(--radius-md, 12px)", padding: "24px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
-              <div>
-                <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--accent, #f0b35b)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  Best Bucket-List Adventure: Glacier Dog Sledding (All 3 Operators Compared)
-                </span>
-                <h3 style={{ fontSize: "1.35rem", color: "#ffffff", margin: "4px 0" }}>
-                  Glacier Dog Sledding: TEMSCO vs. Coastal vs. NorthStar
-                </h3>
+          <div
+            style={{
+              background: "var(--panel, #0f172a)",
+              border: "1px solid #1e293b",
+              borderRadius: "var(--radius-md, 12px)",
+              padding: "24px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                flexWrap: "wrap",
+                gap: 12,
+                marginBottom: 12,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <OperatorIdentityMark operator="northstar" />
+                <div>
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 800,
+                      color: "#f0b35b",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Best Extended Time on Ice (1–2 Hours)
+                  </span>
+                  <h3 style={{ fontSize: "1.25rem", color: "#ffffff", margin: "2px 0" }}>
+                    NorthStar: Walkabout ($539) &amp; Glacier Trek ($599)
+                  </h3>
+                </div>
               </div>
-              <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "#10b981" }}>From $659 – $739 base</span>
+              <span style={{ fontSize: "1rem", fontWeight: 800, color: "#10b981" }}>
+                $539 – $599 (as of Nov 18, 2026)
+              </span>
             </div>
-            <p style={{ fontSize: "0.9rem", color: "var(--muted, #cbd5e1)", lineHeight: 1.6, marginBottom: 16 }}>
-              <strong>Why this wins:</strong> All three operators fly to dedicated alpine snow camps from mid-May through mid/late August:
-              <br />• <strong>TEMSCO ($659 published base):</strong> Herbert Glacier snowfields, longest running mushing camp.
-              <br />• <strong>Coastal ($709 published base):</strong> Herbert Glacier snowfields, boutique small-group departure waves.
-              <br />• <strong>NorthStar ($739 published base):</strong> Norris Glacier snowfields, partner musher camp, ages 2+ welcome (departs NorthStar Douglas base).
-            </p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-              <a
-                href="https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-comparison-dogsled-temsco"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="button button-primary"
-                style={{ fontSize: "0.82rem", padding: "8px 14px" }}
-              >
-                Search TEMSCO Dog Sled on Viator →
-              </a>
-              <a
-                href="https://www.viator.com/searchResults/all?text=Juneau+Coastal+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-comparison-dogsled-coastal"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="button button-card"
-                style={{ fontSize: "0.82rem", padding: "8px 14px" }}
-              >
-                Search Coastal Dog Sled on Viator →
-              </a>
-              <a
-                href="https://www.viator.com/searchResults/all?text=Juneau+NorthStar+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-comparison-dogsled-northstar"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="button button-card"
-                style={{ fontSize: "0.82rem", padding: "8px 14px" }}
-              >
-                Search NorthStar Dogsled on Viator →
-              </a>
-              <Link
-                href="/helicopter-waitlist?tour=dogsled"
-                style={{ fontSize: "0.82rem", color: "var(--accent, #f0b35b)", fontWeight: 700, textDecoration: "none", marginLeft: 4 }}
-              >
-                Sold out? Join Waitlist →
-              </Link>
-            </div>
-          </div>
-
-          {/* NEED 4: ACTIVE HIKERS & CRAMPONS */}
-          <div style={{ background: "var(--panel, #0f172a)", border: "1px solid #1e293b", borderRadius: "var(--radius-md, 12px)", padding: "24px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
-              <div>
-                <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#38bdf8", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  Best for In-Depth Ice Time &amp; Technical Mountaineering
-                </span>
-                <h3 style={{ fontSize: "1.35rem", color: "#ffffff", margin: "4px 0" }}>
-                  NorthStar: Glacier Walkabout ($499) &amp; Level 1 Ice Trek ($549)
-                </h3>
-              </div>
-              <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "#10b981" }}>From $499 – $549 base</span>
-            </div>
-            <p style={{ fontSize: "0.9rem", color: "var(--muted, #cbd5e1)", lineHeight: 1.6, marginBottom: 16 }}>
-              <strong>Why this wins:</strong> NorthStar gives you far more ice time than standard landings, departing from its Airport Base (1890 Renshaw Way). Choose the <strong>Glacier Walkabout</strong> ($499 published base) for a full 60 minutes on Mendenhall ice with crampons and trekking poles (ages 8+), or step up to the <strong>Level 1 Glacier Ice Trek</strong> ($549 published base) for 2 hours navigating deep crevasses, blue ice walls, and moulins with mountain boots and harnesses (ages 12+).
+            <p
+              style={{
+                fontSize: "0.9rem",
+                color: "var(--muted, #cbd5e1)",
+                lineHeight: 1.6,
+                marginBottom: 16,
+              }}
+            >
+              Walkabout (3h 15m, ages 8+): $539 base · Glacier Trek (4h 15m, ages 12+): $599 base ·
+              +$250 weight surcharge at 250+ lbs clothed + CBJ sales tax &amp; fees.
             </p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
               <a
@@ -886,80 +1531,82 @@ export default function OperatorComparisonPage() {
                 className="button button-card"
                 style={{ fontSize: "0.82rem", padding: "8px 14px" }}
               >
-                Search Level 1 Trek on Viator →
+                Search Glacier Trek on Viator →
               </a>
-              <Link
-                href="/helicopter-waitlist?operator=northstar"
-                style={{ fontSize: "0.82rem", color: "var(--accent, #f0b35b)", fontWeight: 700, textDecoration: "none", marginLeft: 4 }}
+              <a
+                href={LFSE_CANONICAL_LINKS.northstar}
+                style={{ fontSize: "0.82rem", color: "#9ed9ff", textDecoration: "underline", fontWeight: 700 }}
               >
-                Sold out? Join Waitlist →
-              </Link>
+                LFSE Profile ↗
+              </a>
             </div>
           </div>
         </div>
       </section>
 
       {/* DEDICATED PAIRWISE COMPARISONS */}
-      <section style={{ background: "rgba(15, 23, 42, 0.4)", border: "1px solid var(--line, #334155)", borderRadius: "var(--radius-lg, 16px)", padding: "26px", marginBottom: "40px" }}>
+      <section
+        style={{
+          background: "rgba(15, 23, 42, 0.4)",
+          border: "1px solid var(--line, #334155)",
+          borderRadius: "var(--radius-lg, 16px)",
+          padding: "26px",
+          marginBottom: "32px",
+        }}
+      >
         <h3 style={{ fontSize: "1.2rem", color: "#ffffff", margin: "0 0 10px" }}>
-          Specific Pairwise Operator Guides
+          Pairwise Operator Comparisons
         </h3>
-        <p style={{ fontSize: "0.88rem", color: "var(--muted, #94a3b8)", lineHeight: 1.5, margin: "0 0 16px" }}>
-          Need to drill down between two specific companies? Explore our dedicated head-to-head comparisons answering specific trade-offs:
-        </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 16 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+            gap: 16,
+          }}
+        >
           <Link
             href="/temsco-vs-northstar-juneau"
-            style={{ textDecoration: "none", background: "#0c121e", border: "1px solid #1e293b", borderRadius: 8, padding: "16px", display: "block" }}
+            style={{
+              textDecoration: "none",
+              background: "#0c121e",
+              border: "1px solid #1e293b",
+              borderRadius: 8,
+              padding: "16px",
+              display: "block",
+            }}
           >
             <h4 style={{ color: "#38bdf8", margin: "0 0 6px", fontSize: "1rem" }}>
               TEMSCO vs. NorthStar →
             </h4>
             <p style={{ color: "#94a3b8", fontSize: "0.82rem", margin: 0, lineHeight: 1.5 }}>
-              Glacier Walk vs. Walkabout &amp; Ice Trek: deciding between 20 minutes of gentle walking or 1 to 2 hours of crampon hiking.
+              Compare $449 Mendenhall Walk vs. $539 Walkabout and $599 Crampon Trek (as of{" "}
+              {VERIFIED_TARIFF_DATE_LONG}).
             </p>
           </Link>
 
           <Link
             href="/temsco-vs-coastal-juneau"
-            style={{ textDecoration: "none", background: "#0c121e", border: "1px solid #1e293b", borderRadius: 8, padding: "16px", display: "block" }}
+            style={{
+              textDecoration: "none",
+              background: "#0c121e",
+              border: "1px solid #1e293b",
+              borderRadius: 8,
+              padding: "16px",
+              display: "block",
+            }}
           >
             <h4 style={{ color: "#38bdf8", margin: "0 0 6px", fontSize: "1rem" }}>
               TEMSCO vs. Coastal →
             </h4>
             <p style={{ color: "#94a3b8", fontSize: "0.82rem", margin: 0, lineHeight: 1.5 }}>
-              Mendenhall vs. Herbert Glacier: comparing landing locations, dog sledding camps on Herbert, and fleet departure frequencies.
+              Compare Mendenhall ($449) vs. Herbert Glacier ($459 Standard) landings and seasonal
+              dog sledding ($759 vs. $769, as of {VERIFIED_TARIFF_DATE_LONG}).
             </p>
           </Link>
         </div>
       </section>
 
-      {/* Helpful Links */}
-      <section style={{ borderTop: "1px solid var(--line, #334155)", paddingTop: "24px" }}>
-        <h4 style={{ fontSize: "1rem", color: "#ffffff", marginBottom: "12px" }}>Related Port Day Resources</h4>
-        <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: "8px", fontSize: "0.85rem" }}>
-          <li>
-            <Link href="/helicopter-waitlist" style={{ color: "var(--ice, #93c5fd)", textDecoration: "none" }}>
-              → Alaska Cruise Fleet Helicopter Waitlist &amp; Port Berths
-            </Link>
-          </li>
-          <li>
-            <Link href="/juneau-dogsled-helicopter-tours" style={{ color: "var(--ice, #93c5fd)", textDecoration: "none" }}>
-              → Helicopter Glacier Dog Sledding Tours &amp; Summer Camps
-            </Link>
-          </li>
-          <li>
-            <Link href="/juneau-helicopter-tour-sold-out" style={{ color: "var(--ice, #93c5fd)", textDecoration: "none" }}>
-              → Juneau Helicopter Tours Sold Out? How to Get Open Seats
-            </Link>
-          </li>
-          <li>
-            <Link href="/juneau-helicopter-tour-weight-limits-and-seating" style={{ color: "var(--ice, #93c5fd)", textDecoration: "none" }}>
-              → Helicopter Weight Limits, Surcharges, and Seating Math
-            </Link>
-          </li>
-        </ul>
-      </section>
+      <SourcesAndFreshness includeSkagway />
     </main>
   );
 }

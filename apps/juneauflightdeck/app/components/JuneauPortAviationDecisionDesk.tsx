@@ -49,7 +49,7 @@ function evaluateSnowCampSeason(isoDate: string): {
       status: "in_window",
       badge: "Inside Snow-Camp Window (May–Late Aug)",
       explanation:
-        "Your port date falls inside the typical high-icefield snow-camp window for real helicopter glacier dog sledding (TEMSCO / Coastal). Do not confuse snow-glacier flights with $169 wheeled rainforest cart camps.",
+        "Your port date falls inside the typical high-icefield snow-camp window for helicopter glacier dog sledding (TEMSCO, Coastal, NorthStar). Do not confuse upper-snowfield helicopter flights with non-flying wheeled rainforest cart tours.",
     };
   }
   if ((mmdd >= "05-01" && mmdd < "05-10") || (mmdd > "08-22" && mmdd <= "09-03")) {
@@ -374,9 +374,14 @@ export default function JuneauPortAviationDecisionDesk() {
         >
           Juneau&apos;s flight bases sit near Juneau International Airport (JNU),
           roughly <strong>15–20 minutes by operator shuttle</strong> from the
-          downtown cruise docks. DCC recommends a{" "}
-          <strong>2-hour return buffer</strong> before all-aboard on top of
-          shuttle transit so you never race the gangway.
+          downtown cruise docks.{" "}
+          <strong>
+            Cruise Promenade and the DCC network recommend planning for tours that
+            return at least two hours before all-aboard.
+          </strong>{" "}
+          This is an independent planning standard—not an operator guarantee or a
+          cruise-line rule—kept distinct from operator check-in deadlines,
+          voluntary cancellation cutoffs, and your ship&apos;s all-aboard time.
         </p>
 
         <div
@@ -691,8 +696,10 @@ export default function JuneauPortAviationDecisionDesk() {
           <strong>Viator Terms of Use Section 20 (Worry-Free Shore Excursion)</strong>{" "}
           when booked for a slot ending ≥2 hours before ship departure.{" "}
           <em>
-            Published base from $459/person (260–299 lb TG1 / 300+ lb TG2 weight
-            tiers and live seat availability confirmed directly in Viator).
+            Verified direct base: $459 Standard (1–259 lbs), $609 Standard Plus
+            (260–299 lbs), $918 Premium (300+ lbs, 2 seats), as of November 18,
+            2026 + CBJ sales tax &amp; fees; confirm partner calendar availability
+            and checkout total directly in Viator.
           </em>
         </p>
 
@@ -723,7 +730,7 @@ export default function JuneauPortAviationDecisionDesk() {
               gap: "6px",
             }}
           >
-            Check Live Seats &amp; Final Price on Viator (Partner Checkout) ↗
+            Check Partner Calendar &amp; Final Price on Viator ↗
           </a>
 
           <a

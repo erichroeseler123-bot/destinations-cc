@@ -27,7 +27,7 @@ const coreHighIntentRoutes = [
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date();
+  const lastModified = "2026-11-18";
 
   const coreEntries: MetadataRoute.Sitemap = coreHighIntentRoutes.map((r) => ({
     url: `https://juneauflightdeck.com${r.path}`,

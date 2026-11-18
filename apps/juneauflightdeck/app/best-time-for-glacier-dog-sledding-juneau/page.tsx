@@ -56,7 +56,7 @@ const dogSledFaqSchema = {
 
 export default function BestTimeDogSleddingPage() {
   return (
-    <main className="page-shell" style={{ maxWidth: 940, margin: "auto", padding: "40px 20px 80px" }}>
+    <main id="main-content" className="page-shell" style={{ maxWidth: 940, margin: "auto", padding: "40px 20px 80px" }}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(dogSledFaqSchema) }}
@@ -223,10 +223,10 @@ export default function BestTimeDogSleddingPage() {
             <strong>100% Weather Refund Policy:</strong> When an operator cancels a flight due to weather, passengers are eligible for a 100% refund under standard published operator and platform cancellation terms.
           </li>
           <li>
-            <strong>Morning Weather Tracking:</strong> Our team checks morning dispatch reports before cruise shuttles depart, keeping you informed on mountain pass conditions as early as possible.
+            <strong>2-Hour Return Planning Standard:</strong> Cruise Promenade and the DCC network recommend planning for tours that return at least two hours before all-aboard (an independent planning standard—not an operator guarantee or a cruise-line rule).
           </li>
           <li>
-            <strong>Whale Watching Backups:</strong> If low cloud cover prevents glacier flights, our local coordinators help check for open seats on Auke Bay whale watching boats so you can still make the most of your port day.
+            <strong>Whale Watching Backups:</strong> If low cloud cover prevents glacier flights, explore sea-level Auke Bay whale watching boats that fit your remaining port window.
           </li>
         </ul>
 
@@ -234,9 +234,12 @@ export default function BestTimeDogSleddingPage() {
           <Link href="/helicopter" className="button button-primary">
             Browse Helicopter Tours
           </Link>
-          <Link href="/juneau-whale-watching-tours" className="button button-secondary">
-            View Whale Watching Backups
-          </Link>
+          <a
+            href="https://www.lastfrontiershoreexcursions.com/ports/juneau/whale-watching"
+            className="button button-secondary"
+          >
+            View Whale Watching Backups ↗
+          </a>
         </div>
       </section>
 

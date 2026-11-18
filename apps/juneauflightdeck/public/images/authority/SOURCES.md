@@ -1,33 +1,16 @@
-Juneau Flight Deck authority image sources
+# Juneau Flight Deck Authority Image Sources (`public/images/authority/`)
 
-These files are recovered DCC authority media copied into the Juneau Flight Deck
-app public folder for storefront use. They are approved local assets for this
-JFD storefront pass. If original photographer/license metadata is recovered
-later, add it here before expanding usage beyond the listed roles.
+**Last Verified:** November 18, 2026 (`2026-11-18`)  
+**Upstream Manifest:** `data/media/manifest.json`
 
-- `ports/juneau/hero.webp`
-  Role: homepage hero.
-  Usage: Juneau port / shore-day context.
+| File Path (relative to `public/images/authority/`) | Role / Usage | Attribution | License | Primary Source URL (`src_url`) |
+| :--- | :--- | :--- | :--- | :--- |
+| `ports/juneau/hero.webp` | Juneau port / shore-day hero context | Wikimedia Commons | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Juneau_Alaska_Harbor.jpg |
+| `ports/juneau/section-1.webp` | Juneau harbor / weather & port-day planning support image | Wikimedia Commons | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Juneau_harbor.jpg |
+| `ports/juneau/gallery-1.webp` | Juneau marine channel / whale-watching backup context | Wikimedia Commons | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Juneau_mountains.jpg |
+| `attractions/mendenhall-glacier/hero.webp` | Mendenhall Glacier overview context | Wikimedia Commons | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Mendenhall_Glacier.jpg |
+| `attractions/mendenhall-glacier/section-1.webp` | Mendenhall Glacier detail context | Wikimedia Commons | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Mendenhall_Glacier_View.jpg |
 
-- `ports/juneau/section-1.webp`
-  Role: support image only.
-  Usage: Juneau harbor / weather and port-day planning context.
-
-- `ports/juneau/gallery-1.webp`
-  Role: tour card.
-  Usage: Juneau water / whale-watching backup context.
-
-- `attractions/mendenhall-glacier/hero.webp`
-  Role: tour card.
-  Usage: helicopter glacier tour / Mendenhall Glacier context.
-
-- `attractions/mendenhall-glacier/section-1.webp`
-  Role: tour card.
-  Usage: Mendenhall Glacier landing / glacier detail context.
-
-Doctrine notes:
-
-- Do not use these images as generic repeated placeholders.
-- Weather/timing cards should use compact support badges, not fake image panels.
-- If a future card lacks a real source-safe image, omit the image slot or use a
-  small badge/route/timing support element.
+## Usage Notes
+- Do not use these images as generic repeated placeholders or present them as operator-owned aircraft marketing photos.
+- See [`../SOURCES.md`](../SOURCES.md) for the complete `public/` asset provenance manifest.

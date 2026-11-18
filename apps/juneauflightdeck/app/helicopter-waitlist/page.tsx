@@ -294,9 +294,9 @@ export default function Page() {
                 <span style={{ fontSize: "0.75rem", color: "var(--muted)", display: "block", marginTop: 2 }}>20-min shuttle from south security gate</span>
               </div>
               <div style={{ background: "rgba(6, 21, 33, 0.6)", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 14px", minWidth: 0 }}>
-                <span style={{ fontSize: "0.75rem", color: "#86efac", fontWeight: 700, display: "block" }}>SAFETY BUFFER</span>
-                <strong style={{ fontSize: "0.85rem", color: "#ffffff" }}>90–120 Minutes</strong>
-                <span style={{ fontSize: "0.75rem", color: "var(--muted)", display: "block", marginTop: 2 }}>Scheduled return prior to all-aboard</span>
+                <span style={{ fontSize: "0.75rem", color: "#86efac", fontWeight: 700, display: "block" }}>PLANNING BUFFER</span>
+                <strong style={{ fontSize: "0.85rem", color: "#ffffff" }}>2+ Hours (120 Min)</strong>
+                <span style={{ fontSize: "0.75rem", color: "var(--muted)", display: "block", marginTop: 2 }}>Cruise Promenade and the DCC network recommend planning for tours that return at least two hours before all-aboard.</span>
               </div>
             </div>
           </div>

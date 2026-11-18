@@ -64,7 +64,7 @@ export const SCANNED_PRODUCTS: ScannedProduct[] = [
     itemPk: 116035,
     companyShortname: "northstartrekking",
     cancellationPolicy:
-      "NorthStar Trekking terms: • Customer Cancellation Cutoff: 100% full refund at least 48 hours prior to flight departure; non-refundable within 48 hours. • Weather & Port Policy: 100% full refund if flight is grounded due to weather or cruise ship delay (independent of customer 48h cutoff).",
+      "NorthStar Trekking direct terms (verified Nov 18, 2026): • Customer Cancellation Cutoff: >24 hours prior receives a refund minus a 10% administrative fee; non-refundable within 24 hours. • Weather Policy: Reschedule if space permits or 100% full refund if flight is canceled by operator due to weather.",
   },
   {
     key: "temsco_skagway_dog_sledding",

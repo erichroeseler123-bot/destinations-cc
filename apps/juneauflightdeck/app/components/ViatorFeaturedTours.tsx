@@ -155,7 +155,7 @@ export default function ViatorFeaturedTours({
 
         {/* Filter Controls & Transparency Banner */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          {/* Live vs Snapshot Transparency Banner */}
+          {/* Reference Snapshot Transparency Banner */}
           <div
             style={{
               display: "inline-flex",
@@ -166,16 +166,14 @@ export default function ViatorFeaturedTours({
               borderRadius: "999px",
               fontSize: "0.8rem",
               fontWeight: 500,
-              background: isLive ? "rgba(34, 197, 94, 0.14)" : "rgba(151, 211, 255, 0.12)",
-              border: `1px solid ${isLive ? "rgba(34, 197, 94, 0.35)" : "rgba(151, 211, 255, 0.28)"}`,
-              color: isLive ? "#86efac" : "var(--ice, #9ed9ff)",
+              background: "rgba(151, 211, 255, 0.12)",
+              border: "1px solid rgba(151, 211, 255, 0.28)",
+              color: "var(--ice, #9ed9ff)",
             }}
           >
-            <span>{isLive ? "🟢" : "ℹ️"}</span>
+            <span>ℹ️</span>
             <span>
-              {isLive
-                ? "Live Viator API Feed Active"
-                : "Operator Flight Profiles · Real-time departures & rates verified upon booking inquiry"}
+              Verified Operator Tariffs (as of Nov 18, 2026) · Confirm calendar availability &amp; checkout total on provider page
             </span>
           </div>
 
@@ -577,16 +575,16 @@ export default function ViatorFeaturedTours({
               Join 2027 Availability Alerts &rarr;
             </Link>
 
-            <Link
-              href="/juneau-whale-watching-tours"
+            <a
+              href="https://www.lastfrontiershoreexcursions.com/ports/juneau/whale-watching"
               className="button button-secondary"
               style={{
                 padding: "12px 20px",
                 fontSize: "0.92rem",
               }}
             >
-              Explore Backup Whale Tours
-            </Link>
+              Explore Backup Whale Tours ↗
+            </a>
           </div>
         </div>
       )}
@@ -1207,7 +1205,7 @@ export function TourCard({
           >
             <div>
               <div style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--muted)" }}>
-                {product.isLive ? "From" : "Published Base"}
+                Direct Base (as of Nov 18, 2026)
               </div>
               <div
                 style={{
@@ -1219,7 +1217,7 @@ export function TourCard({
               >
                 {product.priceFrom != null
                   ? `${product.currency === "USD" ? "$" : ""}${product.priceFrom}`
-                  : (product.priceLabel || "Rates on request")}
+                  : (product.priceLabel || "Check current operator price")}
               </div>
             </div>
 
@@ -1276,7 +1274,7 @@ export function TourCard({
                 rel="noopener noreferrer"
                 style={{ fontSize: "0.73rem", color: "var(--muted)", textUnderlineOffset: 3 }}
               >
-                Source: {product.operatorSourceLabel || "operator page"} · checked Oct. 23, 2026
+                Source: {product.operatorSourceLabel || "operator page"} · verified Nov. 18, 2026
               </a>
             )}
 

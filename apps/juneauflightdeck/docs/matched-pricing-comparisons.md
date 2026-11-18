@@ -1,6 +1,6 @@
 # Juneau Helicopter Tour Price Comparison — Research Pending Evidence
 **Document Status:** RESEARCH PENDING VERIFIABLE EVIDENCE  
-**Last Updated:** October 2026  
+**Last Updated:** November 18, 2026  
 **Notice:** This document catalogs potential tour pairings between local operators and cruise line excursion descriptors. Because cruise line shore excursion pricing is dynamically managed behind passenger reservation logins (e.g. Princess Cruise Personalizer, Holland America Navigator) and is not publicly audited, any claim of savings remains an unverified research hypothesis until specific, paired passenger booking receipts for identical dates and times are verified on file. Replacement numbers must NOT be invented.
 
 ---
@@ -70,7 +70,7 @@ Major cruise lines calling in Juneau (Princess Cruises, Holland America Line, Ro
   * **Operator Tour Title:** *"Helicopter Glacier Trek (Level 1 / 2)"*
   * **Total Footprint:** 3.25 to 4.25 hours total (flight time + 1 to 2 hours of technical glacier hiking).
   * **Inclusions:** Roundtrip dock transfer, flightseeing, mountaineering boots, crampons, harnesses, ice axes/trekking poles, small-group certified guide (maximum 6 guests per guide).
-  * **Cancellation Terms:** 100% refund up to 48 hours prior; 100% full refund for weather/ship cancellation.
+  * **Cancellation Terms:** Direct cancellation >24 hours prior receives a refund minus a 10% administrative fee (<24 hours non-refundable); operator weather cancellation offers rescheduling or a 100% full refund.
 * **Matched Cruise Line Catalog Listings:**
   * **Princess Cruises:** Excursion Code `JNU-855` (*"Helicopter Glacier Trek"*, 4.25 hours, minimum age 12).
   * **Holland America Line:** Excursion Code `23028` (*"Helicopter Glacier Trek"*).

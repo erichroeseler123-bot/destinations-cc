@@ -87,10 +87,13 @@ export default function GlacierFlightCams() {
         background: "linear-gradient(135deg, rgba(8, 23, 38, 0.95) 0%, rgba(4, 14, 24, 0.98) 100%)",
         border: "1px solid var(--line)",
         borderRadius: "var(--radius-lg)",
-        padding: "28px 24px",
+        padding: "clamp(16px, 4vw, 28px)",
         boxShadow: "0 20px 50px rgba(0, 0, 0, 0.4)",
         color: "var(--text)",
+        width: "100%",
         maxWidth: 1100,
+        boxSizing: "border-box",
+        overflowX: "clip",
         margin: "32px auto",
       }}
     >
@@ -107,8 +110,8 @@ export default function GlacierFlightCams() {
           marginBottom: 24,
         }}
       >
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <div style={{ minWidth: 0, maxWidth: "100%" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px 8px", marginBottom: 8 }}>
             <span
               style={{
                 fontSize: "0.72rem",
@@ -135,7 +138,7 @@ export default function GlacierFlightCams() {
                   animation: "pulse 2s infinite",
                 }}
               />
-              Live FAA WeatherCams
+              FAA WeatherCams
             </span>
             <span
               style={{
@@ -161,13 +164,13 @@ export default function GlacierFlightCams() {
             Juneau Icefield Flight Path Aviation Cams
           </h2>
           <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--muted)", maxWidth: 680 }}>
-            Real-time visual feeds from FAA WeatherCam towers along helicopter tour corridors to Mendenhall Glacier,
+            Visual camera snapshots from FAA WeatherCam stations along helicopter flight corridors to Mendenhall Glacier,
             Herbert Glacier, and the Gastineau Channel climb-out.
           </p>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ textAlign: "right" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
+          <div style={{ textAlign: "left" }}>
             <span style={{ display: "block", fontSize: "0.72rem", color: "var(--muted)" }}>
               {lastRefreshed ? `Refreshed ${lastRefreshed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Connecting..."}
             </span>
@@ -240,7 +243,7 @@ export default function GlacierFlightCams() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))",
           gap: 20,
           marginBottom: 28,
         }}
@@ -264,6 +267,8 @@ export default function GlacierFlightCams() {
                 background: "rgba(10, 28, 46, 0.8)",
                 borderBottom: "1px solid rgba(158, 217, 255, 0.12)",
                 display: "flex",
+                flexWrap: "wrap",
+                gap: 8,
                 justifyContent: "space-between",
                 alignItems: "center",
               }}

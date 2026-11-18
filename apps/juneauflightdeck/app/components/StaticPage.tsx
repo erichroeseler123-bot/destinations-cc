@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 
 export default function StaticPage({
@@ -9,6 +10,7 @@ export default function StaticPage({
   ctaLabel = "Plan your Juneau day",
   imageSrc = "/images/portfolio/mendenhall-glacier-overview.webp",
   imageAlt = "Mendenhall Glacier blue ice face, iceberg lake, and Coast Mountains in Juneau, Alaska",
+  children,
 }: {
   eyebrow: string;
   title: string;
@@ -18,9 +20,10 @@ export default function StaticPage({
   ctaLabel?: string;
   imageSrc?: string | null;
   imageAlt?: string;
+  children?: React.ReactNode;
 }) {
   return (
-    <main className="page-shell static-page-shell">
+    <main id="main-content" className="page-shell static-page-shell">
       <section className="static-page-card">
         {imageSrc ? (
           <div
@@ -39,7 +42,13 @@ export default function StaticPage({
               alt={imageAlt}
               width={1440}
               height={900}
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 48%", display: "block" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "50% 48%",
+                display: "block",
+              }}
             />
           </div>
         ) : null}
@@ -53,6 +62,7 @@ export default function StaticPage({
             ))}
           </ul>
         ) : null}
+        {children}
         <p>
           <Link href={ctaHref} className="primary-cta">
             {ctaLabel}

@@ -14,8 +14,8 @@ const bookingFacts = [
   },
   {
     number: "03",
-    title: "A Back-to-Ship Guarantee must be explicit (Viator Terms §20 vs. DCC Timing)",
-    text: "DCC evaluates tour suitability and calculates cruise-port timing buffers; Juneau Flight Deck explains the options; Viator handles the booking and applicable booking protections. DCC itself does not provide a back-to-ship guarantee. Viator's Terms of Use (Section 20, “Worry-free Shore Excursions”) create a contractual guarantee only for products marked “Worry-free Shore Excursion” (such as Viator product 6251SHOREXICEWALK, Tag 367649). Eligibility requires supplying Viator with accurate ship arrival/departure details, at least 2 hours (120 minutes) between tour end and ship departure, no traveler-caused delay, and contacting Viator directly before arranging transport (up to US$1,000 per person next-port transport; 14-day refund window if a ship misses port).",
+    title: "Return-Buffer Planning vs. Contractual Guarantee (Viator Terms §20)",
+    text: "Cruise Promenade and the DCC network recommend planning for tours that return at least two hours before all-aboard. This two-hour buffer is an independent planning standard—not an operator guarantee or a cruise-line rule—and should be kept distinct from operator check-in deadlines, voluntary cancellation cutoffs, and published ship all-aboard times. Juneau Flight Deck itself does not provide a back-to-ship guarantee. Viator's Terms of Use (Section 20, “Worry-free Shore Excursions”) create a contractual guarantee only for products marked “Worry-free Shore Excursion” (such as Viator product 6251SHOREXICEWALK) when booked for a tour ending at least 2 hours (120 minutes) before ship departure.",
   },
   {
     number: "04",
@@ -103,7 +103,7 @@ export default function BookingTransparency() {
             prices are snapshots, not quotes; checkout controls. When channels disagree, we show
             the disagreement instead of guessing.
           </p>
-          <span>Primary sources last checked October 23, 2026.</span>
+          <span>Primary sources last verified November 18, 2026.</span>
         </div>
         <ul>
           {primarySources.map((source) => (

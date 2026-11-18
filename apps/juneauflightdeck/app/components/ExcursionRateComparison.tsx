@@ -1,33 +1,66 @@
 "use client";
 
 import React from "react";
+import {
+  LFSE_CANONICAL_LINKS,
+  UNVERIFIED_CRUISE_PORTAL_PRICE_LABEL,
+  VERIFIED_TARIFF_DATE_LONG,
+} from "@/lib/verifiedOperatorPricing";
 
-export interface MarkupProfile {
+export interface DirectTariffComparisonRow {
   tourName: string;
-  directRate: number;
-  cruiseRate: number;
-  operatorNotes: string;
+  directBaseDisplay: string;
+  qualifications: string;
+  cruisePortalDisplay: string;
+  logisticsNote: string;
+  lfseHref: string;
+  lfseLabel: string;
 }
 
 export default function ExcursionRateComparison() {
-  const markupData: MarkupProfile[] = [
+  const rows: DirectTariffComparisonRow[] = [
     {
-      tourName: "Signature Glacier Landing Flight (Walkabout)",
-      directRate: 409,
-      cruiseRate: 539,
-      operatorNotes: "TEMSCO / Coastal. Cruise lines markup this exact 20-minute glacier walk configuration by over 30% per passenger seat.",
+      tourName: "Mendenhall Glacier & Guided Walk (2h 15m)",
+      directBaseDisplay: "$449 / person (as of Nov 18, 2026)",
+      qualifications: "TEMSCO · ages 2+ · +$150 at 250+ lbs clothed · + CBJ sales tax & fees",
+      cruisePortalDisplay: UNVERIFIED_CRUISE_PORTAL_PRICE_LABEL,
+      logisticsNote:
+        "100% direct refund 48h+ prior; 100% weather cancellation refund. Independent public seats remain separate from ship excursion blocks.",
+      lfseHref: LFSE_CANONICAL_LINKS.temsco,
+      lfseLabel: "TEMSCO profile ↗",
     },
     {
-      tourName: "High-Altitude Glacier Dog Sledding Tour",
-      directRate: 659,
-      cruiseRate: 849,
-      operatorNotes: "TEMSCO / Coastal. The highest in-demand tour. Families of four save up to $760 total by bypassing ship block allocations.",
+      tourName: "Icefield Excursion / Herbert Glacier Landing (~2h 35m)",
+      directBaseDisplay: "$459 Standard (as of Nov 18, 2026)",
+      qualifications:
+        "Coastal · 1–259 lbs ($609 at 260–299 lbs; $918 at 300+ lbs, 2 seats) · + CBJ sales tax & fees",
+      cruisePortalDisplay: UNVERIFIED_CRUISE_PORTAL_PRICE_LABEL,
+      logisticsNote:
+        "7+ days full refund direct (24h on Viator 6251SHOREXICEWALK); 100% weather refund.",
+      lfseHref: LFSE_CANONICAL_LINKS.coastal,
+      lfseLabel: "Coastal profile ↗",
     },
     {
-      tourName: "Level 1 Glacier Ice Trek (1-2 Hours on Ice)",
-      directRate: 499,
-      cruiseRate: 649,
-      operatorNotes: "NorthStar Trekking. Small-group mountaineering paths. Independent lines access raw public manifests that skip cruise holds entirely.",
+      tourName: "Helicopter Glacier Walkabout (3h 15m) & Trek (4h 15m)",
+      directBaseDisplay: "$539 Walkabout / $599 Trek (as of Nov 18, 2026)",
+      qualifications:
+        "NorthStar · ages 8+ (Walkabout) / 12+ (Trek) · +$250 at 250+ lbs clothed · + CBJ sales tax & fees",
+      cruisePortalDisplay: UNVERIFIED_CRUISE_PORTAL_PRICE_LABEL,
+      logisticsNote:
+        "Extended guided ice time with crampons & gear. Direct cancel >24h refunds minus 10% admin fee (<24h non-refundable).",
+      lfseHref: LFSE_CANONICAL_LINKS.northstar,
+      lfseLabel: "NorthStar profile ↗",
+    },
+    {
+      tourName: "Seasonal Glacier Dog Sledding (2h 45m – 3h 15m, May–Aug)",
+      directBaseDisplay: "$759 TEMSCO · $769 Coastal · $789 NorthStar (as of Nov 18, 2026)",
+      qualifications:
+        "May–August snowpack window · +$150 TEMSCO (250+ lbs), $919/$1,538 Coastal tiers, +$250 NorthStar (250+ lbs) · + CBJ sales tax & fees",
+      cruisePortalDisplay: UNVERIFIED_CRUISE_PORTAL_PRICE_LABEL,
+      logisticsNote:
+        "Highest-demand snow camp flights; check Skagway TEMSCO ($649 base, as of Nov 18, 2026) if Juneau camps are full.",
+      lfseHref: LFSE_CANONICAL_LINKS.juneauHelicopterCategory,
+      lfseLabel: "Juneau heli directory ↗",
     },
   ];
 
@@ -44,7 +77,6 @@ export default function ExcursionRateComparison() {
         margin: "24px auto",
       }}
     >
-      {/* Header */}
       <div
         style={{
           borderBottom: "1px solid var(--line)",
@@ -67,7 +99,7 @@ export default function ExcursionRateComparison() {
             marginBottom: 8,
           }}
         >
-          Rate Transparency Audit
+          Verified Direct Tariffs (as of {VERIFIED_TARIFF_DATE_LONG})
         </span>
         <h3
           style={{
@@ -78,17 +110,20 @@ export default function ExcursionRateComparison() {
             letterSpacing: "-0.01em",
           }}
         >
-          Excursion Desk Markup &amp; Savings Breakdown
+          Official Operator Base Rates vs. Cruise Sailing Portals
         </h3>
-        <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted)", maxWidth: 700 }}>
-          Compare independent direct baseline operator rates against typical cruise line shore excursion desk markups for identical helicopter flights.
+        <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted)", maxWidth: 740 }}>
+          Direct operator tariffs below were verified from official operator pages on{" "}
+          {VERIFIED_TARIFF_DATE_LONG}. Because cruise lines price excursions dynamically per sailing
+          inside passenger login portals, compare your portal&apos;s exact checkout quote against
+          these primary operator rates.
         </p>
       </div>
 
-      {/* Comparison Table */}
       <div
         style={{
           overflowX: "auto",
+          maxWidth: "100%",
           border: "1px solid var(--line)",
           borderRadius: 12,
           background: "rgba(3, 14, 25, 0.6)",
@@ -99,7 +134,7 @@ export default function ExcursionRateComparison() {
             width: "100%",
             textAlign: "left",
             borderCollapse: "collapse",
-            minWidth: 620,
+            minWidth: 640,
           }}
         >
           <thead>
@@ -114,53 +149,94 @@ export default function ExcursionRateComparison() {
                 color: "#94a3b8",
               }}
             >
-              <th style={{ padding: "12px 16px", width: "32%" }}>Flight Excursion</th>
-              <th style={{ padding: "12px 14px", width: "16%" }}>Independent Direct</th>
-              <th style={{ padding: "12px 14px", width: "16%" }}>Cruise Line Desk</th>
-              <th style={{ padding: "12px 14px", width: "16%" }}>Net Savings</th>
-              <th style={{ padding: "12px 16px", width: "22%" }}>Logistics Note</th>
+              <th style={{ padding: "12px 16px", width: "26%" }}>Flight Excursion</th>
+              <th style={{ padding: "12px 14px", width: "24%" }}>Verified Direct Base Rate</th>
+              <th style={{ padding: "12px 14px", width: "22%" }}>Cruise-Line Portal</th>
+              <th style={{ padding: "12px 16px", width: "28%" }}>Terms &amp; Operator Profile</th>
             </tr>
           </thead>
           <tbody>
-            {markupData.map((item, idx) => {
-              const savings = item.cruiseRate - item.directRate;
-              const savingsPct = Math.round((savings / item.directRate) * 100);
-
-              return (
-                <tr
-                  key={idx}
+            {rows.map((item, idx) => (
+              <tr
+                key={item.tourName}
+                style={{
+                  borderBottom:
+                    idx !== rows.length - 1 ? "1px solid rgba(158, 217, 255, 0.08)" : "none",
+                }}
+              >
+                <td
                   style={{
-                    borderBottom: idx !== markupData.length - 1 ? "1px solid rgba(158, 217, 255, 0.08)" : "none",
+                    padding: "14px 16px",
+                    fontWeight: 700,
+                    color: "#fff",
+                    fontSize: "0.86rem",
+                    verticalAlign: "top",
                   }}
                 >
-                  <td style={{ padding: "14px 16px", fontWeight: 700, color: "#fff", fontSize: "0.88rem" }}>
-                    {item.tourName}
-                  </td>
-                  <td style={{ padding: "14px 14px", fontFamily: "monospace", fontWeight: 700, color: "#93c5fd", fontSize: "0.92rem" }}>
-                    ${item.directRate}
-                  </td>
-                  <td style={{ padding: "14px 14px", fontFamily: "monospace", color: "#f87171", fontSize: "0.92rem" }}>
-                    <span style={{ textDecoration: "line-through", opacity: 0.8 }}>${item.cruiseRate}</span>
-                  </td>
-                  <td style={{ padding: "14px 14px", fontFamily: "monospace" }}>
-                    <strong style={{ color: "#34d399", fontSize: "1rem", display: "block" }}>
-                      +${savings}
-                    </strong>
-                    <span style={{ fontSize: "0.7rem", color: "#6ee7b7", fontWeight: 700 }}>
-                      Save {savingsPct}%
-                    </span>
-                  </td>
-                  <td style={{ padding: "14px 16px", fontSize: "0.78rem", color: "var(--muted)", lineHeight: 1.45 }}>
-                    {item.operatorNotes}
-                  </td>
-                </tr>
-              );
-            })}
+                  {item.tourName}
+                </td>
+                <td style={{ padding: "14px 14px", verticalAlign: "top" }}>
+                  <div
+                    style={{
+                      fontFamily: "monospace",
+                      fontWeight: 800,
+                      color: "#93c5fd",
+                      fontSize: "0.88rem",
+                    }}
+                  >
+                    {item.directBaseDisplay}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "0.74rem",
+                      color: "var(--muted)",
+                      marginTop: 4,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {item.qualifications}
+                  </div>
+                </td>
+                <td
+                  style={{
+                    padding: "14px 14px",
+                    fontSize: "0.8rem",
+                    color: "#fcd34d",
+                    fontWeight: 700,
+                    verticalAlign: "top",
+                  }}
+                >
+                  {item.cruisePortalDisplay}
+                </td>
+                <td
+                  style={{
+                    padding: "14px 16px",
+                    fontSize: "0.78rem",
+                    color: "var(--muted)",
+                    lineHeight: 1.45,
+                    verticalAlign: "top",
+                  }}
+                >
+                  <div>{item.logisticsNote}</div>
+                  <a
+                    href={item.lfseHref}
+                    style={{
+                      display: "inline-block",
+                      marginTop: 6,
+                      color: "#9ed9ff",
+                      fontWeight: 700,
+                      textDecoration: "underline",
+                    }}
+                  >
+                    {item.lfseLabel}
+                  </a>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
 
-      {/* Informational Sub-Notice */}
       <div
         style={{
           marginTop: 18,
@@ -173,12 +249,23 @@ export default function ExcursionRateComparison() {
           color: "var(--muted)",
         }}
       >
-        <strong style={{ color: "#fff", textTransform: "uppercase", letterSpacing: "0.06em", fontSize: "0.72rem", display: "block", marginBottom: 4 }}>
-          Why is there a price variance?
+        <strong
+          style={{
+            color: "#fff",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            fontSize: "0.72rem",
+            display: "block",
+            marginBottom: 4,
+          }}
+        >
+          Why Ship Excursion Portals &amp; Direct Manifests Differ
         </strong>
-        Cruise lines contract blocks of seats from local operators months in advance and add overhead markups.
-        When your ship shore excursion desk announces that an excursion is <strong style={{ color: "#93c5fd" }}>&ldquo;Sold Out,&rdquo;</strong> it typically means only their contracted allotment has been exhausted.
-        Independent direct seats often remain available through local manifests at standard retail pricing.
+        Cruise lines contract fixed blocks of seats from local FAA Part 135 operators in advance.
+        When your ship&apos;s shore-excursion portal shows{" "}
+        <strong style={{ color: "#93c5fd" }}>&ldquo;Sold Out,&rdquo;</strong> it reflects only that
+        ship&apos;s contracted block—independent direct seats may still be open on the operator&apos;s
+        own manifest.
       </div>
     </div>
   );

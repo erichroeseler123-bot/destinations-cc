@@ -15,7 +15,7 @@ const agentPayload = {
     type: "juneau_excursion_booking_and_comparison",
     description: SITE_DESCRIPTION,
   },
-  status: { state: "active", last_verified: "2026-10-08" },
+  status: { state: "active", last_verified: "2026-11-18" },
   authority: ["juneau_excursion_context", "operator_comparisons", "cruise_port_timing", "sold_out_alerts", "weather_alternatives"],
   service_area: {
     dcc_id: "dcc:destination:juneau",
@@ -40,7 +40,7 @@ const agentPayload = {
   booking_boundary: {
     roles: BOOKING_ROLES,
     rule:
-      "DCC evaluates tour suitability; Juneau Flight Deck explains the options; Viator handles the booking and applicable booking protections. Confirm final price and availability in Viator.",
+      "Juneau Flight Deck is an independent flightseeing education, weather-guidance, and concierge planning site—not an FAA Part 135 operator. Named local operators run the flights; Viator or direct operator checkouts handle payment, confirmation, and applicable booking protections.",
   },
   network: {
     parent_dcc_id: "dcc:site:destination-command-center",

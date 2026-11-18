@@ -372,7 +372,7 @@ export async function POST(request: Request) {
         dateVerification: entry.dateVerification,
         operatorHoldStatus: entry.operatorHoldStatus,
         cancellationNotice:
-          "• No payment or card hold is collected by Juneau Flight Deck. • Published Operator Terms: TEMSCO (48h full refund), Coastal (7+ days full refund; 4–6 days 50%), NorthStar (48h full refund); Viator partner bookings follow listing terms (typically 24h free cancellation + Section 20 Worry-Free Shore Excursion protection on qualifying tours). • 100% weather-grounding refund across all three FAA Part 135 operators.",
+          "• No payment or card hold is collected by Juneau Flight Deck. • Published Operator Terms (verified Nov 18, 2026): TEMSCO (48h full refund), Coastal (7+ days full refund direct; 24h on Viator 6251SHOREXICEWALK), NorthStar (>24h refund minus 10% administrative fee; <24h non-refundable); Viator partner bookings follow listing terms + Section 20 Worry-Free Shore Excursion protection on qualifying tours. • 100% weather-grounding refund (or reschedule) across all three FAA Part 135 operators.",
       },
     });
   } catch (err: any) {

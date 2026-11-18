@@ -88,7 +88,7 @@ async function fetchLiveViatorProducts(
       worryFreeShoreExcursion: hasWorryFreeTag,
       worryFreeTagId: hasWorryFreeTag ? 367649 : null,
       bookHref: urlObj.toString(),
-      isLive: true,
+      isLive: false,
       dataTimestamp: new Date().toISOString(),
     };
 
@@ -137,7 +137,7 @@ export async function GET(request: Request) {
       const liveProducts = await fetchLiveViatorProducts(apiKey, date, passengers);
       if (liveProducts.length > 0) {
         products = liveProducts;
-        isLive = true;
+        isLive = false;
       }
     } catch {}
   }
@@ -203,9 +203,9 @@ export async function GET(request: Request) {
       availabilityStatus: hasNoProducts ? "inventory_unavailable" : "calendar_check_required",
     },
     attribution: {
-      source: isLive ? "Viator Partner API v2.0" : "Juneau Operator Profiles & Viator Partner Network",
+      source: "Verified Juneau Operator Profiles & Viator Partner Network",
       notice,
-      poweredBy: "Official Viator Partner (pid=P00058396)",
+      poweredBy: "Official Viator Partner",
     },
     browseHref:
       "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?pid=P00058396&mcid=42383&medium=api&campaign=jfd-catalog-featured",

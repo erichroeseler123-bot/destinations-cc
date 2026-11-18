@@ -68,7 +68,7 @@ const breadcrumbSchema = {
 
 export default function SoldOutGuidePage() {
   return (
-    <main className="page-shell" style={{ maxWidth: 920, margin: "auto", padding: "40px 20px 80px" }}>
+    <main id="main-content" className="page-shell" style={{ maxWidth: 920, margin: "auto", padding: "40px 20px 80px" }}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
@@ -185,7 +185,7 @@ export default function SoldOutGuidePage() {
             <strong>Check the Three Local FAA Operators:</strong> Compare TEMSCO, Coastal, and NorthStar directly or via partner availability to see if independent departures remain open.
           </li>
           <li>
-            <strong>Plan for a Safe Port Buffer:</strong> As a planning recommendation, choose a flight departure that returns to the heliport at least 90 to 120 minutes before your ship&apos;s published all-aboard time. Docks and heliports are roughly 15–20 minutes apart, giving you a comfortable margin for shuttle transit and dock security.
+            <strong>Plan for a 2-Hour Return Buffer:</strong> Cruise Promenade and the DCC network recommend planning for tours that return at least two hours before all-aboard. This is an independent planning standard—not an operator guarantee or a cruise-line rule—kept distinct from operator check-in deadlines, voluntary cancellation cutoffs, and your ship&apos;s published all-aboard time.
           </li>
           <li>
             <strong>Understand Weather Refund Policies by Channel:</strong> Southeast Alaska weather changes quickly. Under FAA Visual Flight Rules (VFR), pilots will ground flights if cloud ceilings or visibility drop below safe operational minimums. If the operator cancels due to weather:

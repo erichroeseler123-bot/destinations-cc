@@ -53,10 +53,10 @@ export function buildShipWaitlistMetadata({
       type: "website",
       images: [
         {
-          url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-          width: 1200,
-          height: 630,
-          alt: `${ship.shipName} helicopter glacier tour in Juneau, Alaska`,
+          url: "https://juneauflightdeck.com/images/portfolio/mendenhall-glacier-overview.webp",
+          width: 1440,
+          height: 900,
+          alt: `${ship.shipName} helicopter glacier tour planning in Juneau, Alaska`,
         },
       ],
     },

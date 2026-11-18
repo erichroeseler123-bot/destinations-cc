@@ -63,7 +63,7 @@ export default function ExcursionPortBufferSolver({
   const [arrivalStr, setArrivalStr] = useState<string>("13:00");
   const [departureStr, setDepartureStr] = useState<string>("22:00");
   const [allAboardOffsetMinutes, setAllAboardOffsetMinutes] = useState<number>(45); // 45m standard for major lines
-  const [cushionMinutes, setCushionMinutes] = useState<number>(90); // 90 min standard target
+  const [cushionMinutes, setCushionMinutes] = useState<number>(120); // 120 min (2-hour) standard planning buffer
 
   const selectedShip = useMemo(() => {
     return ALASKA_CRUISE_FLEET.find((s) => s.slug === selectedShipSlug) || ALASKA_CRUISE_FLEET[0];
@@ -339,24 +339,6 @@ export default function ExcursionPortBufferSolver({
           >
             <button
               type="button"
-              aria-pressed={cushionMinutes === 90}
-              onClick={() => setCushionMinutes(90)}
-              style={{
-                flex: "1 1 160px",
-                padding: "8px 12px",
-                borderRadius: 8,
-                background: cushionMinutes === 90 ? "rgba(56, 189, 248, 0.25)" : "#081d2c",
-                border: cushionMinutes === 90 ? "1px solid #38bdf8" : "1px solid var(--line)",
-                color: cushionMinutes === 90 ? "#38bdf8" : "var(--muted)",
-                fontSize: "0.82rem",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              90 Min Target (Recommended)
-            </button>
-            <button
-              type="button"
               aria-pressed={cushionMinutes === 120}
               onClick={() => setCushionMinutes(120)}
               style={{
@@ -371,11 +353,31 @@ export default function ExcursionPortBufferSolver({
                 cursor: "pointer",
               }}
             >
-              120 Min Max Cushion
+              120 Min (2-Hour Standard)
+            </button>
+            <button
+              type="button"
+              aria-pressed={cushionMinutes === 90}
+              onClick={() => setCushionMinutes(90)}
+              style={{
+                flex: "1 1 160px",
+                padding: "8px 12px",
+                borderRadius: 8,
+                background: cushionMinutes === 90 ? "rgba(56, 189, 248, 0.25)" : "#081d2c",
+                border: cushionMinutes === 90 ? "1px solid #38bdf8" : "1px solid var(--line)",
+                color: cushionMinutes === 90 ? "#38bdf8" : "var(--muted)",
+                fontSize: "0.82rem",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              90 Min Tighter Window
             </button>
           </div>
-          <div style={{ fontSize: "0.76rem", color: "var(--muted)", marginTop: 6 }}>
-            Arrive back at downtown dock by <strong style={{ color: "#34d399" }}>{analysis.pierReturnTargetStr}</strong> ({cushionMinutes}m before {analysis.allAboardTimeStr} all-aboard call).
+          <div style={{ fontSize: "0.76rem", color: "var(--muted)", marginTop: 6, lineHeight: 1.5 }}>
+            Arrive back at downtown dock by <strong style={{ color: "#34d399" }}>{analysis.pierReturnTargetStr}</strong> ({cushionMinutes}m before {analysis.allAboardTimeStr} all-aboard call).{" "}
+            <strong>Cruise Promenade and the DCC network recommend planning for tours that return at least two hours before all-aboard.</strong>{" "}
+            This is an independent planning standard—not an operator guarantee or a cruise-line rule.
           </div>
         </div>
       </div>

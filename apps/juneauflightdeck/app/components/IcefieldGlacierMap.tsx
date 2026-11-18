@@ -31,11 +31,11 @@ const GLACIER_DATA: Record<string, GlacierPoint> = {
     geo: "13-mile valley glacier flowing from the Juneau Icefield. Primary landing zone for guided walks and ice treks. Note: Pilots and guides evaluate ice conditions and cloud ceilings daily; landing locations can adjust to alternate icefield zones (such as Lemon Creek or Herbert Glacier) for safety.",
     operators: "TEMSCO Helicopters (guided walks) & NorthStar Trekking (glacier walkabouts and ice treks).",
     pricing: [
-      "TEMSCO Guided Walk: From $409 published base rate",
-      "NorthStar 1-Hour Walkabout: From $499 published base rate (Ages 8+)",
-      "NorthStar Level 1 Ice Trek: From $549 published base rate (2 hrs on ice · Ages 12+)",
+      "TEMSCO Mendenhall Glacier & Guided Walk (2h 15m): $449/person base (ages 2+, as of November 18, 2026; +$150 at 250+ lbs clothed; + CBJ sales tax & fees)",
+      "NorthStar Helicopter Glacier Walkabout (3h 15m): $539/person base (ages 8+, as of November 18, 2026; +$250 at 250+ lbs clothed; + CBJ sales tax & fees)",
+      "NorthStar Helicopter Glacier Trek (4h 15m): $599/person base (ages 12+, as of November 18, 2026; +$250 at 250+ lbs clothed; + CBJ sales tax & fees)",
     ],
-    note: "💡 Most treks land on Mendenhall, but landing locations adjust with weather and glacier conditions. Taxes and operator fees calculated at checkout.",
+    note: "💡 Most treks land on Mendenhall, though pilots adjust landing zones daily for ceiling and ice safety. Base tariffs verified November 18, 2026 before CBJ tax, fees & weight surcharges.",
     primaryActionText: "Search on Viator →",
     primaryActionHref: "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Helicopters&pid=P00058396&mcid=42383&medium=api",
   },
@@ -46,15 +46,15 @@ const GLACIER_DATA: Record<string, GlacierPoint> = {
     subtitle: "Valley glacier northwest of Juneau • Landings & seasonal dog mushing camps",
     badge: "Geographic Location",
     badgeColor: "#ef4444",
-    geo: "Large valley glacier terminating in the Herbert River. High alpine snowfield plateau hosts seasonal dog mushing camps from mid-May through August. Camp locations are approximate and relocated seasonally.",
+    geo: "Large valley glacier terminating in the Herbert River. High alpine snowfield plateau hosts seasonal dog mushing camps from May through August. Camp locations are approximate and relocated seasonally.",
     operators: "Coastal Helicopters (glacier landings & dog sledding) & TEMSCO Helicopters (dog sledding).",
     pricing: [
-      "Coastal Icefield Landing (Viator 6251SHOREXICEWALK · Worry-Free §20): From $459 published base rate",
-      "TEMSCO Glacier Dog Sledding: From $699 published base rate",
-      "Coastal Herbert Dog Sled Tour: From $709 published base rate",
+      "Coastal Icefield Excursion (~2h 35m · Viator 6251SHOREXICEWALK): $459 Standard (1–259 lbs), $609 Standard Plus (260–299 lbs), $918 Premium (300+ lbs, 2 seats), as of November 18, 2026 + CBJ sales tax & fees",
+      "TEMSCO Mendenhall / Icefield Dog Sledding (2h 45m, May–Aug): $759/person base (ages 2+, as of November 18, 2026; +$150 at 250+ lbs clothed; + CBJ sales tax & fees)",
+      "Coastal Dog Sled Tour on Herbert Glacier (3h 15m, May–Aug): $769 Standard (1–259 lbs), $919 Standard Plus (260–299 lbs), $1,538 Premium (300+ lbs), as of November 18, 2026 + CBJ sales tax & fees",
     ],
-    note: "💡 Dog sledding camps are seasonal (mid-May through late August) on upper snowfields. Confirm final price and availability in Viator.",
-    primaryActionText: "Book Herbert Icefield Walk on Viator (6251SHOREXICEWALK) ↗",
+    note: "💡 Dog sledding camps operate seasonally (typically May–August snowpack window). Confirm final checkout total and calendar availability with the booking provider.",
+    primaryActionText: "Check Herbert Icefield Walk on Viator (6251SHOREXICEWALK) ↗",
     primaryActionHref: "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?pid=P00058396&mcid=42383&medium=api&campaign=jfd-map-herbert",
     isDirectLink: true,
   },
@@ -65,12 +65,12 @@ const GLACIER_DATA: Record<string, GlacierPoint> = {
     subtitle: "Southeast Juneau Icefield • Approximate Summer Dog Sled Camp",
     badge: "Approximate Camp",
     badgeColor: "#a855f7",
-    geo: "Located northwest of Taku Inlet with sweeping snowfields and jagged granite nunatak peaks. Hosts NorthStar's partner musher camp (mid-May to August).",
+    geo: "Located northwest of Taku Inlet with sweeping snowfields and jagged granite nunatak peaks. Hosts NorthStar's partner musher camp (May–August seasonal snowpack window).",
     operators: "NorthStar Trekking (flights depart from NorthStar Douglas Island base).",
     pricing: [
-      "NorthStar Helicopter Glacier Dogsled Adventure: From $739 published base rate (Ages 2+)",
+      "NorthStar Helicopter & Dog Sled Glacier Trek (3h 15m, May–Aug seasonal): $789/person base (as of November 18, 2026; +$250 weight surcharge at 250+ lbs clothed; + CBJ sales tax & fees)",
     ],
-    note: "💡 Mushing camp location on Norris Glacier is approximate and seasonal. Confirm final price and availability in Viator.",
+    note: "💡 Mushing camp location on Norris Glacier is approximate and seasonal (May–August). Confirm final checkout total and schedule before reserving.",
     primaryActionText: "Search Norris Dog Sledding on Viator ↗",
     primaryActionHref: "https://www.viator.com/searchResults/all?text=Juneau+NorthStar+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-map-norris",
     isDirectLink: true,
@@ -82,13 +82,13 @@ const GLACIER_DATA: Record<string, GlacierPoint> = {
     subtitle: "Thickest icefield glacier • Distinct helicopter/airboat and seaplane lodge excursions",
     badge: "Geographic Location",
     badgeColor: "#10b981",
-    geo: "The only advancing glacier in the Juneau Icefield; terminates into Taku Inlet southeast of Juneau. Two distinct wilderness excursions operate here across different aviation modes.",
+    geo: "Terminates into Taku Inlet southeast of Juneau. Two distinct wilderness excursions operate here across different aviation modes.",
     operators: "NorthStar Trekking (Helicopter & Airboat tour departing from Douglas Island) and Wings Airways (classic floatplane tour to Taku Glacier Lodge from downtown waterfront).",
     pricing: [
-      "NorthStar Taku Glacier Helicopter & Airboat Adventure: From $688 published base rate (departs NorthStar Douglas base)",
-      "Wings Airways Taku Glacier Lodge Feast & Flight: From $385–$415 published fare (classic de Havilland seaplane from downtown waterfront)",
+      "NorthStar Taku Glacier Helicopter & Airboat Adventure: Check current operator price",
+      "Wings Airways Taku Glacier Lodge Flight & Feast (floatplane from downtown harbor): Check current operator price",
     ],
-    note: "💡 Two distinct Taku tours: NorthStar operates a helicopter + airboat adventure from Douglas Island; Wings Airways operates the historic dining seaplane tour to Taku Glacier Lodge.",
+    note: "💡 Two distinct independent Taku tours: NorthStar operates a helicopter + airboat adventure from Douglas Island; Wings Airways operates the historic floatplane flight from downtown Juneau.",
     primaryActionText: "Compare Helicopter Tours →",
     primaryActionHref: "/temsco-vs-coastal-vs-northstar-juneau#effort-comparison",
   },
@@ -120,8 +120,8 @@ const GLACIER_DATA: Record<string, GlacierPoint> = {
     geo: "Located on North Douglas Island across Gastineau Channel. NorthStar Trekking operates this dedicated second heliport facility specifically for Norris Glacier dog sledding tours and Taku Glacier helicopter/airboat adventures.",
     operators: "NorthStar Trekking (dog sledding and airboat adventures).",
     pricing: [
-      "NorthStar Dog Sledding on Norris Glacier: From $739 published base rate",
-      "NorthStar Taku Glacier Helicopter & Airboat: From $688 published base rate",
+      "NorthStar Helicopter & Dog Sled Glacier Trek (3h 15m, May–Aug): $789/person base (as of November 18, 2026; +$250 at 250+ lbs clothed; + CBJ sales tax & fees)",
+      "NorthStar Taku Glacier Helicopter & Airboat: Check current operator price",
     ],
     note: "💡 NorthStar operates two separate bases: Airport base for ice treks; Douglas Island heliport for dog sledding and airboat adventures.",
     primaryActionText: "Compare Dog Sledding Tours →",
@@ -383,8 +383,8 @@ export default function IcefieldGlacierMap() {
             <text x="180" y="230" fill="#94a3b8" fontSize="9.5" fontWeight="600" textAnchor="end">
               (Geographic Glacier Location)
             </text>
-            <text x="180" y="245" fill="#38bdf8" fontSize="10" fontWeight="600" textAnchor="end">
-              Coastal Landing ($429) &amp; Dog Sleds ($659–$709)
+            <text x="180" y="245" fill="#38bdf8" fontSize="9.5" fontWeight="600" textAnchor="end">
+              Coastal $459 &amp; Dog Sleds $759–$769 (Nov 18, 2026)
             </text>
           </g>
 
@@ -406,8 +406,8 @@ export default function IcefieldGlacierMap() {
             <text x="440" y="390" fill="#94a3b8" fontSize="9.5" fontWeight="600">
               (Geographic Glacier Location · Conditions Dictate Ice Site)
             </text>
-            <text x="440" y="405" fill="#38bdf8" fontSize="10" fontWeight="700">
-              TEMSCO Walk ($409) · NorthStar Walkabout ($499) · Trek ($549)
+            <text x="440" y="405" fill="#38bdf8" fontSize="9.5" fontWeight="700">
+              TEMSCO $449 · NorthStar $539 / $599 (as of Nov 18, 2026)
             </text>
           </g>
 
@@ -450,8 +450,8 @@ export default function IcefieldGlacierMap() {
             <text x="635" y="445" fill="#94a3b8" fontSize="9.5" fontWeight="600" textAnchor="end">
               (Geographic Glacier Location)
             </text>
-            <text x="635" y="460" fill="#38bdf8" fontSize="10" fontWeight="600" textAnchor="end">
-              NorthStar Dogsled Camp ($739 · Approx. Camp)
+            <text x="635" y="460" fill="#38bdf8" fontSize="9.5" fontWeight="600" textAnchor="end">
+              NorthStar Dogsled $789 (May–Aug, as of Nov 18, 2026)
             </text>
           </g>
 
@@ -684,11 +684,11 @@ export default function IcefieldGlacierMap() {
       </div>
       <div style={{ marginTop: 14, paddingTop: 10, borderTop: "1px solid #1e293b", fontSize: "0.75rem", color: "#64748b", display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 8 }}>
         <span>
-          Checked on <strong>October 7, 2026</strong> against official sources:{" "}
-          <a href="https://temscoair.com/juneau-faq/" target="_blank" rel="noopener noreferrer" style={{ color: "#94a3b8", textDecoration: "underline" }}>TEMSCO FAQ</a> •{" "}
-          <a href="https://coastalhelicopters.com/tours/" target="_blank" rel="noopener noreferrer" style={{ color: "#94a3b8", textDecoration: "underline" }}>Coastal Tours</a> •{" "}
-          <a href="https://northstartrekking.com/faqs/" target="_blank" rel="noopener noreferrer" style={{ color: "#94a3b8", textDecoration: "underline" }}>NorthStar FAQ</a> •{" "}
-          <a href="https://wingsairways.com/world-of-wings-airways/" target="_blank" rel="noopener noreferrer" style={{ color: "#94a3b8", textDecoration: "underline" }}>Wings Airways</a>
+          Verified on <strong>November 18, 2026</strong> against official operator tariffs &amp; canonical Alaska profiles:{" "}
+          <a href="https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/" target="_blank" rel="noopener noreferrer" style={{ color: "#94a3b8", textDecoration: "underline" }}>TEMSCO</a> •{" "}
+          <a href="https://coastalhelicopters.com/tours/icefield-excursion/" target="_blank" rel="noopener noreferrer" style={{ color: "#94a3b8", textDecoration: "underline" }}>Coastal</a> •{" "}
+          <a href="https://northstartrekking.com/adventures/helicopter-glacier-walkabout/" target="_blank" rel="noopener noreferrer" style={{ color: "#94a3b8", textDecoration: "underline" }}>NorthStar</a> •{" "}
+          <a href="https://wingsairways.com/" target="_blank" rel="noopener noreferrer" style={{ color: "#94a3b8", textDecoration: "underline" }}>Wings Airways</a>
         </span>
         <span>Landing locations adjust with daily ice and weather conditions</span>
       </div>

@@ -3,20 +3,45 @@ import Link from "next/link";
 import Image from "next/image";
 import HelicopterWaitlistForm from "../components/HelicopterWaitlistForm";
 import LiveSeatDropsBadge from "../components/LiveSeatDropsBadge";
+import OperatorIdentityMark from "../components/OperatorIdentityMark";
+import SourcesAndFreshness from "../components/SourcesAndFreshness";
+import { buildFlightGuideJsonLd } from "@/lib/operatorSchema";
+import {
+  LFSE_CANONICAL_LINKS,
+  TWO_HOUR_BUFFER_CLARIFICATION,
+  UNVERIFIED_CRUISE_PORTAL_PRICE_LABEL,
+  VERBATIM_TWO_HOUR_BUFFER_RULE,
+  VERIFIED_TARIFF_DATE_LONG,
+} from "@/lib/verifiedOperatorPricing";
 
 export const metadata: Metadata = {
-  title: "Juneau Helicopter Dog Sledding on Glacier | Availability Check & Booking",
+  title: "Juneau Helicopter Dog Sledding on Glacier | Tariffs & Availability Check",
   description:
-    "Fly by helicopter to a glacier dog sled camp on Herbert or Norris Glacier. Sold out on your ship? Submit your port date, ship, and party size for a daily availability check.",
+    "Compare Juneau helicopter glacier dog sledding across TEMSCO ($759), Coastal ($769), and NorthStar ($789, as of November 18, 2026), May–August snowpack windows, and 2-hour cruise return buffers.",
   alternates: { canonical: "https://juneauflightdeck.com/juneau-dogsled-helicopter-tours" },
   openGraph: {
-    title: "Juneau Helicopter Dog Sledding on Glacier | Availability Check",
+    title: "Juneau Helicopter Dog Sledding on Glacier | Verified 2026 Guide",
     description:
-      "Fly to a remote glacier camp and mush with Alaskan huskies. Daily availability checks and request coordination for sold-out cruise dates.",
+      "Independent guide to Juneau Icefield seasonal dog sledding camps across TEMSCO, Coastal, and NorthStar, plus concierge availability checks.",
     url: "https://juneauflightdeck.com/juneau-dogsled-helicopter-tours",
     type: "website",
   },
 };
+
+const dogSledPageSchema = buildFlightGuideJsonLd({
+  url: "https://juneauflightdeck.com/juneau-dogsled-helicopter-tours",
+  name: "Juneau Helicopter Glacier Dog Sledding Guide",
+  description:
+    "Independent comparison of seasonal glacier dog sledding flights operated by TEMSCO Helicopters, Coastal Helicopters, and NorthStar Trekking in Juneau, Alaska, with verified base tariffs as of November 18, 2026.",
+  breadcrumbs: [
+    { name: "Home", url: "https://juneauflightdeck.com/" },
+    {
+      name: "Juneau Glacier Dog Sledding",
+      url: "https://juneauflightdeck.com/juneau-dogsled-helicopter-tours",
+    },
+  ],
+  comparedOperators: ["temsco", "coastal", "northstar"],
+});
 
 const dogSledFaqJsonLd = {
   "@context": "https://schema.org",
@@ -24,18 +49,18 @@ const dogSledFaqJsonLd = {
   mainEntity: [
     {
       "@type": "Question",
-      name: "Why is helicopter glacier dog sledding in Juneau almost always sold out?",
+      name: "Why is helicopter glacier dog sledding in Juneau frequently sold out?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Glacier dog sledding camps on Herbert and Norris glaciers operate in a fragile alpine snowpack zone strictly regulated by US Forest Service special-use permits. Because daily flight slots and active dog teams are strictly capped across operators to protect animal welfare and alpine terrain, daily capacity across all ships is limited. As a result, peak summer dates frequently book out months in advance.",
+        text: "Summer glacier dog sledding camps operate in an upper-elevation alpine snowpack zone regulated by US Forest Service special-use permits, capping daily flight slots and husky team runs across all three licensed Juneau carriers.",
       },
     },
     {
       "@type": "Question",
-      name: "How does the Juneau Flight Deck availability request help if dog sledding is sold out?",
+      name: "What are the verified Juneau glacier dog sledding prices as of November 18, 2026?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Because cruise travelers frequently change itineraries or cancel trips, dog sledding slots open up as schedules change. When you submit your cruise date, party size, and ship details, our team conducts daily availability checks across local operators and sends direct booking links when seats become open.",
+        text: "As of November 18, 2026 (before CBJ sales tax & fees): TEMSCO Mendenhall Glacier Dog Sledding (2h 45m, May–Aug) is $759/person (ages 2+, +$150 at 250+ lbs clothed); Coastal Dog Sled Tour on Herbert Glacier (3h 15m, May–Aug) is $769 Standard (1–259 lbs), $919 Standard Plus (260–299 lbs), and $1,538 Premium (300+ lbs); NorthStar Helicopter & Dog Sled Glacier Trek (3h 15m, May–Aug) is $789/person (+$250 at 250+ lbs clothed). TEMSCO also operates Skagway Glacier Dog Sledding (2h, May–Aug) at $649/person (+$150 at 250+ lbs; +$3 Skagway fee & tax).",
       },
     },
     {
@@ -43,23 +68,15 @@ const dogSledFaqJsonLd = {
       name: "When does the Juneau glacier dog sledding season operate?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "The snow camp season typically opens between May 10th and May 18th and runs through mid-to-late August. As late summer temperatures rise and the high snowpack turns to blue glacier ice, the dog camps are airlifted back to their winter training kennels. Standard glacier landing tours on ice continue through late September.",
+        text: "Snow camps typically operate from May through mid-to-late August depending on upper-elevation snowpack. Standard helicopter glacier landings on bare ice continue into September.",
       },
     },
     {
       "@type": "Question",
-      name: "What gear is provided for the glacier dog sledding tour?",
+      name: "How much buffer should cruise passengers plan before all-aboard?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "The tour operator provides specialized glacier overboots that pull directly over your sneakers or hiking shoes to keep your feet dry and warm on the snow. You should wear warm layers, a waterproof outer jacket, sunglasses (snow glare is intense on sunny days), and gloves.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Are there weight limits for helicopter dog sledding in Juneau?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Yes. In accordance with FAA regulations, passenger and gear weight must be balanced on all helicopters. Guests weighing 250 lbs or more (fully clothed) may be required to pay a surcharge for an adjacent empty seat to ensure proper weight and balance. All guests are discreetly weighed at the heliport before boarding.",
+        text: `${VERBATIM_TWO_HOUR_BUFFER_RULE} ${TWO_HOUR_BUFFER_CLARIFICATION}`,
       },
     },
   ],
@@ -67,22 +84,54 @@ const dogSledFaqJsonLd = {
 
 export default function JuneauDogSleddingPage() {
   return (
-    <main className="page-shell py-8" style={{ maxWidth: "100%", overflowX: "hidden" }}>
+    <main
+      id="main-content"
+      className="page-shell py-8"
+      style={{ maxWidth: "100%", overflowX: "clip" }}
+    >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(dogSledPageSchema) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(dogSledFaqJsonLd) }}
       />
 
-      <div className="site-shell max-w-5xl mx-auto px-4" style={{ maxWidth: "100%", boxSizing: "border-box" }}>
+      <div
+        className="site-shell max-w-5xl mx-auto px-4"
+        style={{ maxWidth: "100%", boxSizing: "border-box" }}
+      >
         <div className="text-center max-w-3xl mx-auto mb-10">
-          <p className="eyebrow">The Crown Jewel of Alaska Shore Excursions</p>
+          <p className="eyebrow">
+            Independent Seasonal Guide · Verified {VERIFIED_TARIFF_DATE_LONG}
+          </p>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white mb-4">
             Juneau Helicopter Glacier Dog Sledding
           </h1>
           <p className="text-lg md:text-xl text-slate-300 leading-relaxed">
-            Fly by helicopter across the Juneau Icefield to an authentic snowfield dog camp. 
-            Mush with real Alaskan sled dogs and Iditarod veterans. 
-            Sold out on your ship? Submit an availability request and our local team will perform daily schedule checks across Juneau operators to alert you if matching seats open.
+            Compare seasonal May–August snowfield mushing camps operated by{" "}
+            <a
+              href={LFSE_CANONICAL_LINKS.temsco}
+              style={{ color: "#9ed9ff", textDecoration: "underline", fontWeight: 700 }}
+            >
+              TEMSCO Helicopters ↗
+            </a>
+            ,{" "}
+            <a
+              href={LFSE_CANONICAL_LINKS.coastal}
+              style={{ color: "#9ed9ff", textDecoration: "underline", fontWeight: 700 }}
+            >
+              Coastal Helicopters ↗
+            </a>
+            , and{" "}
+            <a
+              href={LFSE_CANONICAL_LINKS.northstar}
+              style={{ color: "#9ed9ff", textDecoration: "underline", fontWeight: 700 }}
+            >
+              NorthStar Trekking ↗
+            </a>
+            —or submit a concierge availability request if your cruise portal shows sold out.
           </p>
         </div>
 
@@ -116,7 +165,8 @@ export default function JuneauDogSleddingPage() {
             style={{
               position: "absolute",
               inset: 0,
-              background: "linear-gradient(180deg, rgba(4, 17, 27, 0.08) 0%, rgba(4, 17, 27, 0.25) 48%, rgba(4, 17, 27, 0.88) 100%)",
+              background:
+                "linear-gradient(180deg, rgba(4, 17, 27, 0.08) 0%, rgba(4, 17, 27, 0.25) 48%, rgba(4, 17, 27, 0.88) 100%)",
               display: "flex",
               alignItems: "flex-end",
               padding: "clamp(18px, 4vw, 32px)",
@@ -137,16 +187,24 @@ export default function JuneauDogSleddingPage() {
                   marginBottom: 8,
                 }}
               >
-                High Demand · Books Out 4-6 Months Ahead
+                May–August Seasonal Snowpack · Books Out Months Ahead
               </span>
-              <h2 style={{ margin: 0, fontSize: "clamp(1.35rem, 3vw, 1.85rem)", fontWeight: 800, color: "#ffffff", lineHeight: 1.2 }}>
-                Herbert Glacier &amp; Norris Glacier Alpine Camps
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: "clamp(1.35rem, 3vw, 1.85rem)",
+                  fontWeight: 800,
+                  color: "#ffffff",
+                  lineHeight: 1.2,
+                }}
+              >
+                Mendenhall, Herbert &amp; Norris Glacier Snow Camps
               </h2>
             </div>
           </div>
         </div>
 
-        {/* Official Viator Partner Seasonal Status Card */}
+        {/* Partner & Direct Operator Status Card */}
         <div
           id="waitlist"
           style={{
@@ -166,7 +224,8 @@ export default function JuneauDogSleddingPage() {
           <div style={{ minWidth: 0 }}>
             <div
               style={{
-                display: "inline-flex",
+                display: "flex",
+                flexWrap: "wrap",
                 alignItems: "center",
                 gap: 8,
                 fontSize: "0.75rem",
@@ -174,33 +233,79 @@ export default function JuneauDogSleddingPage() {
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
                 color: "var(--accent, #f0b35b)",
-                marginBottom: 6,
+                marginBottom: 8,
               }}
             >
-              <span>Official Viator Partner</span>
-              <span>·</span>
-              <span>Herbert &amp; Norris Glacier Camps</span>
+              <OperatorIdentityMark operator="temsco" size="sm" />
+              <OperatorIdentityMark operator="coastal" size="sm" />
+              <OperatorIdentityMark operator="northstar" size="sm" />
+              <span>Verified Tariffs as of {VERIFIED_TARIFF_DATE_LONG}</span>
             </div>
-            <h3 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--text, #ffffff)", margin: "0 0 8px" }}>
-              Compare &amp; Book Glacier Dog Sledding Excursions
+            <h3
+              style={{
+                fontSize: "1.35rem",
+                fontWeight: 800,
+                color: "var(--text, #ffffff)",
+                margin: "0 0 8px",
+              }}
+            >
+              Compare &amp; Book Seasonal Glacier Dog Sledding
             </h3>
-            <p style={{ margin: "0 0 10px", fontSize: "0.88rem", color: "var(--muted)", lineHeight: 1.55 }}>
-              Dog sled camps operate mid-May through August across Herbert Glacier (TEMSCO from $659, Coastal from $709) and Norris Glacier (NorthStar from $739). Daily capacity is strictly regulated by the US Forest Service. Check real-time dates below via our official Viator partner search or operator direct booking.
+            <p
+              style={{
+                margin: "0 0 10px",
+                fontSize: "0.88rem",
+                color: "var(--muted)",
+                lineHeight: 1.55,
+              }}
+            >
+              Summer snow camps operate May through August across TEMSCO ($759/person base, 2h 45m),
+              Coastal Helicopters ($769 Standard 1–259 lbs / $919 260–299 lbs / $1,538 300+ lbs, 3h
+              15m), and NorthStar Trekking ($789/person base, 3h 15m, +$250 at 250+ lbs)—all as of{" "}
+              {VERIFIED_TARIFF_DATE_LONG} plus CBJ sales tax &amp; fees. Also check{" "}
+              <Link
+                href="/skagway/helicopter"
+                style={{ color: "#9ed9ff", textDecoration: "underline", fontWeight: 700 }}
+              >
+                Skagway TEMSCO Dog Sledding ($649 base, 2h)
+              </Link>{" "}
+              and{" "}
+              <a
+                href={LFSE_CANONICAL_LINKS.juneauHelicopterCategory}
+                style={{ color: "#9ed9ff", textDecoration: "underline", fontWeight: 700 }}
+              >
+                Juneau Helicopter Tours on Last Frontier Shore Excursions ↗
+              </a>
+              .
             </p>
-            <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--ice, #9ed9ff)", fontWeight: 600 }}>
-              Sold out on your ship? Register below for our daily availability check across local helicopter operators.
+            <p style={{ margin: 0, fontSize: "0.84rem", color: "var(--ice, #9ed9ff)", fontWeight: 600 }}>
+              {VERBATIM_TWO_HOUR_BUFFER_RULE}
             </p>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10, minWidth: 0, maxWidth: "100%" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              gap: 10,
+              minWidth: 0,
+              maxWidth: "100%",
+            }}
+          >
             <a
               href="https://www.viator.com/searchResults/all?text=Juneau+glacier+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-dogsled-hero"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-primary"
-              style={{ padding: "12px 22px", fontSize: "0.92rem", maxWidth: "100%", textAlign: "center" }}
+              style={{
+                padding: "12px 22px",
+                fontSize: "0.92rem",
+                maxWidth: "100%",
+                textAlign: "center",
+              }}
             >
-              Check Dog Sledding on Viator &rarr;
+              Check Partner Calendar on Viator &rarr;
             </a>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", maxWidth: "100%" }}>
               <a
@@ -233,14 +338,19 @@ export default function JuneauDogSleddingPage() {
             </div>
             <a
               href="#waitlist-form"
-              style={{ fontSize: "0.78rem", color: "var(--accent, #f0b35b)", fontWeight: 700, textDecoration: "none" }}
+              style={{
+                fontSize: "0.78rem",
+                color: "var(--accent, #f0b35b)",
+                fontWeight: 700,
+                textDecoration: "none",
+              }}
             >
-              Sold out? Daily Availability Check &darr;
+              Sold out? Submit a Concierge Availability Request &darr;
             </a>
           </div>
         </div>
 
-        {/* Dedicated Intake Form Preset to Dog Sledding */}
+        {/* Dedicated Intake Form */}
         <section className="mb-14">
           <div className="mb-6">
             <LiveSeatDropsBadge showLink={false} />
@@ -248,48 +358,12 @@ export default function JuneauDogSleddingPage() {
           <HelicopterWaitlistForm compact={false} defaultPort="juneau" />
         </section>
 
-        {/* What to Expect Breakdown */}
-        <section className="section-block p-8 md:p-12 mb-12">
-          <div className="section-heading mb-8">
-            <p className="eyebrow">The Experience</p>
-            <h2 className="text-2xl md:text-4xl font-bold text-white">
-              What Happens on a Glacier Dog Sledding Tour
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-              <span className="text-amber-400 font-black text-xl mb-2 block">Stage 1 · The Flight</span>
-              <h3 className="text-lg font-bold text-white mb-2">Aerial Icefield Transit</h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                Lift off from Juneau Airport and soar over lush coastal rainforest, cascading waterfalls, and the massive crevasses of the Juneau Icefield before landing at ~3,500 ft elevation.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-              <span className="text-amber-400 font-black text-xl mb-2 block">Stage 2 · Dog Camp</span>
-              <h3 className="text-lg font-bold text-white mb-2">Meet the Iditarod Huskies</h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                Step into an active dog mushing camp where 100+ Alaskan huskies live for the summer. Meet veteran mushers, pet the dogs, and see how puppies are trained for winter racing.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-              <span className="text-amber-400 font-black text-xl mb-2 block">Stage 3 · The Run</span>
-              <h3 className="text-lg font-bold text-white mb-2">Glacier Sled Run</h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                Take the runner standing behind the musher or relax in the sled basket as a 12-dog team pulls you across a 2-mile circuit of pristine glacier snowfields.
-              </p>
-            </div>
-          </div>
-        </section>
-
         {/* Key Tour Specifications Table */}
         <section className="section-block p-8 md:p-12 mb-12">
           <div className="section-heading mb-6">
-            <p className="eyebrow">Tour Details</p>
+            <p className="eyebrow">Verified Specifications · {VERIFIED_TARIFF_DATE_LONG}</p>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
-              Helicopter Dog Sledding Specifications
+              Helicopter Dog Sledding Tariff &amp; Timing Matrix
             </h2>
           </div>
 
@@ -298,84 +372,85 @@ export default function JuneauDogSleddingPage() {
               <thead>
                 <tr>
                   <th>Feature</th>
-                  <th>Tour Details</th>
-                  <th>Cruise Passenger Notes</th>
+                  <th>Verified Operator Details</th>
+                  <th>Cruise Planning Notes</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td><strong>Total Tour Duration</strong></td>
-                  <td>2.75 to 3.25 hours (Dock to Dock)</td>
-                  <td>Requires at least a 5.5 hour port call window for safe margin</td>
+                  <td>
+                    <strong>Total Tour Duration</strong>
+                  </td>
+                  <td>2h 45m (TEMSCO) · 3h 15m (Coastal &amp; NorthStar)</td>
+                  <td>
+                    {VERBATIM_TWO_HOUR_BUFFER_RULE} ({TWO_HOUR_BUFFER_CLARIFICATION})
+                  </td>
                 </tr>
                 <tr>
-                  <td><strong>Flight Time</strong></td>
-                  <td>~30 minutes total (15 min each way)</td>
-                  <td>Spectacular views of Herbert or Norris Glaciers</td>
+                  <td>
+                    <strong>Operating Season</strong>
+                  </td>
+                  <td>May through August (snowpack dependent)</td>
+                  <td>Not offered in September once upper snow camps demobilize</td>
                 </tr>
                 <tr>
-                  <td><strong>Time on Snow Camp</strong></td>
-                  <td>Approximately 1 hour</td>
-                  <td>Includes sled ride, puppy socializing, and photo ops</td>
+                  <td>
+                    <strong>Verified Direct Base Tariffs (as of Nov 18, 2026)</strong>
+                  </td>
+                  <td>
+                    $759 TEMSCO · $769 Coastal Standard · $789 NorthStar (+ CBJ sales tax &amp;
+                    fees)
+                  </td>
+                  <td>Cruise-line desk: {UNVERIFIED_CRUISE_PORTAL_PRICE_LABEL}</td>
                 </tr>
                 <tr>
-                  <td><strong>Operating Season</strong></td>
-                  <td>Mid-May to mid-to-late August</td>
-                  <td>Not available in September due to summer snow melt</td>
+                  <td>
+                    <strong>Clothed Weight Surcharges</strong>
+                  </td>
+                  <td>
+                    TEMSCO +$150 (250+ lbs) · Coastal $919 (260–299 lbs) / $1,538 (300+ lbs) ·
+                    NorthStar +$250 (250+ lbs)
+                  </td>
+                  <td>Discreetly weighed at the heliport with outerwear and shoes</td>
                 </tr>
                 <tr>
-                  <td><strong>Direct Operator Price</strong></td>
-                  <td>From $659 (TEMSCO) · $709 (Coastal) · $739 (NorthStar)</td>
-                  <td>Ship excursion desks frequently charge $795 – $925+</td>
+                  <td>
+                    <strong>Skagway Corridor Backup</strong>
+                  </td>
+                  <td>
+                    TEMSCO Skagway Glacier Dog Sledding: $649/person (2h, May–Aug, as of Nov 18,
+                    2026)
+                  </td>
+                  <td>+$150 at 250+ lbs clothed; +$3 Skagway fee &amp; tax</td>
                 </tr>
                 <tr>
-                  <td><strong>Weather Policy</strong></td>
-                  <td>100% full refund if grounded</td>
-                  <td>Fog or low cloud ceiling grounds flights safely</td>
+                  <td>
+                    <strong>Weather Policy</strong>
+                  </td>
+                  <td>100% refund if canceled by operator for weather</td>
+                  <td>
+                    Keep{" "}
+                    <a
+                      href={LFSE_CANONICAL_LINKS.juneauWhaleCategory}
+                      style={{ color: "#9ed9ff", textDecoration: "underline" }}
+                    >
+                      Auke Bay whale watching ↗
+                    </a>{" "}
+                    ready as a sea-level weather backup
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </section>
 
-        {/* FAQs */}
-        <section className="section-block p-8 md:p-12 mb-16">
-          <div className="section-heading mb-6">
-            <p className="eyebrow">Dog Sledding FAQs</p>
-            <h2 className="text-2xl md:text-4xl font-bold text-white">
-              Questions About Glacier Dog Sledding
-            </h2>
-          </div>
+        <SourcesAndFreshness includeSkagway />
 
-          <div className="faq-block">
-            <div className="faq-item">
-              <h3>What if our ship arrives after the morning dog sled flights?</h3>
-              <p>
-                Operators run continuous departures throughout the day starting at 8:30 AM through 5:30 PM. Afternoon flights are ideal for ships docking around 1:00 PM (such as Princess and Holland America).
-              </p>
-            </div>
-
-            <div className="faq-item">
-              <h3>Can young children or seniors participate?</h3>
-              <p>
-                Yes. Dog sledding is very accessible. Guests sit securely in a padded sled basket while the musher stands on the runners behind. Walking from the helicopter landing pad to the sleds is less than 50 yards on packed snow.
-              </p>
-            </div>
-
-            <div className="faq-item">
-              <h3>What if the dogsled tour is completely booked and no cancellations occur?</h3>
-              <p>
-                If a dog sledding seat cannot be found for your date, you can opt to have your availability request check for a Classic Glacier Landing (which walks on ice and has broader daily capacity) so you never miss out on seeing the Juneau Icefield.
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center mt-8">
-            <Link href="/" className="button button-secondary">
-              ← Back to Juneau Flight Deck Home
-            </Link>
-          </div>
-        </section>
+        <div className="text-center mt-8 mb-8">
+          <Link href="/" className="button button-secondary">
+            ← Back to Juneau Flight Deck Home
+          </Link>
+        </div>
       </div>
     </main>
   );

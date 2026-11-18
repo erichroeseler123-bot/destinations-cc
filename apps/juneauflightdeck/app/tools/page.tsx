@@ -47,7 +47,7 @@ const toolkitJsonLd = {
 
 export default function ToolsDashboardPage() {
   return (
-    <main className="page-shell" style={{ maxWidth: 1040, margin: "auto", padding: "40px 20px 80px" }}>
+    <main id="main-content" className="page-shell" style={{ maxWidth: 1040, margin: "auto", padding: "40px 20px 80px" }}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(toolkitJsonLd) }}

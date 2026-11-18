@@ -2,10 +2,13 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  overflow-x: clip;
+  max-width: 100%;
+  box-sizing: border-box;
   min-height: 430px;
   display: flex;
   align-items: center;
-  padding: 44px max(24px, calc((100vw - 1240px) / 2)) !important;
+  padding: 44px max(24px, calc((100% - 1240px) / 2)) !important;
   text-align: left !important;
 }
 .photo { object-fit: cover; object-position: center 62%; z-index: -3; }

@@ -227,7 +227,7 @@ export const ALASKA_CRUISE_FLEET: AlaskaShipData[] = [
     callsAtSkagway: true,
     skagwayBerth: "Railroad Dock (RRD)",
     skagwayHours: "7:00 AM – 8:30 PM (typical)",
-    notes: "Central pier pickup with 90-120 min safety return buffer.",
+    notes: "Central pier pickup; plan for tours returning at least 2 hours (120 min) before all-aboard.",
   },
 ];
 
@@ -272,13 +272,13 @@ export function calculateSailingContext(
   if (!ship) return null;
 
   const juneauSafeWindow = ship.dockHours.includes("1:00 PM") || ship.dockHours.includes("1:30 PM") || ship.dockHours.includes("2:00 PM")
-    ? "Typically 2:15 PM – 6:45 PM (leaves 90-120m buffer before all-aboard)"
+    ? "Typically 2:15 PM – 6:30 PM (leaves at least 2 hours before all-aboard)"
     : ship.dockHours.includes("7:00 AM")
-    ? "Typically 8:15 AM – 11:15 AM (leaves 90-120m buffer before all-aboard)"
-    : "Varies by sailing date (leaves 90-120m buffer before all-aboard)";
+    ? "Typically 8:15 AM – 10:45 AM (leaves at least 2 hours before all-aboard)"
+    : "Varies by sailing date (plan to return at least 2 hours before all-aboard)";
 
   const skagwaySafeWindow = ship.callsAtSkagway
-    ? "Typically 8:30 AM – 5:30 PM (leaves 90-120m buffer before all-aboard)"
+    ? "Typically 8:30 AM – 5:30 PM (leaves at least 2 hours before all-aboard)"
     : undefined;
 
   return {

@@ -75,20 +75,20 @@ export default function DispatchDashboardPage() {
   });
 
   return (
-    <main className="page-shell py-8">
+    <main id="main-content" className="page-shell py-8">
       <div className="site-shell max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-8 border-b border-white/10">
           <div>
             <div className="flex items-center gap-3">
               <span className="w-3 h-3 rounded-full bg-amber-400" />
-              <p className="eyebrow m-0 text-amber-400">Juneau Flight Deck · Operations Command</p>
+              <p className="eyebrow m-0 text-amber-400">Juneau Flight Deck · Concierge Queue</p>
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mt-1">
               Helicopter Availability Concierge Queue
             </h1>
             <p className="text-sm text-slate-300 mt-1">
-              Human Concierge Review · Viator Partner Channel (<code>P00058396</code>) · TEMSCO, Coastal &amp; NorthStar
+              Human Concierge Review · Disclosed Viator Partner &amp; Direct Operator Reference (TEMSCO, Coastal &amp; NorthStar)
             </p>
           </div>
 
@@ -167,7 +167,7 @@ export default function DispatchDashboardPage() {
           <div className="text-xs text-slate-300 border-l border-sky-400/20 pl-4 py-1">
             <div>• Queue mode: <strong>Human Concierge Review</strong></div>
             <div>• Operator terms: <strong>Published per provider</strong></div>
-            <div>• Booking Channel: <strong>Viator Partner (P00058396)</strong></div>
+            <div>• Booking Channel: <strong>Viator Partner &amp; Direct Reference</strong></div>
           </div>
         </div>
 
@@ -374,19 +374,19 @@ export default function DispatchDashboardPage() {
           </table>
         </div>
 
-        {/* Live Viator Partner Excursion Feed */}
+        {/* Viator Partner Excursion Reference */}
         <div className="mt-12">
           <ViatorFeaturedTours
-            headline="Live Fleet Availability & Viator Partner Excursions"
-            subhead="Monitor real-time Juneau glacier helicopter options, supplier imagery, and verified departure windows."
+            headline="Verified Juneau Operator Tariffs & Viator Partner Reference"
+            subhead="Review Juneau glacier helicopter tariffs (verified November 18, 2026) and partner booking links."
           />
         </div>
 
         {/* Instructions & Help */}
         <div className="mt-8 p-6 rounded-2xl bg-white/5 border border-white/10 text-xs text-slate-300 leading-relaxed">
-          <h4 className="text-sm font-bold text-white mb-2">How This UI Connects to Viator &amp; Local Operators</h4>
+          <h4 className="text-sm font-bold text-white mb-2">Role Separation &amp; Booking Channel Notes</h4>
           <p>
-            DCC evaluates tour suitability; Juneau Flight Deck explains the options; Viator handles the booking and applicable booking protections (such as Viator Terms of Use Section 20 for qualifying Worry-free Shore Excursions like <code>6251SHOREXICEWALK</code>). Fulfillment is operated directly by TEMSCO, Coastal, or NorthStar.
+            Juneau Flight Deck is an independent flightseeing guide and concierge desk; Viator handles partner bookings and applicable protections (such as Viator Terms of Use Section 20 for qualifying Worry-free Shore Excursions like <code>6251SHOREXICEWALK</code>). All flights are operated independently by licensed FAA Part 135 carriers—TEMSCO, Coastal, or NorthStar.
           </p>
         </div>
       </div>

@@ -43,8 +43,7 @@ type JuneauProductsResponse = {
 
 const DCC_ORIGIN = process.env.NEXT_PUBLIC_DCC_ORIGIN || "https://www.destinationcommandcenter.com";
 const PAGE_URL = "https://juneauflightdeck.com/";
-const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1508264165352-258a6f82b6f4?auto=format&fit=crop&w=1400&q=80";
+const HERO_IMAGE = "/images/juneau-helicopter-hero.jpg";
 const HANDOFF_STORAGE_KEY = "dcc_handoff_id";
 
 function slugify(value: string) {
@@ -741,7 +740,7 @@ export default function JuneauHomeClient({
   );
 
   return (
-    <main>
+    <main id="main-content">
       <section className="hero">
         <div className="hero-grid">
           <div>

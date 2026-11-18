@@ -83,7 +83,7 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
   const context = calculateSailingContext(ship.slug, "2026-07-14");
 
   return (
-    <main className="page-shell py-8">
+    <main id="main-content" className="page-shell py-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
@@ -199,15 +199,15 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
               </p>
             </div>
             <div className="p-5 rounded-xl bg-white/5 border border-white/10">
-              <strong className="text-amber-400 block mb-1 text-sm">Pier Shuttle Pickups</strong>
+              <strong className="text-amber-400 block mb-1 text-sm">2-Hour Return Standard</strong>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Shuttles meet you outside cruise terminal security gates with a 15-minute transfer to the heliport.
+                Cruise Promenade and the DCC network recommend planning for tours that return at least two hours before all-aboard (an independent planning standard, not an operator or cruise-line rule).
               </p>
             </div>
             <div className="p-5 rounded-xl bg-white/5 border border-white/10">
               <strong className="text-amber-400 block mb-1 text-sm">Port Day Backup Option</strong>
               <p className="text-xs text-slate-300 leading-relaxed">
-                If helicopter seats remain full, our dispatch team offers verified live availability for top-rated Auke Bay whale watching.
+                If helicopter seats remain full or weather grounds upper-icefield flights, explore sea-level Auke Bay whale watching via Last Frontier Shore Excursions.
               </p>
             </div>
           </div>
