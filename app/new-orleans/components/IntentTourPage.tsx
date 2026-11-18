@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import ProductCard from "./ProductCard";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
+import { isHeldProduct } from "../data/truthPolicy";
 import GeoDirectAnswerCard from "./GeoDirectAnswerCard";
 import { getNolaGeoFact } from "../data/nolaGeoFacts";
 import WnoBreadcrumbs from "./WnoBreadcrumbs";
@@ -77,6 +78,7 @@ export default function IntentTourPage({
   topSlot,
 }: IntentTourPageProps) {
   const products = productSlugs
+    .filter((slug) => !isHeldProduct(slug))
     .map((slug) => STOREFRONT_PRODUCTS.find((product) => product.slug === slug))
     .filter(Boolean);
 

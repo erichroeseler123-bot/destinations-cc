@@ -1,3 +1,4 @@
+import React from "react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -185,7 +186,7 @@ export default async function HomePage({
       price: "From $58",
       priceSub: "sightseeing · optional Creole dinner seating",
       scheduleFit: "✓ Signature New Orleans evening with live jazz quintet",
-      checkoutProcessor: "Checkout via FareHarbor (Steamboat Natchez)",
+      checkoutProcessor: "Checkout via FareHarbor (New Orleans Steamboat Company)",
       imageSrc: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
       imageAlt: "Steamboat Natchez paddlewheeler on the Mississippi River in New Orleans",
       ctaLabel: "Choose seating →",
@@ -294,6 +295,18 @@ export default async function HomePage({
                   <span>From $67 →</span>
                 </Link>
               </li>
+              <li>
+                <Link href="/areas">
+                  <span>Neighborhoods, Bayous &amp; River Road</span>
+                  <span>16 Areas →</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/operators">
+                  <span>Verified Local Tour Operators</span>
+                  <span>14 Companies →</span>
+                </Link>
+              </li>
             </ul>
           </aside>
         </div>
@@ -377,6 +390,67 @@ export default async function HomePage({
           </div>
 
           <WnoCategoryShowcase tours={featuredTours} />
+        </div>
+      </section>
+
+      {/* SECTION 4B: Regional Discovery — Neighborhoods, Bayous & Local Operators */}
+      <section
+        className="wno-section-white"
+        aria-labelledby="wno-regional-discovery-heading"
+      >
+        <div className="wno-container">
+          <div className="wno-section-header">
+            <p className="wno-eyebrow">Explore by Place &amp; Company</p>
+            <h2 id="wno-regional-discovery-heading" className="wno-section-title">
+              Start with your departure neighborhood, bayou basin, or local operator
+            </h2>
+            <p className="wno-section-lead">
+              New Orleans tours span walkable French Quarter wharves, three separate wetland basins,
+              and independent River Road museums. Explore where each outing actually departs—and who
+              operates the boat, coach, or walk.
+            </p>
+          </div>
+
+          <div className="wno-discovery-entry-grid">
+            <article className="wno-discovery-entry-card">
+              <span className="wno-step-kicker">16 Departure Areas &amp; Landmarks</span>
+              <h3>Neighborhoods, Bayous &amp; River Road</h3>
+              <p>
+                Compare realistic drive ranges, hotel shuttle zones, riverboat wharves, and Port
+                NOLA Erato vs. Julia cruise terminal logistics across Greater New Orleans.
+              </p>
+              <div className="wno-discovery-chip-row">
+                <Link href="/areas/french-quarter">French Quarter</Link>
+                <Link href="/areas/jean-lafitte">Jean Lafitte &amp; Barataria</Link>
+                <Link href="/areas/honey-island">Honey Island Swamp</Link>
+                <Link href="/areas/river-road">Great River Road</Link>
+                <Link href="/areas/erato-street-cruise-terminal">Port NOLA Terminals</Link>
+              </div>
+              <Link href="/areas" className="wno-book-btn wno-discovery-cta">
+                Explore all 16 New Orleans areas →
+              </Link>
+            </article>
+
+            <article className="wno-discovery-entry-card">
+              <span className="wno-step-kicker">14 Local Tour Companies</span>
+              <h3>Local Tour Operators &amp; Captains</h3>
+              <p>
+                Inspect each company&apos;s exact dock address, vessel fleet, pickup rules, and age
+                policies—keeping separate bayou captains, steamboat vessels, and historic museums
+                clear before you book.
+              </p>
+              <div className="wno-discovery-chip-row">
+                <Link href="/operators/new-orleans-steamboat-company">New Orleans Steamboat Co.</Link>
+                <Link href="/operators/ragin-cajun-tours">Ragin&apos; Cajun Airboat Tours</Link>
+                <Link href="/operators/airboat-adventures">Airboat Adventures</Link>
+                <Link href="/operators/southern-style-tours">Southern Style Tours</Link>
+                <Link href="/operators/cajun-encounters">Cajun Encounters</Link>
+              </div>
+              <Link href="/operators" className="wno-book-btn wno-discovery-cta">
+                Compare all 14 local operators →
+              </Link>
+            </article>
+          </div>
         </div>
       </section>
 

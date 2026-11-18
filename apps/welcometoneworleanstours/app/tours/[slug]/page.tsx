@@ -18,7 +18,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       title: { absolute: "Covered Boat + Plantation | Details Pending Verification" },
       description: "Covered-boat and plantation combination details are pending current operator verification. Call 504-484-9687 to confirm before booking.",
       alternates: { canonical: `/tours/${HELD_COMBO_SLUG}` },
-      robots: { index: true, follow: true },
+      robots: { index: false, follow: true },
     };
   }
   if (slug === HELD_JEAN_LAFITTE_SLUG) {
@@ -31,7 +31,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     };
   }
 
-  const shared = await generateSharedMetadata(props as any);
+  const shared = await generateSharedMetadata({ ...(props as any), forceWto: true });
   return {
     ...shared,
     metadataBase: new URL(WNO_ORIGIN),
@@ -41,5 +41,5 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 export default async function WnoTourDetailPage(props: Props) {
   const { slug } = await props.params;
   if (isHeldProduct(slug)) return <HeldProductPage slug={slug} />;
-  return <SharedTourDetailPage {...(props as any)} />;
+  return <SharedTourDetailPage {...(props as any)} forceWto />;
 }

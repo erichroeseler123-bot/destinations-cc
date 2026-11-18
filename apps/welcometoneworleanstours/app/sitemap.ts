@@ -1,11 +1,13 @@
 import type { MetadataRoute } from "next";
 import { buildWtonotSitemapPaths } from "../../../app/sitemap.xml/handler";
-
+import { normalizeWtnoTourPath } from "@/app/new-orleans/lib/wtnoDirectoryHelpers";
 
 const CANONICAL_ORIGIN = "https://www.welcometoneworleanstours.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const paths = buildWtonotSitemapPaths();
+  const paths = Array.from(
+    new Set(buildWtonotSitemapPaths().map((p) => normalizeWtnoTourPath(p))),
+  );
   return paths.map((path) => ({
     url: `${CANONICAL_ORIGIN}${path === "/" ? "" : path}`,
     lastModified: new Date("2026-11-17T00:00:00.000Z"),

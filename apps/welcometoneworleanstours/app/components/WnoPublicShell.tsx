@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -14,6 +15,22 @@ const NAV_ITEMS = [
 
 export function WnoPublicHeader() {
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMobileOpen(false);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [mobileOpen]);
 
   return (
     <header className="wno-header">
@@ -24,19 +41,28 @@ export function WnoPublicHeader() {
         <Link
           href="/"
           className="wno-brand"
+          aria-label="Welcome to New Orleans Tours — Home"
           aria-current={pathname === "/" ? "page" : undefined}
         >
-          <span className="wno-brand-title">Welcome to New Orleans Tours</span>
+          <span className="wno-brand-title wno-brand-title-desktop">
+            Welcome to New Orleans Tours
+          </span>
+          <span className="wno-brand-title wno-brand-title-mobile" aria-hidden="true">
+            New Orleans Tours
+          </span>
           <span className="wno-brand-sub">Bayous, French Quarter, Jazz &amp; History</span>
         </Link>
+
         <nav className="wno-nav" aria-label="Primary">
           {NAV_ITEMS.map((item) => {
-            const active = pathname === item.href;
+            const active =
+              pathname === item.href || Boolean(pathname?.startsWith(`${item.href}/`));
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                aria-current={active ? "page" : undefined}
+                aria-current={pathname === item.href ? "page" : undefined}
+                data-active={active ? "true" : undefined}
                 className={item.cta ? "wno-nav-cta" : undefined}
               >
                 {item.label}
@@ -44,7 +70,45 @@ export function WnoPublicHeader() {
             );
           })}
         </nav>
+
+        <button
+          type="button"
+          className="wno-mobile-menu-toggle"
+          aria-expanded={mobileOpen}
+          aria-controls="wno-mobile-nav-drawer"
+          aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+          onClick={() => setMobileOpen((prev) => !prev)}
+        >
+          <span className="wno-mobile-menu-icon" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+          <span className="wno-mobile-menu-label">{mobileOpen ? "Close" : "Menu"}</span>
+        </button>
       </div>
+
+      {mobileOpen ? (
+        <nav
+          id="wno-mobile-nav-drawer"
+          aria-label="Mobile Primary"
+          className="wno-mobile-nav-drawer"
+        >
+          <div className="wno-container wno-mobile-nav-list">
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={pathname === item.href ? "page" : undefined}
+                className={item.cta ? "wno-mobile-nav-cta" : "wno-mobile-nav-link"}
+                onClick={() => setMobileOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </nav>
+      ) : null}
     </header>
   );
 }
@@ -97,7 +161,7 @@ export function WnoPublicFooter() {
             <Link href="/tours">All Tours</Link>
             <Link href="/help-me-choose">Concierge Help</Link>
             <Link href="/about">About</Link>
-            <Link href="/privacy-policy">Privacy</Link>
+            <Link href="/privacy">Privacy</Link>
           </nav>
         </div>
 

@@ -2,7 +2,11 @@ import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import JsonLd from "@/app/components/dcc/JsonLd";
 import { getNewOrleansDirectorySnapshot } from "@/lib/dcc/shared/newOrleansDirectoryData";
+import WnoSourcesAndFreshnessDisclosure from "../../../components/WnoSourcesAndFreshnessDisclosure";
+import { buildWnoAreaCategoryJsonLd } from "../../../lib/structuredData";
+import { normalizeWtnoTourPath } from "../../../lib/wtnoDirectoryHelpers";
 
 export function generateStaticParams() {
   const snapshot = getNewOrleansDirectorySnapshot();
@@ -78,107 +82,162 @@ export default async function AreaCategoryComparisonPage({
             prod.visitedHistoricSiteIds?.includes(placeEntry.place.placeId))),
     );
 
-  return (
-    <div data-wno-surface="directory-dark" className="min-h-screen bg-[#080708] px-6 py-14 text-[#fdfbf7]">
-      <div className="mx-auto max-w-5xl">
-        <nav className="mb-6 flex flex-wrap items-center gap-2 text-xs text-white/60">
-          <Link href="/areas" className="hover:text-[#d4af37]">
-            Areas &amp; Basins
-          </Link>
-          <span>/</span>
-          <Link href={`/areas/${slug}`} className="hover:text-[#d4af37]">
-            {match.areaName}
-          </Link>
-          <span>/</span>
-          <span className="text-[#d4af37]">{match.category.name}</span>
-        </nav>
+  const pageHeading =
+    match.comparison?.h1 || `${match.areaName} ${match.category.name}`;
 
+  const schemaData = match.gate.indexable
+    ? buildWnoAreaCategoryJsonLd({
+        areaSlug: slug,
+        areaName: match.areaName,
+        categorySlug,
+        categoryName: match.category.name,
+        title: pageHeading,
+        description: match.comparison?.metaDescription || match.category.summary,
+        items: matchingProducts.map((prod) => ({
+          name: prod.title,
+          path: normalizeWtnoTourPath(
+            prod.wnoPublicTourPath || `/operators/${prod.operatorSlug}`,
+          ),
+        })),
+      })
+    : null;
+
+  return (
+    <div
+      data-wno-surface="directory-warm"
+      className="min-h-screen bg-[#faf6ee] text-[#1e1915]"
+    >
+      {schemaData ? <JsonLd data={schemaData} /> : null}
+
+      <section className="wno-dir-hero border-b-2 border-[#b8893a] bg-[#163828] px-6 py-12 md:py-16 text-[#faf6ee]">
+        <div className="mx-auto max-w-5xl">
+          <nav
+            aria-label="Breadcrumb"
+            className="mb-5 flex flex-wrap items-center gap-2 text-xs text-[#faf6ee]/75"
+          >
+            <Link href="/" className="hover:text-[#e4c17a] hover:underline">
+              Home
+            </Link>
+            <span aria-hidden="true">/</span>
+            <Link href="/areas" className="hover:text-[#e4c17a] hover:underline">
+              Areas &amp; Basins
+            </Link>
+            <span aria-hidden="true">/</span>
+            <Link href={`/areas/${slug}`} className="hover:text-[#e4c17a] hover:underline">
+              {match.areaName}
+            </Link>
+            <span aria-hidden="true">/</span>
+            <span className="font-semibold text-[#e4c17a]">{match.category.name}</span>
+          </nav>
+
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#e4c17a]">
+            {match.areaName} · {match.operatorCount} Verified Operators ·{" "}
+            {match.productCount} Active Tours
+          </p>
+          <h1 className="mt-2 font-serif text-3xl font-bold leading-tight text-[#faf6ee] md:text-5xl">
+            {pageHeading}
+          </h1>
+          <p className="mt-4 max-w-3xl text-base leading-relaxed text-[#efe7d8]">
+            {match.comparison?.comparisonIntro || match.category.summary}
+          </p>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-5xl px-6 py-12 md:py-14">
         {!match.gate.indexable && (
           <div
             data-testid="held-area-category-banner"
-            className="mb-8 rounded-xl border border-amber-400/40 bg-amber-950/30 p-5 text-xs text-amber-100"
+            className="mb-8 rounded-2xl border border-[#b8893a]/50 bg-[#fffdf9] p-5 text-xs text-[#4a4138]"
           >
-            <strong className="uppercase tracking-wider text-amber-300">
-              Consolidated Area Category (noindex, follow):
+            <strong className="uppercase tracking-wider text-[#8a6220]">
+              Consolidated Area Category:
             </strong>{" "}
             This area-category intersection currently has fewer than 2 distinct verified operators
-            or fewer than 3 active products and remains consolidated under{" "}
-            <Link href={`/areas/${slug}`} className="underline font-semibold">
-              /areas/{slug}
+            or fewer than 3 active products and remains consolidated on the{" "}
+            <Link
+              href={`/areas/${slug}`}
+              className="font-bold text-[#163828] underline"
+            >
+              {match.areaName} guide
             </Link>
             .
           </div>
         )}
 
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">
-          {match.areaName} · {match.operatorCount} Verified Operators ·{" "}
-          {match.productCount} Active Tours
-        </p>
-        <h1 className="mt-2 font-serif text-3xl md:text-5xl">
-          {match.comparison?.h1 || `${match.areaName} ${match.category.name}`}
-        </h1>
-        <p className="mt-4 text-base leading-relaxed text-white/85">
-          {match.comparison?.comparisonIntro || match.category.summary}
-        </p>
-
         {match.comparison && (
-          <div className="mt-8 rounded-xl border border-white/15 bg-[#121016] p-6">
-            <h2 className="font-serif text-2xl">Key differences to check before booking</h2>
-            <ul className="mt-4 list-disc space-y-2.5 pl-5 text-sm text-white/80">
+          <div className="rounded-2xl border border-[#1e1915]/12 bg-[#fffdf9] p-6">
+            <h2 className="font-serif text-2xl font-bold text-[#163828]">
+              Key differences to check before booking
+            </h2>
+            <ul className="mt-4 list-disc space-y-2.5 pl-5 text-sm leading-relaxed text-[#4a4138]">
               {match.comparison.keyDifferencesBullets.map((bullet) => (
                 <li key={bullet}>{bullet}</li>
               ))}
             </ul>
-            <p className="mt-4 border-t border-white/10 pt-4 text-xs text-amber-200/90">
-              <strong>Arrival &amp; Timing Guidance:</strong>{" "}
+            <p className="mt-4 rounded-xl border border-[#b8893a]/30 bg-[#faf6ee] px-4 py-3 text-xs text-[#4a4138]">
+              <strong className="text-[#1e1915]">Arrival &amp; Timing Guidance:</strong>{" "}
               {match.comparison.arrivalAndTimingGuidance}
             </p>
           </div>
         )}
 
-        <div className="mt-10 space-y-4">
-          {matchingProducts.map((prod) => (
-            <article
-              key={prod.productId}
-              className="rounded-xl border border-white/15 bg-[#121016] p-6"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <Link
-                  href={`/operators/${prod.operatorSlug}`}
-                  className="text-xs font-bold uppercase tracking-wider text-[#d4af37] underline"
-                >
-                  {prod.operatorName}
-                </Link>
-                <span className="text-xs text-white/70">{prod.durationLabel}</span>
-              </div>
-              <h3 className="mt-2 font-serif text-2xl text-white">{prod.title}</h3>
-              <p className="mt-2 text-sm text-white/80">{prod.summary}</p>
-              <p className="mt-3 text-xs text-white/75">
-                <strong>Boarding / Dock:</strong>{" "}
-                {prod.boardingLocationResolution.primaryBoardingWharfOrDock}
-              </p>
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
-                <span className="text-xs font-semibold text-white">
-                  {prod.priceDisplayLabel}
-                </span>
-                <div className="flex gap-3">
+        <div className="mt-10 space-y-5">
+          {matchingProducts.map((prod) => {
+            const tourHref = normalizeWtnoTourPath(
+              prod.wnoPublicTourPath || `/operators/${prod.operatorSlug}`,
+            );
+            return (
+              <article
+                key={prod.productId}
+                className="wno-dir-card rounded-2xl border border-[#1e1915]/12 bg-[#fffdf9] p-6"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <Link
                     href={`/operators/${prod.operatorSlug}`}
-                    className="rounded border border-white/20 px-3.5 py-2 text-xs text-white"
+                    className="text-xs font-bold uppercase tracking-wider text-[#8a6220] underline hover:text-[#6b2737]"
                   >
-                    Operator Profile
+                    {prod.operatorName}
                   </Link>
-                  <Link
-                    href={prod.wnoPublicTourPath || `/operators/${prod.operatorSlug}`}
-                    className="rounded bg-[#d4af37] px-4 py-2 text-xs font-bold text-[#080708]"
-                  >
-                    Compare &amp; Book →
-                  </Link>
+                  <span className="text-xs font-medium text-[#6b5a45]">
+                    {prod.durationLabel}
+                  </span>
                 </div>
-              </div>
-            </article>
-          ))}
+                <h3 className="mt-2 font-serif text-2xl font-bold text-[#163828]">
+                  {prod.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#4a4138]">{prod.summary}</p>
+                <p className="mt-3 text-xs text-[#1e1915]">
+                  <strong>Boarding / Dock:</strong>{" "}
+                  {prod.boardingLocationResolution.primaryBoardingWharfOrDock}
+                </p>
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#1e1915]/10 pt-4">
+                  <span className="text-xs font-bold text-[#163828]">
+                    {prod.priceDisplayLabel}
+                  </span>
+                  <div className="flex flex-wrap gap-3">
+                    <Link
+                      href={`/operators/${prod.operatorSlug}`}
+                      className="wno-dir-secondary-btn rounded-full border border-[#163828] bg-[#faf6ee] px-4 py-2 text-xs font-bold text-[#163828]"
+                    >
+                      Operator Profile
+                    </Link>
+                    <Link
+                      href={tourHref}
+                      className="wno-dir-primary-btn rounded-full bg-[#163828] px-4 py-2 text-xs font-bold text-[#faf6ee]"
+                    >
+                      Compare &amp; Book →
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
+
+        <WnoSourcesAndFreshnessDisclosure
+          verifiedAt={match.comparison?.verifiedAt || placeEntry?.place.verifiedAt}
+          sources={placeEntry?.place.officialLocalSources || []}
+        />
       </div>
     </div>
   );

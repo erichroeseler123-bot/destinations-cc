@@ -6,6 +6,17 @@ export const WNO_SITE_NAME = "Welcome to New Orleans Tours";
 export const WNO_PHONE = "+15044849687";
 export const WNO_ORGANIZATION_ID = `${WNO_ORIGIN}/#organization`;
 export const WNO_WEBSITE_ID = `${WNO_ORIGIN}/#website`;
+export const DCC_NOLA_DIRECTORY_API_URL =
+  "https://www.destinationcommandcenter.com/api/v1/new-orleans/directory";
+
+function independentWnoPublisher() {
+  return {
+    "@type": "Organization",
+    "@id": WNO_ORGANIZATION_ID,
+    name: WNO_SITE_NAME,
+    url: WNO_ORIGIN,
+  };
+}
 
 export type WnoBreadcrumbItem = {
   name: string;
@@ -258,6 +269,246 @@ export function generateCategorySchemaGraph({
           broker: brokerOrganization(),
         })),
       },
+    ],
+  };
+}
+
+export function buildWnoAreasHubJsonLd({
+  places,
+}: {
+  places: Array<{ slug: string; name: string; description: string }>;
+}) {
+  const url = `${WNO_ORIGIN}/areas`;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${url}#collection`,
+        url,
+        name: "New Orleans Neighborhoods, Swamp Basins, River Road Museums & Terminals",
+        description:
+          "Source-backed guide to 16 Greater New Orleans departure areas, wetland basins, River Road historic sites, and Port NOLA / MSY gateways.",
+        isPartOf: { "@id": WNO_WEBSITE_ID },
+        publisher: independentWnoPublisher(),
+        isBasedOn: DCC_NOLA_DIRECTORY_API_URL,
+        inLanguage: "en-US",
+        mainEntity: {
+          "@type": "ItemList",
+          itemListElement: places.map((place, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: place.name,
+            url: `${WNO_ORIGIN}/areas/${place.slug}`,
+          })),
+        },
+      },
+      buildWnoBreadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Areas & Basins", path: "/areas" },
+      ]),
+    ],
+  };
+}
+
+export function buildWnoAreaDetailJsonLd({
+  slug,
+  name,
+  description,
+  image,
+  latitude,
+  longitude,
+}: {
+  slug: string;
+  name: string;
+  description: string;
+  image?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+}) {
+  const url = `${WNO_ORIGIN}/areas/${slug}`;
+  const imageUrl = image
+    ? image.startsWith("http")
+      ? image
+      : `${WNO_ORIGIN}${image}`
+    : undefined;
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": ["TouristDestination", "Place"],
+        "@id": `${url}#place`,
+        name,
+        description,
+        url,
+        ...(imageUrl ? { image: imageUrl } : {}),
+        ...(typeof latitude === "number" && typeof longitude === "number"
+          ? {
+              geo: {
+                "@type": "GeoCoordinates",
+                latitude,
+                longitude,
+              },
+            }
+          : {}),
+        isBasedOn: DCC_NOLA_DIRECTORY_API_URL,
+        subjectOf: {
+          "@type": "WebPage",
+          "@id": `${url}#webpage`,
+          url,
+          name: `${name} Tours & Departure Logistics | ${WNO_SITE_NAME}`,
+          description,
+          isPartOf: { "@id": WNO_WEBSITE_ID },
+          publisher: independentWnoPublisher(),
+          isBasedOn: DCC_NOLA_DIRECTORY_API_URL,
+          inLanguage: "en-US",
+        },
+      },
+      buildWnoBreadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Areas & Basins", path: "/areas" },
+        { name, path: `/areas/${slug}` },
+      ]),
+    ],
+  };
+}
+
+export function buildWnoAreaCategoryJsonLd({
+  areaSlug,
+  areaName,
+  categorySlug,
+  categoryName,
+  title,
+  description,
+  items,
+}: {
+  areaSlug: string;
+  areaName: string;
+  categorySlug: string;
+  categoryName: string;
+  title: string;
+  description: string;
+  items: Array<{ name: string; path: string }>;
+}) {
+  const url = `${WNO_ORIGIN}/areas/${areaSlug}/${categorySlug}`;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${url}#collection`,
+        url,
+        name: title,
+        description,
+        isPartOf: { "@id": WNO_WEBSITE_ID },
+        publisher: independentWnoPublisher(),
+        isBasedOn: DCC_NOLA_DIRECTORY_API_URL,
+        inLanguage: "en-US",
+        mainEntity: {
+          "@type": "ItemList",
+          itemListElement: items.map((item, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: item.name,
+            url: absolute(item.path),
+          })),
+        },
+      },
+      buildWnoBreadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Areas & Basins", path: "/areas" },
+        { name: areaName, path: `/areas/${areaSlug}` },
+        { name: categoryName, path: `/areas/${areaSlug}/${categorySlug}` },
+      ]),
+    ],
+  };
+}
+
+export function buildWnoOperatorsCollectionJsonLd({
+  operatorCount,
+}: {
+  operatorCount: number;
+}) {
+  const url = `${WNO_ORIGIN}/operators`;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${url}#collection`,
+        url,
+        name: "New Orleans Tour Operators | Swamp, Riverboat, Ghost, Food & City Tours",
+        description: `Independent source-backed directory of ${operatorCount} verified New Orleans tour operators with dock addresses, pickup policies, and booking links.`,
+        isPartOf: { "@id": WNO_WEBSITE_ID },
+        publisher: independentWnoPublisher(),
+        isBasedOn: DCC_NOLA_DIRECTORY_API_URL,
+        inLanguage: "en-US",
+      },
+      buildWnoBreadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Tour Operators", path: "/operators" },
+      ]),
+    ],
+  };
+}
+
+export function buildWnoOperatorProfileJsonLd({
+  slug,
+  name,
+  description,
+  officialWebsite,
+  officialPhone,
+  dateModified,
+}: {
+  slug: string;
+  name: string;
+  description: string;
+  officialWebsite?: string | null;
+  officialPhone?: string | null;
+  dateModified?: string | null;
+}) {
+  const profileUrl = `${WNO_ORIGIN}/operators/${slug}`;
+  const businessEntity: Record<string, unknown> = {
+    "@type": "LocalBusiness",
+    "@id": `${profileUrl}#operator`,
+    name,
+    description,
+    ...(officialWebsite
+      ? {
+          url: officialWebsite,
+          sameAs: [officialWebsite],
+        }
+      : {}),
+    ...(officialPhone ? { telephone: officialPhone } : {}),
+    areaServed: {
+      "@type": "Place",
+      name: "Greater New Orleans, Louisiana",
+    },
+  };
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "ProfilePage",
+        "@id": `${profileUrl}#profilepage`,
+        url: profileUrl,
+        name: `${name} — New Orleans Tours, Docks & Pickup | ${WNO_SITE_NAME}`,
+        description,
+        ...(dateModified ? { dateModified } : {}),
+        isPartOf: { "@id": WNO_WEBSITE_ID },
+        publisher: independentWnoPublisher(),
+        isBasedOn: DCC_NOLA_DIRECTORY_API_URL,
+        mainEntity: businessEntity,
+        about: { "@id": `${profileUrl}#operator` },
+        inLanguage: "en-US",
+      },
+      buildWnoBreadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Tour Operators", path: "/operators" },
+        { name, path: `/operators/${slug}` },
+      ]),
     ],
   };
 }

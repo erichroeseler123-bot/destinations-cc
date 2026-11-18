@@ -26,9 +26,11 @@ import RecommendationCallout from "./RecommendationCallout";
 import { getRecommendation, CHOOSER_CATEGORIES, CHOOSER_PREFERENCES, CategoryId } from "../../help-me-choose/recommendationRules";
 import TourLogisticsSummary from "../../components/TourLogisticsSummary";
 import DailyBriefSignup from "../../components/DailyBriefSignup";
+import WnoSourcesAndFreshnessDisclosure from "../../components/WnoSourcesAndFreshnessDisclosure";
 import { TOUR_RECORDS } from "../../lib/tourRecommendationRules";
 import { TOUR_DECISION_COPY } from "../../data/tourDecisionCopy";
 import { isApprovedProductSlug, resolveFareHarborSource } from "../../lib/fareHarborAttribution";
+import { isWtnoHost } from "../../lib/wtnoDirectoryHelpers";
 import {
   HELD_COMBO_BANNER,
   HELD_JEAN_LAFITTE_BANNER,
@@ -50,9 +52,10 @@ import styles from "./tourDetail.module.css";
 interface Props {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  forceWto?: boolean;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, forceWto = false }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = STOREFRONT_PRODUCTS.find((p) => p.slug === slug);
   if (!product) return {};
@@ -60,7 +63,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const requestHeaders = await headers();
   const hostHeader = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "";
   const host = hostHeader.split(":")[0];
-  const isWto = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
+  const isWto = isWtnoHost(host, forceWto);
   const origin = isWto ? "https://www.welcometoneworleanstours.com" : "https://destinationcommandcenter.com";
   const canonical = isWto ? `/tours/${slug}` : `${NEW_ORLEANS_TOURS_PATH}/${slug}`;
   return {
@@ -68,6 +71,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: isWto ? { absolute: product.detailPageTitle } : product.detailPageTitle,
     description: product.metaDescription,
     alternates: { canonical },
+    robots: { index: !isHeldProduct(slug), follow: true },
     metadataBase: new URL(origin),
     openGraph: {
       siteName: "Welcome to New Orleans Tours",
@@ -86,17 +90,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function TourDetailPage({ params, searchParams }: Props) {
+export default async function TourDetailPage({ params, searchParams, forceWto = false }: Props) {
   const { slug } = await params;
   const product = STOREFRONT_PRODUCTS.find((p) => p.slug === slug);
   if (!product) notFound();
   if (!isApprovedProductSlug(slug)) notFound();
 
-  const relatedProduct = STOREFRONT_PRODUCTS.find((p) => p.slug === product.relatedTourSlug);
   const requestHeaders = await headers();
   const hostHeader = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "";
   const host = hostHeader.split(":")[0];
-  const isWto = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
+  const isWto = isWtnoHost(host, forceWto);
+  const relatedProduct = STOREFRONT_PRODUCTS.find(
+    (p) => p.slug === product.relatedTourSlug && (!isWto || !isHeldProduct(p.slug)),
+  );
   const siteDomain = isWto ? "welcometoneworleanstours.com" : "destinationcommandcenter.com";
   const basePath = isWto ? "" : NEW_ORLEANS_TOURS_PATH;
   const pagePath = `${basePath}/tours/${slug}`;
@@ -445,13 +451,20 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     canonicalGraphMatch?.operator.slug || operatorSlug(product.operatorName);
   const resolvedCanonicalAreaSlug =
     canonicalGraphMatch?.primaryPlace?.publicPlaceSlug || null;
-  const canonicalOperatorHref = `${basePath}/operators/${resolvedCanonicalOpSlug}`;
+  const directoryRoot = isWto ? "" : "/new-orleans";
+  const canonicalOperatorHref = `${directoryRoot}/operators/${resolvedCanonicalOpSlug}`;
   const canonicalAreaHref = resolvedCanonicalAreaSlug
-    ? `${basePath}/areas/${resolvedCanonicalAreaSlug}`
+    ? `${directoryRoot}/areas/${resolvedCanonicalAreaSlug}`
     : null;
 
+  const MainContainer = isWto ? "div" : "main";
+
   return (
-    <div className={styles.page} data-tour-detail-surface="dark">
+    <div
+      className={styles.page}
+      data-wno-surface={isWto ? "tour-detail-warm" : undefined}
+      data-tour-detail-surface={isWto ? "warm" : "dark"}
+    >
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -467,7 +480,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
         }}
       />
       <TourDetailAnalytics productId={product.id} operatorId={product.companyShortname} />
-      <main id="main-content">
+      <MainContainer id="main-content">
         <section className={`${styles.hero} ${!resolvedImage ? styles.noImageHero : ""}`}>
           {resolvedImage && (
             <img
@@ -569,26 +582,24 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
                   ...(viatorInfo.productCode && viatorInfo.destinationUrl
                     ? [
                         {
-                          label: `Book ${viatorInfo.title} (${viatorInfo.operatorName} · ${viatorInfo.productCode}${
+                          label: `Book ${viatorInfo.title} (${viatorInfo.operatorName}${
                             isLargeAirboat15200P1Page
-                              ? ` · ${initial15200P1SeatAvailability?.selectedOptionCode || resolved15200P1OptionCode} (${initial15200P1SeatAvailability?.selectedDepartureTime || nextEligible15200P1?.selectedOption.startTime || "14:10"})`
-                              : viatorInfo.optionCode
-                                ? ` · ${viatorInfo.optionCode}`
-                                : ""
+                              ? ` · ${initial15200P1SeatAvailability?.selectedDepartureTime || nextEligible15200P1?.selectedOption.startTime || "14:10"}`
+                              : ""
                           }) on Viator`,
                           href: viatorHandoffHref,
                           providerLabel: "Viator",
-                          accountLabel: `pid=${viatorInfo.providerAccount}`,
+                          accountLabel: "Verified Partner Checkout",
                         },
                       ]
                     : []),
                   ...(product.fareharborAsnActive !== false
                     ? [
                         {
-                          label: `Book ${product.title} on FareHarbor (Item ${fhItemCode})`,
+                          label: `Book ${product.title} on FareHarbor`,
                           href: fhHandoffHref,
                           providerLabel: "FareHarbor",
-                          accountLabel: `asn=${fhAccount}`,
+                          accountLabel: "Operator Calendar",
                         },
                       ]
                     : []),
@@ -629,13 +640,17 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
               data-testid="wno-local-buying-questions"
               aria-label="Local Buying Guide: Boat Size, Pickup Logistics & Group Departures"
               style={{
-                maxWidth: 1120,
+                width: "min(1120px, calc(100% - 32px))",
+                maxWidth: "100%",
+                boxSizing: "border-box",
                 margin: "16px auto 24px",
                 padding: "20px 24px",
-                borderRadius: 14,
-                background: "#0f172a",
-                border: "1px solid rgba(148, 163, 184, 0.25)",
-                color: "#f8fafc",
+                borderRadius: 16,
+                background: isWto ? "#fffdf9" : "#0f172a",
+                border: isWto
+                  ? "1px solid rgba(30, 25, 21, 0.14)"
+                  : "1px solid rgba(148, 163, 184, 0.25)",
+                color: isWto ? "#1e1915" : "#f8fafc",
               }}
             >
               <div
@@ -644,78 +659,118 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
                   fontWeight: 800,
                   textTransform: "uppercase",
                   letterSpacing: "0.08em",
-                  color: "#38bdf8",
+                  color: isWto ? "#8a6220" : "#38bdf8",
                 }}
               >
                 Local Buying Guide · Boat Size, Pickup &amp; Group Departures
               </div>
-              <h2 style={{ fontSize: "1.2rem", fontWeight: 800, margin: "4px 0 12px", color: "#ffffff" }}>
+              <h2
+                style={{
+                  fontSize: "1.2rem",
+                  fontWeight: 800,
+                  margin: "4px 0 12px",
+                  color: isWto ? "#163828" : "#ffffff",
+                }}
+              >
                 Three Local Answers Before Your Group Books a New Orleans Airboat
               </h2>
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 1fr))",
                   gap: 14,
                   fontSize: "0.84rem",
-                  color: "#cbd5e1",
+                  color: isWto ? "#4a4138" : "#cbd5e1",
                 }}
               >
                 <div
                   style={{
                     padding: 14,
-                    borderRadius: 10,
-                    background: "rgba(30, 41, 59, 0.65)",
-                    border: "1px solid rgba(148, 163, 184, 0.2)",
+                    borderRadius: 12,
+                    background: isWto ? "#faf6ee" : "rgba(30, 41, 59, 0.65)",
+                    border: isWto
+                      ? "1px solid rgba(30, 25, 21, 0.1)"
+                      : "1px solid rgba(148, 163, 184, 0.2)",
                   }}
                 >
-                  <h3 style={{ fontSize: "0.95rem", fontWeight: 800, color: "#f8fafc", marginBottom: 6 }}>
+                  <h3
+                    style={{
+                      fontSize: "0.95rem",
+                      fontWeight: 800,
+                      color: isWto ? "#163828" : "#f8fafc",
+                      marginBottom: 6,
+                    }}
+                  >
                     1. Which Boat Size Fits 6–10+ Guests?
                   </h3>
                   <p style={{ margin: 0, lineHeight: 1.55 }}>
-                    <strong>6-Passenger Small Airboat</strong> (Ragin Cajun Item <code>228561</code> or Viator{" "}
-                    <code>15200P6</code>) caps at 6 guests per boat—groups of 7–10 are split across two boats.{" "}
-                    <strong>10-Passenger Airboat</strong> (Ragin Cajun Item <code>228560</code>) fits up to 10.{" "}
-                    <strong>16-Passenger Large Airboat</strong> (Louisiana Tour Company Viator <code>15200P1</code>,{" "}
-                    <strong>$65/adult</strong>) holds up to 16 passengers on a single stadium-seating hull; verify single-boat grouping with the operator after booking.
+                    <strong>6-Passenger Small Airboat</strong> caps at 6 guests per boat—groups of
+                    7–10 are split across two boats. <strong>10-Passenger Medium Airboat</strong>{" "}
+                    fits up to 10 guests. <strong>16-Passenger Large Airboat</strong> (Louisiana
+                    Tour Company, <strong>$65/adult</strong>) holds up to 16 passengers on a single
+                    stadium-seating hull; verify single-boat grouping with the operator after
+                    booking.
                   </p>
                 </div>
 
                 <div
                   style={{
                     padding: 14,
-                    borderRadius: 10,
-                    background: "rgba(30, 41, 59, 0.65)",
-                    border: "1px solid rgba(148, 163, 184, 0.2)",
+                    borderRadius: 12,
+                    background: isWto ? "#faf6ee" : "rgba(30, 41, 59, 0.65)",
+                    border: isWto
+                      ? "1px solid rgba(30, 25, 21, 0.1)"
+                      : "1px solid rgba(148, 163, 184, 0.2)",
                   }}
                 >
-                  <h3 style={{ fontSize: "0.95rem", fontWeight: 800, color: "#f8fafc", marginBottom: 6 }}>
+                  <h3
+                    style={{
+                      fontSize: "0.95rem",
+                      fontWeight: 800,
+                      color: isWto ? "#163828" : "#f8fafc",
+                      marginBottom: 6,
+                    }}
+                  >
                     2. Hotel Pickup vs. Self-Drive Dock Arrival
                   </h3>
                   <p style={{ margin: 0, lineHeight: 1.55 }}>
-                    <strong>Viator <code>15200P1</code> (Large Airboat)</strong> is a{" "}
-                    <strong>self-drive / Uber</strong> option meeting at{" "}
-                    <strong>9706 Barataria Blvd, Marrero, LA 70072</strong> (~30 minutes from the French Quarter &amp; Erato/Julia cruise terminals; check in 30 minutes prior, 1h 40m on the water). Need{" "}
-                    <strong>downtown hotel pickup</strong> included? Use{" "}
-                    <strong>Viator <code>15200P6</code></strong> (<code>TG10</code> 8:00 a.m. pickup → 12:15 p.m. return, or <code>TG1</code> 10:15 a.m. pickup → 2:30 p.m. return; 3h 45m door-to-door).
+                    The <strong>16-Passenger Large Airboat</strong> above is a{" "}
+                    <strong>self-drive / rideshare</strong> option meeting at{" "}
+                    <strong>9706 Barataria Blvd, Marrero, LA 70072</strong> (~30–40 minutes from the
+                    French Quarter &amp; Erato/Julia cruise terminals; check in 30 minutes prior,
+                    1h 40m on the water). Need <strong>downtown hotel pickup</strong> included?
+                    Choose the <strong>Small Airboat with Hotel Pickup</strong> option (8:00 a.m.
+                    pickup → 12:15 p.m. return, or 10:15 a.m. pickup → 2:30 p.m. return; 3h 45m
+                    door-to-door).
                   </p>
                 </div>
 
                 <div
                   style={{
                     padding: 14,
-                    borderRadius: 10,
-                    background: "rgba(30, 41, 59, 0.65)",
-                    border: "1px solid rgba(148, 163, 184, 0.2)",
+                    borderRadius: 12,
+                    background: isWto ? "#faf6ee" : "rgba(30, 41, 59, 0.65)",
+                    border: isWto
+                      ? "1px solid rgba(30, 25, 21, 0.1)"
+                      : "1px solid rgba(148, 163, 184, 0.2)",
                   }}
                 >
-                  <h3 style={{ fontSize: "0.95rem", fontWeight: 800, color: "#f8fafc", marginBottom: 6 }}>
+                  <h3
+                    style={{
+                      fontSize: "0.95rem",
+                      fontWeight: 800,
+                      color: isWto ? "#163828" : "#f8fafc",
+                      marginBottom: 6,
+                    }}
+                  >
                     3. Which Departures Can Take Your Group?
                   </h3>
                   <p style={{ margin: 0, lineHeight: 1.55 }}>
-                    Approved <code>15200P1</code> departures in New Orleans local time (<code>America/Chicago</code>):{" "}
-                    <strong>9:40 a.m.</strong> (<code>TG9</code>), <strong>12:10 p.m.</strong> (<code>TG2</code>), and{" "}
-                    <strong>2:10 p.m.</strong> (<code>TG6</code>), plus seasonal <strong>4:15 p.m.</strong> (<code>TG7</code>, unavailable Nov–Feb). Earlier departures that have already passed today are skipped automatically so your group starts on the first bookable time.
+                    Scheduled departures in New Orleans local time: <strong>9:40 a.m.</strong>,{" "}
+                    <strong>12:10 p.m.</strong>, and <strong>2:10 p.m.</strong>, plus seasonal{" "}
+                    <strong>4:15 p.m.</strong> (unavailable Nov–Feb). Earlier departures that have
+                    already passed today are skipped automatically so your group starts on the first
+                    bookable time.
                   </p>
                 </div>
               </div>
@@ -854,6 +909,18 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
           </aside>
         </div>
 
+        {isWto && (
+          <div style={{ width: "min(1180px, calc(100% - 48px))", margin: "0 auto 48px" }}>
+            <WnoSourcesAndFreshnessDisclosure
+              verifiedAt={canonicalGraphMatch?.operator.verifiedAt || "2026-10-01"}
+              sources={canonicalGraphMatch?.operator.sources || []}
+              showIntegrationStatus
+              liveAvailabilityConnected={false}
+              directCheckoutConnected={false}
+            />
+          </div>
+        )}
+
         {relatedProduct && (
           <section className={styles.related}>
             <div className={styles.relatedInner}>
@@ -867,7 +934,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
         )}
 
         <DailyBriefSignup source="tour-detail" />
-      </main>
+      </MainContainer>
     </div>
   );
 }

@@ -19,6 +19,7 @@ import { headers } from "next/headers";
 import { generateCategorySchemaGraph } from "../lib/schema";
 import { isHeldProduct } from "../data/truthPolicy";
 import { FAREHARBOR_SOURCES } from "../lib/fareHarborAttribution";
+import { isWtnoHost } from "../lib/wtnoDirectoryHelpers";
 import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
 import PortableTripNetworkBar from "@/app/components/dcc/PortableTripNetworkBar";
@@ -33,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const hostHeader = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "";
   const host = hostHeader.split(":")[0];
-  const isWto = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
+  const isWto = isWtnoHost(host);
   const origin = isWto ? "https://www.welcometoneworleanstours.com" : "https://destinationcommandcenter.com";
   const canonical = isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH;
   const siteName = isWto ? "Welcome to New Orleans Tours" : "Destination Command Center";
@@ -68,8 +69,10 @@ export const dynamic = "force-dynamic";
 
 export default async function NewOrleansToursPage({
   searchParams,
+  forceWto = false,
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
+  forceWto?: boolean;
 }) {
   const resolvedSearch = searchParams ? await searchParams : {};
   const firstStr = (v: string | string[] | undefined) =>
@@ -92,7 +95,7 @@ export default async function NewOrleansToursPage({
   const requestHeaders = await headers();
   const hostHeader = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "";
   const host = hostHeader.split(":")[0];
-  const isWto = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
+  const isWto = isWtnoHost(host, forceWto);
   const basePath = isWto ? "" : NEW_ORLEANS_TOURS_PATH;
 
   const productItems = STOREFRONT_PRODUCTS.map((item) => ({ name: item.title, description: item.description, url: `${basePath}/tours/${item.slug}`, slug: item.slug, providerName: item.operatorName }));
@@ -124,7 +127,7 @@ export default async function NewOrleansToursPage({
         "@graph": [
           pageSchema,
           breadcrumbSchema,
-          ...generateCategorySchemaGraph({ urlPath: isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH, name: isWto ? "Welcome To New Orleans Tours" : "New Orleans Tours & Swamp Decision Authority | DCC", description: isWto ? CURRENT_TOURS_DESCRIPTION : DCC_AUTHORITY_TOURS_DESCRIPTION, items: productItems.map((p: any) => ({ slug: p.slug, name: p.name, description: p.description, providerName: p.providerName })) })["@graph"],
+          ...generateCategorySchemaGraph({ urlPath: isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH, name: isWto ? "Welcome To New Orleans Tours" : "New Orleans Tours & Swamp Decision Authority | DCC", description: isWto ? CURRENT_TOURS_DESCRIPTION : DCC_AUTHORITY_TOURS_DESCRIPTION, items: productItems.filter((p: any) => !isWto || !isHeldProduct(p.slug)).map((p: any) => ({ slug: p.slug, name: p.name, description: p.description, providerName: p.providerName })) })["@graph"],
         ],
       }} />
 
@@ -603,7 +606,7 @@ export default async function NewOrleansToursPage({
           </section>
 
           {sections.map((section, sectionIndex) => {
-            const sectionProducts = STOREFRONT_PRODUCTS.filter((p) => p.category === section.id).sort((a, b) => {
+            const sectionProducts = STOREFRONT_PRODUCTS.filter((p) => p.category === section.id && (!isWto || !isHeldProduct(p.slug))).sort((a, b) => {
               const priority = (slug: string) =>
                 slug === "louisiana-tour-company-swamp-tour-hotel-pickup"
                   ? 0

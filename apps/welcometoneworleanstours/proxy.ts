@@ -70,6 +70,17 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(targetUrl, 308);
   }
 
+  const legacyTourRedirects: Record<string, string> = {
+    "/tours/oak-alley-plantation-tour": "/tours/oak-alley-plantation-tour-grey-line",
+    "/tours/city-tour-three-hour": "/tours/city-tour-of-new-orleans",
+  };
+  const canonicalTourDest = legacyTourRedirects[request.nextUrl.pathname];
+  if (canonicalTourDest) {
+    const targetUrl = new URL(canonicalTourDest, request.url);
+    targetUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(targetUrl, 308);
+  }
+
   const edgeResponse = await handleSubAppEdgeContextAndPii(request, {
     owner: "welcometoneworleanstours.com",
     cookieName: "wtno_trip_ctx",

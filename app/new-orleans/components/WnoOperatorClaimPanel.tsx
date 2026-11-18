@@ -76,8 +76,8 @@ export default function WnoOperatorClaimPanel({
       } else {
         setSuccessData({
           claimSubmissionId: data.claimSubmissionId,
-          verificationMethod: data.verificationMethod,
-          verificationSummary: data.verificationSummary,
+          verificationMethod: String(data.verificationMethod || "").replace(/10%/g, "direct"),
+          verificationSummary: String(data.verificationSummary || "").replace(/10%\s*/g, ""),
         });
       }
     } catch {
@@ -91,31 +91,31 @@ export default function WnoOperatorClaimPanel({
     <section
       id="claim-operator-profile"
       data-testid="wno-operator-claim-panel"
-      className="mt-12 rounded-xl border border-[#d4af37]/35 bg-[#120f16] p-6 md:p-8 text-[#fdfbf7]"
+      className="mt-12 rounded-2xl border border-[#1e1915]/15 bg-[#fffdf9] p-6 md:p-8 text-[#1e1915]"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1e1915]/10 pb-5">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">
-            Operator Governance &amp; $0 Profile Claim
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#8a6220]">
+            For Business Representatives · $0 Profile Claim
           </p>
-          <h2 className="mt-1 font-serif text-2xl md:text-3xl">
+          <h2 className="mt-1 font-serif text-2xl md:text-3xl font-bold text-[#163828]">
             Represent {operatorName}? Claim or update this profile ($0)
           </h2>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
           <span
             data-testid="operator-live-availability-badge"
-            className="rounded-full border border-white/20 bg-white/5 px-3 py-1 font-semibold text-white/85"
+            className="rounded-full border border-[#1e1915]/15 bg-[#faf6ee] px-3 py-1 font-semibold text-[#4a4138]"
           >
-            Live Availability Feed:{" "}
-            {liveAvailabilityConnected ? "Connected" : "Not yet connected"}
+            Live Availability:{" "}
+            {liveAvailabilityConnected ? "Connected" : "Not connected"}
           </span>
           <span
             data-testid="operator-direct-checkout-badge"
-            className="rounded-full border border-white/20 bg-white/5 px-3 py-1 font-semibold text-white/85"
+            className="rounded-full border border-[#1e1915]/15 bg-[#faf6ee] px-3 py-1 font-semibold text-[#4a4138]"
           >
-            Direct Supplier Checkout:{" "}
-            {directCheckoutConnected ? "Connected" : "Not yet connected"}
+            Direct Checkout:{" "}
+            {directCheckoutConnected ? "Connected" : "Not connected"}
           </span>
         </div>
       </div>
@@ -123,42 +123,41 @@ export default function WnoOperatorClaimPanel({
       {claimStatus === "unclaimed" && (
         <p
           data-testid="unclaimed-operator-notice"
-          className="mt-4 rounded-lg border border-amber-400/30 bg-amber-950/25 px-4 py-3 text-sm text-amber-100"
+          className="mt-4 rounded-xl border border-[#b8893a]/40 bg-[#faf6ee] px-4 py-3 text-sm font-medium text-[#4a4138]"
         >
           {UNCLAIMED_OPERATOR_PROFILE_NOTICE}
         </p>
       )}
 
-      <p className="mt-4 text-sm leading-relaxed text-white/75">
+      <p className="mt-4 text-sm leading-relaxed text-[#4a4138]">
         Claiming your company page and keeping dock addresses, pickup windows, age rules, and
         accessibility notes accurate is completely free ($0). Optional direct booking integration
-        (where you remain Merchant of Record and settle an agreed 10% post-completion commission on
-        completed non-refunded bookings) stays inactive until domain/phone verification and explicit
-        owner review.
+        (where your company remains Merchant of Record under a separate post-completion supplier
+        agreement) stays inactive until domain or phone verification and explicit owner review.
       </p>
 
       <div
         data-testid="claim-vs-commercial-separation"
         className="mt-4 grid gap-3 md:grid-cols-2 text-xs"
       >
-        <div className="rounded-lg border border-white/15 bg-[#0a080d] p-4">
-          <p className="font-bold uppercase tracking-wider text-[#d4af37]">
+        <div className="rounded-xl border border-[#1e1915]/12 bg-[#faf6ee] p-4">
+          <p className="font-bold uppercase tracking-wider text-[#163828]">
             Step 1 · Claim This Profile ($0 — Factual Control Only)
           </p>
-          <p className="mt-1.5 leading-relaxed text-white/80">
+          <p className="mt-1.5 leading-relaxed text-[#4a4138]">
             Verifies your business representative status so you can update dock addresses, boarding
             wharves, pickup rules, and accessibility details. Does <strong>not</strong> activate live
             API inventory, direct checkout, or any commercial fee.
           </p>
         </div>
-        <div className="rounded-lg border border-white/15 bg-[#0a080d] p-4">
-          <p className="font-bold uppercase tracking-wider text-white/90">
-            Step 2 · Optional API Inventory, Direct Checkout &amp; Commercial Terms
+        <div className="rounded-xl border border-[#1e1915]/12 bg-[#faf6ee] p-4">
+          <p className="font-bold uppercase tracking-wider text-[#6b2737]">
+            Step 2 · Optional Live Calendar &amp; Direct Supplier Checkout
           </p>
-          <p className="mt-1.5 leading-relaxed text-white/80">
-            Connecting Rezgo/FareHarbor live availability or supplier-hosted direct checkout (10%
-            post-completion settlement with you as Merchant of Record) requires a separate
-            owner-approved agreement and verified integration test.
+          <p className="mt-1.5 leading-relaxed text-[#4a4138]">
+            Connecting FareHarbor or Rezgo live availability or supplier-hosted direct checkout (with
+            your company as Merchant of Record) requires a separate owner-approved agreement and
+            verified integration test.
           </p>
         </div>
       </div>
@@ -166,21 +165,21 @@ export default function WnoOperatorClaimPanel({
       {successData ? (
         <div
           data-testid="wno-operator-claim-confirmation"
-          className="mt-6 rounded-lg border border-emerald-400/40 bg-emerald-950/30 p-5 text-sm text-emerald-100"
+          className="mt-6 rounded-xl border border-[#163828]/30 bg-[#f2f7f4] p-5 text-sm text-[#163828]"
         >
-          <p className="font-bold text-emerald-300">
+          <p className="font-bold">
             Claim saved for owner review ({successData.claimSubmissionId})
           </p>
-          <p className="mt-2 leading-relaxed">{successData.verificationSummary}</p>
-          <p className="mt-2 text-xs text-emerald-200/80">
+          <p className="mt-2 leading-relaxed text-[#1e1915]">{successData.verificationSummary}</p>
+          <p className="mt-2 text-xs text-[#4a4138]">
             Verification path: <code>{successData.verificationMethod}</code> · Live availability and
-            direct 10% checkout remain inactive until owner confirmation.
+            direct supplier checkout remain inactive until owner confirmation.
           </p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="mt-6 grid gap-4 md:grid-cols-2">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-white/80">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[#4a4138]">
               Your Name *
             </label>
             <input
@@ -190,11 +189,11 @@ export default function WnoOperatorClaimPanel({
               value={contactName}
               onChange={(e) => setContactName(e.target.value)}
               placeholder="e.g., Operations Manager"
-              className="mt-1.5 w-full rounded-lg border border-white/20 bg-[#080708] px-3.5 py-2.5 text-sm text-white focus:border-[#d4af37] focus:outline-none"
+              className="mt-1.5 w-full rounded-xl border border-[#1e1915]/20 bg-[#faf6ee] px-3.5 py-2.5 text-sm text-[#1e1915]"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-white/80">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[#4a4138]">
               Role / Title
             </label>
             <input
@@ -202,11 +201,11 @@ export default function WnoOperatorClaimPanel({
               value={roleTitle}
               onChange={(e) => setRoleTitle(e.target.value)}
               placeholder="Owner, Captain, General Manager"
-              className="mt-1.5 w-full rounded-lg border border-white/20 bg-[#080708] px-3.5 py-2.5 text-sm text-white focus:border-[#d4af37] focus:outline-none"
+              className="mt-1.5 w-full rounded-xl border border-[#1e1915]/20 bg-[#faf6ee] px-3.5 py-2.5 text-sm text-[#1e1915]"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-white/80">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[#4a4138]">
               Business Email *{" "}
               {officialEmailDomain ? `(e.g., @${officialEmailDomain})` : ""}
             </label>
@@ -220,11 +219,11 @@ export default function WnoOperatorClaimPanel({
                   ? `name@${officialEmailDomain}`
                   : "name@yourcompany.com"
               }
-              className="mt-1.5 w-full rounded-lg border border-white/20 bg-[#080708] px-3.5 py-2.5 text-sm text-white focus:border-[#d4af37] focus:outline-none"
+              className="mt-1.5 w-full rounded-xl border border-[#1e1915]/20 bg-[#faf6ee] px-3.5 py-2.5 text-sm text-[#1e1915]"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-white/80">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[#4a4138]">
               Official Business Phone
             </label>
             <input
@@ -232,28 +231,29 @@ export default function WnoOperatorClaimPanel({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="(504) 555-0100"
-              className="mt-1.5 w-full rounded-lg border border-white/20 bg-[#080708] px-3.5 py-2.5 text-sm text-white focus:border-[#d4af37] focus:outline-none"
+              className="mt-1.5 w-full rounded-xl border border-[#1e1915]/20 bg-[#faf6ee] px-3.5 py-2.5 text-sm text-[#1e1915]"
             />
           </div>
 
           <div className="md:col-span-2">
-            <label className="inline-flex items-start gap-2.5 text-sm text-white/85">
+            <label className="inline-flex items-start gap-2.5 text-sm text-[#4a4138]">
               <input
                 type="checkbox"
                 checked={requestDirectApi}
                 onChange={(e) => setRequestDirectApi(e.target.checked)}
-                className="mt-1 h-4 w-4 accent-[#d4af37]"
+                className="mt-1 h-4 w-4 accent-[#163828]"
               />
               <span>
                 Also request owner review for optional direct supplier-hosted checkout &amp; live
-                availability (operator remains Merchant of Record; 10% post-completion invoicing).
+                availability (operator remains Merchant of Record under agreed post-completion
+                settlement terms).
               </span>
             </label>
           </div>
 
           {requestDirectApi && (
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-white/80">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#4a4138]">
                 Reservation Platform &amp; Public Account Shortname (Never paste secret API keys)
               </label>
               <input
@@ -261,13 +261,13 @@ export default function WnoOperatorClaimPanel({
                 value={bookingHandle}
                 onChange={(e) => setBookingHandle(e.target.value)}
                 placeholder="e.g., FareHarbor shortname or Rezgo company domain"
-                className="mt-1.5 w-full rounded-lg border border-white/20 bg-[#080708] px-3.5 py-2.5 text-sm text-white focus:border-[#d4af37] focus:outline-none"
+                className="mt-1.5 w-full rounded-xl border border-[#1e1915]/20 bg-[#faf6ee] px-3.5 py-2.5 text-sm text-[#1e1915]"
               />
             </div>
           )}
 
           <div className="md:col-span-2">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-white/80">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[#4a4138]">
               Dock, Wharf, or Pickup Factual Updates (Optional)
             </label>
             <textarea
@@ -275,12 +275,12 @@ export default function WnoOperatorClaimPanel({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Share any dock address, check-in lead time, or accessibility updates..."
-              className="mt-1.5 w-full rounded-lg border border-white/20 bg-[#080708] px-3.5 py-2.5 text-sm text-white focus:border-[#d4af37] focus:outline-none"
+              className="mt-1.5 w-full rounded-xl border border-[#1e1915]/20 bg-[#faf6ee] px-3.5 py-2.5 text-sm text-[#1e1915]"
             />
           </div>
 
           {errorMsg && (
-            <div className="md:col-span-2 rounded border border-rose-500/40 bg-rose-950/40 px-4 py-2.5 text-xs text-rose-200">
+            <div className="md:col-span-2 rounded-xl border border-[#6b2737]/40 bg-[#6b2737]/10 px-4 py-2.5 text-xs font-medium text-[#6b2737]">
               {errorMsg}
             </div>
           )}
@@ -289,7 +289,7 @@ export default function WnoOperatorClaimPanel({
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-lg bg-[#d4af37] px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#080708] transition hover:brightness-110 disabled:opacity-60"
+              className="wno-dir-primary-btn rounded-full bg-[#163828] px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#faf6ee] transition hover:bg-[#6b2737] disabled:opacity-60"
             >
               {submitting ? "Saving Claim..." : "Submit $0 Operator Profile Claim"}
             </button>

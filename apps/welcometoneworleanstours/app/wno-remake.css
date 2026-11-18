@@ -46,8 +46,20 @@
   z-index: 100;
 }
 
-.wno-skip:focus {
-  top: 12px;
+.wno-skip:focus,
+.wno-skip:focus-visible {
+  top: 10px;
+  outline: 2px solid #faf6ee;
+  outline-offset: 2px;
+  text-decoration: none;
+}
+
+.wno-mobile-menu-toggle {
+  display: none;
+}
+
+.wno-mobile-nav-drawer {
+  display: none;
 }
 
 .wno-header-inner {
@@ -72,6 +84,10 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #faf6ee !important;
+}
+
+.wno-brand-title-mobile {
+  display: none;
 }
 
 .wno-brand-sub {
@@ -858,3 +874,251 @@ body:has([data-wno-remake="v3"]) .wno-faq-item,
     width: 100%;
   }
 }
+
+/* Mobile Header Collapse (<= 72px collapsed on 390px viewports) */
+@media (max-width: 899px) {
+  .wno-header-inner {
+    flex-wrap: nowrap;
+    min-height: 54px;
+    max-height: 68px;
+    padding: 8px 0;
+    gap: 10px;
+  }
+
+  .wno-brand {
+    min-width: 0;
+  }
+
+  .wno-brand-title-desktop {
+    display: none !important;
+  }
+
+  .wno-brand-title-mobile {
+    display: inline-block;
+    font-size: clamp(11.75px, 3.5vw, 13.5px);
+    letter-spacing: 0.055em;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .wno-brand-sub {
+    display: none;
+  }
+
+  .wno-nav {
+    display: none !important;
+  }
+
+  .wno-mobile-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+    min-height: 38px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(228, 193, 122, 0.55) !important;
+    background: rgba(15, 41, 29, 0.85) !important;
+    color: #faf6ee !important;
+    font-size: 12.5px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .wno-mobile-menu-toggle:focus-visible {
+    outline: 2px solid #e4c17a;
+    outline-offset: 2px;
+  }
+
+  .wno-mobile-menu-icon {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3.5px;
+    width: 15px;
+  }
+
+  .wno-mobile-menu-icon span {
+    display: block;
+    width: 15px;
+    height: 2px;
+    border-radius: 2px;
+    background: #e4c17a;
+  }
+
+  .wno-mobile-nav-drawer {
+    display: block;
+    background: #0f291d !important;
+    border-top: 1px solid rgba(228, 193, 122, 0.28);
+    padding: 12px 0 16px;
+  }
+
+  .wno-mobile-nav-list {
+    display: grid;
+    gap: 6px;
+  }
+
+  .wno-mobile-nav-link {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 10px;
+    color: #faf6ee !important;
+    font-size: 14.5px;
+    font-weight: 750;
+    text-decoration: none !important;
+  }
+
+  .wno-mobile-nav-link:hover,
+  .wno-mobile-nav-link:focus-visible {
+    background: rgba(250, 246, 238, 0.08);
+    color: #e4c17a !important;
+  }
+
+  .wno-mobile-nav-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    margin-top: 4px;
+    padding: 0 16px;
+    border-radius: 999px;
+    background: #b8893a !important;
+    color: #163828 !important;
+    font-size: 14px;
+    font-weight: 850;
+    text-decoration: none !important;
+  }
+}
+
+/* Neutral Typographic Operator Monogram (`OperatorIdentityMark`) */
+.wno-operator-monogram {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 10px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.wno-operator-monogram-sm {
+  width: 36px;
+  height: 36px;
+  font-size: 12.5px;
+}
+
+.wno-operator-monogram-md {
+  width: 44px;
+  height: 44px;
+  font-size: 14px;
+}
+
+.wno-operator-monogram-lg {
+  width: 52px;
+  height: 52px;
+  font-size: 16.5px;
+  border-radius: 12px;
+}
+
+.wno-operator-monogram-on-light {
+  background: #f5efe2;
+  color: #163828;
+  border: 1.5px solid rgba(184, 137, 58, 0.55);
+  box-shadow: inset 0 0 0 2px #fffdf9;
+}
+
+.wno-operator-monogram-on-dark {
+  background: #112a1e;
+  color: #e4c17a;
+  border: 1.5px solid rgba(228, 193, 122, 0.65);
+  box-shadow: inset 0 0 0 2px rgba(22, 56, 40, 0.85);
+}
+
+.wno-operator-monogram-overlay {
+  background: rgba(22, 56, 40, 0.9);
+  color: #faf6ee;
+  border: 1px solid rgba(228, 193, 122, 0.6);
+}
+
+/* Homepage Regional Place & Operator Discovery Entry Cards */
+.wno-discovery-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+main#wno-main-content [data-wno-remake="v3"] article.wno-discovery-entry-card,
+.wno-discovery-entry-card {
+  background: #faf6ee !important;
+  border: 1px solid #dfd3be !important;
+  border-radius: 20px !important;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 10px 26px rgba(30, 25, 21, 0.05) !important;
+}
+
+main#wno-main-content [data-wno-remake="v3"] article.wno-discovery-entry-card h3,
+.wno-discovery-entry-card h3 {
+  margin: 2px 0 0;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: 23px !important;
+  font-weight: 800 !important;
+  color: #163828 !important;
+  -webkit-text-fill-color: #163828 !important;
+}
+
+.wno-discovery-entry-card p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.62;
+  color: #574d43 !important;
+}
+
+.wno-discovery-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 8px;
+}
+
+.wno-discovery-chip-row a {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px !important;
+  background: #fffdf9 !important;
+  border: 1px solid rgba(30, 25, 21, 0.16) !important;
+  color: #163828 !important;
+  font-size: 12.5px;
+  font-weight: 750;
+  text-decoration: none !important;
+}
+
+.wno-discovery-chip-row a:hover {
+  border-color: #6b2737 !important;
+  color: #6b2737 !important;
+}
+
+.wno-discovery-cta {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+@media (max-width: 899px) {
+  .wno-discovery-entry-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wno-discovery-cta {
+    width: 100%;
+  }
+}
+

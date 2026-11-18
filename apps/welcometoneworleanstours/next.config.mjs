@@ -57,6 +57,8 @@ const nextConfig = {
       { source: "/guides/restaurant-partners", destination: "/contact", permanent: true },
       { source: "/guides/tour-catalog", destination: "/tours", permanent: true },
       { source: "/tours/airboat-small", destination: "/tours/small-airboat-swamp-adventure", permanent: true },
+      { source: "/tours/oak-alley-plantation-tour", destination: "/tours/oak-alley-plantation-tour-grey-line", permanent: true },
+      { source: "/tours/city-tour-three-hour", destination: "/tours/city-tour-of-new-orleans", permanent: true },
     ];
   },
   async rewrites() {

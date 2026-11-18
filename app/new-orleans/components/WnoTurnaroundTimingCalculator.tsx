@@ -5,6 +5,7 @@ import {
   evaluateNewOrleansTurnaroundAndFlightFit,
   type NewOrleansTravelerWindowScenario,
 } from "@/lib/dcc/shared/newOrleansDirectoryExtensionContract";
+import { normalizeWtnoTourPath } from "../lib/wtnoDirectoryHelpers";
 
 export interface TimingCalculatorTourItem {
   productId: string;
@@ -36,15 +37,15 @@ export default function WnoTurnaroundTimingCalculator({
   return (
     <section
       data-testid="wno-turnaround-timing-calculator"
-      className="mt-10 rounded-xl border border-[#d4af37]/30 bg-[#121016] p-6 md:p-8 text-[#fdfbf7]"
+      className="mt-12 rounded-2xl border border-[#1e1915]/15 bg-[#fffdf9] p-6 md:p-8 text-[#1e1915]"
     >
-      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">
+      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#8a6220]">
         Port NOLA &amp; MSY Turnaround Timing-Fit Check
       </p>
-      <h2 className="mt-2 font-serif text-2xl md:text-3xl">
+      <h2 className="mt-2 font-serif text-2xl md:text-3xl font-bold text-[#163828]">
         Check whether {areaName} tours fit your cruise or flight window
       </h2>
-      <p className="mt-2 text-xs leading-relaxed text-white/75">
+      <p className="mt-2 text-xs leading-relaxed text-[#4a4138]">
         Uses traffic-qualified corridor transfer ranges (planning estimates—never guaranteed) plus a
         mandatory 120-minute Port NOLA embarkation buffer (Erato St Carnival / Julia St NCL &amp;
         Royal Caribbean) or 150-minute MSY domestic flight buffer.
@@ -52,15 +53,19 @@ export default function WnoTurnaroundTimingCalculator({
 
       <div className="mt-5 grid gap-4 md:grid-cols-3">
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-white/80">
+          <label
+            htmlFor="wno-turnaround-scenario"
+            className="block text-xs font-semibold uppercase tracking-wider text-[#4a4138]"
+          >
             Travel Day Scenario
           </label>
           <select
+            id="wno-turnaround-scenario"
             value={scenario}
             onChange={(e) =>
               setScenario(e.target.value as NewOrleansTravelerWindowScenario)
             }
-            className="mt-1.5 w-full rounded-lg border border-white/20 bg-[#080708] px-3 py-2.5 text-xs text-white"
+            className="mt-1.5 w-full rounded-xl border border-[#1e1915]/20 bg-[#faf6ee] px-3 py-2.5 text-xs text-[#1e1915]"
           >
             <option value="post_cruise_debarkation_before_msy_flight">
               Post-Cruise Debarkation → MSY Flight (150m buffer)
@@ -75,27 +80,31 @@ export default function WnoTurnaroundTimingCalculator({
         </div>
 
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-white/80">
+          <label
+            htmlFor="wno-turnaround-hours"
+            className="block text-xs font-semibold uppercase tracking-wider text-[#4a4138]"
+          >
             Available Window: {windowHours} Hours ({windowHours * 60} mins)
           </label>
           <input
+            id="wno-turnaround-hours"
             type="range"
             min={3}
             max={10}
             step={0.5}
             value={windowHours}
             onChange={(e) => setWindowHours(Number(e.target.value))}
-            className="mt-3 w-full accent-[#d4af37]"
+            className="mt-3 w-full accent-[#163828]"
           />
         </div>
 
         <div className="flex items-center pt-4">
-          <label className="inline-flex items-start gap-2.5 text-xs text-white/85">
+          <label className="inline-flex items-start gap-2.5 text-xs text-[#4a4138]">
             <input
               type="checkbox"
               checked={unstoredLuggage}
               onChange={(e) => setUnstoredLuggage(e.target.checked)}
-              className="mt-0.5 h-4 w-4 accent-[#d4af37]"
+              className="mt-0.5 h-4 w-4 accent-[#163828]"
             />
             <span>
               We will be carrying unstored full-size cruise suitcases
@@ -117,10 +126,10 @@ export default function WnoTurnaroundTimingCalculator({
 
           const badgeStyle =
             fit.status === "fits_with_buffer"
-              ? "border-emerald-400/40 bg-emerald-950/40 text-emerald-300"
+              ? "border-[#163828]/35 bg-[#f2f7f4] text-[#163828]"
               : fit.status === "tight_verify_schedule"
-                ? "border-amber-400/40 bg-amber-950/40 text-amber-300"
-                : "border-rose-400/40 bg-rose-950/40 text-rose-300";
+                ? "border-[#b8893a]/50 bg-[#fdf6e6] text-[#8a6220]"
+                : "border-[#6b2737]/40 bg-[#6b2737]/10 text-[#6b2737]";
 
           const badgeLabel =
             fit.status === "fits_with_buffer"
@@ -129,10 +138,12 @@ export default function WnoTurnaroundTimingCalculator({
                 ? "Tight — Verify Earliest Slot"
                 : "Not Recommended";
 
+          const resolvedHref = normalizeWtnoTourPath(tour.href);
+
           return (
             <div
               key={tour.productId}
-              className="flex flex-col justify-between gap-3 rounded-lg border border-white/15 bg-[#0b090e] p-4 md:flex-row md:items-center"
+              className="flex flex-col justify-between gap-3 rounded-xl border border-[#1e1915]/12 bg-[#faf6ee] p-4 md:flex-row md:items-center"
             >
               <div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -141,16 +152,16 @@ export default function WnoTurnaroundTimingCalculator({
                   >
                     {badgeLabel}
                   </span>
-                  <span className="text-xs text-white/65">
+                  <span className="text-xs font-medium text-[#6b5a45]">
                     {tour.operatorName} · {tour.durationLabel}
                   </span>
                 </div>
-                <p className="mt-1 font-semibold text-white">{tour.title}</p>
-                <p className="mt-1 text-xs text-white/70">{fit.explanation}</p>
+                <p className="mt-1 font-serif text-lg font-bold text-[#163828]">{tour.title}</p>
+                <p className="mt-1 text-xs leading-relaxed text-[#4a4138]">{fit.explanation}</p>
               </div>
               <a
-                href={tour.href}
-                className="shrink-0 rounded border border-[#d4af37]/50 px-3.5 py-2 text-xs font-semibold text-[#d4af37] hover:bg-[#d4af37]/10"
+                href={resolvedHref}
+                className="wno-dir-secondary-btn shrink-0 rounded-full border border-[#163828] bg-[#fffdf9] px-4 py-2 text-xs font-bold text-[#163828] hover:bg-[#163828] hover:text-[#faf6ee]"
               >
                 Inspect Details →
               </a>

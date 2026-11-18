@@ -766,12 +766,12 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     bookingChannelLabel: "FareHarbor checkout referral",
     viatorVariants: [
       {
-        label: "CHECK SELF-DRIVE COVERED BOAT ($35/PERSON · VIATOR #15200P5)",
+        label: "Check Self-Drive Covered Boat ($35/Person on Viator)",
         offer: "15200P5",
         placementId: "fp-wno-swamp-tours",
       },
       {
-        label: "CHECK WITH HOTEL PICKUP ($60/ADULT · OPTION TG10 · VIATOR #15200P6)",
+        label: "Check Covered Boat With Hotel Pickup ($60/Adult on Viator)",
         offer: "15200P6",
         option: "TG10",
         departureTime: "08:00",
@@ -838,19 +838,19 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     bookingChannelLabel: "FareHarbor checkout referral",
     bookingVariants: [
       {
-        label: "Check dates and prices on FareHarbor — Large Airboat (Item 228561 · $65 self-drive / $90 with hotel pickup pre-tax estimate)",
+        label: "Check dates and prices on FareHarbor — Large 16-Passenger Airboat ($65 self-drive / $90 with hotel pickup pre-tax estimate)",
         itemId: "228561",
         flowId: "940162",
         bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/228561/?asn=aktourcenter&flow=940162&ref=wno-ragin-cajun-airboat-options&full-items=yes",
       },
       {
-        label: "Check dates and prices on FareHarbor — Standard 10-Passenger Airboat (Item 228524 · $85 self-drive / $110 with hotel pickup pre-tax estimate)",
+        label: "Check dates and prices on FareHarbor — Standard 10-Passenger Airboat ($85 self-drive / $110 with hotel pickup pre-tax estimate)",
         itemId: "228524",
         flowId: "940162",
         bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/228524/?asn=aktourcenter&flow=940162&ref=wno-ragin-cajun-airboat-options&full-items=yes",
       },
       {
-        label: "Check dates and prices on FareHarbor — Premium Small 6-Passenger Airboat (Item 448291 · $95 self-drive / $120 with hotel pickup pre-tax estimate)",
+        label: "Check dates and prices on FareHarbor — Small 6-Passenger Airboat ($95 self-drive / $120 with hotel pickup pre-tax estimate)",
         itemId: "448291",
         flowId: "940162",
         bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/448291/?asn=aktourcenter&flow=940162&ref=wno-ragin-cajun-airboat-options&full-items=yes",
@@ -858,22 +858,22 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     ],
     viatorVariants: [
       {
-        label: "LARGE AIRBOAT · SELF-DRIVE ($65/PERSON · VIATOR #15200P1)",
+        label: "Large Airboat · Self-Drive ($65/Person on Viator)",
         offer: "15200P1",
         placementId: "fp-wno-swamp-tours",
       },
       {
-        label: "LARGE AIRBOAT · WITH HOTEL PICKUP ($90/PERSON · VIATOR #15200P2)",
+        label: "Large Airboat · With Hotel Pickup ($90/Person on Viator)",
         offer: "15200P2",
         placementId: "fp-wno-swamp-tours",
       },
       {
-        label: "SMALL AIRBOAT · SELF-DRIVE ($89/PERSON · VIATOR #15200P3)",
+        label: "Small Airboat · Self-Drive ($89/Person on Viator)",
         offer: "15200P3",
         placementId: "fp-wno-swamp-tours",
       },
       {
-        label: "SMALL AIRBOAT · WITH HOTEL PICKUP ($115/PERSON · VIATOR #15200P4)",
+        label: "Small Airboat · With Hotel Pickup ($115/Person on Viator)",
         offer: "15200P4",
         placementId: "fp-wno-swamp-tours",
       },
@@ -898,12 +898,12 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     metaDescription: "Airboat tour options in the Louisiana swamp with Ragin Cajun Tours. Self-drive and French Quarter hotel pickup options available.",
     durationLabel: "Duration confirmed during booking.",
     transportationSummary: "Boat formats confirmed during booking.",
-    pickupSummary: "Self-drive or round-trip hotel shuttle available. The operator lists two Luling, LA locations and provides the launch address with the booking; confirm the exact meeting point for item 228561 before displaying directions.",
+    pickupSummary: "Self-drive or round-trip hotel shuttle available. The operator lists two Luling, LA dock locations and provides the launch address with the booking confirmation.",
     bookingNote: "Displayed rates are pre-tax estimates. When live inventory is unavailable, check dates and prices on FareHarbor. The operator lists two Luling locations and provides the launch address with the booking.",
     highlights: [
       "The operator describes the route as traveling through privately accessed swamp property"
     ],
-    detailSummary: "Airboat options through private Louisiana bayous. Pre-tax estimate self-drive tour-only rates are $65 (large 16-passenger, item 228561), $85 (medium 10-passenger, item 228524), and $95 (small 6–10 passenger, item 448291) per rider before local taxes and fees. Pre-tax estimate round-trip French Quarter hotel shuttle packages are $90, $110, and $120 per rider respectively. The operator lists two Luling locations and provides the launch address with the booking — confirm the exact meeting point for item 228561 before displaying directions. Standard bookings require at least 48 hours notice for a full refund; inside 48 hours is non-refundable.",
+    detailSummary: "Open-air airboat rides through private Louisiana bayous in Luling. Pre-tax estimate self-drive tour-only rates are $65 (large 16-passenger airboat), $85 (medium 10-passenger airboat), and $95 (small 6–10 passenger airboat) per rider before local taxes and fees; pre-tax estimate round-trip French Quarter hotel shuttle packages are $90, $110, and $120 per rider respectively. Because the operator lists two Luling locations and provides the launch address with the booking, check your confirmation email for your exact check-in dock. Standard bookings require at least 48 hours notice for a full refund; inside 48 hours is non-refundable.",
     bestFit: [
       "Visitors looking for a fast, adventurous ride",
       "Those who prefer an open-air outdoor experience"
@@ -917,7 +917,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     ],
     confirmedInclusions: [],
     bookingConfirmations: [
-      "Confirm the exact meeting point for item 228561 before displaying directions (the operator lists two Luling locations and provides the launch address with the booking).",
+      "Check your confirmation email for your exact check-in dock (the operator lists two Luling locations and provides the launch address with the booking).",
       "Pre-tax estimates exclude applicable local taxes and booking fees; check dates and prices on FareHarbor.",
       "Weather conditions and 48-hour cancellation policy"
     ],
@@ -926,7 +926,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
       exposure: "Open-air exposure"
     },
     logistics: {
-      meetingPoint: "Confirm the exact meeting point for item 228561 before displaying directions. The operator lists two Luling locations and provides the launch address with the booking.",
+      meetingPoint: "The operator lists two Luling locations and provides the launch address with the booking confirmation—check your voucher for your exact dock before driving.",
       transportation: "Transportation options confirmed during booking."
     },
   },
@@ -1123,7 +1123,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
       "Shaded, covered swamp boat through the Barataria Bayou (all ages welcome)",
       "All-in transparent pricing: $60.00/adult ($120.00 total for 2 adults, $0 booking fee)"
     ],
-    detailSummary: "A 4-hour door-to-door covered bayou boat tour with confirmed round-trip French Quarter and Downtown hotel pickup operated by Louisiana Tour Company (product #15200P6). Total price for 2 adults is $120.00 ($60.00/adult, $0 booking fee).",
+    detailSummary: "A 4-hour door-to-door covered bayou boat tour with confirmed round-trip French Quarter and Downtown hotel pickup operated by Louisiana Tour Company. Total price for 2 adults is $120.00 ($60.00/adult, $0 booking fee).",
     bestFit: [
       "French Quarter and Downtown hotel guests (including Hotel Monteleone, 214 Royal St) wanting confirmed door-to-door pickup",
       "Families, seniors, and all-ages groups seeking a shaded, calm bayou boat cruise"
@@ -1389,12 +1389,12 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     bookingChannelLabel: "FareHarbor checkout referral",
     viatorVariants: [
       {
-        label: "CHECK SUNDAY JAZZ BRUNCH AVAILABILITY (VIATOR #3780STEAMBRU)",
+        label: "Check Sunday Jazz Brunch Availability on Viator",
         offer: "3780STEAMBRU",
         placementId: "fp-wno-riverboat-cruises",
       },
       {
-        label: "CHECK DAYTIME SIGHTSEEING AVAILABILITY (VIATOR #3780STEAM · TG31)",
+        label: "Check Daytime Sightseeing Availability on Viator",
         offer: "3780STEAM",
         option: "TG31",
         placementId: "fp-wno-riverboat-cruises",

@@ -417,7 +417,8 @@ export default function LargeAirboat15200P1CheckCard({
   const trackedViatorCheckoutHref = useMemo(() => {
     const isWto =
       siteDomain === "welcometoneworleanstours.com" ||
-      siteDomain === "www.welcometoneworleanstours.com";
+      siteDomain === "www.welcometoneworleanstours.com" ||
+      siteDomain.toLowerCase().includes("welcometoneworleans");
     const base = isWto
       ? "https://www.destinationcommandcenter.com/go/commerce/handoff"
       : "/go/commerce/handoff";
@@ -477,18 +478,26 @@ export default function LargeAirboat15200P1CheckCard({
     return `Schedule window: ${selectedOption.displayTime}–${estimatedReturnLabel} (confirm all-aboard if cruising)`;
   }, [initialAllAboardConfirmed, initialAllAboardTime, selectedOption.displayTime, estimatedReturnLabel]);
 
+  const isWnoWarm = siteDomain === "welcometoneworleanstours.com";
+
   return (
     <section
       data-testid="wno-large-airboat-15200p1-card"
-      aria-label="Verified Large Airboat Option — Louisiana Tour Company Viator 15200P1"
+      aria-label="Verified Large Airboat Option — Louisiana Tour Company"
       style={{
-        maxWidth: 1120,
+        width: "min(1120px, calc(100% - 32px))",
+        maxWidth: "100%",
+        boxSizing: "border-box",
+        overflowX: "clip",
         margin: "20px auto",
         padding: "22px 24px",
-        borderRadius: 14,
-        background: "#111b27",
-        border: "1px solid rgba(212, 175, 55, 0.45)",
-        color: "#f8fafc",
+        borderRadius: 16,
+        background: isWnoWarm ? "#fffdf9" : "#111b27",
+        border: isWnoWarm
+          ? "1px solid rgba(30, 25, 21, 0.14)"
+          : "1px solid rgba(212, 175, 55, 0.45)",
+        boxShadow: isWnoWarm ? "0 12px 32px rgba(30, 25, 21, 0.06)" : undefined,
+        color: isWnoWarm ? "#1e1915" : "#f8fafc",
       }}
     >
       <div
@@ -501,24 +510,31 @@ export default function LargeAirboat15200P1CheckCard({
           marginBottom: 14,
         }}
       >
-        <div>
+        <div style={{ minWidth: 0, maxWidth: "100%" }}>
           <div
             style={{
               fontSize: "0.74rem",
               fontWeight: 800,
               textTransform: "uppercase",
               letterSpacing: "0.08em",
-              color: "#d4af37",
+              color: isWnoWarm ? "#8a6220" : "#d4af37",
             }}
           >
-            First Eligible Group Option · Live Viator Partner API v2
+            Group Airboat Availability · Live Partner Calendar
           </div>
-          <h2 style={{ fontSize: "1.25rem", fontWeight: 800, margin: "4px 0 2px", color: "#ffffff" }}>
-            New Orleans Large Airboat Swamp Tour (Viator <code>15200P1</code> · Louisiana Tour Company)
+          <h2
+            style={{
+              fontSize: "1.25rem",
+              fontWeight: 800,
+              margin: "4px 0 2px",
+              color: isWnoWarm ? "#163828" : "#ffffff",
+            }}
+          >
+            New Orleans 16-Passenger Large Airboat Swamp Tour (Louisiana Tour Company)
           </h2>
-          <div style={{ fontSize: "0.83rem", color: "#cbd5e1" }}>
+          <div style={{ fontSize: "0.83rem", color: isWnoWarm ? "#4a4138" : "#cbd5e1" }}>
             16-Passenger Large Airboat · 1h 40m on water · Self-Drive Meeting Point:{" "}
-            <strong>9706 Barataria Blvd, Marrero, LA 70072</strong> (check in 30 min prior) · New Orleans Local Time (<code>America/Chicago</code>)
+            <strong>9706 Barataria Blvd, Marrero, LA 70072</strong> (check in 30 min prior) · New Orleans Local Time
           </div>
         </div>
 
@@ -540,12 +556,26 @@ export default function LargeAirboat15200P1CheckCard({
               fontSize: "0.78rem",
               fontWeight: 800,
               background: initialAllAboardConfirmed
-                ? "rgba(16, 185, 129, 0.16)"
-                : "rgba(148, 163, 184, 0.18)",
-              color: initialAllAboardConfirmed ? "#6ee7b7" : "#e2e8f0",
+                ? isWnoWarm
+                  ? "rgba(22, 56, 40, 0.12)"
+                  : "rgba(16, 185, 129, 0.16)"
+                : isWnoWarm
+                  ? "#f5efe2"
+                  : "rgba(148, 163, 184, 0.18)",
+              color: initialAllAboardConfirmed
+                ? isWnoWarm
+                  ? "#163828"
+                  : "#6ee7b7"
+                : isWnoWarm
+                  ? "#4a4138"
+                  : "#e2e8f0",
               border: initialAllAboardConfirmed
-                ? "1px solid rgba(16, 185, 129, 0.4)"
-                : "1px solid rgba(148, 163, 184, 0.35)",
+                ? isWnoWarm
+                  ? "1px solid rgba(22, 56, 40, 0.35)"
+                  : "1px solid rgba(16, 185, 129, 0.4)"
+                : isWnoWarm
+                  ? "1px solid rgba(30, 25, 21, 0.16)"
+                  : "1px solid rgba(148, 163, 184, 0.35)",
             }}
           >
             {fitsSailingBadgeLabel}
@@ -562,22 +592,40 @@ export default function LargeAirboat15200P1CheckCard({
               fontWeight: 800,
               background:
                 checkState.status === "available_for_party"
-                  ? "rgba(16, 185, 129, 0.2)"
+                  ? isWnoWarm
+                    ? "rgba(22, 56, 40, 0.14)"
+                    : "rgba(16, 185, 129, 0.2)"
                   : checkState.status === "unavailable_for_party"
-                    ? "rgba(239, 68, 68, 0.2)"
-                    : "rgba(245, 158, 11, 0.2)",
+                    ? isWnoWarm
+                      ? "rgba(107, 39, 55, 0.14)"
+                      : "rgba(239, 68, 68, 0.2)"
+                    : isWnoWarm
+                      ? "#f7efe0"
+                      : "rgba(245, 158, 11, 0.2)",
               color:
                 checkState.status === "available_for_party"
-                  ? "#6ee7b7"
+                  ? isWnoWarm
+                    ? "#163828"
+                    : "#6ee7b7"
                   : checkState.status === "unavailable_for_party"
-                    ? "#fca5a5"
-                    : "#fde68a",
+                    ? isWnoWarm
+                      ? "#6b2737"
+                      : "#fca5a5"
+                    : isWnoWarm
+                      ? "#8a6220"
+                      : "#fde68a",
               border:
                 checkState.status === "available_for_party"
-                  ? "1px solid rgba(16, 185, 129, 0.45)"
+                  ? isWnoWarm
+                    ? "1px solid rgba(22, 56, 40, 0.35)"
+                    : "1px solid rgba(16, 185, 129, 0.45)"
                   : checkState.status === "unavailable_for_party"
-                    ? "1px solid rgba(239, 68, 68, 0.45)"
-                    : "1px solid rgba(245, 158, 11, 0.45)",
+                    ? isWnoWarm
+                      ? "1px solid rgba(107, 39, 55, 0.35)"
+                      : "1px solid rgba(239, 68, 68, 0.45)"
+                    : isWnoWarm
+                      ? "1px solid rgba(184, 137, 58, 0.45)"
+                      : "1px solid rgba(245, 158, 11, 0.45)",
             }}
           >
             {checkState.availabilityDisplayLabel}
@@ -591,9 +639,11 @@ export default function LargeAirboat15200P1CheckCard({
               borderRadius: 999,
               fontSize: "0.78rem",
               fontWeight: 800,
-              background: "rgba(56, 189, 248, 0.15)",
-              color: "#bae6fd",
-              border: "1px solid rgba(56, 189, 248, 0.4)",
+              background: isWnoWarm ? "#f5efe2" : "rgba(56, 189, 248, 0.15)",
+              color: isWnoWarm ? "#6b2737" : "#bae6fd",
+              border: isWnoWarm
+                ? "1px solid rgba(107, 39, 55, 0.28)"
+                : "1px solid rgba(56, 189, 248, 0.4)",
             }}
           >
             One boat: verify separately ({checkState.singleVesselCapacity}-seat capacity)
@@ -608,11 +658,13 @@ export default function LargeAirboat15200P1CheckCard({
           style={{
             padding: "9px 14px",
             borderRadius: 8,
-            background: "rgba(16, 185, 129, 0.12)",
-            border: "1px solid rgba(16, 185, 129, 0.35)",
+            background: isWnoWarm ? "#f5efe2" : "rgba(16, 185, 129, 0.12)",
+            border: isWnoWarm
+              ? "1px solid rgba(22, 56, 40, 0.28)"
+              : "1px solid rgba(16, 185, 129, 0.35)",
             marginBottom: 14,
             fontSize: "0.8rem",
-            color: "#d1fae5",
+            color: isWnoWarm ? "#163828" : "#d1fae5",
           }}
         >
           <strong>Next Eligible Departure Auto-Selected:</strong> {checkState.autoAdvanceNote}
@@ -623,17 +675,28 @@ export default function LargeAirboat15200P1CheckCard({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(210px, 100%), 1fr))",
           gap: 12,
           padding: 14,
-          borderRadius: 10,
-          background: "rgba(15, 23, 42, 0.8)",
-          border: "1px solid rgba(148, 163, 184, 0.22)",
+          borderRadius: 12,
+          background: isWnoWarm ? "#faf6ee" : "rgba(15, 23, 42, 0.8)",
+          border: isWnoWarm
+            ? "1px solid rgba(30, 25, 21, 0.12)"
+            : "1px solid rgba(148, 163, 184, 0.22)",
           marginBottom: 14,
         }}
       >
-        <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "0.78rem", color: "#cbd5e1" }}>
-          <span style={{ fontWeight: 700 }}>Verified Option &amp; Start Time (America/Chicago)</span>
+        <label
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+            minWidth: 0,
+            fontSize: "0.78rem",
+            color: isWnoWarm ? "#4a4138" : "#cbd5e1",
+          }}
+        >
+          <span style={{ fontWeight: 700 }}>Departure Time (New Orleans Local Time)</span>
           <select
             data-testid="wno-15200p1-option-select"
             value={optionCode}
@@ -641,23 +704,38 @@ export default function LargeAirboat15200P1CheckCard({
               handleOptionChange(e.target.value as "TG9" | "TG2" | "TG6" | "TG7")
             }
             style={{
+              width: "100%",
+              maxWidth: "100%",
+              minWidth: 0,
+              boxSizing: "border-box",
               padding: "8px 10px",
-              borderRadius: 6,
-              background: "#0f172a",
-              color: "#f8fafc",
-              border: "1px solid rgba(148, 163, 184, 0.35)",
+              borderRadius: 8,
+              background: isWnoWarm ? "#fffdf9" : "#0f172a",
+              color: isWnoWarm ? "#1e1915" : "#f8fafc",
+              border: isWnoWarm
+                ? "1px solid rgba(30, 25, 21, 0.2)"
+                : "1px solid rgba(148, 163, 184, 0.35)",
               fontSize: "0.84rem",
             }}
           >
             {LARGE_AIRBOAT_15200P1_OPTIONS.map((opt) => (
               <option key={opt.optionCode} value={opt.optionCode}>
-                Option {opt.optionCode} · {opt.departureTime} ({opt.displayTime}) — {opt.title}
+                {opt.displayTime} — Large Airboat (Self-Drive · 9706 Barataria Blvd)
               </option>
             ))}
           </select>
         </label>
 
-        <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "0.78rem", color: "#cbd5e1" }}>
+        <label
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+            minWidth: 0,
+            fontSize: "0.78rem",
+            color: isWnoWarm ? "#4a4138" : "#cbd5e1",
+          }}
+        >
           <span style={{ fontWeight: 700 }}>Departure Date</span>
           <input
             data-testid="wno-15200p1-date-input"
@@ -665,17 +743,32 @@ export default function LargeAirboat15200P1CheckCard({
             value={date}
             onChange={(e) => handleDateChange(e.target.value)}
             style={{
+              width: "100%",
+              maxWidth: "100%",
+              minWidth: 0,
+              boxSizing: "border-box",
               padding: "7px 10px",
-              borderRadius: 6,
-              background: "#0f172a",
-              color: "#f8fafc",
-              border: "1px solid rgba(148, 163, 184, 0.35)",
+              borderRadius: 8,
+              background: isWnoWarm ? "#fffdf9" : "#0f172a",
+              color: isWnoWarm ? "#1e1915" : "#f8fafc",
+              border: isWnoWarm
+                ? "1px solid rgba(30, 25, 21, 0.2)"
+                : "1px solid rgba(148, 163, 184, 0.35)",
               fontSize: "0.84rem",
             }}
           />
         </label>
 
-        <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "0.78rem", color: "#cbd5e1" }}>
+        <label
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+            minWidth: 0,
+            fontSize: "0.78rem",
+            color: isWnoWarm ? "#4a4138" : "#cbd5e1",
+          }}
+        >
           <span style={{ fontWeight: 700 }}>Party Size (Guests)</span>
           <input
             data-testid="wno-15200p1-party-size-input"
@@ -685,27 +778,36 @@ export default function LargeAirboat15200P1CheckCard({
             value={partySize}
             onChange={(e) => handlePartySizeChange(Number(e.target.value) || 8)}
             style={{
+              width: "100%",
+              maxWidth: "100%",
+              minWidth: 0,
+              boxSizing: "border-box",
               padding: "7px 10px",
-              borderRadius: 6,
-              background: "#0f172a",
-              color: "#f8fafc",
-              border: "1px solid rgba(148, 163, 184, 0.35)",
+              borderRadius: 8,
+              background: isWnoWarm ? "#fffdf9" : "#0f172a",
+              color: isWnoWarm ? "#1e1915" : "#f8fafc",
+              border: isWnoWarm
+                ? "1px solid rgba(30, 25, 21, 0.2)"
+                : "1px solid rgba(148, 163, 184, 0.35)",
               fontSize: "0.84rem",
             }}
           />
         </label>
 
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 6 }}>
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 6, minWidth: 0 }}>
           <button
             type="button"
             data-testid="wno-15200p1-check-btn"
             disabled={checkState.loading}
             onClick={() => runLiveAvailabilityCheck()}
             style={{
+              width: "100%",
+              maxWidth: "100%",
+              boxSizing: "border-box",
               padding: "9px 14px",
-              borderRadius: 8,
-              background: "#d4af37",
-              color: "#111827",
+              borderRadius: 999,
+              background: isWnoWarm ? "#b8893a" : "#d4af37",
+              color: isWnoWarm ? "#1e1915" : "#111827",
               fontWeight: 800,
               fontSize: "0.82rem",
               border: "none",
@@ -713,8 +815,8 @@ export default function LargeAirboat15200P1CheckCard({
             }}
           >
             {checkState.loading
-              ? `Checking ${partySize} guests on Viator...`
-              : `Check ${partySize} Guests (${selectedOption.optionCode} · ${selectedOption.departureTime})`}
+              ? `Checking ${partySize} guests...`
+              : `Check ${partySize} Guests (${selectedOption.displayTime})`}
           </button>
         </div>
       </div>
@@ -724,35 +826,55 @@ export default function LargeAirboat15200P1CheckCard({
         data-testid="wno-15200p1-provider-response"
         style={{
           padding: "14px 16px",
-          borderRadius: 10,
-          background: "rgba(15, 23, 42, 0.72)",
-          border: "1px solid rgba(148, 163, 184, 0.24)",
+          borderRadius: 12,
+          background: isWnoWarm ? "#faf6ee" : "rgba(15, 23, 42, 0.72)",
+          border: isWnoWarm
+            ? "1px solid rgba(30, 25, 21, 0.12)"
+            : "1px solid rgba(148, 163, 184, 0.24)",
           marginBottom: 14,
           fontSize: "0.82rem",
-          color: "#cbd5e1",
+          color: isWnoWarm ? "#4a4138" : "#cbd5e1",
         }}
       >
-        <div style={{ fontWeight: 700, color: "#f8fafc", marginBottom: 8 }}>
-          First Useful Option Summary — Exact Time, Pickup, Group Total &amp; Live Verification:
+        <div
+          style={{
+            fontWeight: 700,
+            color: isWnoWarm ? "#163828" : "#f8fafc",
+            marginBottom: 8,
+          }}
+        >
+          Selected Departure Summary — Time, Dock Address &amp; Group Estimate:
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(220px, 100%), 1fr))",
+            gap: 10,
+          }}
+        >
           <div>
-            <strong>Exact Departure Time:</strong>{" "}
-            <strong style={{ color: "#ffffff" }}>{selectedOption.displayTime}</strong> (
-            <code>{selectedOption.departureTime}</code> <code>America/Chicago</code> · Option{" "}
-            <code>{selectedOption.optionCode}</code> on <code>{date}</code>)
+            <strong>Departure Time:</strong>{" "}
+            <strong style={{ color: isWnoWarm ? "#1e1915" : "#ffffff" }}>
+              {selectedOption.displayTime}
+            </strong>{" "}
+            (New Orleans local time on {date})
           </div>
           <div>
             <strong>Pickup / Meeting Point:</strong>{" "}
-            <span style={{ color: "#f8fafc" }}>
+            <span style={{ color: isWnoWarm ? "#1e1915" : "#f8fafc" }}>
               Self-drive meeting point at 9706 Barataria Blvd, Marrero, LA 70072
             </span>{" "}
-            (no hotel pickup on <code>15200P1</code>; check in 30 min prior)
+            (no hotel pickup on this departure; check in 30 min prior)
           </div>
           <div>
             <strong>Group Total ({partySize} Guests):</strong>{" "}
             {checkState.totalPriceCents !== null ? (
-              <strong style={{ color: "#6ee7b7", fontSize: "0.92rem" }}>
+              <strong
+                style={{
+                  color: isWnoWarm ? "#163828" : "#6ee7b7",
+                  fontSize: "0.92rem",
+                }}
+              >
                 ${(checkState.totalPriceCents / 100).toFixed(2)} {checkState.currency}
               </strong>
             ) : (
@@ -761,24 +883,32 @@ export default function LargeAirboat15200P1CheckCard({
             {checkState.priceBasis ? <span>({checkState.priceBasis})</span> : <span>($65.00/adult)</span>}
           </div>
           <div>
-            <strong>When Availability Was Checked:</strong>{" "}
-            <code data-testid="wno-15200p1-provider-status">{checkState.status}</code>
+            <strong>Availability Status:</strong>{" "}
+            <span data-testid="wno-15200p1-provider-status">
+              {checkState.status === "available_for_party"
+                ? "Available when checked"
+                : checkState.status === "unavailable_for_party"
+                  ? "Unavailable when checked"
+                  : "Verify on partner calendar"}
+            </span>
             {checkState.timeChecked ? (
-              <span>
-                {" "}
-                at <code>{checkState.timeChecked}</code>
-              </span>
+              <span> (checked {checkState.timeChecked})</span>
             ) : (
-              <span> (live check in progress)</span>
+              <span> (checking live calendar)</span>
             )}
           </div>
         </div>
-        <div style={{ marginTop: 8, color: "#94a3b8", fontSize: "0.77rem" }}>
-          {checkState.note}
-          {checkState.timeChecked && (
-            <span> · Verified via <code>{checkState.providerEndpoint}</code></span>
-          )}
-        </div>
+        {checkState.note && (
+          <div
+            style={{
+              marginTop: 8,
+              color: isWnoWarm ? "#6e6255" : "#94a3b8",
+              fontSize: "0.77rem",
+            }}
+          >
+            {checkState.note}
+          </div>
+        )}
       </div>
 
       {/* Separate One-Boat Verification Notice */}
@@ -786,12 +916,14 @@ export default function LargeAirboat15200P1CheckCard({
         data-testid="wno-15200p1-single-vessel-verification"
         style={{
           padding: "10px 14px",
-          borderRadius: 8,
-          background: "rgba(56, 189, 248, 0.1)",
-          border: "1px solid rgba(56, 189, 248, 0.32)",
+          borderRadius: 10,
+          background: isWnoWarm ? "#f7efe0" : "rgba(56, 189, 248, 0.1)",
+          border: isWnoWarm
+            ? "1px solid rgba(184, 137, 58, 0.4)"
+            : "1px solid rgba(56, 189, 248, 0.32)",
           marginBottom: 14,
           fontSize: "0.8rem",
-          color: "#e0f2fe",
+          color: isWnoWarm ? "#1e1915" : "#e0f2fe",
         }}
       >
         <strong>Separate Single-Boat Verification (16-Passenger Vessel Capacity):</strong>{" "}
@@ -806,9 +938,11 @@ export default function LargeAirboat15200P1CheckCard({
           flexDirection: "column",
           gap: 10,
           padding: "14px 16px",
-          borderRadius: 10,
-          background: "rgba(2, 132, 199, 0.1)",
-          border: "1px solid rgba(2, 132, 199, 0.35)",
+          borderRadius: 12,
+          background: isWnoWarm ? "#f5efe2" : "rgba(2, 132, 199, 0.1)",
+          border: isWnoWarm
+            ? "1px solid rgba(22, 56, 40, 0.25)"
+            : "1px solid rgba(2, 132, 199, 0.35)",
         }}
       >
         <div
@@ -820,11 +954,11 @@ export default function LargeAirboat15200P1CheckCard({
             gap: 12,
           }}
         >
-          <div style={{ fontSize: "0.8rem", color: "#e2e8f0" }}>
-            <strong>Validated Checkout Binding ({checkoutBindingValidation.valid ? "Verified" : "Check"}):</strong>{" "}
-            Provider <code>viator</code> (<code>pid=P00306962</code>) · Product <code>15200P1</code> · Option{" "}
-            <code>{selectedOption.optionCode}</code> (<code>{selectedOption.departureTime}</code> / {selectedOption.displayTime}) →{" "}
-            <code style={{ color: "#bae6fd" }}>viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1</code>
+          <div style={{ fontSize: "0.8rem", color: isWnoWarm ? "#1e1915" : "#e2e8f0", minWidth: 0 }}>
+            <strong>
+              Partner Checkout ({checkoutBindingValidation.valid ? "Verified" : "Check"}):
+            </strong>{" "}
+            Viator · Louisiana Tour Company 16-Passenger Large Airboat ({selectedOption.displayTime} departure)
           </div>
 
           <a
@@ -835,20 +969,24 @@ export default function LargeAirboat15200P1CheckCard({
             style={{
               display: "inline-flex",
               alignItems: "center",
+              justifyContent: "center",
               gap: 6,
+              maxWidth: "100%",
+              boxSizing: "border-box",
               padding: "11px 18px",
-              borderRadius: 8,
-              background: "#0284c7",
-              color: "#ffffff",
+              borderRadius: 999,
+              background: isWnoWarm ? "#163828" : "#0284c7",
+              color: isWnoWarm ? "#faf6ee" : "#ffffff",
               fontWeight: 800,
               fontSize: "0.86rem",
               textDecoration: "none",
-              whiteSpace: "nowrap",
+              whiteSpace: "normal",
+              textAlign: "center",
             }}
           >
             {checkState.status === "available_for_party"
-              ? `Continue to Viator (${selectedOption.displayTime} · ${selectedOption.optionCode} · ${partySize} Guests · $${((checkState.totalPriceCents || partySize * 6500) / 100).toFixed(0)}) ↗`
-              : `Continue to Viator (${selectedOption.displayTime} · ${selectedOption.optionCode} · ${partySize} Guests) ↗`}
+              ? `Continue to Viator (${selectedOption.displayTime} · ${partySize} Guests · $${((checkState.totalPriceCents || partySize * 6500) / 100).toFixed(0)}) ↗`
+              : `Continue to Viator (${selectedOption.displayTime} · ${partySize} Guests) ↗`}
           </a>
         </div>
 
@@ -856,8 +994,10 @@ export default function LargeAirboat15200P1CheckCard({
           data-testid="wno-15200p1-viator-carryover-truth"
           style={{
             fontSize: "0.76rem",
-            color: "#cbd5e1",
-            borderTop: "1px solid rgba(148, 163, 184, 0.2)",
+            color: isWnoWarm ? "#4a4138" : "#cbd5e1",
+            borderTop: isWnoWarm
+              ? "1px solid rgba(30, 25, 21, 0.12)"
+              : "1px solid rgba(148, 163, 184, 0.2)",
             paddingTop: 8,
           }}
         >
