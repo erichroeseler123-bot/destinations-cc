@@ -11,7 +11,7 @@
     },
     {
       "path": "/api/cron/catalog-refresh",
-      "schedule": "0 */4 * * *"
+      "schedule": "*/15 * * * *"
     }
   ]
 }

@@ -7292,6 +7292,119 @@ export async function upsertGlobalRefreshCheckpoint(
   });
 }
 
+export const GLOBAL_CATALOG_REFRESH_LOCK_RUN_ID = "lock:scheduled_catalog_refresh_global";
+
+let activeInProcessCronLease: { holderId: string; expiresAtMs: number } | null = null;
+
+export function resetCatalogRefreshExecutionLeaseForTests(): void {
+  activeInProcessCronLease = null;
+}
+
+export async function acquireCatalogRefreshExecutionLease(options?: {
+  holderId?: string;
+  leaseDurationMs?: number;
+}): Promise<{
+  acquired: boolean;
+  holderId: string;
+  leaseExpiresAt: string;
+  reason: "acquired" | "concurrent_catalog_refresh_in_progress";
+}> {
+  const nowMs = Date.now();
+  const leaseDurationMs = Math.min(Math.max(options?.leaseDurationMs ?? 135_000, 5_000), 600_000);
+  const holderId =
+    options?.holderId?.trim() ||
+    `cron-holder-${nowMs}-${Math.random().toString(36).slice(2, 10)}`;
+  const acquiredAtIso = new Date(nowMs).toISOString();
+  const leaseExpiresAtIso = new Date(nowMs + leaseDurationMs).toISOString();
+
+  if (activeInProcessCronLease && activeInProcessCronLease.expiresAtMs > nowMs) {
+    return {
+      acquired: false,
+      holderId,
+      leaseExpiresAt: new Date(activeInProcessCronLease.expiresAtMs).toISOString(),
+      reason: "concurrent_catalog_refresh_in_progress",
+    };
+  }
+
+  activeInProcessCronLease = {
+    holderId,
+    expiresAtMs: nowMs + leaseDurationMs,
+  };
+
+  if (shouldUsePostgres()) {
+    try {
+      const rows = await executeCatalogSql(
+        `
+          INSERT INTO dcc_catalog_sync_runs (
+            run_id, provider, destination_slug, status,
+            cursor_value, imported_count, updated_count, rejected_count, upstream_request_count,
+            rejection_reasons_json, metadata_json, started_at, completed_at
+          ) VALUES (
+            $1, 'dcc_cron_lock', 'multi-destination', 'running',
+            NULL, 0, 0, 0, 0,
+            '{}'::jsonb,
+            jsonb_build_object('holderId', $2::text, 'leaseExpiresAt', $3::text, 'acquiredAt', $4::text),
+            $4::timestamptz, NULL
+          )
+          ON CONFLICT (run_id) DO UPDATE SET
+            status = 'running',
+            metadata_json = EXCLUDED.metadata_json,
+            started_at = EXCLUDED.started_at,
+            completed_at = NULL
+          WHERE dcc_catalog_sync_runs.status <> 'running'
+             OR COALESCE((dcc_catalog_sync_runs.metadata_json->>'leaseExpiresAt')::timestamptz, to_timestamp(0)) <= $4::timestamptz
+          RETURNING run_id
+        `,
+        [GLOBAL_CATALOG_REFRESH_LOCK_RUN_ID, holderId, leaseExpiresAtIso, acquiredAtIso],
+      );
+      if (!Array.isArray(rows) || rows.length === 0) {
+        if (activeInProcessCronLease?.holderId === holderId) {
+          activeInProcessCronLease = null;
+        }
+        return {
+          acquired: false,
+          holderId,
+          leaseExpiresAt: leaseExpiresAtIso,
+          reason: "concurrent_catalog_refresh_in_progress",
+        };
+      }
+    } catch (err) {
+      if (activeInProcessCronLease?.holderId === holderId) {
+        activeInProcessCronLease = null;
+      }
+      throw err;
+    }
+  }
+
+  return {
+    acquired: true,
+    holderId,
+    leaseExpiresAt: leaseExpiresAtIso,
+    reason: "acquired",
+  };
+}
+
+export async function releaseCatalogRefreshExecutionLease(holderId: string): Promise<void> {
+  const trimmedHolder = String(holderId || "").trim();
+  if (!trimmedHolder) return;
+  if (activeInProcessCronLease?.holderId === trimmedHolder) {
+    activeInProcessCronLease = null;
+  }
+  if (shouldUsePostgres()) {
+    const releasedAtIso = new Date().toISOString();
+    await executeCatalogSql(
+      `
+        UPDATE dcc_catalog_sync_runs
+        SET status = 'completed',
+            completed_at = $2::timestamptz
+        WHERE run_id = $1
+          AND metadata_json->>'holderId' = $3
+      `,
+      [GLOBAL_CATALOG_REFRESH_LOCK_RUN_ID, releasedAtIso, trimmedHolder],
+    ).catch(() => []);
+  }
+}
+
 export async function getDestinationScheduleRefreshCheckpoint(
   destinationSlug: string,
 ): Promise<CatalogRefreshCheckpointRecord | null> {
@@ -7881,6 +7994,7 @@ export async function getDurableCatalogSummaryReport() {
             COALESCE(SUM(rejected_count), 0)::int AS total_rejected,
             COALESCE(SUM(upstream_request_count), 0)::int AS total_upstream_requests
           FROM dcc_catalog_sync_runs
+          WHERE run_id NOT LIKE 'lock:%'
         `,
         [],
       ),
@@ -7899,6 +8013,7 @@ export async function getDurableCatalogSummaryReport() {
         `
           SELECT ${SYNC_RUN_SELECT_COLUMNS}
           FROM dcc_catalog_sync_runs
+          WHERE run_id NOT LIKE 'lock:%'
           ORDER BY started_at DESC
           LIMIT 25
         `,

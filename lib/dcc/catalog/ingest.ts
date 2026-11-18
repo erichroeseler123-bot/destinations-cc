@@ -2227,11 +2227,16 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
 export type IncrementalRefreshOptions = ViatorModifiedSinceEntrySelector & {
   count?: number;
   maxPagesPerRun?: number;
+  maxUpstreamRequestsPerRun?: number;
   timeBudgetMs?: number;
   retryBaseDelayMs?: number;
   runId?: string;
   scheduleRefreshLimit?: number;
   includeScheduleAndPricingRefresh?: boolean;
+  scheduleCount?: number;
+  scheduleMaxPagesPerRun?: number;
+  scheduleMaxUpstreamRequestsPerRun?: number;
+  scheduleTimeBudgetMs?: number;
   allowControlledGlobalExecution?: boolean;
   beforePageCommitHook?: (ctx: {
     pageIndex: number;
@@ -2939,6 +2944,7 @@ export type GlobalScheduleEntrySelector =
 export type GlobalScheduleModifiedSinceOptions = GlobalScheduleEntrySelector & {
   count?: number;
   maxPagesPerRun?: number;
+  maxUpstreamRequestsPerRun?: number;
   timeBudgetMs?: number;
   retryBaseDelayMs?: number;
   allowControlledGlobalExecution?: boolean;
@@ -3004,8 +3010,12 @@ export async function runGlobalScheduleModifiedSinceRefresh(
   }
 
   const client = getViatorClient();
-  const maxPagesPerRun = Math.min(Math.max(Math.floor(options.maxPagesPerRun ?? 5), 1), 50);
-  const timeBudgetMs = Math.max(options.timeBudgetMs ?? 25_000, 1_000);
+  const maxPagesPerRun = Math.min(Math.max(Math.floor(options.maxPagesPerRun ?? 12), 1), 50);
+  const maxUpstreamRequestsPerRun =
+    options.maxUpstreamRequestsPerRun !== undefined
+      ? Math.min(Math.max(Math.floor(options.maxUpstreamRequestsPerRun), 1), 150)
+      : Math.max(maxPagesPerRun * 2, 16);
+  const timeBudgetMs = Math.max(options.timeBudgetMs ?? 65_000, 1_000);
   const retryBaseDelayMs = Math.max(options.retryBaseDelayMs ?? 250, 20);
 
   const priorCkpt = await getGlobalRefreshCheckpoint(GLOBAL_SCHEDULES_MODIFIED_SINCE_STREAM_KEY);
@@ -3043,6 +3053,11 @@ export async function runGlobalScheduleModifiedSinceRefresh(
 
   try {
     while (pagesProcessed < maxPagesPerRun) {
+      if (upstreamRequests >= maxUpstreamRequestsPerRun) {
+        continuationPending = true;
+        stoppedReason = "max_requests_budget_reached";
+        break;
+      }
       if (pagesProcessed > 0 && Date.now() - startedMs >= timeBudgetMs) {
         continuationPending = true;
         stoppedReason = "time_budget_reached";
@@ -3160,6 +3175,16 @@ export async function runGlobalScheduleModifiedSinceRefresh(
         }
       }
 
+      const requiredBulkRequestsOnPage = Math.ceil(codesRequiringProductBulk.length / 500);
+      if (
+        requiredBulkRequestsOnPage > 0 &&
+        upstreamRequests + requiredBulkRequestsOnPage > maxUpstreamRequestsPerRun
+      ) {
+        continuationPending = true;
+        stoppedReason = "max_requests_budget_reached_before_bulk";
+        break;
+      }
+
       const fetchedProductDetailByCode = new Map<string, any>();
       for (let i = 0; i < codesRequiringProductBulk.length; i += 500) {
         const bulkSlice = codesRequiringProductBulk.slice(i, i + 500);
@@ -3231,7 +3256,9 @@ export async function runGlobalScheduleModifiedSinceRefresh(
       const cursorStopsAdvancing = !rawNextCursor || rawNextCursor === pageInputCursor;
       const willHaveMorePages = !cursorStopsAdvancing && pageSchedules.length > 0;
       const reachedPageBudget = pagesProcessed + 1 >= maxPagesPerRun;
-      const pageContinuationPending = willHaveMorePages && reachedPageBudget;
+      const reachedRequestBudget = upstreamRequests >= maxUpstreamRequestsPerRun;
+      const pageContinuationPending =
+        willHaveMorePages && (reachedPageBudget || reachedRequestBudget);
 
       // Commit all catalog changes for this page AND the page's resulting cursor ATOMICALLY.
       await commitCatalogBatchAndCheckpointAtomically({
@@ -3298,6 +3325,11 @@ export async function runGlobalScheduleModifiedSinceRefresh(
         stoppedReason = "max_pages_budget_reached";
         break;
       }
+      if (upstreamRequests >= maxUpstreamRequestsPerRun) {
+        continuationPending = true;
+        stoppedReason = "max_requests_budget_reached";
+        break;
+      }
     }
 
     const syncRun: CatalogSyncRunRecord = {
@@ -3322,6 +3354,7 @@ export async function runGlobalScheduleModifiedSinceRefresh(
         nextScheduleStreamCursor: currentCursor,
         pagesProcessed,
         maxPagesPerRun,
+        maxUpstreamRequestsPerRun,
         timeBudgetMs,
         modifiedSchedulesScanned: totalSchedulesScanned,
         dccMatchesFound: totalMatchedCodes,
@@ -3393,6 +3426,7 @@ export async function runIncrementalScheduleAndPricingRefresh(
     maxChunksPerRun?: number;
     resume?: boolean;
     maxPagesPerRun?: number;
+    maxUpstreamRequestsPerRun?: number;
     timeBudgetMs?: number;
     retryBaseDelayMs?: number;
     allowControlledGlobalExecution?: boolean;
@@ -3433,6 +3467,7 @@ export async function runIncrementalScheduleAndPricingRefresh(
         : {}),
     count: options.count,
     maxPagesPerRun: options.maxPagesPerRun,
+    maxUpstreamRequestsPerRun: options.maxUpstreamRequestsPerRun,
     timeBudgetMs: options.timeBudgetMs,
     retryBaseDelayMs: options.retryBaseDelayMs,
     allowControlledGlobalExecution: options.allowControlledGlobalExecution,
@@ -3496,8 +3531,12 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
 
   const client = getViatorClient();
   const pageCount = options.count ?? 500;
-  const maxPagesPerRun = Math.min(Math.max(Math.floor(options.maxPagesPerRun ?? 5), 1), 50);
-  const timeBudgetMs = Math.max(options.timeBudgetMs ?? 25_000, 1_000);
+  const maxPagesPerRun = Math.min(Math.max(Math.floor(options.maxPagesPerRun ?? 6), 1), 50);
+  const maxUpstreamRequestsPerRun =
+    options.maxUpstreamRequestsPerRun !== undefined
+      ? Math.min(Math.max(Math.floor(options.maxUpstreamRequestsPerRun), 1), 150)
+      : Math.max(maxPagesPerRun * 2, 10);
+  const timeBudgetMs = Math.max(options.timeBudgetMs ?? 35_000, 1_000);
   const retryBaseDelayMs = Math.max(options.retryBaseDelayMs ?? 250, 20);
 
   const priorCkpt = await getGlobalRefreshCheckpoint(GLOBAL_PRODUCTS_MODIFIED_SINCE_STREAM_KEY);
@@ -3532,6 +3571,11 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
 
   try {
     while (pagesProcessed < maxPagesPerRun) {
+      if (upstreamRequests >= maxUpstreamRequestsPerRun) {
+        continuationPending = true;
+        stoppedReason = "max_requests_budget_reached";
+        break;
+      }
       if (pagesProcessed > 0 && Date.now() - startedMs >= timeBudgetMs) {
         continuationPending = true;
         stoppedReason = "time_budget_reached";
@@ -3627,6 +3671,16 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       const activeMatchedCodes = matchedCodes.filter(
         (code) => String(modByCode.get(code)?.status || "").toUpperCase() !== "INACTIVE",
       );
+      const requiredSchedBulkReqs = Math.ceil(activeMatchedCodes.length / 500);
+      if (
+        requiredSchedBulkReqs > 0 &&
+        upstreamRequests + requiredSchedBulkReqs > maxUpstreamRequestsPerRun
+      ) {
+        continuationPending = true;
+        stoppedReason = "max_requests_budget_reached_before_bulk";
+        break;
+      }
+
       const scheduleByCode = new Map<string, any>();
       for (let i = 0; i < activeMatchedCodes.length; i += 500) {
         const slice = activeMatchedCodes.slice(i, i + 500);
@@ -3688,8 +3742,10 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       }
 
       const cursorStopsAdvancing = !rawNextCursor || rawNextCursor === pageInputCursor;
+      const willHaveMorePages = !cursorStopsAdvancing && modProducts.length > 0;
       const pageContinuationPending =
-        !cursorStopsAdvancing && pagesProcessed + 1 >= maxPagesPerRun;
+        willHaveMorePages &&
+        (pagesProcessed + 1 >= maxPagesPerRun || upstreamRequests >= maxUpstreamRequestsPerRun);
 
       await commitCatalogBatchAndCheckpointAtomically({
         recordsToUpsert: pageRecordsToUpsert,
@@ -3754,13 +3810,20 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
         stoppedReason = "max_pages_budget_reached";
         break;
       }
+      if (upstreamRequests >= maxUpstreamRequestsPerRun) {
+        continuationPending = true;
+        stoppedReason = "max_requests_budget_reached";
+        break;
+      }
     }
 
     let scheduleRefreshRun: CatalogSyncRunRecord | null = null;
     if (options.includeScheduleAndPricingRefresh !== false) {
       scheduleRefreshRun = await runGlobalScheduleModifiedSinceRefresh({
-        maxPagesPerRun: options.maxPagesPerRun,
-        timeBudgetMs: options.timeBudgetMs,
+        count: options.scheduleCount ?? pageCount,
+        maxPagesPerRun: options.scheduleMaxPagesPerRun ?? 12,
+        maxUpstreamRequestsPerRun: options.scheduleMaxUpstreamRequestsPerRun ?? 16,
+        timeBudgetMs: options.scheduleTimeBudgetMs ?? 65_000,
         retryBaseDelayMs: options.retryBaseDelayMs,
         allowControlledGlobalExecution: options.allowControlledGlobalExecution,
       });
@@ -3788,6 +3851,7 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
         nextCursor: currentCursor,
         pagesProcessed,
         maxPagesPerRun,
+        maxUpstreamRequestsPerRun,
         timeBudgetMs,
         modifiedProductsScanned: totalProductsScanned,
         catalogMatchesUpdated: updatedCount,
@@ -3801,6 +3865,10 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
         stoppedReason,
         schedulePricingRefreshRunId: scheduleRefreshRun?.runId || null,
         schedulePricingRefreshedCount: scheduleRefreshRun?.updatedCount ?? 0,
+        schedulePricingStreamDrained: scheduleRefreshRun?.metadata?.streamDrained ?? null,
+        schedulePricingContinuationPending: scheduleRefreshRun?.metadata?.continuationPending ?? null,
+        schedulePricingPagesProcessed: scheduleRefreshRun?.metadata?.pagesProcessed ?? null,
+        schedulePricingUpstreamRequests: scheduleRefreshRun?.upstreamRequestCount ?? null,
       },
       startedAt,
       completedAt: new Date().toISOString(),
