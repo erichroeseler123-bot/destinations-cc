@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  validateViatorModifiedSinceSelector,
+  type ViatorModifiedSinceEntrySelector,
+} from "@/lib/dcc/catalog/checkpointContract";
+import {
   EARTHOS_DESTINATION_NODES,
   getDurableCatalogSummaryReport,
   getDurableTourByIdOrAlias,
@@ -241,17 +245,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = (await request.json().catch(() => ({}))) as {
+    const body = (await request.json().catch(() => ({}))) as ViatorModifiedSinceEntrySelector & {
       mode?:
         | "full_or_paginated"
         | "incremental_refresh"
+        | "global_products_modified_since"
         | "schedule_pricing_refresh"
         | "global_schedule_modified_since"
         | "destination_bulk_refresh"
         | "normalize_pickup_and_queue_review_desk";
-      cursor?: string;
       count?: number;
       scheduleRefreshLimit?: number;
+      includeScheduleAndPricingRefresh?: boolean;
       destinations?: string[];
       destinationSlug?: string;
       chunkSize?: number;
@@ -268,6 +273,12 @@ export async function POST(request: NextRequest) {
       resumeFromCheckpoint?: boolean;
       maxRowsToQueue?: number;
     };
+
+    const rawBody = body as Record<string, unknown>;
+    const selector = validateViatorModifiedSinceSelector({
+      cursor: rawBody.cursor,
+      modifiedSince: rawBody.modifiedSince,
+    });
 
     if (body.mode === "normalize_pickup_and_queue_review_desk") {
       const paged = await paginateAllDurableTourCatalogPages(
@@ -297,6 +308,15 @@ export async function POST(request: NextRequest) {
     }
 
     if (body.mode === "destination_bulk_refresh") {
+      if (selector.mode !== "none") {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "checkpoint_scope_violation: destination_bulk_refresh cannot accept global cursor or modifiedSince",
+          },
+          { status: 400, headers: CORS_HEADERS },
+        );
+      }
       const targetDest = (body.destinationSlug || body.destinations?.[0] || "").trim();
       if (!targetDest) {
         return NextResponse.json(
@@ -331,7 +351,12 @@ export async function POST(request: NextRequest) {
 
     if (body.mode === "global_schedule_modified_since") {
       const globalRun = await runGlobalScheduleModifiedSinceRefresh({
-        scheduleCursor: body.cursor,
+        ...(selector.mode === "modified_since"
+          ? { modifiedSince: selector.modifiedSince }
+          : selector.mode === "cursor"
+            ? { scheduleCursor: selector.cursor }
+            : {}),
+        count: body.count,
         maxPagesPerRun: body.maxPagesPerRun ?? 1,
         timeBudgetMs: body.timeBudgetMs,
         runId: body.runId,
@@ -353,10 +378,24 @@ export async function POST(request: NextRequest) {
 
     if (body.mode === "schedule_pricing_refresh") {
       const targetDest = (body.destinationSlug || body.destinations?.[0] || "").trim();
+      if (targetDest && selector.mode !== "none") {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "checkpoint_scope_violation: destination schedule refresh cannot accept global cursor or modifiedSince",
+          },
+          { status: 400, headers: CORS_HEADERS },
+        );
+      }
       const schedRun = await runIncrementalScheduleAndPricingRefresh({
+        ...(selector.mode === "modified_since"
+          ? { modifiedSince: selector.modifiedSince }
+          : selector.mode === "cursor"
+            ? { scheduleCursor: selector.cursor }
+            : {}),
         limit: body.scheduleRefreshLimit ?? body.count ?? 15,
+        count: body.count,
         destinationSlug: targetDest || undefined,
-        scheduleCursor: body.cursor,
         chunkSize: body.chunkSize,
         maxChunksPerRun: body.maxChunksPerRun,
         maxPagesPerRun: body.maxPagesPerRun,
@@ -378,13 +417,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (body.mode === "incremental_refresh") {
+    if (body.mode === "global_products_modified_since" || body.mode === "incremental_refresh") {
+      const isDedicatedProductMode = body.mode === "global_products_modified_since";
       const incRun = await runIncrementalViatorCatalogRefresh({
-        cursor: body.cursor,
+        ...(selector.mode === "modified_since"
+          ? { modifiedSince: selector.modifiedSince }
+          : selector.mode === "cursor"
+            ? { cursor: selector.cursor }
+            : {}),
         count: body.count,
-        maxPagesPerRun: body.maxPagesPerRun,
+        maxPagesPerRun: body.maxPagesPerRun ?? (isDedicatedProductMode ? 1 : undefined),
         timeBudgetMs: body.timeBudgetMs,
+        runId: body.runId,
         scheduleRefreshLimit: body.scheduleRefreshLimit,
+        includeScheduleAndPricingRefresh: isDedicatedProductMode
+          ? body.includeScheduleAndPricingRefresh === true
+          : body.includeScheduleAndPricingRefresh,
         allowControlledGlobalExecution: explicitNonProdGlobalOverride,
       });
       const paused = Boolean((incRun.metadata as any)?.paused);
@@ -393,8 +441,9 @@ export async function POST(request: NextRequest) {
         {
           ok: true,
           paused,
-          mode: "incremental_refresh",
+          mode: body.mode,
           incrementalRun: incRun,
+          ...(isDedicatedProductMode ? { globalProductsRun: incRun } : {}),
           ...(summary ? { summary } : {}),
         },
         { status: 200, headers: CORS_HEADERS },
@@ -422,12 +471,15 @@ export async function POST(request: NextRequest) {
       { status: 200, headers: CORS_HEADERS },
     );
   } catch (err) {
+    const errMsg = err instanceof Error ? err.message : "catalog_sync_failed";
+    const isClientValidationErr =
+      errMsg.startsWith("viator_modified_since_") || errMsg.startsWith("checkpoint_scope_violation:");
     return NextResponse.json(
       {
         ok: false,
-        error: err instanceof Error ? err.message : "catalog_sync_failed",
+        error: errMsg,
       },
-      { status: 500, headers: CORS_HEADERS },
+      { status: isClientValidationErr ? 400 : 500, headers: CORS_HEADERS },
     );
   }
 }

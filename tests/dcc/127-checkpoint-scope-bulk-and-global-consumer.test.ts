@@ -757,7 +757,8 @@ test("3. Global modified-since consumer stays disabled by default, processes >12
       productBulkCalls += 1;
       return codes.map((c) => makeViatorProductPayload(c, undefined, ["DEFAULT", "VIP_PICKUP"]));
     },
-    async getAvailabilitySchedulesModifiedSince(cursor?: string) {
+    async getAvailabilitySchedulesModifiedSince(input?: { cursor?: string; modifiedSince?: string }) {
+      const cursor = input?.cursor;
       scheduleStreamCalls += 1;
       if (injectTransientStream429Once) {
         injectTransientStream429Once = false;

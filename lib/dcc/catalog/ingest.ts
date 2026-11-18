@@ -54,7 +54,10 @@ import {
   GLOBAL_PRODUCTS_MODIFIED_SINCE_STREAM_KEY,
   GLOBAL_SCHEDULES_MODIFIED_SINCE_STREAM_KEY,
   buildDestinationScheduleRefreshStreamKey,
+  extractLiteralProviderNextCursor,
   normalizeCheckpointDestinationSlug,
+  validateViatorModifiedSinceSelector,
+  type ViatorModifiedSinceEntrySelector,
 } from "./checkpointContract";
 
 function sha256Hex(value: unknown): string {
@@ -2221,16 +2224,23 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
   };
 }
 
-export type IncrementalRefreshOptions = {
-  cursor?: string;
+export type IncrementalRefreshOptions = ViatorModifiedSinceEntrySelector & {
   count?: number;
   maxPagesPerRun?: number;
   timeBudgetMs?: number;
   retryBaseDelayMs?: number;
+  runId?: string;
   scheduleRefreshLimit?: number;
   includeScheduleAndPricingRefresh?: boolean;
   allowControlledGlobalExecution?: boolean;
-  beforePageCommitHook?: (ctx: { pageIndex: number; nextCursor: string | null }) => Promise<void> | void;
+  beforePageCommitHook?: (ctx: {
+    pageIndex: number;
+    requestMode?: "cursor" | "modified_since" | "initial";
+    inputCursor?: string | null;
+    inputModifiedSince?: string | null;
+    nextCursor: string | null;
+    matchedCodes?: string[];
+  }) => Promise<void> | void;
   midPageProcessingHook?: (ctx: { pageIndex: number; itemIndex: number; code: string }) => void;
   midPageTransactionHook?: (statementIndex: number) => void;
 };
@@ -2922,8 +2932,12 @@ function doesScheduleUpdateRequireProductDetail(
   return false;
 }
 
-export type GlobalScheduleModifiedSinceOptions = {
-  scheduleCursor?: string;
+export type GlobalScheduleEntrySelector =
+  | { scheduleCursor?: string; modifiedSince?: never }
+  | { modifiedSince?: string; scheduleCursor?: never };
+
+export type GlobalScheduleModifiedSinceOptions = GlobalScheduleEntrySelector & {
+  count?: number;
   maxPagesPerRun?: number;
   timeBudgetMs?: number;
   retryBaseDelayMs?: number;
@@ -2931,7 +2945,9 @@ export type GlobalScheduleModifiedSinceOptions = {
   runId?: string;
   beforePageCommitHook?: (ctx: {
     pageIndex: number;
+    requestMode?: "cursor" | "modified_since" | "initial";
     inputCursor: string | null;
+    inputModifiedSince?: string | null;
     nextCursor: string | null;
     matchedCodes: string[];
   }) => Promise<void> | void;
@@ -2942,6 +2958,18 @@ export type GlobalScheduleModifiedSinceOptions = {
 export async function runGlobalScheduleModifiedSinceRefresh(
   options: GlobalScheduleModifiedSinceOptions = {},
 ): Promise<CatalogSyncRunRecord> {
+  const selector = validateViatorModifiedSinceSelector({
+    cursor: (options as { scheduleCursor?: unknown }).scheduleCursor,
+    modifiedSince: (options as { modifiedSince?: unknown }).modifiedSince,
+  });
+  if (
+    options.count !== undefined &&
+    (!Number.isInteger(options.count) || options.count < 1 || options.count > 500)
+  ) {
+    throw new Error("viator_modified_since_invalid_count: count must be an integer between 1 and 500");
+  }
+  const pageCount = options.count;
+
   const startedMs = Date.now();
   const startedAt = new Date(startedMs).toISOString();
   const runId = options.runId || `sync:viator:schedule_pricing_refresh:${startedMs}`;
@@ -2980,12 +3008,15 @@ export async function runGlobalScheduleModifiedSinceRefresh(
   const timeBudgetMs = Math.max(options.timeBudgetMs ?? 25_000, 1_000);
   const retryBaseDelayMs = Math.max(options.retryBaseDelayMs ?? 250, 20);
 
-  let currentCursor: string | null = options.scheduleCursor?.trim() || null;
-  if (!currentCursor) {
-    const ckpt = await getGlobalRefreshCheckpoint(GLOBAL_SCHEDULES_MODIFIED_SINCE_STREAM_KEY);
-    currentCursor = ckpt?.cursorValue || null;
+  const priorCkpt = await getGlobalRefreshCheckpoint(GLOBAL_SCHEDULES_MODIFIED_SINCE_STREAM_KEY);
+  let currentCursor: string | null = null;
+  if (selector.mode === "cursor") {
+    currentCursor = selector.cursor;
+  } else if (selector.mode === "none") {
+    currentCursor = priorCkpt?.cursorValue || null;
   }
   const initialCursor = currentCursor;
+  const anchorModifiedSince = selector.mode === "modified_since" ? selector.modifiedSince : null;
 
   // Match complete 500-item stream pages against ALL active DCC Viator codes (no LIMIT 12 truncation).
   const {
@@ -3000,7 +3031,7 @@ export async function runGlobalScheduleModifiedSinceRefresh(
   let updatedCount = 0;
   let unchangedCount = 0;
   let retiredCount = 0;
-  let rejectedCount = 0;
+  const rejectedCount = 0;
   let upstreamRequests = 0;
   let scheduleStreamRequests = 0;
   let productBulkRequests = 0;
@@ -3019,10 +3050,28 @@ export async function runGlobalScheduleModifiedSinceRefresh(
       }
 
       const pageIndex = pagesProcessed;
-      const pageInputCursor = currentCursor;
+      const useModifiedSinceOnThisPage = pageIndex === 0 && selector.mode === "modified_since";
+      const pageInputCursor = useModifiedSinceOnThisPage ? null : currentCursor;
+      const pageInputModifiedSince = useModifiedSinceOnThisPage ? selector.modifiedSince : null;
+      const pageRequestMode: "cursor" | "modified_since" | "initial" = useModifiedSinceOnThisPage
+        ? "modified_since"
+        : pageInputCursor
+          ? "cursor"
+          : "initial";
 
       const { result: schedStreamRes, attempts: streamAttempts } = await withRetry(
-        () => client.getAvailabilitySchedulesModifiedSince(pageInputCursor || undefined) as Promise<any>,
+        () =>
+          client.getAvailabilitySchedulesModifiedSince(
+            useModifiedSinceOnThisPage
+              ? {
+                  modifiedSince: selector.modifiedSince,
+                  ...(pageCount !== undefined ? { count: pageCount } : {}),
+                }
+              : {
+                  ...(pageInputCursor ? { cursor: pageInputCursor } : {}),
+                  ...(pageCount !== undefined ? { count: pageCount } : {}),
+                },
+          ) as Promise<any>,
         { maxAttempts: 3, baseDelayMs: retryBaseDelayMs },
       );
       upstreamRequests += streamAttempts;
@@ -3030,22 +3079,25 @@ export async function runGlobalScheduleModifiedSinceRefresh(
       retryAttemptsTotal += Math.max(streamAttempts - 1, 0);
 
       const pageSchedules = extractBulkSchedulesArray(schedStreamRes);
-      const rawNextCursor =
-        typeof schedStreamRes?.nextCursor === "string" && schedStreamRes.nextCursor.trim().length > 0
-          ? schedStreamRes.nextCursor.trim()
-          : pageInputCursor;
+      const providerNextCursor = extractLiteralProviderNextCursor(schedStreamRes);
 
       totalSchedulesScanned += pageSchedules.length;
 
       if (pageSchedules.length === 0) {
+        if (useModifiedSinceOnThisPage && !providerNextCursor) {
+          throw new Error(
+            "viator_modified_since_no_provider_cursor_returned: empty first page returned no nextCursor; refusing to fabricate or overwrite cursor",
+          );
+        }
         streamDrained = true;
         continuationPending = false;
         stoppedReason = "stream_empty";
-        if (rawNextCursor && rawNextCursor !== currentCursor) {
+        const terminalCursor = providerNextCursor || currentCursor;
+        if (terminalCursor) {
           await upsertGlobalRefreshCheckpoint({
             streamKey: GLOBAL_SCHEDULES_MODIFIED_SINCE_STREAM_KEY,
             provider: "viator_schedule_pricing",
-            cursorValue: rawNextCursor,
+            cursorValue: terminalCursor,
             nextStartOffset: null,
             providerTotalCount: totalActiveProviderRecords,
             status: "completed",
@@ -3053,16 +3105,26 @@ export async function runGlobalScheduleModifiedSinceRefresh(
               checkpointContractVersion: "v2",
               consumerVersion: "v2_atomic_global",
               runId,
+              requestMode: pageRequestMode,
               inputCursor: pageInputCursor,
-              nextCursor: rawNextCursor,
+              inputModifiedSince: pageInputModifiedSince,
+              previousCheckpointCursor: priorCkpt?.cursorValue || null,
+              nextCursor: terminalCursor,
               streamDrained: true,
               continuationPending: false,
               storageSource,
             },
           });
-          currentCursor = rawNextCursor;
+          currentCursor = terminalCursor;
         }
         break;
+      }
+
+      const rawNextCursor = providerNextCursor || currentCursor;
+      if (!rawNextCursor) {
+        throw new Error(
+          "viator_modified_since_no_provider_cursor_returned: response omitted nextCursor and no prior provider cursor exists",
+        );
       }
 
       // Deduplicate schedules on page by uppercase productCode, keeping latest entry in page order.
@@ -3189,7 +3251,10 @@ export async function runGlobalScheduleModifiedSinceRefresh(
             runId,
             storageSource,
             pageIndex,
+            requestMode: pageRequestMode,
             inputScheduleStreamCursor: pageInputCursor,
+            inputModifiedSince: pageInputModifiedSince,
+            previousCheckpointCursor: priorCkpt?.cursorValue || null,
             nextScheduleStreamCursor: rawNextCursor,
             modifiedSchedulesScannedOnPage: pageSchedules.length,
             dccMatchesOnPage: matchedPageCodes.length,
@@ -3206,7 +3271,9 @@ export async function runGlobalScheduleModifiedSinceRefresh(
           ? () =>
               options.beforePageCommitHook!({
                 pageIndex,
+                requestMode: pageRequestMode,
                 inputCursor: pageInputCursor,
+                inputModifiedSince: pageInputModifiedSince,
                 nextCursor: rawNextCursor,
                 matchedCodes: matchedPageCodes,
               })
@@ -3248,7 +3315,10 @@ export async function runGlobalScheduleModifiedSinceRefresh(
         checkpointContractVersion: "v2",
         consumerVersion: "v2_atomic_global",
         storageSource,
+        entryMode: selector.mode,
         inputScheduleStreamCursor: initialCursor,
+        inputModifiedSince: anchorModifiedSince,
+        previousCheckpointCursor: priorCkpt?.cursorValue || null,
         nextScheduleStreamCursor: currentCursor,
         pagesProcessed,
         maxPagesPerRun,
@@ -3277,7 +3347,7 @@ export async function runGlobalScheduleModifiedSinceRefresh(
       provider: "viator_schedule_pricing",
       destinationSlug: "multi-destination",
       status: "failed",
-      cursorValue: currentCursor,
+      cursorValue: currentCursor ?? priorCkpt?.cursorValue ?? null,
       importedCount: 0,
       updatedCount,
       rejectedCount,
@@ -3287,8 +3357,11 @@ export async function runGlobalScheduleModifiedSinceRefresh(
         checkpointContractVersion: "v2",
         consumerVersion: "v2_atomic_global",
         storageSource,
+        entryMode: selector.mode,
         inputScheduleStreamCursor: initialCursor,
-        lastCommittedCursor: currentCursor,
+        inputModifiedSince: anchorModifiedSince,
+        previousCheckpointCursor: priorCkpt?.cursorValue || null,
+        lastCommittedCursor: currentCursor ?? priorCkpt?.cursorValue ?? null,
         pagesProcessedBeforeFailure: pagesProcessed,
         scheduleStreamRequests,
         productBulkRequests,
@@ -3311,22 +3384,34 @@ export async function runGlobalScheduleModifiedSinceRefresh(
  * - Global calls strictly delegate to runGlobalScheduleModifiedSinceRefresh
  *   (viator_availability_schedules_modified_since, destination_slug = NULL, disabled by default).
  */
-export async function runIncrementalScheduleAndPricingRefresh(options: {
-  limit?: number;
-  destinationSlug?: string;
-  scheduleCursor?: string;
-  chunkSize?: number;
-  maxChunksPerRun?: number;
-  resume?: boolean;
-  maxPagesPerRun?: number;
-  timeBudgetMs?: number;
-  retryBaseDelayMs?: number;
-  allowControlledGlobalExecution?: boolean;
-  beforePageCommitHook?: GlobalScheduleModifiedSinceOptions["beforePageCommitHook"];
-  midPageProcessingHook?: GlobalScheduleModifiedSinceOptions["midPageProcessingHook"];
-  midPageTransactionHook?: GlobalScheduleModifiedSinceOptions["midPageTransactionHook"];
-} = {}) {
+export async function runIncrementalScheduleAndPricingRefresh(
+  options: GlobalScheduleEntrySelector & {
+    limit?: number;
+    count?: number;
+    destinationSlug?: string;
+    chunkSize?: number;
+    maxChunksPerRun?: number;
+    resume?: boolean;
+    maxPagesPerRun?: number;
+    timeBudgetMs?: number;
+    retryBaseDelayMs?: number;
+    allowControlledGlobalExecution?: boolean;
+    beforePageCommitHook?: GlobalScheduleModifiedSinceOptions["beforePageCommitHook"];
+    midPageProcessingHook?: GlobalScheduleModifiedSinceOptions["midPageProcessingHook"];
+    midPageTransactionHook?: GlobalScheduleModifiedSinceOptions["midPageTransactionHook"];
+  } = {},
+) {
+  const rawScheduleCursor = (options as { scheduleCursor?: unknown }).scheduleCursor;
+  const rawModifiedSince = (options as { modifiedSince?: unknown }).modifiedSince;
   if (options.destinationSlug && options.destinationSlug.trim().length > 0) {
+    if (
+      (rawScheduleCursor !== undefined && rawScheduleCursor !== null) ||
+      (rawModifiedSince !== undefined && rawModifiedSince !== null)
+    ) {
+      throw new Error(
+        "checkpoint_scope_violation: destination schedule refresh cannot accept global scheduleCursor or modifiedSince",
+      );
+    }
     return runDestinationBoundedBulkScheduleRefresh({
       destinationSlug: options.destinationSlug,
       chunkSize: options.chunkSize ?? 500,
@@ -3335,8 +3420,18 @@ export async function runIncrementalScheduleAndPricingRefresh(options: {
     });
   }
 
+  const validated = validateViatorModifiedSinceSelector({
+    cursor: rawScheduleCursor,
+    modifiedSince: rawModifiedSince,
+  });
+
   return runGlobalScheduleModifiedSinceRefresh({
-    scheduleCursor: options.scheduleCursor,
+    ...(validated.mode === "modified_since"
+      ? { modifiedSince: validated.modifiedSince }
+      : validated.mode === "cursor"
+        ? { scheduleCursor: validated.cursor }
+        : {}),
+    count: options.count,
     maxPagesPerRun: options.maxPagesPerRun,
     timeBudgetMs: options.timeBudgetMs,
     retryBaseDelayMs: options.retryBaseDelayMs,
@@ -3348,15 +3443,27 @@ export async function runIncrementalScheduleAndPricingRefresh(options: {
 }
 
 /**
- * Incremental refresh job using Viator /products/modified-since cursor pagination.
+ * Incremental refresh job using Viator /products/modified-since cursor pagination
+ * (with provider-supported ISO-8601 UTC `modified-since` entry re-anchor on Page 0 only).
  * Strictly global (destination_slug = NULL), disabled by default while global cron is paused,
  * matches against all active DCC Viator codes, bulk-fetches schedules in <=500 chunks, and
- * commits catalog changes + cursor atomically per page.
+ * commits catalog changes + literal provider `nextCursor` atomically per page.
  */
 export async function runIncrementalViatorCatalogRefresh(options: IncrementalRefreshOptions = {}) {
+  const selector = validateViatorModifiedSinceSelector({
+    cursor: (options as { cursor?: unknown }).cursor,
+    modifiedSince: (options as { modifiedSince?: unknown }).modifiedSince,
+  });
+  if (
+    options.count !== undefined &&
+    (!Number.isInteger(options.count) || options.count < 1 || options.count > 500)
+  ) {
+    throw new Error("viator_modified_since_invalid_count: count must be an integer between 1 and 500");
+  }
+
   const startedMs = Date.now();
   const startedAt = new Date(startedMs).toISOString();
-  const runId = `sync:viator:incremental:${startedMs}`;
+  const runId = options.runId || `sync:viator:incremental:${startedMs}`;
 
   const gate = isGlobalModifiedSinceExecutionAllowed({
     allowControlledGlobalExecution: options.allowControlledGlobalExecution,
@@ -3388,17 +3495,20 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
   }
 
   const client = getViatorClient();
-  const pageCount = Math.min(Math.max(options.count ?? 500, 1), 500);
+  const pageCount = options.count ?? 500;
   const maxPagesPerRun = Math.min(Math.max(Math.floor(options.maxPagesPerRun ?? 5), 1), 50);
   const timeBudgetMs = Math.max(options.timeBudgetMs ?? 25_000, 1_000);
   const retryBaseDelayMs = Math.max(options.retryBaseDelayMs ?? 250, 20);
 
-  let currentCursor: string | null = options.cursor?.trim() || null;
-  if (!currentCursor) {
-    const ckpt = await getGlobalRefreshCheckpoint(GLOBAL_PRODUCTS_MODIFIED_SINCE_STREAM_KEY);
-    currentCursor = ckpt?.cursorValue || null;
+  const priorCkpt = await getGlobalRefreshCheckpoint(GLOBAL_PRODUCTS_MODIFIED_SINCE_STREAM_KEY);
+  let currentCursor: string | null = null;
+  if (selector.mode === "cursor") {
+    currentCursor = selector.cursor;
+  } else if (selector.mode === "none") {
+    currentCursor = priorCkpt?.cursorValue || null;
   }
   const initialCursor = currentCursor;
+  const anchorModifiedSince = selector.mode === "modified_since" ? selector.modifiedSince : null;
 
   const {
     codeSet: activeViatorCodes,
@@ -3418,35 +3528,87 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
   let retryAttemptsTotal = 0;
   let streamDrained = false;
   let continuationPending = false;
+  let stoppedReason = "completed";
 
   try {
     while (pagesProcessed < maxPagesPerRun) {
       if (pagesProcessed > 0 && Date.now() - startedMs >= timeBudgetMs) {
         continuationPending = true;
+        stoppedReason = "time_budget_reached";
         break;
       }
       const pageIndex = pagesProcessed;
-      const pageInputCursor = currentCursor;
+      const useModifiedSinceOnThisPage = pageIndex === 0 && selector.mode === "modified_since";
+      const pageInputCursor = useModifiedSinceOnThisPage ? null : currentCursor;
+      const pageInputModifiedSince = useModifiedSinceOnThisPage ? selector.modifiedSince : null;
+      const pageRequestMode: "cursor" | "modified_since" | "initial" = useModifiedSinceOnThisPage
+        ? "modified_since"
+        : pageInputCursor
+          ? "cursor"
+          : "initial";
 
       const { result: modRes, attempts } = await withRetry(
-        () => client.getProductsModifiedSince(pageInputCursor || undefined, pageCount) as Promise<any>,
+        () =>
+          client.getProductsModifiedSince(
+            useModifiedSinceOnThisPage
+              ? { modifiedSince: selector.modifiedSince, count: pageCount }
+              : {
+                  ...(pageInputCursor ? { cursor: pageInputCursor } : {}),
+                  count: pageCount,
+                },
+          ) as Promise<any>,
         { maxAttempts: 3, baseDelayMs: retryBaseDelayMs },
       );
       upstreamRequests += attempts;
       productStreamRequests += 1;
       retryAttemptsTotal += Math.max(attempts - 1, 0);
 
-      const rawNextCursor =
-        typeof modRes?.nextCursor === "string" && modRes.nextCursor.trim().length > 0
-          ? modRes.nextCursor.trim()
-          : pageInputCursor;
+      const providerNextCursor = extractLiteralProviderNextCursor(modRes);
       const modProducts: any[] = Array.isArray(modRes?.products) ? modRes.products : [];
       totalProductsScanned += modProducts.length;
 
       if (modProducts.length === 0) {
+        if (useModifiedSinceOnThisPage && !providerNextCursor) {
+          throw new Error(
+            "viator_modified_since_no_provider_cursor_returned: empty first page returned no nextCursor; refusing to fabricate or overwrite cursor",
+          );
+        }
         streamDrained = true;
         continuationPending = false;
+        stoppedReason = "stream_empty";
+        const terminalCursor = providerNextCursor || currentCursor;
+        if (terminalCursor) {
+          await upsertGlobalRefreshCheckpoint({
+            streamKey: GLOBAL_PRODUCTS_MODIFIED_SINCE_STREAM_KEY,
+            provider: "viator_incremental",
+            cursorValue: terminalCursor,
+            nextStartOffset: null,
+            providerTotalCount: totalActiveProviderRecords,
+            status: "completed",
+            metadata: {
+              checkpointContractVersion: "v2",
+              consumerVersion: "v2_atomic_global",
+              runId,
+              requestMode: pageRequestMode,
+              inputCursor: pageInputCursor,
+              inputModifiedSince: pageInputModifiedSince,
+              previousCheckpointCursor: priorCkpt?.cursorValue || null,
+              nextCursor: terminalCursor,
+              streamDrained: true,
+              continuationPending: false,
+              storageSource,
+            },
+          });
+          currentCursor = terminalCursor;
+        }
         break;
+      }
+
+      const rawNextCursor = providerNextCursor || currentCursor;
+      if (!rawNextCursor) {
+        throw new Error(
+          "viator_modified_since_no_provider_cursor_returned: response omitted nextCursor and no prior provider cursor exists",
+        );
       }
 
       const modByCode = new Map<string, any>();
@@ -3546,7 +3708,10 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
             runId,
             storageSource,
             pageIndex,
+            requestMode: pageRequestMode,
             inputCursor: pageInputCursor,
+            inputModifiedSince: pageInputModifiedSince,
+            previousCheckpointCursor: priorCkpt?.cursorValue || null,
             nextCursor: rawNextCursor,
             modifiedProductsScannedOnPage: modProducts.length,
             dccMatchesOnPage: matchedCodes.length,
@@ -3559,7 +3724,15 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
           updatedAt: nowIso,
         },
         beforeCommitHook: options.beforePageCommitHook
-          ? () => options.beforePageCommitHook!({ pageIndex, nextCursor: rawNextCursor })
+          ? () =>
+              options.beforePageCommitHook!({
+                pageIndex,
+                requestMode: pageRequestMode,
+                inputCursor: pageInputCursor,
+                inputModifiedSince: pageInputModifiedSince,
+                nextCursor: rawNextCursor,
+                matchedCodes,
+              })
           : undefined,
         midTransactionStatementHook: options.midPageTransactionHook,
       });
@@ -3573,10 +3746,12 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       if (cursorStopsAdvancing) {
         streamDrained = true;
         continuationPending = false;
+        stoppedReason = "cursor_stationary_stream_drained";
         break;
       }
       if (pagesProcessed >= maxPagesPerRun) {
         continuationPending = true;
+        stoppedReason = "max_pages_budget_reached";
         break;
       }
     }
@@ -3606,9 +3781,14 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
         checkpointContractVersion: "v2",
         consumerVersion: "v2_atomic_global",
         storageSource,
+        entryMode: selector.mode,
         inputCursor: initialCursor,
+        inputModifiedSince: anchorModifiedSince,
+        previousCheckpointCursor: priorCkpt?.cursorValue || null,
         nextCursor: currentCursor,
         pagesProcessed,
+        maxPagesPerRun,
+        timeBudgetMs,
         modifiedProductsScanned: totalProductsScanned,
         catalogMatchesUpdated: updatedCount,
         unchangedCount,
@@ -3618,6 +3798,7 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
         retryAttemptsTotal,
         streamDrained,
         continuationPending,
+        stoppedReason,
         schedulePricingRefreshRunId: scheduleRefreshRun?.runId || null,
         schedulePricingRefreshedCount: scheduleRefreshRun?.updatedCount ?? 0,
       },
@@ -3632,7 +3813,7 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       provider: "viator_incremental",
       destinationSlug: "multi-destination",
       status: "failed",
-      cursorValue: currentCursor,
+      cursorValue: currentCursor ?? priorCkpt?.cursorValue ?? null,
       importedCount: 0,
       updatedCount,
       rejectedCount,
@@ -3641,8 +3822,11 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       metadata: {
         checkpointContractVersion: "v2",
         consumerVersion: "v2_atomic_global",
+        entryMode: selector.mode,
         inputCursor: initialCursor,
-        lastCommittedCursor: currentCursor,
+        inputModifiedSince: anchorModifiedSince,
+        previousCheckpointCursor: priorCkpt?.cursorValue || null,
+        lastCommittedCursor: currentCursor ?? priorCkpt?.cursorValue ?? null,
         pagesProcessedBeforeFailure: pagesProcessed,
         error: err instanceof Error ? err.message : String(err),
         retryAttemptsTotal,

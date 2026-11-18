@@ -1,5 +1,9 @@
 import fs from "fs";
 import path from "path";
+import {
+  validateViatorModifiedSinceSelector,
+  type ViatorModifiedSinceEntrySelector,
+} from "@/lib/dcc/catalog/checkpointContract";
 import { getViatorCapabilities } from "./access";
 import { getViatorServerConfig, normalizeViatorCurrency } from "./config";
 import {
@@ -22,14 +26,67 @@ type ViatorRequestOptions = {
   revalidateSeconds?: number;
 };
 
+export type ViatorProductsModifiedSinceInput = ViatorModifiedSinceEntrySelector & {
+  count?: number;
+};
+
+export type ViatorSchedulesModifiedSinceInput = ViatorModifiedSinceEntrySelector & {
+  count?: number;
+};
+
+function assertValidModifiedSinceCount(count: number): number {
+  if (!Number.isInteger(count) || count < 1 || count > 500) {
+    throw new Error("viator_modified_since_invalid_count: count must be an integer between 1 and 500");
+  }
+  return count;
+}
+
+export function buildProductsModifiedSinceEndpointPath(
+  input?: ViatorProductsModifiedSinceInput,
+): string {
+  const selector = validateViatorModifiedSinceSelector(input);
+  const resolvedCount = assertValidModifiedSinceCount(input?.count ?? 500);
+  const qs = new URLSearchParams();
+  qs.set("count", String(resolvedCount));
+  if (selector.mode === "cursor") {
+    qs.set("cursor", selector.cursor);
+  } else if (selector.mode === "modified_since") {
+    qs.set("modified-since", selector.modifiedSince);
+  }
+  if (qs.has("cursor") && qs.has("modified-since")) {
+    throw new Error("viator_modified_since_and_cursor_mutually_exclusive");
+  }
+  return `/products/modified-since?${qs.toString()}`;
+}
+
+export function buildAvailabilitySchedulesModifiedSinceEndpointPath(
+  input?: ViatorSchedulesModifiedSinceInput,
+): string {
+  const selector = validateViatorModifiedSinceSelector(input);
+  const qs = new URLSearchParams();
+  if (input?.count !== undefined) {
+    qs.set("count", String(assertValidModifiedSinceCount(input.count)));
+  }
+  if (selector.mode === "cursor") {
+    qs.set("cursor", selector.cursor);
+  } else if (selector.mode === "modified_since") {
+    qs.set("modified-since", selector.modifiedSince);
+  }
+  if (qs.has("cursor") && qs.has("modified-since")) {
+    throw new Error("viator_modified_since_and_cursor_mutually_exclusive");
+  }
+  const query = qs.toString();
+  return `/availability/schedules/modified-since${query ? `?${query}` : ""}`;
+}
+
 export type ViatorClient = {
   listDestinations(): Promise<ViatorDestinationCatalog>;
   listTags(): Promise<ViatorTagCatalog>;
   searchProducts(input: Record<string, unknown>): Promise<unknown>;
   getProductDetail(productCode: string, options?: { campaignValue?: string }): Promise<unknown>;
   getProductsBulk(productCodes: string[], options?: { campaignValue?: string }): Promise<unknown>;
-  getProductsModifiedSince(cursor?: string, count?: number): Promise<unknown>;
-  getAvailabilitySchedulesModifiedSince(cursor?: string): Promise<unknown>;
+  getProductsModifiedSince(input?: ViatorProductsModifiedSinceInput): Promise<unknown>;
+  getAvailabilitySchedulesModifiedSince(input?: ViatorSchedulesModifiedSinceInput): Promise<unknown>;
   getProductSchedules(productCode: string): Promise<unknown>;
   getAvailabilitySchedulesBulk(productCodes: string[]): Promise<unknown>;
   checkAvailability(input: Record<string, unknown>): Promise<unknown>;
@@ -239,20 +296,12 @@ export function getViatorClient(): ViatorClient {
       });
     },
 
-    async getProductsModifiedSince(cursor?: string, count?: number) {
-      const qs = new URLSearchParams();
-      if (cursor) qs.set("cursor", cursor);
-      if (typeof count === "number" && Number.isFinite(count) && count > 0) {
-        qs.set("count", String(count));
-      }
-      const query = qs.toString();
-      return request(`/products/modified-since${query ? `?${query}` : ""}`);
+    async getProductsModifiedSince(input?: ViatorProductsModifiedSinceInput) {
+      return request(buildProductsModifiedSinceEndpointPath(input));
     },
 
-    async getAvailabilitySchedulesModifiedSince(cursor?: string) {
-      return request(
-        `/availability/schedules/modified-since${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`
-      );
+    async getAvailabilitySchedulesModifiedSince(input?: ViatorSchedulesModifiedSinceInput) {
+      return request(buildAvailabilitySchedulesModifiedSinceEndpointPath(input));
     },
 
     async getProductSchedules(productCode: string) {
