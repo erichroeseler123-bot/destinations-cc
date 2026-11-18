@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyEarthOSAuthorization } from "@/lib/dcc/earthos/auth";
 import { getDurableCatalogSummaryReport } from "@/lib/dcc/catalog/durableCatalogStore";
 import {
+  runDestinationBoundedBulkScheduleRefresh,
   runIncrementalScheduleAndPricingRefresh,
   runIncrementalViatorCatalogRefresh,
   runResumableDestinationBackfillBatch,
@@ -121,10 +122,62 @@ async function handleCatalogRefreshCron(request: NextRequest) {
       );
     }
 
+    if (mode === "destination_bulk_refresh") {
+      if (!explicitDest || !explicitDest.trim()) {
+        return NextResponse.json(
+          { ok: false, error: "destination_query_param_required_for_destination_bulk_refresh" },
+          { status: 400 },
+        );
+      }
+      const chunkSize = sp.get("chunkSize") ? Number(sp.get("chunkSize")) : 500;
+      const maxChunks = sp.get("maxChunks") ? Number(sp.get("maxChunks")) : undefined;
+      const bulkRun = await runDestinationBoundedBulkScheduleRefresh({
+        destinationSlug: explicitDest,
+        chunkSize: Number.isFinite(chunkSize) ? chunkSize : 500,
+        maxChunksPerRun: maxChunks != null && Number.isFinite(maxChunks) ? maxChunks : undefined,
+      });
+      const summary = await getDurableCatalogSummaryReport();
+      return NextResponse.json(
+        {
+          ok: true,
+          scheduledRefreshCadence: {
+            endpoint: SCHEDULED_CATALOG_REFRESH_PATH,
+            cron: SCHEDULED_CATALOG_REFRESH_CRON,
+            mode: "destination_bulk_refresh",
+          },
+          destinationBulkRun: bulkRun,
+          summary,
+        },
+        { status: 200, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+
     if (mode === "schedules_only") {
+      if (explicitDest && explicitDest.trim()) {
+        const chunkSize = sp.get("chunkSize") ? Number(sp.get("chunkSize")) : 500;
+        const maxChunks = sp.get("maxChunks") ? Number(sp.get("maxChunks")) : undefined;
+        const schedRun = await runDestinationBoundedBulkScheduleRefresh({
+          destinationSlug: explicitDest,
+          chunkSize: Number.isFinite(chunkSize) ? chunkSize : 500,
+          maxChunksPerRun: maxChunks != null && Number.isFinite(maxChunks) ? maxChunks : undefined,
+        });
+        const summary = await getDurableCatalogSummaryReport();
+        return NextResponse.json(
+          {
+            ok: true,
+            scheduledRefreshCadence: {
+              endpoint: SCHEDULED_CATALOG_REFRESH_PATH,
+              cron: SCHEDULED_CATALOG_REFRESH_CRON,
+              mode: "schedules_only",
+            },
+            schedulePricingRun: schedRun,
+            summary,
+          },
+          { status: 200, headers: { "Cache-Control": "no-store" } },
+        );
+      }
       const schedRun = await runIncrementalScheduleAndPricingRefresh({
         limit: Number.isFinite(scheduleLimit) ? scheduleLimit : 12,
-        destinationSlug: explicitDest || undefined,
       });
       const summary = await getDurableCatalogSummaryReport();
       return NextResponse.json(

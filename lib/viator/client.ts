@@ -22,14 +22,16 @@ type ViatorRequestOptions = {
   revalidateSeconds?: number;
 };
 
-type ViatorClient = {
+export type ViatorClient = {
   listDestinations(): Promise<ViatorDestinationCatalog>;
   listTags(): Promise<ViatorTagCatalog>;
   searchProducts(input: Record<string, unknown>): Promise<unknown>;
   getProductDetail(productCode: string, options?: { campaignValue?: string }): Promise<unknown>;
+  getProductsBulk(productCodes: string[], options?: { campaignValue?: string }): Promise<unknown>;
   getProductsModifiedSince(cursor?: string, count?: number): Promise<unknown>;
   getAvailabilitySchedulesModifiedSince(cursor?: string): Promise<unknown>;
   getProductSchedules(productCode: string): Promise<unknown>;
+  getAvailabilitySchedulesBulk(productCodes: string[]): Promise<unknown>;
   checkAvailability(input: Record<string, unknown>): Promise<unknown>;
   getProductBookingQuestions(productCode: string): Promise<unknown[]>;
   getExchangeRates(currency?: string): Promise<unknown>;
@@ -183,8 +185,14 @@ function readTagsCache(): ViatorTagCatalog {
   return normalizeTagCatalogResponse(cached);
 }
 
+let viatorClientTestOverride: Partial<ViatorClient> | null = null;
+
+export function setViatorClientForTests(override: Partial<ViatorClient> | null): void {
+  viatorClientTestOverride = override;
+}
+
 export function getViatorClient(): ViatorClient {
-  return {
+  const baseClient: ViatorClient = {
     async listDestinations() {
       if (!getViatorServerConfig().apiKey) return normalizeDestinationCatalogResponse(readDestinationsCache());
       return normalizeDestinationCatalogResponse(await request(getDestinationsEndpoint()));
@@ -214,6 +222,23 @@ export function getViatorClient(): ViatorClient {
       return request(`/products/${encodeURIComponent(productCode)}${campaignParam}`);
     },
 
+    async getProductsBulk(productCodes: string[], options?: { campaignValue?: string }) {
+      const uniqueCodes = Array.from(
+        new Set(productCodes.map((value) => String(value || "").trim()).filter(Boolean))
+      );
+      if (uniqueCodes.length === 0) return [];
+      if (uniqueCodes.length > 500) {
+        throw new Error("viator_products_bulk_limit_exceeded");
+      }
+      const campaignParam = options?.campaignValue?.trim()
+        ? `?campaign-value=${encodeURIComponent(options.campaignValue.trim().slice(0, 200))}`
+        : "";
+      return request(`/products/bulk${campaignParam}`, {
+        method: "POST",
+        body: { productCodes: uniqueCodes },
+      });
+    },
+
     async getProductsModifiedSince(cursor?: string, count?: number) {
       const qs = new URLSearchParams();
       if (cursor) qs.set("cursor", cursor);
@@ -232,6 +257,20 @@ export function getViatorClient(): ViatorClient {
 
     async getProductSchedules(productCode: string) {
       return request(`/availability/schedules/${encodeURIComponent(productCode)}`);
+    },
+
+    async getAvailabilitySchedulesBulk(productCodes: string[]) {
+      const uniqueCodes = Array.from(
+        new Set(productCodes.map((value) => String(value || "").trim()).filter(Boolean))
+      );
+      if (uniqueCodes.length === 0) return { availabilitySchedules: [] };
+      if (uniqueCodes.length > 500) {
+        throw new Error("viator_schedules_bulk_limit_exceeded");
+      }
+      return request("/availability/schedules/bulk", {
+        method: "POST",
+        body: { productCodes: uniqueCodes },
+      });
     },
 
     async checkAvailability(input: Record<string, unknown>) {
@@ -461,4 +500,12 @@ export function getViatorClient(): ViatorClient {
       return snapshot;
     },
   };
+
+  if (viatorClientTestOverride) {
+    return {
+      ...baseClient,
+      ...viatorClientTestOverride,
+    };
+  }
+  return baseClient;
 }

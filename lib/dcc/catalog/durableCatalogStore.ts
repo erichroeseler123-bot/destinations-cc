@@ -5966,11 +5966,510 @@ export async function getImportedProviderProductCodesForDestination(
     return codes;
   }
   for (const rec of loadOfflineSnapshotRecordsForLocalTestsOnly()) {
-    if (rec.destinationSlug.toLowerCase() === slug && rec.primaryProvider === provider) {
+    if (
+      rec.active &&
+      !isQuarantinedTourRecord(rec) &&
+      rec.destinationSlug.toLowerCase() === slug &&
+      rec.primaryProvider === provider
+    ) {
       codes.add(rec.providerProductCode.toUpperCase());
     }
   }
   return codes;
+}
+
+export async function getDestinationProviderCodesOrdered(
+  destinationSlug: string,
+  provider = "viator",
+): Promise<{
+  sortedCodes: string[];
+  storageSource: "postgres" | "local_snapshot";
+}> {
+  const slug = normalizeCheckpointDestinationSlug(destinationSlug);
+  const codes = new Set<string>();
+
+  if (shouldUsePostgres()) {
+    const rows = await executeCatalogSql(
+      `
+        SELECT UPPER(provider_product_code) AS code
+        FROM dcc_tour_catalog
+        WHERE active = true
+          AND quarantined = false
+          AND NOT (tour_id = ANY($1::text[]))
+          AND LOWER(destination_slug) = $2
+          AND primary_provider = $3
+        ORDER BY UPPER(provider_product_code) ASC, tour_id ASC
+      `,
+      [Array.from(QUARANTINED_TOUR_IDS), slug, provider],
+    );
+    for (const r of rows) {
+      const code = String(r.code || r.provider_product_code || "").trim().toUpperCase();
+      if (code) codes.add(code);
+    }
+    for (const pilot of PILOT_VERIFIED_TOUR_RECORDS) {
+      if (
+        pilot.active &&
+        !isQuarantinedTourRecord(pilot) &&
+        pilot.destinationSlug.toLowerCase() === slug &&
+        pilot.primaryProvider === provider
+      ) {
+        codes.add(pilot.providerProductCode.trim().toUpperCase());
+      }
+    }
+    return {
+      sortedCodes: Array.from(codes).sort(),
+      storageSource: "postgres",
+    };
+  }
+
+  for (const pilot of PILOT_VERIFIED_TOUR_RECORDS) {
+    if (
+      pilot.active &&
+      !isQuarantinedTourRecord(pilot) &&
+      pilot.destinationSlug.toLowerCase() === slug &&
+      pilot.primaryProvider === provider
+    ) {
+      codes.add(pilot.providerProductCode.trim().toUpperCase());
+    }
+  }
+  for (const rec of loadOfflineSnapshotRecordsForLocalTestsOnly()) {
+    if (
+      rec.active &&
+      !isQuarantinedTourRecord(rec) &&
+      rec.destinationSlug.toLowerCase() === slug &&
+      rec.primaryProvider === provider
+    ) {
+      codes.add(rec.providerProductCode.trim().toUpperCase());
+    }
+  }
+  return {
+    sortedCodes: Array.from(codes).sort(),
+    storageSource: "local_snapshot",
+  };
+}
+
+export async function getDurableToursByDestinationAndProviderCodes(
+  destinationSlug: string,
+  provider: string,
+  productCodes: string[],
+  projection: DurableCatalogProjectionOptions = {
+    includeProductOptions: true,
+    includeConstraints: true,
+    includeFullProvenance: true,
+  },
+): Promise<{
+  byUpperCode: Map<string, DurableTourRecord>;
+  storageSource: "postgres" | "local_snapshot";
+}> {
+  const slug = normalizeCheckpointDestinationSlug(destinationSlug);
+  const upperCodes = Array.from(
+    new Set(productCodes.map((c) => c.trim().toUpperCase()).filter(Boolean)),
+  );
+  const byUpperCode = new Map<string, DurableTourRecord>();
+
+  if (shouldUsePostgres()) {
+    if (upperCodes.length > 0) {
+      const quarantinedArray = Array.from(QUARANTINED_TOUR_IDS);
+      const selectCols = buildCatalogSelectColumnsSql(projection);
+      const rows = await executeCatalogSql(
+        `
+          SELECT ${selectCols}
+          FROM dcc_tour_catalog
+          WHERE active = true
+            AND quarantined = false
+            AND NOT (tour_id = ANY($1::text[]))
+            AND LOWER(destination_slug) = $2
+            AND primary_provider = $3
+            AND UPPER(provider_product_code) = ANY($4::text[])
+        `,
+        [quarantinedArray, slug, provider, upperCodes],
+      );
+      const pilotMap = getNormalizedPilotMap();
+      for (const r of rows) {
+        const mapped =
+          pilotMap.get(String(r.tour_id)) ||
+          normalizeCatalogTourPickupAndMeeting(mapPgRowToDurableTourRecord(r)).normalizedRecord;
+        if (mapped.destinationSlug.toLowerCase() === slug) {
+          byUpperCode.set(mapped.providerProductCode.toUpperCase(), mapped);
+        }
+      }
+    }
+    for (const pilot of PILOT_VERIFIED_TOUR_RECORDS) {
+      if (
+        pilot.active &&
+        !isQuarantinedTourRecord(pilot) &&
+        pilot.destinationSlug.toLowerCase() === slug &&
+        pilot.primaryProvider === provider &&
+        upperCodes.includes(pilot.providerProductCode.toUpperCase()) &&
+        !byUpperCode.has(pilot.providerProductCode.toUpperCase())
+      ) {
+        const norm = normalizeCatalogTourPickupAndMeeting(pilot).normalizedRecord;
+        byUpperCode.set(norm.providerProductCode.toUpperCase(), norm);
+      }
+    }
+    return { byUpperCode, storageSource: "postgres" };
+  }
+
+  const upperSet = new Set(upperCodes);
+  for (const r of loadOfflineSnapshotRecordsForLocalTestsOnly()) {
+    if (
+      r.active &&
+      !isQuarantinedTourRecord(r) &&
+      r.destinationSlug.toLowerCase() === slug &&
+      r.primaryProvider === provider &&
+      upperSet.has(r.providerProductCode.toUpperCase())
+    ) {
+      byUpperCode.set(
+        r.providerProductCode.toUpperCase(),
+        applyRequestedProjectionToRecord(r, projection),
+      );
+    }
+  }
+  return { byUpperCode, storageSource: "local_snapshot" };
+}
+
+function canonicalTourSubstantiveSnapshot(rec: DurableTourRecord): string {
+  const options = Array.isArray(rec.productOptions)
+    ? rec.productOptions.map((o) => ({
+        optionCode: o.optionCode,
+        title: o.title,
+        description: o.description ?? null,
+        includesPickup: o.includesPickup ?? null,
+        pickupFulfillmentType: o.pickupFulfillmentType ?? null,
+        meetingPointName: o.meetingPointName ?? null,
+        meetingPointLat: o.meetingPointLat ?? null,
+        meetingPointLng: o.meetingPointLng ?? null,
+        transferBeforeMinutes: o.transferBeforeMinutes ?? null,
+        transferAfterMinutes: o.transferAfterMinutes ?? null,
+        transferTimeSource: o.transferTimeSource ?? null,
+        transferEvidenceSource: o.transferEvidenceSource ?? null,
+        applicableBerthOrMeetingPoint: o.applicableBerthOrMeetingPoint ?? null,
+        planningEstimateTransferMinutes: o.planningEstimateTransferMinutes ?? null,
+        durationMinutes: o.durationMinutes ?? null,
+        fromPriceCents: o.fromPriceCents ?? null,
+        priceBasis: o.priceBasis ?? "per_person",
+        scheduledStartTimes: Array.isArray(o.scheduledStartTimes) ? [...o.scheduledStartTimes].sort() : [],
+      }))
+    : [];
+  const c = rec.constraints || {};
+  return JSON.stringify({
+    title: rec.title,
+    summary: rec.summary ?? null,
+    durationMinutes: rec.durationMinutes ?? null,
+    durationRawText: rec.durationRawText ?? null,
+    fromPriceCents: rec.fromPriceCents ?? null,
+    priceBasis: rec.priceBasis || "per_person",
+    currency: rec.currency || "USD",
+    freeCancellation: rec.freeCancellation ?? null,
+    cancellationPolicyType: rec.cancellationPolicyType ?? null,
+    cancellationCutoffHours: rec.cancellationCutoffHours ?? null,
+    cancellationSummary: rec.cancellationSummary ?? null,
+    hasHotelPickup: rec.hasHotelPickup ?? null,
+    lowestPriceIncludesPickup: rec.lowestPriceIncludesPickup ?? null,
+    pickupFulfillmentType: rec.pickupFulfillmentType ?? null,
+    pickupType: rec.pickupType ?? null,
+    pickupSummary: rec.pickupSummary ?? null,
+    meetingPointName: rec.meetingPointName ?? null,
+    meetingPointAddress: rec.meetingPointAddress ?? null,
+    meetingPointLat: rec.meetingPointLat ?? null,
+    meetingPointLng: rec.meetingPointLng ?? null,
+    locationPrecision: rec.locationPrecision || "unknown",
+    active: Boolean(rec.active),
+    quarantined: Boolean(rec.quarantined),
+    constraints: {
+      cruiseBufferBeforeMinutes: c.cruiseBufferBeforeMinutes ?? null,
+      cruiseBufferAfterMinutes: c.cruiseBufferAfterMinutes ?? null,
+      transferTimeSource: c.transferTimeSource ?? null,
+      transferEvidenceSource: c.transferEvidenceSource ?? null,
+      applicableBerthOrMeetingPoint: c.applicableBerthOrMeetingPoint ?? null,
+      planningEstimateTransferMinutes: c.planningEstimateTransferMinutes ?? null,
+    },
+    productOptions: options,
+  });
+}
+
+export function hasSubstantiveTourCatalogChange(
+  existing: DurableTourRecord,
+  next: DurableTourRecord,
+): boolean {
+  return canonicalTourSubstantiveSnapshot(existing) !== canonicalTourSubstantiveSnapshot(next);
+}
+
+function buildTargetedRefreshUpdateStatement(record: DurableTourRecord): {
+  text: string;
+  params: unknown[];
+} {
+  const servicePatch: Record<string, unknown> = {};
+  if (record.pickupFulfillmentType) {
+    servicePatch.pickupFulfillmentType = record.pickupFulfillmentType;
+  }
+  return {
+    text: `
+      UPDATE dcc_tour_catalog
+      SET
+        title = $3,
+        summary = $4,
+        duration_minutes = $5,
+        duration_raw_text = $6,
+        from_price_cents = $7,
+        price_basis = $8,
+        currency = $9,
+        free_cancellation = $10,
+        cancellation_policy_type = $11,
+        cancellation_cutoff_hours = $12,
+        cancellation_summary = $13,
+        has_hotel_pickup = $14,
+        lowest_price_includes_pickup = $15,
+        pickup_type = $16,
+        pickup_summary = $17,
+        meeting_point_name = $18,
+        meeting_point_address = $19,
+        meeting_point_lat = $20,
+        meeting_point_lng = $21,
+        location_precision = $22,
+        constraints_json = COALESCE(constraints_json, '{}'::jsonb) || $23::jsonb,
+        product_options_json = $24::jsonb,
+        service_details_json = COALESCE(service_details_json, '{}'::jsonb) || $25::jsonb,
+        provenance_json = COALESCE(provenance_json, '{}'::jsonb) || $26::jsonb,
+        last_verified_at = $27::timestamptz,
+        updated_at = $28::timestamptz
+      WHERE tour_id = $1
+        AND LOWER(destination_slug) = $2
+    `,
+    params: [
+      record.tourId,
+      record.destinationSlug.toLowerCase(),
+      record.title,
+      record.summary,
+      record.durationMinutes,
+      record.durationRawText,
+      record.fromPriceCents,
+      record.priceBasis || "per_person",
+      record.currency || "USD",
+      record.freeCancellation,
+      record.cancellationPolicyType,
+      record.cancellationCutoffHours,
+      record.cancellationSummary,
+      record.hasHotelPickup,
+      record.lowestPriceIncludesPickup ?? null,
+      record.pickupType,
+      record.pickupSummary,
+      record.meetingPointName,
+      record.meetingPointAddress,
+      record.meetingPointLat,
+      record.meetingPointLng,
+      record.locationPrecision,
+      JSON.stringify(record.constraints || {}),
+      JSON.stringify(record.productOptions || []),
+      JSON.stringify(servicePatch),
+      JSON.stringify(record.provenance || {}),
+      record.lastVerifiedAt,
+      record.updatedAt,
+    ],
+  };
+}
+
+export async function commitCatalogBatchAndCheckpointAtomically(params: {
+  recordsToUpsert: DurableTourRecord[];
+  retirements: Array<{
+    providerProductCode: string;
+    destinationSlug?: string;
+    reason: string;
+    retiredAtIso?: string;
+  }>;
+  checkpoint: Omit<CatalogRefreshCheckpointRecord, "updatedAt"> & { updatedAt?: string };
+  beforeCommitHook?: () => Promise<void> | void;
+  midTransactionStatementHook?: (statementIndex: number) => void;
+}): Promise<{
+  upsertedCount: number;
+  retiredCount: number;
+  persistedToPostgres: boolean;
+  checkpoint: CatalogRefreshCheckpointRecord;
+}> {
+  const validatedScope = assertValidCheckpointScope({
+    streamKey: params.checkpoint.streamKey,
+    provider: params.checkpoint.provider,
+    destinationSlug: params.checkpoint.destinationSlug,
+  });
+
+  const existingInMem = memoryCheckpointsByStream.get(validatedScope.streamKey);
+  if (existingInMem && existingInMem.destinationSlug !== validatedScope.destinationSlug) {
+    throw new Error(
+      `checkpoint_scope_violation: cannot mutate destination_slug on existing stream_key '${validatedScope.streamKey}'`,
+    );
+  }
+
+  const nowIso = params.checkpoint.updatedAt || new Date().toISOString();
+  const fullCheckpoint: CatalogRefreshCheckpointRecord = {
+    ...params.checkpoint,
+    streamKey: validatedScope.streamKey,
+    provider: validatedScope.provider,
+    destinationSlug: validatedScope.destinationSlug,
+    updatedAt: nowIso,
+  };
+
+  const validRecords = params.recordsToUpsert.filter((r) => !isQuarantinedTourRecord(r));
+  const statements: Array<{ text: string; params: unknown[] }> = [];
+
+  for (const rec of validRecords) {
+    statements.push(buildTargetedRefreshUpdateStatement(rec));
+  }
+
+  for (const ret of params.retirements) {
+    const retiredAt = ret.retiredAtIso || nowIso;
+    const codeUpper = ret.providerProductCode.trim().toUpperCase();
+    if (!codeUpper) continue;
+    if (ret.destinationSlug) {
+      statements.push({
+        text: `
+          UPDATE dcc_tour_catalog
+          SET active = false,
+              service_details_json = COALESCE(service_details_json, '{}'::jsonb) || $1::jsonb,
+              updated_at = $4::timestamptz
+          WHERE UPPER(provider_product_code) = $2
+            AND primary_provider = 'viator'
+            AND LOWER(destination_slug) = $3
+        `,
+        params: [
+          JSON.stringify({ retiredAt, retirementReason: ret.reason }),
+          codeUpper,
+          ret.destinationSlug.trim().toLowerCase(),
+          retiredAt,
+        ],
+      });
+    } else {
+      statements.push({
+        text: `
+          UPDATE dcc_tour_catalog
+          SET active = false,
+              service_details_json = COALESCE(service_details_json, '{}'::jsonb) || $1::jsonb,
+              updated_at = $3::timestamptz
+          WHERE UPPER(provider_product_code) = $2
+            AND primary_provider = 'viator'
+        `,
+        params: [
+          JSON.stringify({ retiredAt, retirementReason: ret.reason }),
+          codeUpper,
+          retiredAt,
+        ],
+      });
+    }
+  }
+
+  statements.push({
+    text: `
+      INSERT INTO dcc_catalog_refresh_checkpoints (
+        stream_key, provider, destination_slug, cursor_value,
+        next_start_offset, provider_total_count, status, metadata_json, updated_at
+      ) VALUES (
+        $1, $2, $3, $4,
+        $5, $6, $7, $8::jsonb, $9::timestamptz
+      )
+      ON CONFLICT (stream_key) DO UPDATE SET
+        provider = EXCLUDED.provider,
+        destination_slug = EXCLUDED.destination_slug,
+        cursor_value = EXCLUDED.cursor_value,
+        next_start_offset = EXCLUDED.next_start_offset,
+        provider_total_count = EXCLUDED.provider_total_count,
+        status = EXCLUDED.status,
+        metadata_json = EXCLUDED.metadata_json,
+        updated_at = EXCLUDED.updated_at
+    `,
+    params: [
+      fullCheckpoint.streamKey,
+      fullCheckpoint.provider,
+      fullCheckpoint.destinationSlug,
+      fullCheckpoint.cursorValue,
+      fullCheckpoint.nextStartOffset,
+      fullCheckpoint.providerTotalCount,
+      fullCheckpoint.status,
+      JSON.stringify(fullCheckpoint.metadata),
+      fullCheckpoint.updatedAt,
+    ],
+  });
+
+  if (params.beforeCommitHook) {
+    await params.beforeCommitHook();
+  }
+
+  let persistedToPostgres = false;
+  if (shouldUsePostgres()) {
+    if (customSqlQueryExecutor) {
+      await customSqlQueryExecutor("BEGIN", []);
+      try {
+        for (let i = 0; i < statements.length; i++) {
+          if (params.midTransactionStatementHook) {
+            params.midTransactionStatementHook(i);
+          }
+          await customSqlQueryExecutor(statements[i].text, statements[i].params);
+        }
+        await customSqlQueryExecutor("COMMIT", []);
+        persistedToPostgres = true;
+      } catch (err) {
+        await customSqlQueryExecutor("ROLLBACK", []).catch(() => []);
+        throw err;
+      }
+    } else {
+      const sql = getSqlClient();
+      await sql.transaction((tx) =>
+        statements.map((stmt, idx) => {
+          if (params.midTransactionStatementHook) {
+            params.midTransactionStatementHook(idx);
+          }
+          return tx.query(stmt.text, stmt.params);
+        }),
+      );
+      persistedToPostgres = true;
+    }
+  } else {
+    if (params.midTransactionStatementHook) {
+      for (let i = 0; i < statements.length; i++) {
+        params.midTransactionStatementHook(i);
+      }
+    }
+    const snapshot = readLocalCatalogSnapshot();
+    const byId = new Map<string, DurableTourRecord>(
+      snapshot.records.filter((r) => !isQuarantinedTourRecord(r)).map((r) => [r.tourId, r]),
+    );
+    for (const rec of validRecords) {
+      byId.set(rec.tourId, rec);
+    }
+    for (const ret of params.retirements) {
+      const codeUpper = ret.providerProductCode.trim().toUpperCase();
+      const destLower = ret.destinationSlug?.trim().toLowerCase() || null;
+      for (const [id, existing] of byId.entries()) {
+        if (
+          existing.primaryProvider === "viator" &&
+          existing.providerProductCode.toUpperCase() === codeUpper &&
+          (!destLower || existing.destinationSlug.toLowerCase() === destLower)
+        ) {
+          byId.set(id, {
+            ...existing,
+            active: false,
+            retiredAt: ret.retiredAtIso || nowIso,
+            retirementReason: ret.reason,
+            updatedAt: ret.retiredAtIso || nowIso,
+          });
+        }
+      }
+    }
+    writeLocalCatalogSnapshot(Array.from(byId.values()), snapshot.syncRuns);
+  }
+
+  memoryCheckpointsByStream.set(fullCheckpoint.streamKey, fullCheckpoint);
+  memoryCatalogCache = null;
+  if (fullCheckpoint.destinationSlug) {
+    activeDestinationCountsCache.delete(fullCheckpoint.destinationSlug);
+  } else {
+    activeDestinationCountsCache.clear();
+  }
+
+  return {
+    upsertedCount: validRecords.length,
+    retiredCount: params.retirements.length,
+    persistedToPostgres,
+    checkpoint: fullCheckpoint,
+  };
 }
 
 export async function getDurableToursByProviderProductCodes(

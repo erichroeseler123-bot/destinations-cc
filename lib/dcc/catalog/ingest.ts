@@ -13,17 +13,23 @@ import { RED_ROCKS_CONCERT_CANDIDATE_OPTIONS } from "@/lib/dcc/decisionEngines/r
 import { DCC_SITE_TRUTH } from "@/lib/dcc/siteTruth";
 import {
   EARTHOS_DESTINATION_NODES,
+  commitCatalogBatchAndCheckpointAtomically,
   getCompatibilityAliasesForViatorCode,
+  getDestinationProviderCodesOrdered,
+  getDestinationScheduleRefreshCheckpoint,
   getDurableCatalogSummaryReport,
+  getDurableToursByDestinationAndProviderCodes,
   getDurableToursByProviderProductCodes,
   getImportedProviderProductCodesForDestination,
   getLatestDestinationBackfillCheckpoint,
   getRefreshCheckpoint,
+  hasSubstantiveTourCatalogChange,
   loadSyncRunsWithPgHydration,
   readLocalCatalogSnapshot,
   recordCatalogSyncRun,
   retireDurableTourRecord,
   selectViatorScheduleRefreshCandidates,
+  upsertDestinationScheduleRefreshCheckpoint,
   upsertDurableTourRecords,
   upsertRefreshCheckpoint,
   type CatalogSyncRunRecord,
@@ -38,6 +44,11 @@ import {
   type TourProductOptionRecord,
   type TransferTimeSource,
 } from "./durableCatalogStore";
+import {
+  DESTINATION_SCHEDULE_REFRESH_PROVIDER,
+  buildDestinationScheduleRefreshStreamKey,
+  normalizeCheckpointDestinationSlug,
+} from "./checkpointContract";
 
 function sha256Hex(value: unknown): string {
   return crypto.createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -2210,12 +2221,24 @@ export type IncrementalRefreshOptions = {
   includeScheduleAndPricingRefresh?: boolean;
 };
 
+function isRetryableViatorUpstreamError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err || "");
+  if (/missing_viator_api_key|viator_.*_bulk_limit_exceeded/i.test(msg)) return false;
+  const httpMatch = msg.match(/viator_http_(\d{3})/i);
+  if (httpMatch) {
+    const code = Number(httpMatch[1]);
+    return code === 429 || code === 408 || code >= 500;
+  }
+  return true;
+}
+
 async function withRetry<T>(
   fn: () => Promise<T>,
-  options: { maxAttempts?: number; baseDelayMs?: number } = {},
+  options: { maxAttempts?: number; baseDelayMs?: number; maxDelayMs?: number } = {},
 ): Promise<{ result: T; attempts: number }> {
   const maxAttempts = Math.max(options.maxAttempts ?? 3, 1);
-  const baseDelayMs = Math.max(options.baseDelayMs ?? 300, 50);
+  const baseDelayMs = Math.max(options.baseDelayMs ?? 250, 20);
+  const maxDelayMs = Math.max(options.maxDelayMs ?? 2000, baseDelayMs);
   let lastErr: unknown;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
@@ -2223,25 +2246,640 @@ async function withRetry<T>(
       return { result, attempts: attempt };
     } catch (err) {
       lastErr = err;
-      if (attempt < maxAttempts) {
-        await new Promise((r) => setTimeout(r, baseDelayMs * Math.pow(2, attempt - 1)));
+      if (attempt < maxAttempts && isRetryableViatorUpstreamError(err)) {
+        const delay = Math.min(maxDelayMs, baseDelayMs * Math.pow(2, attempt - 1));
+        await new Promise((r) => setTimeout(r, delay));
+        continue;
       }
+      throw err;
     }
   }
   throw lastErr;
 }
 
+function extractBulkProductsArray(payload: unknown): any[] {
+  if (Array.isArray(payload)) return payload;
+  if (payload && typeof payload === "object" && Array.isArray((payload as any).products)) {
+    return (payload as any).products;
+  }
+  return [];
+}
+
+function extractBulkSchedulesArray(payload: unknown): any[] {
+  if (Array.isArray(payload)) return payload;
+  if (payload && typeof payload === "object") {
+    if (Array.isArray((payload as any).availabilitySchedules)) {
+      return (payload as any).availabilitySchedules;
+    }
+    if (Array.isArray((payload as any).schedules)) {
+      return (payload as any).schedules;
+    }
+  }
+  return [];
+}
+
+function buildRefreshedTourRecordFromDetailAndSchedule(params: {
+  existing: DurableTourRecord;
+  detail: any;
+  sched: any;
+  sourceEndpoint: string;
+  nowIso: string;
+  modifiedSinceCursor?: string | null;
+}): DurableTourRecord {
+  const { existing, detail, sched, sourceEndpoint, nowIso, modifiedSinceCursor } = params;
+  const durationParsed = detail
+    ? parseDurationMinutesFromViator(detail?.itinerary?.duration || detail?.duration)
+    : { durationMinutes: null, durationRawText: null };
+  const cancellationParsed = detail?.cancellationPolicy
+    ? parseCancellationFromViator(detail.cancellationPolicy, [])
+    : null;
+  const pickupParsed = detail
+    ? parsePickupAndLocationsFromViator(detail, new Map())
+    : {
+        hasHotelPickup: existing.hasHotelPickup,
+        hasCruisePortPickup: existing.pickupFulfillmentType === "pier_pickup",
+        meetingPointAddress: existing.meetingPointAddress,
+        meetingPointLat: existing.meetingPointLat,
+        meetingPointLng: existing.meetingPointLng,
+      };
+
+  const effectiveDetail = detail || {
+    title: existing.title,
+    description: existing.summary,
+    pricingInfo: {
+      type: existing.priceBasis === "per_group" ? "UNIT" : "PER_PERSON",
+    },
+    productOptions: (existing.productOptions || []).map((opt) => ({
+      productOptionCode: opt.optionCode,
+      title: opt.title,
+      description: opt.description,
+      duration:
+        typeof opt.durationMinutes === "number" && opt.durationMinutes > 0
+          ? { fixedDurationInMinutes: opt.durationMinutes }
+          : undefined,
+    })),
+  };
+
+  const effectiveTitle = String(detail?.title || existing.title);
+  const effectiveSummary =
+    typeof detail?.description === "string" && detail.description.trim()
+      ? detail.description.trim()
+      : existing.summary;
+
+  const optionsAndSchedule = parseProductOptionsAndScheduleFromViator(
+    effectiveDetail,
+    sched,
+    pickupParsed.hasHotelPickup ?? existing.hasHotelPickup,
+    durationParsed.durationMinutes ?? existing.durationMinutes,
+    effectiveTitle,
+    effectiveSummary,
+    existing.destinationSlug,
+    pickupParsed.meetingPointAddress ?? existing.meetingPointAddress,
+    pickupParsed.meetingPointLat ?? existing.meetingPointLat,
+    pickupParsed.meetingPointLng ?? existing.meetingPointLng,
+    pickupParsed.hasCruisePortPickup,
+  );
+
+  return {
+    ...existing,
+    title: effectiveTitle,
+    durationMinutes: durationParsed.durationMinutes ?? existing.durationMinutes,
+    durationRawText: durationParsed.durationRawText ?? existing.durationRawText,
+    fromPriceCents: optionsAndSchedule.scheduleFromPriceCents ?? existing.fromPriceCents,
+    priceBasis: optionsAndSchedule.priceBasis,
+    freeCancellation: cancellationParsed
+      ? (cancellationParsed.freeCancellation ?? existing.freeCancellation)
+      : existing.freeCancellation,
+    cancellationPolicyType: cancellationParsed
+      ? (cancellationParsed.cancellationPolicyType ?? existing.cancellationPolicyType)
+      : existing.cancellationPolicyType,
+    cancellationCutoffHours: cancellationParsed
+      ? (cancellationParsed.cancellationCutoffHours ?? existing.cancellationCutoffHours)
+      : existing.cancellationCutoffHours,
+    cancellationSummary: cancellationParsed
+      ? (cancellationParsed.cancellationSummary ?? existing.cancellationSummary)
+      : existing.cancellationSummary,
+    hasHotelPickup: pickupParsed.hasHotelPickup ?? existing.hasHotelPickup,
+    lowestPriceIncludesPickup:
+      optionsAndSchedule.lowestPriceIncludesPickup ?? existing.lowestPriceIncludesPickup,
+    pickupFulfillmentType:
+      optionsAndSchedule.primaryPickupFulfillmentType ?? existing.pickupFulfillmentType,
+    productOptions:
+      optionsAndSchedule.productOptions.length > 0
+        ? optionsAndSchedule.productOptions
+        : existing.productOptions,
+    constraints: {
+      ...existing.constraints,
+      cruiseBufferBeforeMinutes: optionsAndSchedule.tourTransferBeforeMinutes,
+      cruiseBufferAfterMinutes: optionsAndSchedule.tourTransferAfterMinutes,
+      transferTimeSource: optionsAndSchedule.tourTransferTimeSource,
+      transferEvidenceSource: optionsAndSchedule.tourTransferEvidenceSource,
+      applicableBerthOrMeetingPoint: optionsAndSchedule.tourApplicableBerthOrMeetingPoint,
+      planningEstimateTransferMinutes: optionsAndSchedule.tourPlanningEstimateTransferMinutes,
+    },
+    provenance: {
+      ...existing.provenance,
+      sourceEndpoint,
+      fetchedAt: nowIso,
+      lastScheduleRefreshAt: nowIso,
+      ...(modifiedSinceCursor !== undefined ? { modifiedSinceCursor: modifiedSinceCursor || undefined } : {}),
+    } as any,
+    lastVerifiedAt: nowIso,
+    updatedAt: nowIso,
+  };
+}
+
+export type DestinationBulkRefreshErrorRecord = {
+  phase: "products_bulk" | "schedules_bulk" | "item_transform" | "chunk_commit";
+  chunkIndex: number;
+  code?: string;
+  message: string;
+};
+
+export type DestinationBulkScheduleRefreshOptions = {
+  destinationSlug: string;
+  chunkSize?: number;
+  maxChunksPerRun?: number;
+  resume?: boolean;
+  forceRestart?: boolean;
+  runId?: string;
+  timeBudgetMs?: number;
+  retryBaseDelayMs?: number;
+  beforeChunkCommitHook?: (ctx: { chunkIndex: number; chunkCodes: string[] }) => Promise<void> | void;
+  midChunkProcessingHook?: (ctx: { chunkIndex: number; itemIndex: number; code: string }) => void;
+  midChunkTransactionHook?: (statementIndex: number) => void;
+};
+
+export async function runDestinationBoundedBulkScheduleRefresh(
+  options: DestinationBulkScheduleRefreshOptions,
+): Promise<CatalogSyncRunRecord> {
+  const destSlug = normalizeCheckpointDestinationSlug(options.destinationSlug);
+  const client = getViatorClient();
+  const chunkSize = Math.min(Math.max(Math.floor(options.chunkSize ?? 500), 1), 500);
+  const maxChunksPerRun =
+    options.maxChunksPerRun != null && Number.isFinite(options.maxChunksPerRun)
+      ? Math.max(1, Math.floor(options.maxChunksPerRun))
+      : Number.POSITIVE_INFINITY;
+  const timeBudgetMs = Math.max(options.timeBudgetMs ?? 45_000, 1_000);
+  const retryBaseDelayMs = Math.max(options.retryBaseDelayMs ?? 250, 20);
+  const startedMs = Date.now();
+  const startedAt = new Date(startedMs).toISOString();
+
+  // Narrow query: ONLY destination_slug's active, non-quarantined Viator product codes.
+  // Never calls, reads, or advances the global modified-since stream.
+  const { sortedCodes, storageSource } = await getDestinationProviderCodesOrdered(destSlug, "viator");
+  const codeSetHash = sha256Hex(sortedCodes.join(","));
+  const totalChunks = Math.max(1, Math.ceil(sortedCodes.length / chunkSize));
+
+  const existingCkpt =
+    options.resume !== false && !options.forceRestart
+      ? await getDestinationScheduleRefreshCheckpoint(destSlug)
+      : null;
+
+  let startOffset = 0;
+  let inheritedCounts = {
+    processedCodesCount: 0,
+    updatedCount: 0,
+    unchangedCount: 0,
+    retiredCount: 0,
+    rejectedCount: 0,
+    upstreamRequestCount: 0,
+    productBulkRequests: 0,
+    scheduleBulkRequests: 0,
+    retryAttemptsTotal: 0,
+  };
+  let runErrors: DestinationBulkRefreshErrorRecord[] = [];
+
+  if (existingCkpt && existingCkpt.status === "in_progress") {
+    const prevMeta = (existingCkpt.metadata || {}) as Record<string, any>;
+    if (
+      prevMeta.codeSetHash === codeSetHash &&
+      typeof existingCkpt.nextStartOffset === "number" &&
+      existingCkpt.nextStartOffset > 0 &&
+      existingCkpt.nextStartOffset < sortedCodes.length
+    ) {
+      startOffset = existingCkpt.nextStartOffset;
+    } else if (
+      typeof prevMeta.chunkPosition?.lastCompletedCode === "string" &&
+      prevMeta.chunkPosition.lastCompletedCode.length > 0
+    ) {
+      const lastCode = String(prevMeta.chunkPosition.lastCompletedCode).toUpperCase();
+      const nextIdx = sortedCodes.findIndex((c) => c > lastCode);
+      startOffset = nextIdx >= 0 ? nextIdx : sortedCodes.length;
+    }
+    if (startOffset > 0 && prevMeta.counts && typeof prevMeta.counts === "object") {
+      inheritedCounts = {
+        processedCodesCount: Number(prevMeta.counts.processedCodesCount || 0),
+        updatedCount: Number(prevMeta.counts.updatedCount || 0),
+        unchangedCount: Number(prevMeta.counts.unchangedCount || 0),
+        retiredCount: Number(prevMeta.counts.retiredCount || 0),
+        rejectedCount: Number(prevMeta.counts.rejectedCount || 0),
+        upstreamRequestCount: Number(prevMeta.counts.upstreamRequestCount || 0),
+        productBulkRequests: Number(prevMeta.counts.productBulkRequests || 0),
+        scheduleBulkRequests: Number(prevMeta.counts.scheduleBulkRequests || 0),
+        retryAttemptsTotal: Number(prevMeta.counts.retryAttemptsTotal || 0),
+      };
+    }
+    if (startOffset > 0 && Array.isArray(prevMeta.errors)) {
+      runErrors = [...prevMeta.errors];
+    }
+  }
+
+  const runId =
+    options.runId ||
+    (startOffset > 0 && typeof existingCkpt?.metadata?.runId === "string"
+      ? String(existingCkpt.metadata.runId)
+      : `sync:viator:dest_bulk:${destSlug}:${startedMs}`);
+
+  if (sortedCodes.length === 0) {
+    const emptyCursor = `completed:${runId}`;
+    await upsertDestinationScheduleRefreshCheckpoint(destSlug, {
+      cursorValue: emptyCursor,
+      nextStartOffset: null,
+      providerTotalCount: 0,
+      status: "completed",
+      metadata: {
+        checkpointContractVersion: "v2",
+        runId,
+        destinationSlug: destSlug,
+        codeSetHash,
+        chunkPosition: {
+          chunkIndex: 0,
+          chunksCompletedInRun: 0,
+          totalChunks: 0,
+          chunkSize,
+          chunkStartOffset: 0,
+          chunkEndOffset: 0,
+          nextStartOffset: null,
+          lastCompletedCode: null,
+        },
+        counts: {
+          totalDestinationViatorCodes: 0,
+          ...inheritedCounts,
+        },
+        errors: [],
+        completionStatus: "completed",
+        storageSource,
+      },
+    });
+    const emptyRun: CatalogSyncRunRecord = {
+      runId,
+      provider: DESTINATION_SCHEDULE_REFRESH_PROVIDER,
+      destinationSlug: destSlug,
+      status: "completed",
+      cursorValue: emptyCursor,
+      importedCount: 0,
+      updatedCount: 0,
+      rejectedCount: 0,
+      upstreamRequestCount: 0,
+      rejectionReasons: {},
+      metadata: {
+        checkpointStreamKey: buildDestinationScheduleRefreshStreamKey(destSlug),
+        codeSetHash,
+        totalDestinationViatorCodes: 0,
+        storageSource,
+      },
+      startedAt,
+      completedAt: new Date().toISOString(),
+    };
+    await recordCatalogSyncRun(emptyRun);
+    return emptyRun;
+  }
+
+  let currentOffset = startOffset;
+  let chunksCompletedInThisInvocation = 0;
+  let runUpdatedThisInvocation = 0;
+  let runUnchangedThisInvocation = 0;
+  let runRetiredThisInvocation = 0;
+  let runRejectedThisInvocation = 0;
+  let runUpstreamThisInvocation = 0;
+  let runProductBulkThisInvocation = 0;
+  let runScheduleBulkThisInvocation = 0;
+  let runRetriesThisInvocation = 0;
+  const refreshedCodesThisInvocation: string[] = [];
+
+  try {
+    while (currentOffset < sortedCodes.length && chunksCompletedInThisInvocation < maxChunksPerRun) {
+      if (chunksCompletedInThisInvocation > 0 && Date.now() - startedMs >= timeBudgetMs) {
+        break;
+      }
+
+      const chunkIndex = Math.floor(currentOffset / chunkSize);
+      const chunkStartOffset = currentOffset;
+      const chunkCodes = sortedCodes.slice(chunkStartOffset, chunkStartOffset + chunkSize);
+      const chunkEndOffset = chunkStartOffset + chunkCodes.length;
+      const isFinalChunk = chunkEndOffset >= sortedCodes.length;
+      const nextOffsetOrNull = isFinalChunk ? null : chunkEndOffset;
+
+      const { byUpperCode: existingByCode } = await getDurableToursByDestinationAndProviderCodes(
+        destSlug,
+        "viator",
+        chunkCodes,
+      );
+
+      // Request 1 of chunk: POST /products/bulk (<= 500 codes)
+      const { result: bulkProductsRaw, attempts: prodAttempts } = await withRetry(
+        () => client.getProductsBulk(chunkCodes),
+        { maxAttempts: 3, baseDelayMs: retryBaseDelayMs },
+      );
+      runUpstreamThisInvocation += prodAttempts;
+      runProductBulkThisInvocation += 1;
+      runRetriesThisInvocation += Math.max(prodAttempts - 1, 0);
+
+      const bulkProducts = extractBulkProductsArray(bulkProductsRaw);
+      const productByCode = new Map<string, any>();
+      const activeCodesForSchedules: string[] = [];
+      const chunkRetirements: Array<{
+        providerProductCode: string;
+        destinationSlug: string;
+        reason: string;
+        retiredAtIso: string;
+      }> = [];
+      const nowIso = new Date().toISOString();
+
+      for (const prod of bulkProducts) {
+        const code = String(prod?.productCode || "").trim().toUpperCase();
+        if (!code) continue;
+        productByCode.set(code, prod);
+        if (String(prod?.status || "").toUpperCase() === "INACTIVE") {
+          chunkRetirements.push({
+            providerProductCode: code,
+            destinationSlug: destSlug,
+            reason: "viator_destination_bulk_status_inactive",
+            retiredAtIso: nowIso,
+          });
+        } else {
+          activeCodesForSchedules.push(code);
+        }
+      }
+
+      // Any requested code omitted from /products/bulk that is still active locally can still query schedules if needed,
+      // or record an item missing error if neither endpoint returns it.
+      for (const requestedCode of chunkCodes) {
+        if (!productByCode.has(requestedCode)) {
+          activeCodesForSchedules.push(requestedCode);
+        }
+      }
+
+      const uniqueActiveCodesForSchedules = Array.from(new Set(activeCodesForSchedules));
+
+      // Request 2 of chunk: POST /availability/schedules/bulk (<= 500 codes)
+      const scheduleByCode = new Map<string, any>();
+      if (uniqueActiveCodesForSchedules.length > 0) {
+        const { result: bulkSchedulesRaw, attempts: schedAttempts } = await withRetry(
+          () => client.getAvailabilitySchedulesBulk(uniqueActiveCodesForSchedules),
+          { maxAttempts: 3, baseDelayMs: retryBaseDelayMs },
+        );
+        runUpstreamThisInvocation += schedAttempts;
+        runScheduleBulkThisInvocation += 1;
+        runRetriesThisInvocation += Math.max(schedAttempts - 1, 0);
+
+        for (const schedItem of extractBulkSchedulesArray(bulkSchedulesRaw)) {
+          const code = String(schedItem?.productCode || "").trim().toUpperCase();
+          if (code) {
+            scheduleByCode.set(code, schedItem);
+          }
+        }
+      }
+
+      const retiredSet = new Set(chunkRetirements.map((r) => r.providerProductCode));
+      const chunkRecordsToUpsert: DurableTourRecord[] = [];
+      let chunkUpdated = 0;
+      let chunkUnchanged = 0;
+      let chunkRejected = 0;
+
+      for (let i = 0; i < chunkCodes.length; i++) {
+        const code = chunkCodes[i];
+        if (options.midChunkProcessingHook) {
+          options.midChunkProcessingHook({ chunkIndex, itemIndex: i, code });
+        }
+        if (retiredSet.has(code)) {
+          continue;
+        }
+        const existing = existingByCode.get(code);
+        if (!existing) {
+          continue;
+        }
+        const detail = productByCode.get(code) || null;
+        const sched = scheduleByCode.get(code) || null;
+        if (!detail && !sched) {
+          chunkRejected += 1;
+          runErrors.push({
+            phase: "item_transform",
+            chunkIndex,
+            code,
+            message: "Product omitted from both /products/bulk and /availability/schedules/bulk",
+          });
+          continue;
+        }
+
+        try {
+          const nextRecord = buildRefreshedTourRecordFromDetailAndSchedule({
+            existing,
+            detail,
+            sched,
+            sourceEndpoint: "/products/bulk+/availability/schedules/bulk",
+            nowIso,
+          });
+          if (hasSubstantiveTourCatalogChange(existing, nextRecord)) {
+            chunkRecordsToUpsert.push(nextRecord);
+            chunkUpdated += 1;
+            refreshedCodesThisInvocation.push(code);
+          } else {
+            chunkUnchanged += 1;
+          }
+        } catch (itemErr) {
+          chunkRejected += 1;
+          runErrors.push({
+            phase: "item_transform",
+            chunkIndex,
+            code,
+            message: itemErr instanceof Error ? itemErr.message : String(itemErr),
+          });
+        }
+      }
+
+      const cumulativeCounts = {
+        totalDestinationViatorCodes: sortedCodes.length,
+        processedCodesCount:
+          inheritedCounts.processedCodesCount + (chunkEndOffset - startOffset),
+        updatedCount: inheritedCounts.updatedCount + runUpdatedThisInvocation + chunkUpdated,
+        unchangedCount: inheritedCounts.unchangedCount + runUnchangedThisInvocation + chunkUnchanged,
+        retiredCount:
+          inheritedCounts.retiredCount + runRetiredThisInvocation + chunkRetirements.length,
+        rejectedCount: inheritedCounts.rejectedCount + runRejectedThisInvocation + chunkRejected,
+        upstreamRequestCount: inheritedCounts.upstreamRequestCount + runUpstreamThisInvocation,
+        productBulkRequests: inheritedCounts.productBulkRequests + runProductBulkThisInvocation,
+        scheduleBulkRequests: inheritedCounts.scheduleBulkRequests + runScheduleBulkThisInvocation,
+        retryAttemptsTotal: inheritedCounts.retryAttemptsTotal + runRetriesThisInvocation,
+      };
+
+      const chunkCursorValue = isFinalChunk
+        ? `completed:${runId}`
+        : `chunk:${chunkIndex + 1}/${totalChunks}:next:${nextOffsetOrNull}`;
+      const chunkStatus = isFinalChunk ? "completed" : "in_progress";
+
+      await commitCatalogBatchAndCheckpointAtomically({
+        recordsToUpsert: chunkRecordsToUpsert,
+        retirements: chunkRetirements,
+        checkpoint: {
+          streamKey: buildDestinationScheduleRefreshStreamKey(destSlug),
+          provider: DESTINATION_SCHEDULE_REFRESH_PROVIDER,
+          destinationSlug: destSlug,
+          cursorValue: chunkCursorValue,
+          nextStartOffset: nextOffsetOrNull,
+          providerTotalCount: sortedCodes.length,
+          status: chunkStatus,
+          metadata: {
+            checkpointContractVersion: "v2",
+            runId,
+            destinationSlug: destSlug,
+            codeSetHash,
+            chunkPosition: {
+              chunkIndex,
+              chunksCompletedInRun: chunksCompletedInThisInvocation + 1,
+              totalChunks,
+              chunkSize,
+              chunkStartOffset,
+              chunkEndOffset,
+              nextStartOffset: nextOffsetOrNull,
+              lastCompletedCode: chunkCodes[chunkCodes.length - 1] || null,
+            },
+            counts: cumulativeCounts,
+            errors: runErrors,
+            completionStatus: chunkStatus,
+            storageSource,
+          },
+          updatedAt: nowIso,
+        },
+        beforeCommitHook: options.beforeChunkCommitHook
+          ? () => options.beforeChunkCommitHook!({ chunkIndex, chunkCodes })
+          : undefined,
+        midTransactionStatementHook: options.midChunkTransactionHook,
+      });
+
+      runUpdatedThisInvocation += chunkUpdated;
+      runUnchangedThisInvocation += chunkUnchanged;
+      runRetiredThisInvocation += chunkRetirements.length;
+      runRejectedThisInvocation += chunkRejected;
+      chunksCompletedInThisInvocation += 1;
+      currentOffset = chunkEndOffset;
+    }
+
+    const finalComplete = currentOffset >= sortedCodes.length;
+    const finalStatus = finalComplete ? "completed" : "in_progress";
+    const finalCursor = finalComplete
+      ? `completed:${runId}`
+      : `chunk:${Math.floor(currentOffset / chunkSize)}/${totalChunks}:next:${currentOffset}`;
+
+    const syncRun: CatalogSyncRunRecord = {
+      runId,
+      provider: DESTINATION_SCHEDULE_REFRESH_PROVIDER,
+      destinationSlug: destSlug,
+      status: finalStatus as any,
+      cursorValue: finalCursor,
+      importedCount: 0,
+      updatedCount: runUpdatedThisInvocation,
+      rejectedCount: runRejectedThisInvocation,
+      upstreamRequestCount: runUpstreamThisInvocation,
+      rejectionReasons:
+        runRejectedThisInvocation > 0
+          ? { destination_bulk_item_error: runRejectedThisInvocation }
+          : {},
+      metadata: {
+        checkpointContractVersion: "v2",
+        checkpointStreamKey: buildDestinationScheduleRefreshStreamKey(destSlug),
+        destinationSlug: destSlug,
+        codeSetHash,
+        storageSource,
+        chunkSize,
+        totalChunks,
+        chunksCompletedInThisInvocation,
+        resumedFromStartOffset: startOffset,
+        nextStartOffset: finalComplete ? null : currentOffset,
+        totalDestinationViatorCodes: sortedCodes.length,
+        unchangedCount: runUnchangedThisInvocation,
+        retiredCount: runRetiredThisInvocation,
+        productBulkRequests: runProductBulkThisInvocation,
+        scheduleBulkRequests: runScheduleBulkThisInvocation,
+        retryAttemptsTotal: runRetriesThisInvocation,
+        refreshedCodes: refreshedCodesThisInvocation,
+        errors: runErrors,
+        completionStatus: finalStatus,
+      },
+      startedAt,
+      completedAt: new Date().toISOString(),
+    };
+    await recordCatalogSyncRun(syncRun);
+    return syncRun;
+  } catch (err) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    const failedRun: CatalogSyncRunRecord = {
+      runId,
+      provider: DESTINATION_SCHEDULE_REFRESH_PROVIDER,
+      destinationSlug: destSlug,
+      status: "failed",
+      cursorValue: existingCkpt?.cursorValue || null,
+      importedCount: 0,
+      updatedCount: runUpdatedThisInvocation,
+      rejectedCount: runRejectedThisInvocation,
+      upstreamRequestCount: runUpstreamThisInvocation,
+      rejectionReasons: { destination_bulk_refresh_failed: 1 },
+      metadata: {
+        checkpointContractVersion: "v2",
+        checkpointStreamKey: buildDestinationScheduleRefreshStreamKey(destSlug),
+        destinationSlug: destSlug,
+        codeSetHash,
+        storageSource,
+        chunkSize,
+        totalChunks,
+        chunksCompletedInThisInvocation,
+        failedAtOffset: currentOffset,
+        productBulkRequests: runProductBulkThisInvocation,
+        scheduleBulkRequests: runScheduleBulkThisInvocation,
+        retryAttemptsTotal: runRetriesThisInvocation,
+        error: errMsg,
+        errors: [
+          ...runErrors,
+          {
+            phase: "chunk_commit",
+            chunkIndex: Math.floor(currentOffset / chunkSize),
+            message: errMsg,
+          },
+        ],
+        completionStatus: "failed",
+      },
+      startedAt,
+      completedAt: new Date().toISOString(),
+    };
+    await recordCatalogSyncRun(failedRun);
+    throw err;
+  }
+}
+
 /**
  * Incremental availability & pricing schedule refresh job.
- * Uses a SEPARATE availability/pricing change stream (/availability/schedules/modified-since)
- * with durable Postgres cursor checkpoints, combined with a durable Postgres least-recently-refreshed
- * schedule queue (reading from Postgres rather than local snapshot).
+ * Destination-bounded calls strictly delegate to runDestinationBoundedBulkScheduleRefresh
+ * (/products/bulk + /availability/schedules/bulk + viator_destination_schedule_refresh:<slug>)
+ * and NEVER read or advance the global modified-since cursor.
  */
 export async function runIncrementalScheduleAndPricingRefresh(options: {
   limit?: number;
   destinationSlug?: string;
   scheduleCursor?: string;
+  chunkSize?: number;
+  maxChunksPerRun?: number;
+  resume?: boolean;
 } = {}) {
+  if (options.destinationSlug && options.destinationSlug.trim().length > 0) {
+    return runDestinationBoundedBulkScheduleRefresh({
+      destinationSlug: options.destinationSlug,
+      chunkSize: options.chunkSize ?? 500,
+      maxChunksPerRun: options.maxChunksPerRun,
+      resume: options.resume,
+    });
+  }
+
   const client = getViatorClient();
   const limit = Math.min(Math.max(options.limit ?? 15, 1), 100);
 

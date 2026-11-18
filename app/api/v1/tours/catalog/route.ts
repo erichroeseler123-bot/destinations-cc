@@ -11,6 +11,7 @@ import {
   type TourCapabilityTier,
 } from "@/lib/dcc/catalog/durableCatalogStore";
 import {
+  runDestinationBoundedBulkScheduleRefresh,
   runIncrementalScheduleAndPricingRefresh,
   runIncrementalViatorCatalogRefresh,
   runUniversalCatalogIngestion,
@@ -244,11 +245,17 @@ export async function POST(request: NextRequest) {
         | "full_or_paginated"
         | "incremental_refresh"
         | "schedule_pricing_refresh"
+        | "destination_bulk_refresh"
         | "normalize_pickup_and_queue_review_desk";
       cursor?: string;
       count?: number;
       scheduleRefreshLimit?: number;
       destinations?: string[];
+      destinationSlug?: string;
+      chunkSize?: number;
+      maxChunksPerRun?: number;
+      forceRestart?: boolean;
+      runId?: string;
       perDestinationLimit?: number;
       enrichDetailLimitPerDestination?: number;
       startOffset?: number;
@@ -284,10 +291,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (body.mode === "destination_bulk_refresh") {
+      const targetDest = (body.destinationSlug || body.destinations?.[0] || "").trim();
+      if (!targetDest) {
+        return NextResponse.json(
+          { ok: false, error: "destination_slug_required_for_destination_bulk_refresh" },
+          { status: 400, headers: CORS_HEADERS },
+        );
+      }
+      const bulkRun = await runDestinationBoundedBulkScheduleRefresh({
+        destinationSlug: targetDest,
+        chunkSize: body.chunkSize,
+        maxChunksPerRun: body.maxChunksPerRun,
+        resume: body.resumeFromCheckpoint !== false,
+        forceRestart: body.forceRestart,
+        runId: body.runId,
+      });
+      const summary = await getDurableCatalogSummaryReport();
+      return NextResponse.json(
+        {
+          ok: true,
+          mode: "destination_bulk_refresh",
+          destinationBulkRun: bulkRun,
+          summary,
+        },
+        { status: 200, headers: CORS_HEADERS },
+      );
+    }
+
     if (body.mode === "schedule_pricing_refresh") {
+      const targetDest = (body.destinationSlug || body.destinations?.[0] || "").trim();
       const schedRun = await runIncrementalScheduleAndPricingRefresh({
         limit: body.scheduleRefreshLimit ?? body.count ?? 15,
-        destinationSlug: body.destinations?.[0],
+        destinationSlug: targetDest || undefined,
+        chunkSize: body.chunkSize,
+        maxChunksPerRun: body.maxChunksPerRun,
+        resume: body.resumeFromCheckpoint !== false,
       });
       const summary = await getDurableCatalogSummaryReport();
       return NextResponse.json(
