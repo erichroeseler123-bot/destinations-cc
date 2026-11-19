@@ -52,10 +52,15 @@ export async function POST(req: NextRequest) {
     }
 
     const sanitizedProps = scrubEventProperties(data);
+    const isQaOrPreview =
+      sanitizedProps.qa === true ||
+      (Boolean(process.env.VERCEL_ENV) && process.env.VERCEL_ENV !== "production") ||
+      req.url.includes(".vercel.app");
     const dccBase = resolveDccIngestBaseUrl();
     let forwarded = false;
 
     if (
+      !isQaOrPreview &&
       process.env.DCC_FORWARD_SUBAPP_TELEMETRY !== "0" &&
       dccBase &&
       !req.url.includes("localhost")

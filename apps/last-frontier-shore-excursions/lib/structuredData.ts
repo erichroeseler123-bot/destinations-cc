@@ -303,3 +303,44 @@ export function buildTourDetailJsonLd(params: {
     ],
   };
 }
+
+export function buildWeekendInJuneauGuideJsonLd(params: {
+  title: string;
+  description: string;
+  lastModifiedAt: string;
+}) {
+  const path = "/guides/weekend-in-juneau";
+  const destinationId = `${LFSE_SITE_URL}${path}#destination`;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${LFSE_SITE_URL}${path}#webpage`,
+        url: `${LFSE_SITE_URL}${path}`,
+        name: params.title,
+        description: params.description,
+        isPartOf: { "@id": `${LFSE_SITE_URL}/#website` },
+        publisher: LFSE_PUBLISHER_ORGANIZATION,
+        isBasedOn: DCC_ALASKA_DIRECTORY_API_URL,
+        mainEntity: { "@id": destinationId },
+        dateModified: params.lastModifiedAt,
+        inLanguage: "en-US",
+      },
+      {
+        "@type": ["TouristDestination", "Place"],
+        "@id": destinationId,
+        name: "Juneau, Alaska",
+        url: `${LFSE_SITE_URL}/ports/juneau`,
+        description:
+          "Alaska's roadless capital city along Gastineau Channel, combining Mendenhall Glacier, Juneau Icefield aviation, Auke Bay humpback whale waters, rainforest trails, museums, and walkable downtown dining.",
+        touristType: ["Independent Fly-In Travelers", "Multi-Day Alaska Stay Travelers"],
+      },
+      buildBreadcrumbListNode(path, [
+        { name: "Home", path: "/" },
+        { name: "Juneau", path: "/ports/juneau" },
+        { name: "Weekend in Juneau Guide", path },
+      ]),
+    ],
+  };
+}

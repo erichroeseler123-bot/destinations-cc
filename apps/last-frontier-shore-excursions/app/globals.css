@@ -1203,3 +1203,28 @@ tr:hover td {
     padding: 10px 11px;
   }
 }
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+    font-size: 11.5pt;
+    line-height: 1.45;
+  }
+
+  header,
+  footer,
+  .lfse-footer,
+  .lfse-skip-link,
+  .lfse-no-print {
+    display: none !important;
+  }
+
+  .lfse-printable-plan-sheet article,
+  .lfse-printable-plan-sheet section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    background: #ffffff !important;
+  }
+}
