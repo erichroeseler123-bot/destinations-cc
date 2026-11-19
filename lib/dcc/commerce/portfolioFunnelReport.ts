@@ -633,6 +633,9 @@ function classifyClickChannel(
   };
 }
 
+const LEGACY_PORTFOLIO_BOT_UA_RE =
+  /bot\b|crawler|spider|slurp|bingpreview|lighthouse|pagespeed|headlesschrome|phantomjs|puppeteer|playwright|curl\/|wget\/|python-requests|go-http-client|ahrefs|semrush|gptbot|claudebot|bytespider|applebot|yandex/i;
+
 function resolveCorridorEventSiteId(event: DccCorridorEventRow): DccPortfolioSiteId {
   if (event.corridorId === "wno-commerce") return "welcometoneworleanstours";
   const meta =
@@ -640,7 +643,7 @@ function resolveCorridorEventSiteId(event: DccCorridorEventRow): DccPortfolioSit
       ? (event.metadata as Record<string, unknown>)
       : {};
   const fromMeta = resolveActivePortfolioSiteId(
-    String(meta.site || meta.satelliteId || event.corridorId || "")
+    String(meta.site || meta.originating_site || meta.satelliteId || event.corridorId || "")
   );
   return fromMeta || "destinationcommandcenter";
 }
@@ -688,6 +691,8 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
       c &&
       !c.isTest &&
       c.trafficClass !== "test" &&
+      c.recordStage !== "recommendation" &&
+      !(typeof c.userAgent === "string" && LEGACY_PORTFOLIO_BOT_UA_RE.test(c.userAgent)) &&
       !isSyntheticInspectionId(c.clickId) &&
       isWithinWindow(c.followedAt || c.createdAt, startMs, endMs)
   );
@@ -995,7 +1000,12 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
     if (!metrics) continue;
     updateLastActivity(siteId, event.occurredAt);
 
-    if (event.eventName === "landing_viewed" || event.eventName === "page_viewed") {
+    if (
+      event.eventName === "landing_viewed" ||
+      event.eventName === "page_viewed" ||
+      event.eventName === "service_page_view" ||
+      event.eventName === "planner_view"
+    ) {
       const visitorKey =
         event.userId || event.sessionId || event.handoffId || String(event.eventId);
       const cKey = `cor:${visitorKey}`;
@@ -1030,13 +1040,9 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
       if (siteId === "welcometoneworleanstours") {
         metrics.outboundClicks.fareharborCheckoutReferrals += 1;
       }
-    } else if (
-      event.eventName === "booking_completed" ||
-      event.eventName === "checkout_completed" ||
-      event.eventName === "purchase_completed"
-    ) {
-      metrics.confirmedBookingsCount += 1;
     }
+    // Note: Unauthenticated client corridor events (booking_completed / checkout_completed)
+    // intentionally do NOT increment confirmedBookingsCount; only verified provider/ledger outcomes do.
   }
 
   // Check corridor outbound clicks without storefront arrival
@@ -1189,24 +1195,27 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
       });
     }
 
-    const visitorKey = click.visitorId
+    const hasVerifiedVisitorSeed = Boolean(click.visitorId);
+    const visitorKey = hasVerifiedVisitorSeed
       ? `vis:${click.visitorId}`
       : `clk_vis:${click.handoffId || click.clickId}`;
     if (!allPageviewVisitorKeys.has(visitorKey)) {
       allClickOnlyVisitorKeys.add(visitorKey);
     }
 
-    spokeVisitorSets.get(originSiteId)?.add(visitorKey);
-    if (!allPageviewVisitorKeys.has(visitorKey)) {
+    if (hasVerifiedVisitorSeed) {
+      spokeVisitorSets.get(originSiteId)?.add(visitorKey);
+    } else if (!allPageviewVisitorKeys.has(visitorKey)) {
       spokeClickOnlyVisitorSets.get(originSiteId)?.add(visitorKey);
     }
     if (targetSiteId !== originSiteId) {
-      spokeVisitorSets.get(targetSiteId)?.add(visitorKey);
-      if (!allPageviewVisitorKeys.has(visitorKey)) {
+      if (hasVerifiedVisitorSeed) {
+        spokeVisitorSets.get(targetSiteId)?.add(visitorKey);
+        spokeCrossSpokeVisitorSets.get(originSiteId)?.add(visitorKey);
+        spokeCrossSpokeVisitorSets.get(targetSiteId)?.add(visitorKey);
+      } else if (!allPageviewVisitorKeys.has(visitorKey)) {
         spokeClickOnlyVisitorSets.get(targetSiteId)?.add(visitorKey);
       }
-      spokeCrossSpokeVisitorSets.get(originSiteId)?.add(visitorKey);
-      spokeCrossSpokeVisitorSets.get(targetSiteId)?.add(visitorKey);
     }
 
     const checkoutSpokeId =

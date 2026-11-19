@@ -7,6 +7,7 @@ import SiteBreadcrumbs from "@/app/components/dcc/SiteBreadcrumbs";
 import SiteFooter from "@/app/components/dcc/SiteFooter";
 import WhatsLiveFloatingButton from "@/app/components/dcc/next48/WhatsLiveFloatingButton";
 import ConsentManagedAnalytics from "@/app/components/dcc/ConsentManagedAnalytics";
+import DccAnalyticsBridge from "@/app/components/dcc/DccAnalyticsBridge";
 
 export default function DccRootShell({
   children,
@@ -42,10 +43,13 @@ export default function DccRootShell({
         </a>
         <div id="main-content">{children}</div>
         {!pathname.startsWith("/embed") ? (
-          <ConsentManagedAnalytics
-            gaMeasurementId={gaMeasurementId}
-            gygPartnerId={gygPartnerId ?? undefined}
-          />
+          <>
+            <DccAnalyticsBridge />
+            <ConsentManagedAnalytics
+              gaMeasurementId={gaMeasurementId}
+              gygPartnerId={gygPartnerId ?? undefined}
+            />
+          </>
         ) : null}
       </>
     );
@@ -65,6 +69,7 @@ export default function DccRootShell({
       </div>
       <WhatsLiveFloatingButton />
       <SiteFooter />
+      <DccAnalyticsBridge />
       <ConsentManagedAnalytics
         gaMeasurementId={gaMeasurementId}
         gygPartnerId={gygPartnerId ?? undefined}

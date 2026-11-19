@@ -5,6 +5,10 @@ import {
   getRecentTelemetryEvents,
   type TelemetryEventPayload,
 } from "../../../../lib/telemetryStore";
+import {
+  bridgeLegacyEventToV2Collector,
+  collectAnalyticsRawPayload,
+} from "@/lib/dcc/analytics/collector";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +43,7 @@ function isAuthorized(request: NextRequest): boolean {
 export async function POST(request: NextRequest) {
   try {
     const raw = await request.text();
-    let payload: TelemetryEventPayload = {};
+    let payload: TelemetryEventPayload & { events?: Array<Record<string, unknown>> } = {};
 
     try {
       payload = JSON.parse(raw);
@@ -47,21 +51,97 @@ export async function POST(request: NextRequest) {
       // Body was not JSON; proceed with empty payload
     }
 
-    // 1. Record event durably in JFD PostgreSQL / local telemetry store
-    if (payload && typeof payload === "object") {
-      recordTelemetryEvent(payload);
+    const incomingUa = request.headers.get("user-agent")?.trim() || "";
+    const incomingLang = request.headers.get("accept-language")?.trim() || "";
+    const incomingHost =
+      request.headers.get("x-forwarded-host") || request.headers.get("host") || "";
+
+    // Support native v2 batched analytics envelopes
+    if (payload && Array.isArray(payload.events)) {
+      for (const evt of payload.events) {
+        if (evt && typeof evt === "object") {
+          recordTelemetryEvent({
+            site: "juneau-flight-deck",
+            eventName: String(evt.eventType || "page_viewed"),
+            sessionId: typeof evt.sessionId === "string" ? evt.sessionId : undefined,
+            sourcePage: typeof evt.path === "string" ? evt.path : undefined,
+            landingPath: typeof evt.landingPath === "string" ? evt.landingPath : undefined,
+            targetPath: typeof evt.targetSite === "string" ? evt.targetSite : undefined,
+          });
+        }
+      }
+
+      const collectRes = collectAnalyticsRawPayload({
+        rawBodyText: raw,
+        headers: request.headers,
+      });
+
+      const explicitCollectUrl = process.env.DCC_ANALYTICS_COLLECT_URL?.trim();
+      const prodDccOrigin =
+        process.env.DCC_ORIGIN?.trim() ||
+        (process.env.VERCEL_ENV === "production"
+          ? "https://www.destinationcommandcenter.com"
+          : "");
+      const upstreamUrl =
+        explicitCollectUrl ||
+        (prodDccOrigin ? `${prodDccOrigin}/api/v2/analytics/collect` : "");
+
+      if (upstreamUrl) {
+        void fetch(upstreamUrl, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            ...(incomingUa ? { "user-agent": incomingUa } : {}),
+            ...(incomingLang ? { "accept-language": incomingLang } : {}),
+            ...(incomingHost ? { "x-forwarded-host": incomingHost } : {}),
+          },
+          body: raw,
+        }).catch(() => undefined);
+      }
+
+      return NextResponse.json(collectRes, { status: collectRes.status });
     }
 
-    // 2. Fire-and-forget relay to upstream DCC telemetry endpoint if available
-    const dccOrigin = process.env.DCC_ORIGIN || "https://www.destinationcommandcenter.com";
-    try {
-      fetch(`${dccOrigin}/api/network/telemetry`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: raw,
-      }).catch(() => undefined);
-    } catch {
-      // Silently ignore upstream connection or certificate failures
+    // 1. Record legacy single event durably in JFD PostgreSQL / local telemetry store
+    if (payload && typeof payload === "object") {
+      recordTelemetryEvent(payload);
+      bridgeLegacyEventToV2Collector({
+        rawSite: "juneauflightdeck",
+        rawEventName: String(payload.eventName || "page_viewed"),
+        sessionId: typeof payload.sessionId === "string" ? payload.sessionId : undefined,
+        sourcePage: typeof payload.sourcePage === "string" ? payload.sourcePage : "/",
+        landingPath: typeof payload.landingPath === "string" ? payload.landingPath : undefined,
+        targetPath: typeof payload.targetPath === "string" ? payload.targetPath : undefined,
+        isTest: request.headers.get("x-qa-test") === "1",
+        metadata:
+          payload.outcome && typeof payload.outcome === "object"
+            ? (payload.outcome as Record<string, unknown>)
+            : {},
+        headers: request.headers,
+      });
+    }
+
+    // 2. Fire-and-forget relay to upstream DCC telemetry endpoint ONLY when explicitly configured or in Production (never leak Preview hits to Production)
+    const dccOrigin =
+      process.env.DCC_ORIGIN?.trim() ||
+      (process.env.VERCEL_ENV === "production"
+        ? "https://www.destinationcommandcenter.com"
+        : "");
+    if (dccOrigin) {
+      try {
+        fetch(`${dccOrigin}/api/network/telemetry`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            ...(incomingUa ? { "user-agent": incomingUa } : {}),
+            ...(incomingLang ? { "accept-language": incomingLang } : {}),
+            ...(incomingHost ? { "x-forwarded-host": incomingHost } : {}),
+          },
+          body: raw,
+        }).catch(() => undefined);
+      } catch {
+        // Silently ignore upstream connection or certificate failures
+      }
     }
 
     return NextResponse.json({ ok: true });

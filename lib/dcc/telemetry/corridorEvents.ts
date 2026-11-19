@@ -420,8 +420,29 @@ function resolveDeterministicEventUuid(rawEventId?: string): string | undefined 
 
 function sanitizeTelemetryPath(rawPath?: string | null): string | null {
   if (!rawPath || typeof rawPath !== "string") return null;
-  const pathOnly = rawPath.split("?")[0].split("#")[0].trim();
+  let pathOnly = rawPath.split("?")[0].split("#")[0].trim();
   if (!pathOnly) return null;
+  if (/^https?:\/\//i.test(pathOnly)) {
+    try {
+      const parsed = new URL(pathOnly);
+      const safePath = sanitizeTelemetryPath(parsed.pathname) || "/";
+      return `${parsed.origin}${safePath}`;
+    } catch {
+      return "[redacted-url]";
+    }
+  }
+  if (/^\/p\/[^/]+/i.test(pathOnly)) {
+    pathOnly = pathOnly.replace(/^(\/p\/)[^/]+/i, "$1[redacted]");
+  }
+  if (/^\/organizer\/[^/]+/i.test(pathOnly)) {
+    pathOnly = pathOnly.replace(/^(\/organizer\/)[^/]+/i, "$1[redacted]");
+  }
+  if (/^\/(claim|recover|share|invite)\/[^/]+/i.test(pathOnly)) {
+    pathOnly = pathOnly.replace(/^(\/(?:claim|recover|share|invite)\/)[^/]+/i, "$1[redacted]");
+  }
+  if (/^\/go\/getyourguide\/[^/]+/i.test(pathOnly)) {
+    pathOnly = pathOnly.replace(/^(\/go\/getyourguide\/)[^/]+/i, "$1[redacted]");
+  }
   if (/^\/booking\/[^/]+/i.test(pathOnly)) return "/booking/[token]";
   if (/^\/pay-balance\/[^/]+/i.test(pathOnly)) return "/pay-balance/[token]";
   if (/^\/pay\/[^/]+/i.test(pathOnly)) return "/pay/[token]";
@@ -494,44 +515,74 @@ export async function appendCorridorEventDurably(input: CorridorEventPayload) {
     input.handoff_id;
   const isTest = Boolean(input.is_test || metaRecord.is_test === true || metaRecord.campaign_source === "qa_test" || metaRecord.campaign_source === "e2e_test");
 
-  const inserted = await db
-    .insert(dccCorridorEvents)
-    .values({
-      ...(resolvedEventUuid ? { eventId: resolvedEventUuid } : {}),
-      corridorId: catalog.corridorId,
-      family: catalog.family,
-      eventName: input.event_name,
-      occurredAt: input.occurred_at ? new Date(input.occurred_at) : new Date(),
-      handoffId: input.handoff_id ?? journeyId ?? null,
-      sessionId: input.session_id ?? null,
-      userId: input.user_id ?? null,
-      sourcePage: safeSourcePage,
-      landingPath: safeLandingPath,
-      targetPath: safeTargetPath,
-      requestedLane: input.requested_lane ?? null,
-      resolvedLane: input.resolved_lane ?? null,
-      topic: input.topic ?? null,
-      subtype: input.subtype ?? null,
-      port: input.port ?? null,
-      handoffDate: input.handoff_date ?? null,
-      defaultCardSlug: input.default_card_slug ?? null,
-      clickedProductSlug: input.clicked_product_slug ?? null,
-      routeTarget: input.route_target ?? null,
-      fitSignal: input.fit_signal ?? null,
-      urgency: input.urgency ?? null,
-      confidenceDowngraded: input.confidence_downgraded ?? false,
-      winningRuleIds: input.winning_rule_ids ?? [],
-      winningFields: input.winning_fields ?? {},
-      pageVariant: input.page_variant ?? null,
-      metadata: {
-        ...metaRecord,
-        ...(safeEventId ? { event_id: safeEventId } : {}),
-        ...(journeyId ? { journey_id: journeyId } : {}),
-        is_test: isTest,
-      },
-    })
-    .onConflictDoNothing({ target: dccCorridorEvents.eventId })
-    .returning({ eventId: dccCorridorEvents.eventId });
+  const insertValues = {
+    ...(resolvedEventUuid ? { eventId: resolvedEventUuid } : {}),
+    corridorId: catalog.corridorId,
+    family: catalog.family,
+    eventName: input.event_name,
+    occurredAt: input.occurred_at ? new Date(input.occurred_at) : new Date(),
+    handoffId: input.handoff_id ?? journeyId ?? null,
+    sessionId: input.session_id ?? null,
+    userId: input.user_id ?? null,
+    sourcePage: safeSourcePage,
+    landingPath: safeLandingPath,
+    targetPath: safeTargetPath,
+    requestedLane: input.requested_lane ?? null,
+    resolvedLane: input.resolved_lane ?? null,
+    topic: input.topic ?? null,
+    subtype: input.subtype ?? null,
+    port: input.port ?? null,
+    handoffDate: input.handoff_date ?? null,
+    defaultCardSlug: input.default_card_slug ?? null,
+    clickedProductSlug: input.clicked_product_slug ?? null,
+    routeTarget: input.route_target ?? null,
+    fitSignal: input.fit_signal ?? null,
+    urgency: input.urgency ?? null,
+    confidenceDowngraded: input.confidence_downgraded ?? false,
+    winningRuleIds: input.winning_rule_ids ?? [],
+    winningFields: input.winning_fields ?? {},
+    pageVariant: input.page_variant ?? null,
+    metadata: {
+      ...metaRecord,
+      ...(safeEventId ? { event_id: safeEventId } : {}),
+      ...(journeyId ? { journey_id: journeyId } : {}),
+      is_test: isTest,
+    },
+  };
+
+  let inserted: Array<{ eventId: string }>;
+  try {
+    inserted = await db
+      .insert(dccCorridorEvents)
+      .values(insertValues)
+      .onConflictDoNothing({ target: dccCorridorEvents.eventId })
+      .returning({ eventId: dccCorridorEvents.eventId });
+  } catch (err) {
+    const pgCode = (err as { code?: string } | null)?.code;
+    if (pgCode === "23503") {
+      await db
+        .insert(dccCorridorCatalog)
+        .values({
+          corridorId: catalog.corridorId,
+          corridorName: catalog.corridorName,
+          family: catalog.family,
+          appPath: catalog.appPath,
+          status: catalog.status,
+          continuityLevel: catalog.continuityLevel,
+          patternFamily: catalog.patternFamily,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .onConflictDoNothing({ target: dccCorridorCatalog.corridorId });
+      inserted = await db
+        .insert(dccCorridorEvents)
+        .values(insertValues)
+        .onConflictDoNothing({ target: dccCorridorEvents.eventId })
+        .returning({ eventId: dccCorridorEvents.eventId });
+    } else {
+      throw err;
+    }
+  }
 
   const deduplicated = Boolean(resolvedEventUuid && inserted.length === 0);
   if (!deduplicated) {

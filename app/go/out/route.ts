@@ -7,6 +7,13 @@ import {
 } from "@/lib/dcc/commerce";
 import { getDurableTourByIdOrAlias } from "@/lib/dcc/catalog/durableCatalogStore";
 import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
+import { bridgeLegacyEventToV2Collector } from "@/lib/dcc/analytics/collector";
+
+function readCookieFromHeader(cookieHeader: string | null, name: string): string | undefined {
+  if (!cookieHeader) return undefined;
+  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+  return match?.[1] ? decodeURIComponent(match[1]).trim() : undefined;
+}
 
 export const dynamic = "force-dynamic";
 
@@ -211,6 +218,30 @@ export async function GET(request: Request) {
   });
 
   await syncDurableLedgerWithPostgres({ forcePushLocal: true });
+
+  const cookieHeader = request.headers.get("cookie");
+  const browserSeed = readCookieFromHeader(cookieHeader, "_dcc_aid");
+  const sessionSeed = readCookieFromHeader(cookieHeader, "_dcc_asid");
+  bridgeLegacyEventToV2Collector({
+    rawSite: resolvedOriginatingSite,
+    rawEventName: "booking_handoff_initiated",
+    eventId: `go_out_${handoff.clickId}`,
+    visitorId: browserSeed,
+    sessionId: sessionSeed,
+    sourcePage: originatingPage || "/go/out",
+    targetPath: handoff.outboundAffiliateUrl,
+    handoffId: handoff.handoffId,
+    travelDateHint: sp.get("date")?.trim() || null,
+    isTest: sp.get("qa") === "1" || sp.get("isTest") === "1",
+    metadata: {
+      provider: handoff.provider,
+      productCode: productCode || catalogTour?.providerProductCode || undefined,
+      portSlug: portSlug || undefined,
+      surface,
+      clickId: handoff.clickId,
+    },
+    headers: request.headers,
+  });
 
   const outboundUrlObj = new URL(handoff.outboundAffiliateUrl);
   const resolvedCampaign =

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LfseSiteHeader } from "@/components/LfseSiteHeader";
+import { LfseAnalyticsBridge } from "@/components/LfseAnalyticsBridge";
 import { getSoutheastAlaskaDirectorySnapshot } from "../../../lib/dcc/shared/southeastAlaskaDirectoryOperatorsAndTours";
 import { LFSE_PUBLISHER_ORGANIZATION, LFSE_SITE_URL } from "@/lib/structuredData";
 import "./globals.css";
@@ -101,6 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to main content
         </a>
         <SiteJsonLd />
+        <LfseAnalyticsBridge />
         <LfseSiteHeader />
         <div id="lfse-main-content" tabIndex={-1}>
           {children}

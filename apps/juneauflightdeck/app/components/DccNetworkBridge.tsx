@@ -1,10 +1,28 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import {
+  configureAnalyticsClient,
+  enqueueClientAnalyticsEvent,
+} from "@/lib/dcc/analytics/clientSdk";
 
 const ENDPOINT = "/api/network/telemetry";
 const SESSION_KEY = "dcc_network_session";
 const CONTEXT_KEY = "dcc_traveler_context_v1";
+
+const JFD_NETWORK_DOMAINS: Array<[string, string]> = [
+  ["cruisepromenade.com", "cruisepromenade"],
+  ["lastfrontiershoreexcursions.com", "lastfrontiershoreexcursions"],
+  ["rollcallusa.com", "rollcallusa"],
+  ["destinationcommandcenter.com", "destinationcommandcenter"],
+];
+
+function inferJfdContentFamily(pathname: string): string {
+  const lower = pathname.toLowerCase();
+  if (lower.includes("uncruise")) return "uncruise";
+  return "flightseeing";
+}
 
 export function getJfdSessionId(): string {
   if (typeof window === "undefined") return "server_session";
@@ -26,20 +44,42 @@ export function getJfdContext(): Record<string, unknown> | null {
   }
 }
 
-function captureInboundContext() {
-  if (typeof window === "undefined") return null;
-  const raw = new URLSearchParams(window.location.search).get("dcc_ctx");
-  if (!raw) return getJfdContext();
+function captureInboundContext(): {
+  context: Record<string, unknown> | null;
+  freshInboundParam: boolean;
+  handoffId?: string;
+} {
+  if (typeof window === "undefined") {
+    return { context: null, freshInboundParam: false };
+  }
+  const sp = new URLSearchParams(window.location.search);
+  const handoffId = sp.get("dcc_handoff_id") || sp.get("handoff_id") || undefined;
+  const raw = sp.get("dcc_ctx");
+  if (!raw) {
+    return { context: getJfdContext(), freshInboundParam: Boolean(handoffId), handoffId };
+  }
   try {
-    const parsed = JSON.parse(decodeURIComponent(atob(raw.replace(/-/g, "+").replace(/_/g, "/"))));
-    sessionStorage.setItem(CONTEXT_KEY, JSON.stringify(parsed));
-    return parsed;
+    const parsed = JSON.parse(
+      decodeURIComponent(atob(raw.replace(/-/g, "+").replace(/_/g, "/"))),
+    );
+    // Strip any sensitive fields before storing in origin-scoped sessionStorage
+    if (parsed && typeof parsed === "object") {
+      delete (parsed as Record<string, unknown>).shareCode;
+      delete (parsed as Record<string, unknown>).token;
+      delete (parsed as Record<string, unknown>).email;
+      sessionStorage.setItem(CONTEXT_KEY, JSON.stringify(parsed));
+    }
+    return { context: parsed, freshInboundParam: true, handoffId };
   } catch {
-    return getJfdContext();
+    return { context: getJfdContext(), freshInboundParam: true, handoffId };
   }
 }
 
-export function sendJfdTelemetry(eventName: string, outcome: Record<string, unknown> = {}) {
+export function sendJfdTelemetry(
+  eventName: string,
+  outcome: Record<string, unknown> = {},
+  options?: { skipRemotePost?: boolean },
+) {
   if (typeof window === "undefined") return;
 
   const sessionId = getJfdSessionId();
@@ -57,13 +97,15 @@ export function sendJfdTelemetry(eventName: string, outcome: Record<string, unkn
     outcome,
   };
 
-  fetch(ENDPOINT, {
-    method: "POST",
-    mode: "no-cors",
-    keepalive: true,
-    headers: { "content-type": "text/plain;charset=UTF-8" },
-    body: JSON.stringify(payload),
-  }).catch(() => undefined);
+  if (!options?.skipRemotePost) {
+    fetch(ENDPOINT, {
+      method: "POST",
+      mode: "no-cors",
+      keepalive: true,
+      headers: { "content-type": "text/plain;charset=UTF-8" },
+      body: JSON.stringify(payload),
+    }).catch(() => undefined);
+  }
 
   // Store in local browser event buffer for diagnostics
   try {
@@ -107,14 +149,61 @@ export function sendJfdTelemetry(eventName: string, outcome: Record<string, unkn
 }
 
 export default function DccNetworkBridge() {
-  useEffect(() => {
-    // 1. Log inbound context and page view
-    const inbound = captureInboundContext();
-    sendJfdTelemetry(inbound ? "handoff_received" : "page_viewed", {
-      inboundContextPresent: Boolean(inbound),
-    });
+  const pathname = usePathname() || "/";
+  const prevPathRef = useRef<string | null>(null);
 
-    // 2. Attach global delegated click tracker for external booking buttons
+  useEffect(() => {
+    configureAnalyticsClient({ endpoint: ENDPOINT });
+  }, []);
+
+  useEffect(() => {
+    const isInitial = prevPathRef.current === null;
+    if (prevPathRef.current === pathname) return;
+    prevPathRef.current = pathname;
+
+    const inbound = captureInboundContext();
+    const contentFamily = inferJfdContentFamily(pathname);
+
+    // Always record page_viewed (fixing legacy bug where inbound context suppressed pageviews)
+    enqueueClientAnalyticsEvent({
+      eventType: "page_viewed",
+      site: "juneauflightdeck",
+      path: pathname,
+      navigationType: isInitial ? "initial_load" : "spa_route_change",
+      contentFamily,
+    });
+    sendJfdTelemetry(
+      "page_viewed",
+      { inboundContextPresent: Boolean(inbound.context) },
+      { skipRemotePost: true },
+    );
+
+    if (isInitial) {
+      let fromNetworkRef = false;
+      if (document.referrer) {
+        try {
+          const refHost = new URL(document.referrer).hostname.toLowerCase();
+          fromNetworkRef = JFD_NETWORK_DOMAINS.some(
+            ([d]) => refHost === d || refHost.endsWith(`.${d}`),
+          );
+        } catch {
+          fromNetworkRef = false;
+        }
+      }
+      if (inbound.freshInboundParam || fromNetworkRef) {
+        enqueueClientAnalyticsEvent({
+          eventType: "cross_site_handoff_arrived",
+          site: "juneauflightdeck",
+          path: pathname,
+          handoffId: inbound.handoffId,
+          contextTokenPresent: inbound.freshInboundParam,
+          contentFamily,
+        });
+      }
+    }
+  }, [pathname]);
+
+  useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
@@ -122,6 +211,35 @@ export default function DccNetworkBridge() {
       if (!anchor || !anchor.href) return;
 
       const href = anchor.href;
+      let parsedUrl: URL | null = null;
+      try {
+        parsedUrl = new URL(href, window.location.origin);
+      } catch {
+        parsedUrl = null;
+      }
+
+      // 1. Cross-site network handoffs (e.g., JFD UnCruise guide -> Cruise Promenade or LFSE)
+      if (parsedUrl && parsedUrl.hostname.toLowerCase() !== window.location.hostname.toLowerCase()) {
+        const hostLower = parsedUrl.hostname.toLowerCase();
+        for (const [domain, targetSite] of JFD_NETWORK_DOMAINS) {
+          if (hostLower === domain || hostLower.endsWith(`.${domain}`)) {
+            enqueueClientAnalyticsEvent({
+              eventType: "cross_site_handoff_clicked",
+              site: "juneauflightdeck",
+              path: window.location.pathname,
+              targetSite,
+              handoffId: parsedUrl.searchParams.get("dcc_handoff_id") || undefined,
+              contextTokenPresent: Boolean(
+                parsedUrl.searchParams.get("dcc_ctx") || parsedUrl.searchParams.get("ctx"),
+              ),
+              contentFamily: inferJfdContentFamily(window.location.pathname),
+            });
+            return;
+          }
+        }
+      }
+
+      // 2. Seller booking handoffs (Viator / GetYourGuide / explicit booking buttons)
       const isViator = href.includes("viator.com");
       const isGYG = href.includes("getyourguide.com");
 
@@ -132,8 +250,8 @@ export default function DccNetworkBridge() {
       const provider = isViator
         ? "viator"
         : isGYG
-        ? "getyourguide"
-        : "external";
+          ? "getyourguide"
+          : "external";
 
       let tourSlug = anchor.dataset.tourSlug || "";
       let tourName = anchor.dataset.tourName || "";
@@ -160,14 +278,31 @@ export default function DccNetworkBridge() {
 
       const anchorText = anchor.textContent?.trim().slice(0, 100) || "";
 
-      sendJfdTelemetry("booking_clicked", {
+      enqueueClientAnalyticsEvent({
+        eventType: "seller_handoff_initiated",
+        site: "juneauflightdeck",
+        path: window.location.pathname,
         provider,
-        tourSlug: tourSlug || "unspecified",
-        tourName: tourName || anchorText,
-        targetUrl: href,
-        anchorText,
-        sourcePage: window.location.pathname,
+        productCode: tourSlug || "unspecified",
+        targetSite: parsedUrl?.hostname.toLowerCase() || provider,
+        contentFamily: inferJfdContentFamily(window.location.pathname),
+        props: {
+          tourName: (tourName || anchorText).slice(0, 120),
+        },
       });
+
+      sendJfdTelemetry(
+        "booking_clicked",
+        {
+          provider,
+          tourSlug: tourSlug || "unspecified",
+          tourName: tourName || anchorText,
+          targetUrl: href,
+          anchorText,
+          sourcePage: window.location.pathname,
+        },
+        { skipRemotePost: true },
+      );
     };
 
     document.addEventListener("click", handleClick, { capture: true });

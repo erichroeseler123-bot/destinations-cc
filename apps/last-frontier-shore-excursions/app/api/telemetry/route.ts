@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveDccIngestBaseUrl } from "../../../../../lib/dcc/shared/envCompat";
 import { EDGE_PII_QUERY_PARAM_KEYS } from "../../../../../lib/dcc/shared/edgeContextAndPii";
+import {
+  bridgeLegacyEventToV2Collector,
+  collectAnalyticsRawPayload,
+} from "../../../../../lib/dcc/analytics/collector";
 import { getLfseTelemetryFetch } from "@/lib/fishingLodgesTelemetry";
 
 const PII_KEY_SET = new Set<string>(
@@ -50,16 +54,25 @@ function mapLfseEventToCorridorEventName(eventName: string): string {
   }
   if (
     eventName === "lfse_lodge_directory_filter" ||
+    eventName === "lfse_guide_engagement" ||
     eventName === "eligible_results_shown"
   ) {
     return "recommendation_rendered";
   }
-  return "page_viewed";
+  if (
+    eventName === "lfse_lodge_page_view" ||
+    eventName === "page_viewed" ||
+    eventName === "landing_viewed"
+  ) {
+    return "page_viewed";
+  }
+  return "plan_modified";
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const data = (await req.json().catch(() => null)) as Record<
+    const rawText = await req.text().catch(() => "");
+    const data = (rawText ? JSON.parse(rawText) : null) as Record<
       string,
       unknown
     > | null;
@@ -69,6 +82,31 @@ export async function POST(req: NextRequest) {
         { ok: true, accepted: false, reason: "empty_or_invalid_payload" },
         { status: 202 },
       );
+    }
+
+    // Native v2 batched analytics envelope support
+    if (Array.isArray(data.events)) {
+      const collectRes = collectAnalyticsRawPayload({
+        rawBodyText: rawText,
+        headers: req.headers,
+      });
+      if (process.env.DCC_ANALYTICS_COLLECT_URL) {
+        const incomingUa = req.headers.get("user-agent")?.trim() || "";
+        const incomingLang = req.headers.get("accept-language")?.trim() || "";
+        const incomingHost = req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
+        void fetch(process.env.DCC_ANALYTICS_COLLECT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(incomingUa ? { "User-Agent": incomingUa } : {}),
+            ...(incomingLang ? { "Accept-Language": incomingLang } : {}),
+            ...(incomingHost ? { "x-forwarded-host": incomingHost } : {}),
+          },
+          body: rawText,
+          cache: "no-store",
+        }).catch(() => undefined);
+      }
+      return NextResponse.json(collectRes, { status: collectRes.status });
     }
 
     const eventName = String(
@@ -114,6 +152,31 @@ export async function POST(req: NextRequest) {
     const dccBase = resolveDccIngestBaseUrl();
     let forwarded = false;
     let storedEventId: string | null = null;
+
+    // Ingest into bounded v2 durable analytics queue (classifies QA/Preview vs Production cleanly without leaking Preview hits to Production)
+    if (process.env.DCC_ANALYTICS_PREVIEW_INGEST !== "0") {
+      bridgeLegacyEventToV2Collector({
+        rawSite: "lastfrontiershoreexcursions",
+        rawEventName: eventName,
+        sessionId:
+          typeof sanitizedProps.sessionId === "string" ? sanitizedProps.sessionId : undefined,
+        sourcePage: pagePath,
+        landingPath: pagePath,
+        targetPath:
+          typeof sanitizedProps.targetUrl === "string"
+            ? sanitizedProps.targetUrl
+            : typeof sanitizedProps.destinationUrl === "string"
+              ? sanitizedProps.destinationUrl
+              : undefined,
+        isTest: Boolean(
+          sanitizedProps.qa === true ||
+            sanitizedProps.is_test === true ||
+            req.headers.get("x-qa-test") === "1",
+        ),
+        metadata: sanitizedProps,
+        headers: req.headers,
+      });
+    }
 
     if (
       !isQaOrPreview &&

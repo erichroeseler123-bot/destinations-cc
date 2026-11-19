@@ -91,6 +91,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             >
               Portfolio Desktop
             </Link>
+            <Link
+              href="/admin/analytics"
+              className="rounded-lg border border-indigo-400/40 bg-indigo-500/15 px-2.5 py-1 font-semibold text-indigo-200 hover:bg-indigo-500/25 hover:text-white"
+            >
+              Network &amp; Trip Analytics
+            </Link>
             <Link href="/admin/portfolio/activity" className="text-zinc-200 hover:text-white">
               Portfolio Activity
             </Link>

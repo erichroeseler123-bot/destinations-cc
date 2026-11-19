@@ -3,6 +3,7 @@ import {
   appendCorridorEventDurably,
   CorridorEventPayloadSchema,
 } from "@/lib/dcc/telemetry/corridorEvents";
+import { bridgeLegacyEventToV2Collector } from "@/lib/dcc/analytics/collector";
 
 export const runtime = "nodejs";
 
@@ -91,6 +92,32 @@ export async function POST(request: NextRequest) {
     request.headers.get("x-qa-test") === "1";
 
   const userAgent = request.headers.get("user-agent") || "";
+  const rawSiteInput = String(
+    meta.site || meta.originating_site || meta.satelliteId || parsed.data.corridor_id || "",
+  );
+  const originalEventName = String(
+    meta.original_event || meta.original_event_name || parsed.data.event_name,
+  );
+
+  // Always bridge into bounded v2 analytics ingestion so bot/QA/spoke coverage is recorded accurately
+  bridgeLegacyEventToV2Collector({
+    rawSite: rawSiteInput,
+    rawEventName: originalEventName,
+    eventId: parsed.data.event_id,
+    occurredAt: parsed.data.occurred_at,
+    sessionId: parsed.data.session_id,
+    visitorId: parsed.data.user_id,
+    sourcePage: parsed.data.source_page,
+    landingPath: parsed.data.landing_path,
+    targetPath: parsed.data.target_path,
+    handoffId: parsed.data.handoff_id,
+    journeyId: parsed.data.journey_id,
+    travelDateHint: parsed.data.handoff_date,
+    isTest: isExplicitTest,
+    metadata: meta,
+    headers: request.headers,
+  });
+
   if (!isExplicitTest && (!userAgent.trim() || BOT_USER_AGENT_RE.test(userAgent))) {
     return withCors(
       request,

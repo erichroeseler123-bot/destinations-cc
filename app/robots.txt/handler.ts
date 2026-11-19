@@ -21,6 +21,7 @@ const PUBLIC_CRAWL_RULES = [
   "Allow: /api/v2/feeds/",
   "Disallow: /admin/",
   "Disallow: /api/",
+  "Disallow: /go/",
   "Disallow: /internal/",
   "Disallow: /dashboard/",
   "Disallow: /map",
