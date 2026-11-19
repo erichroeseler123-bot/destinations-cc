@@ -6,6 +6,13 @@ import {
   JFD_CHECKOUT_COOKIE_OPTIONS,
 } from "./lib/edgeDcc";
 
+function withPreviewRobotsHeader(response: NextResponse): NextResponse {
+  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production") {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  }
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
@@ -30,7 +37,7 @@ export async function middleware(request: NextRequest) {
             token,
             JFD_CHECKOUT_COOKIE_OPTIONS
           );
-          return response;
+          return withPreviewRobotsHeader(response);
         }
       }
     }
@@ -77,7 +84,7 @@ export async function middleware(request: NextRequest) {
       if (!redeemResult.success) {
         redirectRes.headers.set("x-dcc-ctx-redemption", "failed");
         redirectRes.headers.set("x-dcc-ctx-error", redeemResult.errorCode || "REDEMPTION_FAILED");
-        return redirectRes;
+        return withPreviewRobotsHeader(redirectRes);
       }
 
       redirectRes.cookies.set(JFD_CHECKOUT_COOKIE_NAME, rawCtx, {
@@ -88,11 +95,11 @@ export async function middleware(request: NextRequest) {
         maxAge: 60 * 60 * 24,
       });
       redirectRes.headers.set("x-dcc-ctx-redemption", "redeemed");
-      return redirectRes;
+      return withPreviewRobotsHeader(redirectRes);
     }
   }
 
-  return NextResponse.next();
+  return withPreviewRobotsHeader(NextResponse.next());
 }
 
 export const config = {
