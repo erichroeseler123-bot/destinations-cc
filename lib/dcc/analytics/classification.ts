@@ -13,7 +13,7 @@ const KNOWN_BOT_UA_RE =
   /bot\b|crawler|spider|slurp|bingpreview|duckduckbot|baiduspider|yandex|applebot|mediapartners-google|facebookexternalhit|facebot|slackbot|discordbot|whatsapp|linkedinbot|twitterbot|telegrambot|embedly|pinterest|ahrefs|semrush|mj12bot|dotbot|petalbot|bytespider|gptbot|chatgpt-user|oai-searchbot|claudebot|anthropic-ai|perplexitybot|ccbot|google-extended|lighthouse|pagespeed|gtmetrix|pingdom|uptimerobot|vercel-screenshot|headlesschrome|phantomjs|puppeteer|playwright|cypress|selenium|webdriver|curl\/|wget\/|python-requests|python-urllib|aiohttp|httpx|go-http-client|java\/|axios\/|node-fetch|undici/i;
 
 const SYNTHETIC_TOKEN_RE =
-  /(?:^|[-_:/])(smoke|canary|qa|qa_test|qa_smoke|e2e|e2e_test|synthetic|playwright|vitest|demo-2027|whale-split-2027|indy-2027|western-2027|clk_qa|vis_test|wno_test|wno_verify|staging-verification-test)(?:$|[-_:/0-9])/i;
+  /(?:^|[-_:/])(smoke|canary|qa|qa_test|qa_smoke|e2e|e2e_test|synthetic|synthetic_probe|dcc_verify|preview_verify|verify_probe|bench_probe|playwright|vitest|demo-2027|whale-split-2027|indy-2027|western-2027|clk_qa|vis_test|wno_test|wno_verify|staging-verification-test)(?:$|[-_:/0-9])/i;
 
 function extractHostname(urlOrHost?: string | null): string | null {
   if (!urlOrHost || typeof urlOrHost !== "string") return null;
@@ -114,7 +114,15 @@ export function hasQaQueryOrMarker(rawUrlOrQuery?: string | null): boolean {
   if (qIdx < 0) return false;
   try {
     const qs = new URLSearchParams(rawUrlOrQuery.slice(qIdx + 1).split("#")[0] || "");
-    for (const key of ["qa", "qa_test", "is_test", "test", "synthetic", "telemetry_test"]) {
+    for (const key of [
+      "qa",
+      "qa_test",
+      "is_test",
+      "test",
+      "synthetic",
+      "telemetry_test",
+      "dcc_verify",
+    ]) {
       const v = (qs.get(key) || "").trim().toLowerCase();
       if (v === "1" || v === "true" || v === "yes") return true;
     }
@@ -131,6 +139,7 @@ export function hasQaQueryOrMarker(rawUrlOrQuery?: string | null): boolean {
  * QA/canary traffic, internal operators, and click-only requests never pollute observed browser metrics.
  */
 export function classifyEventTraffic(params: {
+  logicalEventId?: string | null;
   eventType: AnalyticsEventType;
   environment: AnalyticsEnvironment;
   headers: Headers;
@@ -174,7 +183,9 @@ export function classifyEventTraffic(params: {
     headers.get("x-qa-test") === "1" ||
     headers.get("x-qa-test") === "true" ||
     headers.get("x-dcc-telemetry-test") === "1" ||
-    headers.get("x-dcc-telemetry-test") === "true";
+    headers.get("x-dcc-telemetry-test") === "true" ||
+    headers.get("x-dcc-synthetic-verification") === "1" ||
+    headers.get("x-dcc-synthetic-verification") === "true";
 
   if (
     params.isTestFlag === true ||
@@ -182,6 +193,7 @@ export function classifyEventTraffic(params: {
     qaHeader ||
     hasQaQueryOrMarker(params.rawPathOrUrl) ||
     hasQaQueryOrMarker(headers.get("referer")) ||
+    (params.logicalEventId && SYNTHETIC_TOKEN_RE.test(params.logicalEventId)) ||
     (params.utmCampaign && SYNTHETIC_TOKEN_RE.test(params.utmCampaign)) ||
     (params.utmSource && SYNTHETIC_TOKEN_RE.test(params.utmSource)) ||
     (params.sessionId && SYNTHETIC_TOKEN_RE.test(params.sessionId)) ||

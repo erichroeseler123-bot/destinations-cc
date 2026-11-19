@@ -475,6 +475,8 @@ export async function runAnalyticsWorker(options?: {
                   !isTombstoned &&
                   rec.trafficClass !== "known_bot" &&
                   rec.trafficClass !== "suspected_automation" &&
+                  rec.trafficClass !== "qa_or_synthetic" &&
+                  rec.trafficClass !== "internal" &&
                   (safeTripKey || safeDraftHash)
                 ) {
                   await projectEventIntoTripState(tx, rec, safeTripKey, safeDraftHash, nowIso);

@@ -376,6 +376,7 @@ export async function collectAnalyticsRawPayload(params: {
 
       const effectiveBrowserSeed = ev.browserSeed || cookieBrowserSeed;
       const classification = classifyEventTraffic({
+        logicalEventId: ev.logicalEventId,
         eventType: ev.eventType,
         environment,
         headers: params.headers,

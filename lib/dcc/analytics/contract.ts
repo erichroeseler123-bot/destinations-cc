@@ -122,6 +122,7 @@ export interface AnalyticsSiteRegistryEntry {
     | "retired_or_redirected"
     | "excluded_external";
   inActive12Portfolio: boolean;
+  initialRolloutTarget?: boolean;
   instrumentationTier: InstrumentationCoverageTier;
   pageviewCollectionWired: boolean;
   residency: string;
@@ -152,6 +153,7 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     ],
     commercialModel: "owned_planning_hub",
     inActive12Portfolio: true,
+    initialRolloutTarget: true,
     instrumentationTier: "v2_end_to_end",
     pageviewCollectionWired: true,
     residency: "destinations-cc (root app)",
@@ -166,6 +168,7 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     aliases: ["cp", "cruise-promenade", "dcc:site:cruise-promenade"],
     commercialModel: "owned_planning_hub",
     inActive12Portfolio: true,
+    initialRolloutTarget: true,
     instrumentationTier: "v2_end_to_end",
     pageviewCollectionWired: true,
     residency: "cruisepromenade (dedicated repo)",
@@ -187,6 +190,7 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     ],
     commercialModel: "owned_storefront_external_checkout",
     inActive12Portfolio: true,
+    initialRolloutTarget: true,
     instrumentationTier: "v2_end_to_end",
     pageviewCollectionWired: true,
     residency: "destinations-cc (apps/last-frontier-shore-excursions)",
@@ -201,6 +205,7 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     aliases: ["jfd", "juneau-flight-deck", "dcc:site:juneau-flight-deck"],
     commercialModel: "owned_storefront_external_checkout",
     inActive12Portfolio: true,
+    initialRolloutTarget: true,
     instrumentationTier: "v2_end_to_end",
     pageviewCollectionWired: true,
     residency: "destinations-cc (apps/juneauflightdeck)",
@@ -271,10 +276,12 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     ],
     commercialModel: "owned_direct_checkout",
     inActive12Portfolio: true,
-    instrumentationTier: "v2_server_adapter",
-    pageviewCollectionWired: false,
+    initialRolloutTarget: true,
+    instrumentationTier: "v2_end_to_end",
+    pageviewCollectionWired: true,
     residency: "gosno-production (external repo) + bigsky.gosno.co",
-    redirectAndSourceNotes: "Inbound /go/dcc-to-gosno & /go/denver/breckenridge/shared; Direct MoR summary API; client pageview SDK not wired.",
+    redirectAndSourceNotes:
+      "Priority initial rollout target: GoSnoAnalyticsBridge (<=3KB sendBeacon, tokenized /checkout & /pay paths redacted) + post-response after() Direct MoR outcome emitter on /api/webhooks/rezdy, /api/webhooks/square & /api/cron/reconcile (0-diff on synchronous /pay & /api/availability).",
     externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "direct_mor_summary",
   },
@@ -319,10 +326,12 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     aliases: ["parr", "party-at-red-rocks", "dcc:site:party-at-red-rocks"],
     commercialModel: "owned_direct_checkout",
     inActive12Portfolio: true,
-    instrumentationTier: "v2_server_adapter",
-    pageviewCollectionWired: false,
+    initialRolloutTarget: true,
+    instrumentationTier: "v2_end_to_end",
+    pageviewCollectionWired: true,
     residency: "partyatredrocks (external repo)",
-    redirectAndSourceNotes: "Inbound /go/red-rocks/shared edge redirect; Direct MoR summary API; client pageview SDK pending.",
+    redirectAndSourceNotes:
+      "Priority initial rollout target: ParrAnalyticsBridge (<=3KB sendBeacon, /booking/[token] & /pay-balance/[token] redacted) + post-response after() Direct MoR outcome emitter on /api/webhooks/square & payment routes (0ms synchronous checkout impact; all SEO Gates 1-5 preserved).",
     externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "direct_mor_summary",
   },

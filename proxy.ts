@@ -594,14 +594,15 @@ function checkInternalApiAuthorization(request: NextRequest): {
     return { authorized: true };
   }
 
-  // 4. Vercel CRON_SECRET (allowed strictly for GET /api/internal/earthos/reference-maintenance detection and GET /api/internal/gosno/route-feed-refresh)
+  // 4. Vercel CRON_SECRET (allowed strictly for GET /api/internal/earthos/reference-maintenance detection, GET /api/internal/gosno/route-feed-refresh, and GET /api/internal/analytics/process straggler sweep)
   const cronSecret = process.env.CRON_SECRET?.trim();
   if (cronSecret && bearerSecret === cronSecret) {
     if (
       request.method.toUpperCase() === "GET" &&
       ((request.nextUrl.pathname === "/api/internal/earthos/reference-maintenance" &&
         request.nextUrl.searchParams.get("mode") !== "state") ||
-        request.nextUrl.pathname === "/api/internal/gosno/route-feed-refresh")
+        request.nextUrl.pathname === "/api/internal/gosno/route-feed-refresh" ||
+        request.nextUrl.pathname === "/api/internal/analytics/process")
     ) {
       return { authorized: true };
     }

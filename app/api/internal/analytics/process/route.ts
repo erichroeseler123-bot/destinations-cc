@@ -68,6 +68,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
+  // Skip waking Neon Postgres during hard env-var kill switch (`0` DB wakes)
+  const hardKill = (process.env.DCC_ANALYTICS_KILL_SWITCH || "").trim().toLowerCase();
+  if (hardKill === "1" || hardKill === "true" || hardKill === "on") {
+    return NextResponse.json(
+      { ok: true, skipped: true, reason: "env_kill_switch_active" },
+      { status: 200, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
   try {
     const result = await runAnalyticsWorker();
     return NextResponse.json(result, {

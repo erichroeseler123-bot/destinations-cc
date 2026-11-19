@@ -47,30 +47,30 @@ function renderMetricOrUnavailable(
   return val.toLocaleString();
 }
 
-function tierBadge(tier: string) {
+function tierBadge(tier: string, initialRolloutTarget?: boolean) {
   switch (tier) {
     case "v2_end_to_end":
       return (
         <span className="rounded-md border border-emerald-400/40 bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-200">
-          v2 End-to-End
+          {initialRolloutTarget ? "Priority v2 E2E" : "v2 End-to-End"}
         </span>
       );
     case "v2_server_adapter":
       return (
         <span className="rounded-md border border-sky-400/40 bg-sky-500/15 px-2 py-0.5 text-xs font-semibold text-sky-200">
-          Server Adapter
+          Server Adapter Only
         </span>
       );
     case "supplemental_manifest":
       return (
         <span className="rounded-md border border-violet-400/40 bg-violet-500/15 px-2 py-0.5 text-xs font-semibold text-violet-200">
-          Supplemental
+          Supplemental Registry
         </span>
       );
     case "uninstrumented_unavailable":
       return (
         <span className="rounded-md border border-amber-400/40 bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-200">
-          Uninstrumented
+          Registered Only (Unwired)
         </span>
       );
     case "retired_or_redirected":
@@ -89,6 +89,78 @@ function tierBadge(tier: string) {
       return (
         <span className="rounded-md border border-zinc-600 bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
           Excluded Community
+        </span>
+      );
+  }
+}
+
+function collectionRuntimeBadge(
+  state: string | undefined,
+  qaCount: number,
+  lastRealAt?: string | null,
+) {
+  switch (state) {
+    case "collecting_real_traffic":
+      return (
+        <div>
+          <span className="inline-flex rounded-md border border-emerald-400/50 bg-emerald-500/20 px-2 py-0.5 text-[11px] font-bold text-emerald-200">
+            Collecting Real Traffic
+          </span>
+          {lastRealAt && (
+            <div className="mt-0.5 text-[10px] text-zinc-400">
+              Last: {lastRealAt.slice(0, 19)}Z
+            </div>
+          )}
+        </div>
+      );
+    case "synthetic_verification_only":
+      return (
+        <div>
+          <span className="inline-flex rounded-md border border-sky-400/50 bg-sky-500/20 px-2 py-0.5 text-[11px] font-bold text-sky-200">
+            Synthetic Verification Only
+          </span>
+          <div className="mt-0.5 text-[10px] text-sky-300/80">
+            {qaCount} synthetic probe{qaCount === 1 ? "" : "s"} · 0 real
+          </div>
+        </div>
+      );
+    case "wired_awaiting_traffic":
+      return (
+        <div>
+          <span className="inline-flex rounded-md border border-zinc-500/50 bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-300">
+            Wired — 0 Events Yet
+          </span>
+          <div className="mt-0.5 text-[10px] text-zinc-500">Code ready; awaiting traffic</div>
+        </div>
+      );
+    case "handoff_adapter_only":
+      return (
+        <div>
+          <span className="inline-flex rounded-md border border-indigo-400/40 bg-indigo-500/15 px-2 py-0.5 text-[11px] font-semibold text-indigo-200">
+            Handoff Adapter Only
+          </span>
+          <div className="mt-0.5 text-[10px] text-zinc-500">No client pageview SDK</div>
+        </div>
+      );
+    case "registered_only_not_collecting":
+      return (
+        <div>
+          <span className="inline-flex rounded-md border border-amber-400/40 bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
+            Registered Only — Not Collecting
+          </span>
+          <div className="mt-0.5 text-[10px] text-zinc-500">Catalog entry; 0 collection</div>
+        </div>
+      );
+    case "contained_or_retired":
+      return (
+        <span className="inline-flex rounded-md border border-zinc-600 bg-zinc-800/80 px-2 py-0.5 text-[11px] text-zinc-400">
+          Contained / Retired
+        </span>
+      );
+    default:
+      return (
+        <span className="inline-flex rounded-md border border-zinc-600 bg-zinc-800 px-2 py-0.5 text-[11px] text-zinc-400">
+          Excluded by Contract
         </span>
       );
   }
@@ -480,8 +552,10 @@ export default function AnalyticsDashboardClient({
                   <strong className="text-amber-300">{hyg.suspectedAutomationAndPrefetchEvents}</strong>
                 </span>
                 <span>
-                  QA / Synthetic Excluded:{" "}
-                  <strong className="text-sky-300">{hyg.qaOrSyntheticEvents}</strong>
+                  QA / Synthetic Verification Excluded:{" "}
+                  <strong className="text-sky-300" data-testid="synthetic-excluded-count">
+                    {hyg.qaOrSyntheticEvents}
+                  </strong>
                 </span>
                 <span>
                   Internal Operator: <strong>{hyg.internalOperatorEvents}</strong>
@@ -491,6 +565,15 @@ export default function AnalyticsDashboardClient({
                   <strong className="text-zinc-400">{hyg.unclassifiedClickOnlyRequests}</strong>
                 </span>
               </div>
+              {report.syntheticVerificationSummary &&
+                report.syntheticVerificationSummary.totalSyntheticVerificationEvents > 0 && (
+                  <div className="mt-2 border-t border-white/10 pt-2 text-[11px] text-sky-200/90">
+                    <strong>Synthetic Verification Probes (Excluded from Customer KPIs &amp; Trip Funnel):</strong>{" "}
+                    {Object.entries(report.syntheticVerificationSummary.bySite)
+                      .map(([site, cnt]) => `${site}: ${cnt}`)
+                      .join(" · ")}
+                  </div>
+                )}
             </div>
           )}
 
@@ -757,26 +840,72 @@ export default function AnalyticsDashboardClient({
         {/* Full Ecosystem Property & Instrumentation Coverage Table */}
         <section className="rounded-2xl border border-white/10 bg-zinc-900/60 p-6">
           <h2 className="text-lg font-bold">
-            Canonical Ecosystem Registry &amp; Instrumentation Coverage ({report.sites.length}{" "}
+            Canonical Ecosystem Registry vs. Active Event Collection ({report.sites.length}{" "}
             Properties)
           </h2>
           <p className="text-xs text-zinc-400">
-            Configured registry status is distinct from observed traffic. Unconnected provider feeds
-            display as <code>Unavailable</code>, never zero.
+            Sites merely registered in the governance catalog are explicitly separated from sites
+            wired for v2 collection and sites actively receiving real vs. synthetic verification
+            events. Missing or unwired collection displays as <code>Unavailable</code>, never zero.
           </p>
+
+          {report.portfolioCollectionSummary && (
+            <div
+              data-testid="portfolio-collection-summary"
+              className="mt-3 grid gap-2 rounded-xl border border-white/10 bg-black/40 p-3 text-xs sm:grid-cols-3 lg:grid-cols-6"
+            >
+              <div>
+                <div className="text-zinc-400">Collecting Real Traffic</div>
+                <strong className="text-base text-emerald-300">
+                  {report.portfolioCollectionSummary.collectingRealTrafficSites.length}
+                </strong>
+              </div>
+              <div>
+                <div className="text-zinc-400">Synthetic Probes Only</div>
+                <strong className="text-base text-sky-300">
+                  {report.portfolioCollectionSummary.syntheticVerificationOnlySites.length}
+                </strong>
+              </div>
+              <div>
+                <div className="text-zinc-400">Wired (0 Events Yet)</div>
+                <strong className="text-base text-zinc-200">
+                  {report.portfolioCollectionSummary.wiredAwaitingTrafficSites.length}
+                </strong>
+              </div>
+              <div>
+                <div className="text-zinc-400">Server Handoff Only</div>
+                <strong className="text-base text-indigo-300">
+                  {report.portfolioCollectionSummary.serverHandoffOnlySites.length}
+                </strong>
+              </div>
+              <div>
+                <div className="text-zinc-400">Registered Only (Not Collecting)</div>
+                <strong className="text-base text-amber-300">
+                  {report.portfolioCollectionSummary.registeredCatalogOnlyNotCollectingSites.length}
+                </strong>
+              </div>
+              <div>
+                <div className="text-zinc-400">Contained / Retired / Excluded</div>
+                <strong className="text-base text-zinc-400">
+                  {report.portfolioCollectionSummary.containedRetiredOrExcludedSites.length}
+                </strong>
+              </div>
+            </div>
+          )}
 
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="border-b border-white/10 text-zinc-400">
                 <tr>
                   <th className="py-2 pr-3">Property</th>
-                  <th className="py-2 pr-3">Coverage</th>
+                  <th className="py-2 pr-3">Wiring Tier</th>
+                  <th className="py-2 pr-3">Live Collection State</th>
                   <th className="py-2 pr-3">Browsers</th>
                   <th className="py-2 pr-3">Sessions</th>
                   <th className="py-2 pr-3">Pageviews</th>
                   <th className="py-2 pr-3">Guides / Prints</th>
                   <th className="py-2 pr-3">Handoffs (Clicks)</th>
-                  <th className="py-2 pr-3">Bots / QA Filtered</th>
+                  <th className="py-2 pr-3">Bots / Synthetic</th>
                   <th className="py-2 pr-3">Verified Bookings</th>
                   <th className="py-2">MoR Gross / Comm</th>
                 </tr>
@@ -792,7 +921,7 @@ export default function AnalyticsDashboardClient({
                       </div>
                     </td>
                     <td className="py-2.5 pr-3">
-                      <div>{tierBadge(s.instrumentationTier)}</div>
+                      <div>{tierBadge(s.instrumentationTier, s.initialRolloutTarget)}</div>
                       <div className="mt-1 text-[10px] text-zinc-500">
                         GSC:{" "}
                         {s.externalSourcesStatus.gsc === "snapshot_attached_2026_11_19"
@@ -800,6 +929,13 @@ export default function AnalyticsDashboardClient({
                           : "Unavailable"}{" "}
                         · GA4: Unavailable
                       </div>
+                    </td>
+                    <td className="py-2.5 pr-3">
+                      {collectionRuntimeBadge(
+                        s.collectionRuntimeState,
+                        s.qaEventsExcluded,
+                        s.lastRealEventAt,
+                      )}
                     </td>
                     <td className="py-2.5 pr-3">
                       {renderMetricOrUnavailable(s.observedBrowsers)}

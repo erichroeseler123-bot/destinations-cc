@@ -33,6 +33,15 @@ const WINDOW_HOURS: Record<AnalyticsWindowPreset, number> = {
   "28d": 28 * 24,
 };
 
+export type SiteCollectionRuntimeState =
+  | "collecting_real_traffic"
+  | "synthetic_verification_only"
+  | "wired_awaiting_traffic"
+  | "handoff_adapter_only"
+  | "registered_only_not_collecting"
+  | "contained_or_retired"
+  | "excluded_community";
+
 export interface SiteTrafficAndCoverageRow {
   siteId: string;
   displayName: string;
@@ -45,8 +54,12 @@ export interface SiteTrafficAndCoverageRow {
     vercelWebAnalytics: "unavailable" | "not_configured";
   };
   inActive12Portfolio: boolean;
+  initialRolloutTarget: boolean;
   instrumentationTier: InstrumentationCoverageTier;
   pageviewCollectionWired: boolean;
+  collectionRuntimeState: SiteCollectionRuntimeState;
+  lastRealEventAt: string | null;
+  lastSyntheticEventAt: string | null;
   commercialModel: string;
   outcomeFeedMode: string;
   observedBrowsers: number | "unavailable" | "excluded";
@@ -185,6 +198,19 @@ export interface NetworkAndTripAnalyticsReport {
     qaOrSyntheticEvents: number;
     internalOperatorEvents: number;
     unclassifiedClickOnlyRequests: number;
+  } | null;
+  syntheticVerificationSummary?: {
+    totalSyntheticVerificationEvents: number;
+    bySite: Record<string, number>;
+    excludedFromHumanKpisAndFunnel: true;
+  } | null;
+  portfolioCollectionSummary?: {
+    collectingRealTrafficSites: string[];
+    syntheticVerificationOnlySites: string[];
+    wiredAwaitingTrafficSites: string[];
+    serverHandoffOnlySites: string[];
+    registeredCatalogOnlyNotCollectingSites: string[];
+    containedRetiredOrExcludedSites: string[];
   } | null;
   topLandingPages: TopDimensionRow[];
   topSourcesAndCampaigns: TopDimensionRow[];
@@ -527,12 +553,13 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
          FROM dcc_analytics_events
          WHERE environment = $1 AND occurred_at >= $2::timestamptz AND occurred_at <= $3::timestamptz
            AND event_type = 'booking_outcome_confirmed'
+           AND traffic_class NOT IN ('qa_or_synthetic', 'known_bot', 'suspected_automation', 'internal')
          GROUP BY site_id, outcome_type`,
         [environment, lowerBoundIso, upperBoundIso],
       );
       const outcomeRows = outcomeRes.rows;
 
-      // 5. Traffic hygiene counts across classes within [lowerBoundIso, upperBoundIso]
+      // 5. Traffic hygiene & per-site runtime collection state within [lowerBoundIso, upperBoundIso]
       const hygieneParams: unknown[] = [environment, lowerBoundIso, upperBoundIso];
       let hygieneWhere =
         "environment = $1 AND occurred_at >= $2::timestamptz AND occurred_at <= $3::timestamptz";
@@ -544,14 +571,63 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
         hygieneParams.push(familyFilter);
         hygieneWhere += ` AND content_family = $${hygieneParams.length}`;
       }
-      const hygieneRes = await exec.query<{ traffic_class: string; cnt: string | number | null }>(
-        `SELECT traffic_class, COUNT(*) AS cnt
+      const hygieneRes = await exec.query<{
+        site_id: string;
+        traffic_class: string;
+        cnt: string | number | null;
+        last_at: string | Date | null;
+      }>(
+        `SELECT site_id, traffic_class, COUNT(*) AS cnt, MAX(occurred_at) AS last_at
          FROM dcc_analytics_events
          WHERE ${hygieneWhere}
-         GROUP BY traffic_class`,
+         GROUP BY site_id, traffic_class`,
         hygieneParams,
       );
       const hygieneRows = hygieneRes.rows;
+      const perSiteHygiene = new Map<
+        string,
+        {
+          realEvents: number;
+          qaEvents: number;
+          botEvents: number;
+          autoEvents: number;
+          lastRealAt: string | null;
+          lastSyntheticAt: string | null;
+        }
+      >();
+      const syntheticBySite: Record<string, number> = {};
+      for (const hr of hygieneRows) {
+        const sId = String(hr.site_id);
+        const tc = String(hr.traffic_class);
+        const c = Number(hr.cnt || 0);
+        const iso =
+          hr.last_at instanceof Date
+            ? hr.last_at.toISOString()
+            : hr.last_at
+              ? String(hr.last_at)
+              : null;
+        const cur = perSiteHygiene.get(sId) || {
+          realEvents: 0,
+          qaEvents: 0,
+          botEvents: 0,
+          autoEvents: 0,
+          lastRealAt: null,
+          lastSyntheticAt: null,
+        };
+        if (tc === "observed_browser" || tc === "unclassified_non_pageview") {
+          cur.realEvents += c;
+          if (iso && (!cur.lastRealAt || iso > cur.lastRealAt)) cur.lastRealAt = iso;
+        } else if (tc === "qa_or_synthetic") {
+          cur.qaEvents += c;
+          syntheticBySite[sId] = (syntheticBySite[sId] || 0) + c;
+          if (iso && (!cur.lastSyntheticAt || iso > cur.lastSyntheticAt)) cur.lastSyntheticAt = iso;
+        } else if (tc === "known_bot") {
+          cur.botEvents += c;
+        } else if (tc === "suspected_automation") {
+          cur.autoEvents += c;
+        }
+        perSiteHygiene.set(sId, cur);
+      }
 
       // Aggregate rollup structures
       const siteSubjMap = new Map<string, { browsers: number; returning: number }>();
@@ -688,19 +764,57 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
         siteOutcomesMap.set(sId, cur);
       }
 
+      const collectingRealTrafficSites: string[] = [];
+      const syntheticVerificationOnlySites: string[] = [];
+      const wiredAwaitingTrafficSites: string[] = [];
+      const serverHandoffOnlySites: string[] = [];
+      const registeredCatalogOnlyNotCollectingSites: string[] = [];
+      const containedRetiredOrExcludedSites: string[] = [];
+
       const sitesReport: SiteTrafficAndCoverageRow[] = ANALYTICS_SITE_REGISTRY.filter(
         (entry) => siteFilter === "all" || entry.siteId === siteFilter,
       ).map((entry) => {
         const isCommunityExcluded = entry.instrumentationTier === "excluded_community";
         const isContainedExternal = entry.instrumentationTier === "excluded_external";
+        const isRetired = entry.instrumentationTier === "retired_or_redirected";
         const sAcc = perSiteRollup.get(entry.siteId);
+        const sHyg = perSiteHygiene.get(entry.siteId);
         const sSubj = siteSubjMap.get(entry.siteId);
         const sSess = siteSessMap.get(entry.siteId) || 0;
         const out = siteOutcomesMap.get(entry.siteId);
 
         const hasObservedPv = Boolean(sAcc && sAcc.pv > 0);
         const isPageviewDataUnavailable =
-          isContainedExternal || (!entry.pageviewCollectionWired && !hasObservedPv);
+          isContainedExternal || isRetired || (!entry.pageviewCollectionWired && !hasObservedPv);
+
+        const realEventsCnt = (sHyg?.realEvents ?? 0) + (out?.confirmedCnt ?? 0);
+        const qaEventsCnt = sHyg?.qaEvents ?? sAcc?.qa ?? 0;
+
+        let collectionRuntimeState: SiteCollectionRuntimeState;
+        if (isCommunityExcluded) {
+          collectionRuntimeState = "excluded_community";
+          containedRetiredOrExcludedSites.push(entry.siteId);
+        } else if (isContainedExternal || isRetired) {
+          collectionRuntimeState = "contained_or_retired";
+          containedRetiredOrExcludedSites.push(entry.siteId);
+        } else if (entry.pageviewCollectionWired) {
+          if (realEventsCnt > 0) {
+            collectionRuntimeState = "collecting_real_traffic";
+            collectingRealTrafficSites.push(entry.siteId);
+          } else if (qaEventsCnt > 0) {
+            collectionRuntimeState = "synthetic_verification_only";
+            syntheticVerificationOnlySites.push(entry.siteId);
+          } else {
+            collectionRuntimeState = "wired_awaiting_traffic";
+            wiredAwaitingTrafficSites.push(entry.siteId);
+          }
+        } else if (entry.instrumentationTier === "v2_server_adapter") {
+          collectionRuntimeState = "handoff_adapter_only";
+          serverHandoffOnlySites.push(entry.siteId);
+        } else {
+          collectionRuntimeState = "registered_only_not_collecting";
+          registeredCatalogOnlyNotCollectingSites.push(entry.siteId);
+        }
 
         // Missing provider outcome feeds display as "unavailable", NEVER silently 0!
         let confirmedBookings: number | "unavailable" = "unavailable";
@@ -731,8 +845,12 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
           redirectAndSourceNotes: entry.redirectAndSourceNotes,
           externalSourcesStatus: entry.externalSourcesStatus,
           inActive12Portfolio: entry.inActive12Portfolio,
+          initialRolloutTarget: Boolean(entry.initialRolloutTarget),
           instrumentationTier: entry.instrumentationTier,
           pageviewCollectionWired: entry.pageviewCollectionWired,
+          collectionRuntimeState,
+          lastRealEventAt: sHyg?.lastRealAt || null,
+          lastSyntheticEventAt: sHyg?.lastSyntheticAt || null,
           commercialModel: entry.commercialModel,
           outcomeFeedMode: entry.outcomeFeedMode,
           observedBrowsers: isCommunityExcluded
@@ -767,9 +885,9 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
           crossSiteArrivals: sAcc?.xsa ?? 0,
           verifiedCtxArrivals: sAcc?.ctxa ?? 0,
           sellerHandoffs: sAcc?.sh ?? 0,
-          knownBotEventsExcluded: sAcc?.bots ?? 0,
-          qaEventsExcluded: sAcc?.qa ?? 0,
-          suspectedAutomationExcluded: sAcc?.auto ?? 0,
+          knownBotEventsExcluded: sHyg?.botEvents ?? sAcc?.bots ?? 0,
+          qaEventsExcluded: qaEventsCnt,
+          suspectedAutomationExcluded: sHyg?.autoEvents ?? sAcc?.auto ?? 0,
           unidentifiedOutboundRequests: sAcc?.uo ?? 0,
           confirmedBookings,
           ownedMorGrossSalesUsd,
@@ -932,7 +1050,8 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
 
       const hygieneMap = new Map<string, number>();
       for (const h of hygieneRows) {
-        hygieneMap.set(String(h.traffic_class), Number(h.cnt || 0));
+        const tc = String(h.traffic_class);
+        hygieneMap.set(tc, (hygieneMap.get(tc) || 0) + Number(h.cnt || 0));
       }
 
       const lagSeconds = watermark.lastWorkerSuccessAt
@@ -993,6 +1112,19 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
           qaOrSyntheticEvents: hygieneMap.get("qa_or_synthetic") || 0,
           internalOperatorEvents: hygieneMap.get("internal") || 0,
           unclassifiedClickOnlyRequests: hygieneMap.get("unclassified_non_pageview") || 0,
+        },
+        syntheticVerificationSummary: {
+          totalSyntheticVerificationEvents: hygieneMap.get("qa_or_synthetic") || 0,
+          bySite: syntheticBySite,
+          excludedFromHumanKpisAndFunnel: true,
+        },
+        portfolioCollectionSummary: {
+          collectingRealTrafficSites,
+          syntheticVerificationOnlySites,
+          wiredAwaitingTrafficSites,
+          serverHandoffOnlySites,
+          registeredCatalogOnlyNotCollectingSites,
+          containedRetiredOrExcludedSites,
         },
         topLandingPages: topLandingRows.map((r) => ({
           value: String(r.value),
