@@ -9,12 +9,10 @@ import {
   SOUTHEAST_ALASKA_LODGE_SUBREGION_LABELS,
   type LodgeOperationArchetype,
   type LodgeStayFormat,
-  type PackagePriceState,
   type ProvisionStatus,
   type RemainingAvailabilityState,
   type SoutheastAlaskaFishingLodgeRecord,
   type SoutheastAlaskaLodgeSubregion,
-  type TransportOperationState,
   type TriStateFact,
 } from "../../../lib/dcc/shared/southeastAlaskaFishingLodgesContract";
 import styles from "@/app/southeast-alaska/fishing-lodges/fishing-lodges.module.css";
@@ -27,57 +25,72 @@ export interface LfseFishingLodgesDirectoryClientProps {
 
 const ARCHETYPE_LABELS: Record<LodgeOperationArchetype, string> = {
   all_inclusive_guided_lodge: "All-Inclusive Guided Lodge",
-  self_guided_or_hybrid_lodge: "Self-Guided or Hybrid Guided/Unguided Lodge",
-  modular_lodging_plus_separate_charters: "Modular Lodging + Separate Local Charters",
-  diy_boat_rental_with_lodging_partner: "DIY Boat Rental + Partner Lodging Package",
+  self_guided_or_hybrid_lodge: "Self-Guided or Hybrid Guided/Unguided",
+  modular_lodging_plus_separate_charters: "Lodge Stay + Separate Local Charters",
+  diy_boat_rental_with_lodging_partner: "Self-Guided Boat Rental + Partner Hotel",
   whole_property_private_stay_services_separate:
-    "Whole-Lodge Private Stay (Guides & Catering Separate)",
+    "Whole-Lodge Private Stay (Services Separate)",
 };
 
-const PRICE_STATE_LABELS: Record<PackagePriceState, string> = {
-  published_dated_season_rate: "Published Dated Season Rate",
-  published_undated_current_rate: "Published Current Rate (Season Undated on Source)",
-  published_starting_from_rate: "Published Starting-From Rate",
-  quote_required: "Direct Quote Required",
-};
-
-const TRANSPORT_STATE_LABELS: Record<TransportOperationState, string> = {
-  lodge_operated_or_chartered_transfer: "Lodge-Operated or Lodge-Chartered Transfer",
-  scheduled_third_party_carrier_corridor: "Scheduled Third-Party Carrier Corridor",
-  road_or_local_courtesy_shuttle: "Road System or Local Courtesy Van",
-  conflicting_official_transfer_pages: "Conflicting Official Transfer Pages — Confirm Directly",
-  unknown: "Transfer Operation Not Disclosed on Retrieved Source",
-};
-
-const AVAILABILITY_STATE_LABELS: Record<RemainingAvailabilityState, string> = {
-  not_checked_contact_official_channel: "Live Availability Not Checked — Confirm Directly",
-  static_page_note_only_unverified_live: "Static Official Page Note Only (Not a Live Feed)",
-  verified_live_feed: "Verified Live Feed",
+const AVAILABILITY_LABELS: Record<RemainingAvailabilityState, string> = {
+  not_checked_contact_official_channel: "Check directly with the lodge",
+  static_page_note_only_unverified_live:
+    "General note on website — confirm current openings directly",
+  verified_live_feed: "Live availability shown",
 };
 
 const PROVISION_STATUS_LABELS: Record<ProvisionStatus, string> = {
-  included_in_published_package: "Included in published package",
-  extra_charge_published: "Extra charge (published amount)",
-  extra_charge_quote_required: "Extra charge / quote required",
-  arranged_separately_by_guest_or_group: "Arranged separately by guest/group",
+  included_in_published_package: "Included in package",
+  extra_charge_published: "Extra fee (published rate)",
+  extra_charge_quote_required: "Extra cost — request quote",
+  arranged_separately_by_guest_or_group: "Arranged separately",
   not_provided: "Not provided by lodge",
-  conflicting_official_pages_confirm: "Conflicting official pages — confirm before booking",
-  unknown: "Unknown — confirm directly",
+  conflicting_official_pages_confirm:
+    "Official pages differ — confirm before booking",
+  unknown: "Not listed — confirm with lodge",
 };
 
-function formatBathroomConfig(
+function formatBathroomSummary(
   cfg: SoutheastAlaskaFishingLodgeRecord["accommodation"]["bathroomConfiguration"],
 ): string {
-  if (cfg === "private_ensuite_documented") return "Private en-suite bath documented";
+  if (cfg === "private_ensuite_documented") return "Private bathroom";
   if (cfg === "private_or_group_shared_documented")
-    return "Private or group-shared bath documented";
-  return "Unknown (not disclosed on retrieved source)";
+    return "Private or shared group bathroom";
+  return "Bathroom setup not listed — confirm with lodge";
 }
 
-function formatTriStateNonAngler(val: TriStateFact): string {
-  if (val === "yes") return "Yes — documented dedicated non-angler excursions";
-  if (val === "no") return "No — guided program focuses on fishing";
-  return "Unknown — property equipment alone does not prove simultaneous guided non-angler activities";
+function formatNonAnglerHeadline(val: TriStateFact): string {
+  if (val === "yes") return "Dedicated guided non-fishing outings offered";
+  if (val === "no") return "Fishing-focused — no lodge-run non-angler tours";
+  return "Guided non-angler outings not confirmed — ask before booking";
+}
+
+/**
+ * Returns a concise booking-role explanation when property, operator, seller,
+ * or core services involve distinct parties or affect how a traveler books.
+ */
+function summarizeBookingDistinction(
+  lodge: SoutheastAlaskaFishingLodgeRecord,
+): string | null {
+  if (lodge.stayFormat === "whole_lodge_private_property") {
+    return `${lodge.accommodation.relationshipExplanation}`;
+  }
+  if (
+    lodge.accommodation.propertyName !==
+      lodge.operatingCompany.legalOrDisplayName ||
+    lodge.operatingCompany.legalOrDisplayName !== lodge.packageSeller.sellerName
+  ) {
+    return lodge.accommodation.relationshipExplanation;
+  }
+  if (
+    lodge.operationArchetype === "modular_lodging_plus_separate_charters"
+  ) {
+    return lodge.accommodation.relationshipExplanation;
+  }
+  if (lodge.operatingCompany.separationDisambiguationNote) {
+    return lodge.operatingCompany.separationDisambiguationNote;
+  }
+  return null;
 }
 
 export function LfseFishingLodgesDirectoryClient({
@@ -124,11 +137,15 @@ export function LfseFishingLodgesDirectoryClient({
 
   const totalCount = lodges.length;
   const individualCount = useMemo(
-    () => lodges.filter((l) => l.stayFormat === "individual_rooms_or_cabins").length,
+    () =>
+      lodges.filter((l) => l.stayFormat === "individual_rooms_or_cabins")
+        .length,
     [lodges],
   );
   const wholeLodgeCount = useMemo(
-    () => lodges.filter((l) => l.stayFormat === "whole_lodge_private_property").length,
+    () =>
+      lodges.filter((l) => l.stayFormat === "whole_lodge_private_property")
+        .length,
     [lodges],
   );
 
@@ -143,7 +160,7 @@ export function LfseFishingLodgesDirectoryClient({
       }
       window.history.replaceState({}, "", url.toString());
     } catch {
-      // Ignore history replace errors
+      // Non-blocking
     }
   }
 
@@ -167,7 +184,10 @@ export function LfseFishingLodgesDirectoryClient({
     });
   }
 
-  function applyComparePreset(presetSlugs: readonly string[], presetName: string) {
+  function applyComparePreset(
+    presetSlugs: readonly string[],
+    presetName: string,
+  ) {
     const validSet = new Set(lodges.map((l) => l.slug));
     const next = presetSlugs.filter((s) => validSet.has(s)).slice(0, 4);
     setSelectedCompareSlugs(next);
@@ -187,6 +207,7 @@ export function LfseFishingLodgesDirectoryClient({
 
   function clearCompare() {
     setSelectedCompareSlugs([]);
+    setPrintSheetMode(false);
     syncCompareUrl([]);
   }
 
@@ -332,7 +353,7 @@ export function LfseFishingLodgesDirectoryClient({
           data-testid="printable-sheet-toolbar"
         >
           <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--deep)" }}>
-            Printable Comparison Sheet Preview ({selectedLodges.length}{" "}
+            Printable Lodge Comparison ({selectedLodges.length}{" "}
             {selectedLodges.length === 1 ? "Lodge" : "Lodges"})
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -351,27 +372,26 @@ export function LfseFishingLodgesDirectoryClient({
               style={{ cursor: "pointer" }}
               data-testid="exit-print-sheet-mode-btn"
             >
-              ← Back to Interactive Directory
+              ← Back to Directory
             </button>
           </div>
         </div>
       )}
 
-      {/* Print-only title banner when printing from the directory comparison sheet */}
+      {/* Print-only header */}
       <div className={styles.printOnlyHeader}>
-        <h1 style={{ margin: "0 0 4px", fontSize: 20 }}>
-          Southeast Alaska Fishing Lodges — Side-by-Side Trip Comparison Sheet
+        <h1 style={{ margin: "0 0 4px", fontSize: 19 }}>
+          Southeast Alaska Fishing Lodges — Side-by-Side Trip Comparison
         </h1>
-        <p style={{ margin: 0, fontSize: 11 }}>
-          Source-backed snapshot from Last Frontier Shore Excursions &amp; Destination
-          Command Center (retrieved 2026-11-19). Published package rates reflect
-          explicitly scoped seasons and inclusions only—no blended &ldquo;complete trip&rdquo;
-          estimates. Confirm live availability, air/ferry transfers, taxes, and ADF&amp;G
-          regulations directly with each seller before booking.
+        <p style={{ margin: 0, fontSize: 10.5 }}>
+          Last Frontier Shore Excursions (official lodge pages checked Nov 19,
+          2026). Rates reflect published package dates and occupancy only;
+          confirm current openings, air/ferry transfers, taxes, and fishing
+          licenses directly before booking.
         </p>
       </div>
 
-      {/* 1. Filter & Whole-Lodge Stay Format Controls */}
+      {/* 1. Stay Format & Trip Filters */}
       <div
         className={`card ${styles.noPrint}`}
         style={{ background: "#ffffff", marginBottom: 22 }}
@@ -382,7 +402,7 @@ export function LfseFishingLodgesDirectoryClient({
           role="group"
           aria-label="Filter by stay format (individual rooms vs. whole-lodge private stays)"
         >
-          <span className={styles.stayFormatLabel}>Stay Format:</span>
+          <span className={styles.stayFormatLabel}>Stay Type:</span>
           <button
             type="button"
             onClick={() => {
@@ -398,7 +418,7 @@ export function LfseFishingLodgesDirectoryClient({
             aria-pressed={stayFormatFilter === "all"}
             data-testid="filter-stay-format-all"
           >
-            All Stay Formats ({totalCount})
+            All Stays ({totalCount})
           </button>
           <button
             type="button"
@@ -441,8 +461,15 @@ export function LfseFishingLodgesDirectoryClient({
         </div>
 
         <div className={styles.filterControlsGrid}>
-          <label style={{ display: "flex", flexDirection: "column", gap: 5, fontSize: 13 }}>
-            <strong>Search Lodge, Gateway, Island or Species</strong>
+          <label
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 5,
+              fontSize: 13,
+            }}
+          >
+            <strong>Search Lodge, Town, Island or Fish</strong>
             <input
               type="search"
               value={searchQuery}
@@ -458,12 +485,21 @@ export function LfseFishingLodgesDirectoryClient({
             />
           </label>
 
-          <label style={{ display: "flex", flexDirection: "column", gap: 5, fontSize: 13 }}>
-            <strong>Subregion &amp; Gateway</strong>
+          <label
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 5,
+              fontSize: 13,
+            }}
+          >
+            <strong>Region &amp; Gateway Town</strong>
             <select
               value={subRegionFilter}
               onChange={(e) => {
-                const next = e.target.value as "all" | SoutheastAlaskaLodgeSubregion;
+                const next = e.target.value as
+                  | "all"
+                  | SoutheastAlaskaLodgeSubregion;
                 setSubRegionFilter(next);
                 trackFishingLodgeDirectoryEvent({
                   event: "lfse_lodge_directory_filter",
@@ -479,7 +515,7 @@ export function LfseFishingLodgesDirectoryClient({
                 fontSize: 13.5,
               }}
             >
-              <option value="all">All 7 Southeast Alaska Subregions</option>
+              <option value="all">All Southeast Alaska Areas</option>
               {(
                 Object.entries(SOUTHEAST_ALASKA_LODGE_SUBREGION_LABELS) as [
                   SoutheastAlaskaLodgeSubregion,
@@ -493,12 +529,21 @@ export function LfseFishingLodgesDirectoryClient({
             </select>
           </label>
 
-          <label style={{ display: "flex", flexDirection: "column", gap: 5, fontSize: 13 }}>
-            <strong>Operation &amp; Guiding Model</strong>
+          <label
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 5,
+              fontSize: 13,
+            }}
+          >
+            <strong>Trip Style</strong>
             <select
               value={archetypeFilter}
               onChange={(e) =>
-                setArchetypeFilter(e.target.value as "all" | LodgeOperationArchetype)
+                setArchetypeFilter(
+                  e.target.value as "all" | LodgeOperationArchetype,
+                )
               }
               data-testid="lodge-archetype-select"
               style={{
@@ -509,7 +554,7 @@ export function LfseFishingLodgesDirectoryClient({
                 fontSize: 13.5,
               }}
             >
-              <option value="all">All Guiding &amp; Lodging Models</option>
+              <option value="all">All Guided &amp; Self-Guided Styles</option>
               {(
                 Object.entries(ARCHETYPE_LABELS) as [
                   LodgeOperationArchetype,
@@ -523,8 +568,15 @@ export function LfseFishingLodgesDirectoryClient({
             </select>
           </label>
 
-          <label style={{ display: "flex", flexDirection: "column", gap: 5, fontSize: 13 }}>
-            <strong>Gateway Access Connection</strong>
+          <label
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 5,
+              fontSize: 13,
+            }}
+          >
+            <strong>How You Get There</strong>
             <select
               value={accessModeFilter}
               onChange={(e) =>
@@ -545,21 +597,26 @@ export function LfseFishingLodgesDirectoryClient({
                 fontSize: 13.5,
               }}
             >
-              <option value="all">All Access Modes</option>
+              <option value="all">All Transfer Types</option>
               <option value="floatplane_or_commuter_air">
-                Floatplane or Commuter Aircraft Leg
+                Floatplane or Small Plane
               </option>
-              <option value="lodge_boat_or_ferry">
-                Lodge Boat or Ferry Corridor Leg
-              </option>
+              <option value="lodge_boat_or_ferry">Lodge Boat or Ferry</option>
               <option value="road_or_courtesy_van">
-                Road System or Local Courtesy Van
+                Road System or Courtesy Shuttle
               </option>
             </select>
           </label>
 
-          <label style={{ display: "flex", flexDirection: "column", gap: 5, fontSize: 13 }}>
-            <strong>Published Rate Visibility</strong>
+          <label
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 5,
+              fontSize: 13,
+            }}
+          >
+            <strong>Published Rates</strong>
             <select
               value={rateVisibilityFilter}
               onChange={(e) =>
@@ -580,15 +637,14 @@ export function LfseFishingLodgesDirectoryClient({
                 fontSize: 13.5,
               }}
             >
-              <option value="all">All Rate Disclosures</option>
-              <option value="published_2027">Dated 2027 Rates Published</option>
-              <option value="published_any">Any Dollar Rate Published on Site</option>
-              <option value="quote_required">Direct Quote / Inquiry Only</option>
+              <option value="all">All Lodges</option>
+              <option value="published_2027">2027 Rates Listed Online</option>
+              <option value="published_any">Rates Listed Online</option>
+              <option value="quote_required">Request a Quote</option>
             </select>
           </label>
         </div>
 
-        {/* Quick Compare Presets & Active Count */}
         <div
           style={{
             marginTop: 16,
@@ -603,7 +659,7 @@ export function LfseFishingLodgesDirectoryClient({
         >
           <div style={{ fontSize: 13.5, color: "var(--ink)" }}>
             Showing <strong>{filteredLodges.length}</strong> of{" "}
-            <strong>{totalCount}</strong> source-backed properties
+            <strong>{totalCount}</strong> properties
             {hasActiveFilters && (
               <button
                 type="button"
@@ -632,8 +688,10 @@ export function LfseFishingLodgesDirectoryClient({
               gap: 8,
             }}
           >
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--muted)" }}>
-              Quick 4-lodge comparisons:
+            <span
+              style={{ fontSize: 12.5, fontWeight: 700, color: "var(--muted)" }}
+            >
+              Sample comparisons:
             </span>
             <button
               type="button"
@@ -652,7 +710,8 @@ export function LfseFishingLodgesDirectoryClient({
                 )
               }
             >
-              Compare 4 Stay Models (Guided · Modular · DIY Partner · Whole-Lodge)
+              Compare 4 Trip Styles (Guided · Inn + Charter · DIY Boat · Whole
+              Lodge)
             </button>
             <button
               type="button"
@@ -670,7 +729,7 @@ export function LfseFishingLodgesDirectoryClient({
                 )
               }
             >
-              Compare Juneau &amp; Elfin Cove Fly-In Stays
+              Compare Juneau &amp; Elfin Cove Fly-In Lodges
             </button>
           </div>
         </div>
@@ -684,7 +743,7 @@ export function LfseFishingLodgesDirectoryClient({
         >
           <div className={styles.compareChipsList}>
             <strong style={{ fontSize: 13.5 }}>
-              Comparing {selectedLodges.length}/4:
+              Comparing {selectedLodges.length} of 4:
             </strong>
             {selectedLodges.map((l) => (
               <span key={l.slug} className={styles.compareSelectedChip}>
@@ -707,7 +766,7 @@ export function LfseFishingLodgesDirectoryClient({
               className="button small"
               style={{ background: "var(--accent)", color: "#ffffff" }}
             >
-              Jump to Comparison Table ↓
+              View Comparison ↓
             </a>
             <button
               type="button"
@@ -716,7 +775,7 @@ export function LfseFishingLodgesDirectoryClient({
               style={{ cursor: "pointer" }}
               data-testid="print-comparison-btn"
             >
-              Print / Save Comparison PDF
+              Print / Save PDF
             </button>
             <button
               type="button"
@@ -735,7 +794,7 @@ export function LfseFishingLodgesDirectoryClient({
         </div>
       )}
 
-      {/* 3. Side-by-Side Comparison Matrix (Up to 4 Lodges, Printable) */}
+      {/* 3. Traveler-Ordered Side-by-Side Comparison Matrix */}
       {selectedLodges.length > 0 && (
         <section
           id="lodge-comparison-panel"
@@ -746,16 +805,23 @@ export function LfseFishingLodgesDirectoryClient({
           <div className={`${styles.comparisonHeader} ${styles.noPrint}`}>
             <div>
               <p className="eyebrow" style={{ color: "var(--forest)" }}>
-                Side-by-Side Trip Comparison ({selectedLodges.length} of 4 Selected)
+                Side-by-Side Comparison ({selectedLodges.length} of 4 Lodges)
               </p>
               <h2 style={{ margin: "4px 0 6px" }}>
-                Compare Roles, Access, Scoped Package Rates &amp; Companion Fit
+                Compare Price, What&apos;s Included, Fishing, Non-Angler Options
+                &amp; Access
               </h2>
-              <p style={{ margin: 0, fontSize: 13.5, color: "var(--muted)", maxWidth: 780 }}>
-                Published rates are shown strictly with their documented season, stay
-                duration, and occupancy basis—never blended into synthetic &ldquo;complete
-                trip&rdquo; estimates. Review excluded air/ferry legs, taxes, stamps, and
-                separately arranged services side by side below.
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 13.5,
+                  color: "var(--muted)",
+                  maxWidth: 780,
+                }}
+              >
+                Rates are shown with their published dates, stay length, and
+                occupancy—alongside extra costs to budget for or confirm by
+                quote.
               </p>
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -773,7 +839,7 @@ export function LfseFishingLodgesDirectoryClient({
                 style={{ cursor: "pointer" }}
                 data-testid="open-print-sheet-view-btn"
               >
-                Printable Sheet View
+                Printable View
               </button>
               <button
                 type="button"
@@ -781,7 +847,7 @@ export function LfseFishingLodgesDirectoryClient({
                 className="button small"
                 style={{ cursor: "pointer" }}
               >
-                Print / Save Comparison Sheet
+                Print / Save PDF
               </button>
               <button
                 type="button"
@@ -798,10 +864,16 @@ export function LfseFishingLodgesDirectoryClient({
             <table className={styles.comparisonTable}>
               <thead>
                 <tr>
-                  <th className={styles.comparisonRowLabel}>Comparison Dimension</th>
+                  <th className={styles.comparisonRowLabel}>What to Compare</th>
                   {selectedLodges.map((lodge) => (
                     <th key={lodge.slug}>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 4,
+                        }}
+                      >
                         <span
                           className={`badge ${
                             lodge.stayFormat === "whole_lodge_private_property"
@@ -825,7 +897,13 @@ export function LfseFishingLodgesDirectoryClient({
                         >
                           {lodge.displayName}
                         </Link>
-                        <span style={{ fontSize: 12, fontWeight: 500, color: "var(--muted)" }}>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 500,
+                            color: "var(--muted)",
+                          }}
+                        >
                           {ARCHETYPE_LABELS[lodge.operationArchetype]}
                         </span>
                       </div>
@@ -834,103 +912,19 @@ export function LfseFishingLodgesDirectoryClient({
                 </tr>
               </thead>
               <tbody>
-                {/* Row 1: Entity Roles */}
+                {/* 1. Price & Duration */}
                 <tr>
                   <td className={styles.comparisonRowLabel}>
-                    1. Physical Property vs. Operator vs. Package Seller
-                  </td>
-                  {selectedLodges.map((lodge) => (
-                    <td key={lodge.slug}>
-                      <div>
-                        <strong>Property:</strong> {lodge.accommodation.propertyName}
-                      </div>
-                      <div>
-                        <strong>Operator:</strong> {lodge.operatingCompany.legalOrDisplayName}
-                      </div>
-                      <div>
-                        <strong>Seller:</strong> {lodge.packageSeller.sellerName}
-                      </div>
-                      <div style={{ marginTop: 4, fontSize: 12, color: "var(--muted)" }}>
-                        {lodge.accommodation.relationshipExplanation}
-                      </div>
-                      {lodge.operatingCompany.separationDisambiguationNote && (
-                        <div className={styles.conflictAlert}>
-                          {lodge.operatingCompany.separationDisambiguationNote}
-                        </div>
-                      )}
-                    </td>
-                  ))}
-                </tr>
-
-                {/* Row 2: Location, Gateway & Transfer */}
-                <tr>
-                  <td className={styles.comparisonRowLabel}>
-                    2. Actual Location, Gateway &amp; Transfer Connection
-                  </td>
-                  {selectedLodges.map((lodge) => {
-                    const primaryAccess = lodge.accessConnections[0]!;
-                    return (
-                      <td key={lodge.slug}>
-                        <div>
-                          <strong>Location:</strong>{" "}
-                          {lodge.accommodation.actualLocationLabel}
-                        </div>
-                        <div>
-                          <strong>Gateway:</strong> {lodge.accommodation.gatewayLabel}
-                        </div>
-                        <div style={{ marginTop: 4 }}>
-                          <strong>Primary Leg:</strong> {primaryAccess.legTitle} (
-                          {primaryAccess.durationLabel}) —{" "}
-                          <em>
-                            {PROVISION_STATUS_LABELS[primaryAccess.provisionStatus]}
-                          </em>
-                        </div>
-                        <div style={{ marginTop: 4, fontSize: 12, color: "var(--muted)" }}>
-                          <strong>Transport State:</strong>{" "}
-                          {TRANSPORT_STATE_LABELS[primaryAccess.transportOperationState]}
-                        </div>
-                        <div style={{ marginTop: 4, fontSize: 12 }}>
-                          <strong>Scoped Baggage Rule:</strong>{" "}
-                          {primaryAccess.scopedBaggageAndFreightRule.ruleSummary}
-                        </div>
-                      </td>
-                    );
-                  })}
-                </tr>
-
-                {/* Row 3: Rooms, Bathrooms, Group Fit & Accessibility */}
-                <tr>
-                  <td className={styles.comparisonRowLabel}>
-                    3. Stay Format, Bathrooms, Group Size &amp; Accessibility
-                  </td>
-                  {selectedLodges.map((lodge) => (
-                    <td key={lodge.slug}>
-                      <div>{lodge.accommodation.roomAndCabinSummary}</div>
-                      <div style={{ marginTop: 4 }}>
-                        <strong>Bathrooms:</strong>{" "}
-                        {formatBathroomConfig(lodge.accommodation.bathroomConfiguration)}
-                      </div>
-                      <div style={{ marginTop: 4 }}>
-                        <strong>Meals:</strong> {lodge.accommodation.mealProvisionSummary}
-                      </div>
-                      <div style={{ marginTop: 4, fontSize: 12 }}>
-                        <strong>Group Fit:</strong>{" "}
-                        {lodge.accommodation.groupSizeGuidanceNote}
-                      </div>
-                      <div style={{ marginTop: 4, fontSize: 12, color: "var(--muted)" }}>
-                        <strong>Accessibility:</strong>{" "}
-                        {lodge.accommodation.documentedAccessibilityNote}
-                      </div>
-                    </td>
-                  ))}
-                </tr>
-
-                {/* Row 4: Published Scoped Package Rates */}
-                <tr>
-                  <td className={styles.comparisonRowLabel}>
-                    4. Published Package Rates &amp; Availability State
-                    <div style={{ fontWeight: 500, fontSize: 11.5, color: "var(--muted)", marginTop: 3 }}>
-                      Scoped rates only — never blended into synthetic trip totals
+                    Price &amp; Stay Length
+                    <div
+                      style={{
+                        fontWeight: 500,
+                        fontSize: 11.5,
+                        color: "var(--muted)",
+                        marginTop: 3,
+                      }}
+                    >
+                      Published rates for specific dates &amp; occupancy
                     </div>
                   </td>
                   {selectedLodges.map((lodge) => (
@@ -946,26 +940,26 @@ export function LfseFishingLodgesDirectoryClient({
                         >
                           <strong style={{ color: "var(--deep)" }}>
                             {pkg.priceDisplayLabel}
-                          </strong>{" "}
-                          <span style={{ fontSize: 12 }}>
-                            (
-                            {pkg.applicableSeason === "season_not_stated_on_source"
-                              ? "Season undated on source"
-                              : `${pkg.applicableSeason} season`}{" "}
-                            · {pkg.durationSummaryLabel})
-                          </span>
+                          </strong>
+                          <div style={{ fontSize: 12 }}>
+                            {pkg.durationSummaryLabel} ·{" "}
+                            {pkg.applicableSeason ===
+                            "season_not_stated_on_source"
+                              ? "Season year not listed on page — confirm for your dates"
+                              : `${pkg.applicableSeason} season (${pkg.applicableDatesLabel})`}
+                          </div>
                           <div style={{ fontSize: 12, color: "var(--muted)" }}>
-                            {pkg.packageName} — {pkg.occupancyAndSharingBasis}
+                            {pkg.occupancyAndSharingBasis}
                           </div>
                           <div style={{ fontSize: 11.8, color: "var(--muted)" }}>
-                            <strong>Tax:</strong> {pkg.taxDetailNote}
+                            <strong>Taxes:</strong> {pkg.taxDetailNote}
                           </div>
                         </div>
                       ))}
                       <div style={{ fontSize: 12 }}>
-                        <strong>Availability State:</strong>{" "}
+                        <strong>Openings:</strong>{" "}
                         {
-                          AVAILABILITY_STATE_LABELS[
+                          AVAILABILITY_LABELS[
                             lodge.packages[0]!.remainingAvailabilityState
                           ]
                         }
@@ -974,156 +968,265 @@ export function LfseFishingLodgesDirectoryClient({
                   ))}
                 </tr>
 
-                {/* Row 5: Verified Inclusions */}
+                {/* 2. Inclusions & Accommodations */}
                 <tr>
                   <td className={styles.comparisonRowLabel}>
-                    5. Verified Package Inclusions
+                    What&apos;s Included &amp; Rooms
                   </td>
                   {selectedLodges.map((lodge) => (
                     <td key={lodge.slug}>
-                      <ul style={{ margin: 0, paddingLeft: 16 }}>
-                        {lodge.packages[0]!.verifiedInclusions.map((inc, idx) => (
-                          <li key={idx} style={{ marginBottom: 3 }}>
-                            {inc}
-                          </li>
-                        ))}
-                      </ul>
-                    </td>
-                  ))}
-                </tr>
-
-                {/* Row 6: Known Additional Charges & Items Requiring a Quote */}
-                <tr>
-                  <td className={styles.comparisonRowLabel}>
-                    6. Known Exclusions &amp; Costs Requiring a Quote
-                  </td>
-                  {selectedLodges.map((lodge) => (
-                    <td key={lodge.slug}>
-                      <ul style={{ margin: 0, paddingLeft: 16 }}>
-                        {lodge.packages[0]!.knownExclusionsAndAdditionalCharges.map(
-                          (item, idx) => (
-                            <li key={idx} style={{ marginBottom: 5 }}>
-                              <strong>{item.itemLabel}:</strong>{" "}
-                              {item.publishedAmountNote ? (
-                                <span>{item.publishedAmountNote} — </span>
-                              ) : null}
-                              <span>{item.scopeAndRuleNote}</span>
-                              {item.chargeStatus ===
-                                "conflicting_official_pages_confirm" && (
-                                <div className={styles.conflictAlert}>
-                                  Official pages conflict — confirm in writing before
-                                  paying deposit.
-                                </div>
-                              )}
+                      <ul style={{ margin: "0 0 8px", paddingLeft: 16 }}>
+                        {lodge.packages[0]!.verifiedInclusions.map(
+                          (inc, idx) => (
+                            <li key={idx} style={{ marginBottom: 3 }}>
+                              {inc}
                             </li>
                           ),
                         )}
                       </ul>
+                      <div style={{ fontSize: 12 }}>
+                        <strong>Rooms:</strong>{" "}
+                        {lodge.accommodation.roomAndCabinSummary}
+                      </div>
+                      <div style={{ fontSize: 12, marginTop: 3 }}>
+                        <strong>Bathrooms:</strong>{" "}
+                        {formatBathroomSummary(
+                          lodge.accommodation.bathroomConfiguration,
+                        )}{" "}
+                        · <strong>Meals:</strong>{" "}
+                        {lodge.accommodation.mealProvisionSummary}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 11.8,
+                          color: "var(--muted)",
+                          marginTop: 3,
+                        }}
+                      >
+                        <strong>Group fit:</strong>{" "}
+                        {lodge.accommodation.groupSizeGuidanceNote}
+                      </div>
                     </td>
                   ))}
                 </tr>
 
-                {/* Row 7: Fishing Vessels, Fish Processing & Scoped Requirements */}
+                {/* 3. Fishing Arrangements */}
                 <tr>
                   <td className={styles.comparisonRowLabel}>
-                    7. Fishing Vessels, Processing &amp; Scoped Rules
+                    Fishing Arrangements
                   </td>
                   {selectedLodges.map((lodge) => (
                     <td key={lodge.slug}>
                       <div>
-                        <strong>Water &amp; Species:</strong>{" "}
+                        <strong>Waters &amp; target fish:</strong>{" "}
                         {lodge.fishingProgram.waterTypes.join(" + ")} —{" "}
                         {lodge.fishingProgram.targetSpeciesSummary}
                       </div>
                       <div style={{ marginTop: 4 }}>
-                        <strong>Fleet:</strong>{" "}
+                        <strong>Boats &amp; gear:</strong>{" "}
                         {lodge.fishingProgram.vesselsAndEquipmentSummary}
                       </div>
                       <div style={{ marginTop: 4 }}>
-                        <strong>Fish Processing:</strong>{" "}
+                        <strong>Fish processing:</strong>{" "}
                         {lodge.fishingProgram.fishProcessingAndBoxesSummary}
                       </div>
-                      <div style={{ marginTop: 5, fontSize: 12, color: "var(--muted)" }}>
-                        <strong>Scoped Rules:</strong>{" "}
+                      <div
+                        style={{
+                          marginTop: 5,
+                          fontSize: 12,
+                          color: "var(--muted)",
+                        }}
+                      >
+                        <strong>Licenses, stamps &amp; rules:</strong>{" "}
                         {lodge.fishingProgram.scopedRequirements
-                          .map((r) => `${r.requirementName} (${r.applicableActivityAndDateScope})`)
+                          .map(
+                            (r) =>
+                              `${r.requirementName} (${r.applicableActivityAndDateScope})`,
+                          )
                           .join("; ")}
                       </div>
                     </td>
                   ))}
                 </tr>
 
-                {/* Row 8: Non-Fishing & Simultaneous Companion Proof */}
+                {/* 4. Non-Angler Options */}
                 <tr>
                   <td className={styles.comparisonRowLabel}>
-                    8. Non-Fishing Options &amp; Simultaneous Non-Angler Proof
+                    Non-Angler &amp; Companion Options
                   </td>
                   {selectedLodges.map((lodge) => (
                     <td key={lodge.slug}>
                       <div>
-                        <strong>Simultaneous Non-Angler Proof:</strong>{" "}
-                        {formatTriStateNonAngler(
-                          lodge.nonFishingContext.simultaneousNonAnglerActivitiesProven,
-                        )}
+                        <strong>
+                          {formatNonAnglerHeadline(
+                            lodge.nonFishingContext
+                              .simultaneousNonAnglerActivitiesProven,
+                          )}
+                        </strong>
                       </div>
-                      <div style={{ marginTop: 4, fontSize: 12 }}>
+                      <div style={{ marginTop: 4, fontSize: 12.2 }}>
                         {lodge.nonFishingContext.simultaneousNonAnglerExplanation}
                       </div>
-                      <div style={{ marginTop: 4, fontSize: 12, color: "var(--muted)" }}>
-                        <strong>On-Site Gear:</strong>{" "}
+                      <div
+                        style={{
+                          marginTop: 4,
+                          fontSize: 12,
+                          color: "var(--muted)",
+                        }}
+                      >
+                        <strong>On-site gear:</strong>{" "}
                         {lodge.nonFishingContext.onSiteUnguidedEquipment.summary}
                       </div>
                     </td>
                   ))}
                 </tr>
 
-                {/* Row 9: Identity Status & Direct Official Contact */}
+                {/* 5. Access & Baggage */}
                 <tr>
                   <td className={styles.comparisonRowLabel}>
-                    9. Listing Status &amp; Direct Official Channel
+                    Getting There &amp; Baggage
                   </td>
-                  {selectedLodges.map((lodge) => (
-                    <td key={lodge.slug}>
-                      <div style={{ fontSize: 12, marginBottom: 6 }}>
-                        <strong>Status:</strong> Unclaimed public fact sheet ($0 free
-                        inclusion) · {lodge.claimEvidence.length} primary-source claims
-                        verified {lodge.verifiedAt}
-                      </div>
-                      <div
-                        className={styles.noPrint}
-                        style={{ display: "flex", flexWrap: "wrap", gap: 6 }}
-                      >
-                        <Link
-                          href={`${SEAK_FISHING_LODGES_PATH}/${lodge.slug}`}
-                          className="button secondary small"
+                  {selectedLodges.map((lodge) => {
+                    const primaryAccess = lodge.accessConnections[0]!;
+                    return (
+                      <td key={lodge.slug}>
+                        <div>
+                          <strong>Location:</strong>{" "}
+                          {lodge.accommodation.actualLocationLabel}
+                        </div>
+                        <div>
+                          <strong>Gateway:</strong>{" "}
+                          {lodge.accommodation.gatewayLabel}
+                        </div>
+                        <div style={{ marginTop: 4 }}>
+                          <strong>Transfer:</strong> {primaryAccess.legTitle} (
+                          {primaryAccess.durationLabel}) —{" "}
+                          <em>
+                            {
+                              PROVISION_STATUS_LABELS[
+                                primaryAccess.provisionStatus
+                              ]
+                            }
+                          </em>
+                        </div>
+                        {primaryAccess.provisionStatus ===
+                          "conflicting_official_pages_confirm" && (
+                          <div className={styles.conflictAlert}>
+                            Confirm before booking:{" "}
+                            {primaryAccess.publishedTransferRateNote}
+                          </div>
+                        )}
+                        <div style={{ marginTop: 4, fontSize: 12 }}>
+                          <strong>Baggage &amp; fish boxes:</strong>{" "}
+                          {primaryAccess.scopedBaggageAndFreightRule.ruleSummary}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 3,
+                            fontSize: 11.8,
+                            color: "var(--muted)",
+                          }}
                         >
-                          Full Fact Sheet →
-                        </Link>
-                        <a
-                          href={lodge.packageSeller.officialBookingOrInquiryUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="button small"
-                          onClick={() =>
-                            trackFishingLodgeDirectoryEvent({
-                              event: "lfse_lodge_official_outbound_click",
-                              lodgeSlug: lodge.slug,
-                              targetUrl:
-                                lodge.packageSeller.officialBookingOrInquiryUrl,
-                            })
-                          }
+                          <strong>Arrival timing:</strong>{" "}
+                          {primaryAccess.reportingAndOvernightBufferNote}
+                        </div>
+                      </td>
+                    );
+                  })}
+                </tr>
+
+                {/* 6. Additional Costs, Booking Roles & Direct Link */}
+                <tr>
+                  <td className={styles.comparisonRowLabel}>
+                    Additional Costs &amp; Who You Book With
+                  </td>
+                  {selectedLodges.map((lodge) => {
+                    const bookingDistinction =
+                      summarizeBookingDistinction(lodge);
+                    return (
+                      <td key={lodge.slug}>
+                        <ul style={{ margin: "0 0 8px", paddingLeft: 16 }}>
+                          {lodge.packages[0]!.knownExclusionsAndAdditionalCharges.map(
+                            (item, idx) => (
+                              <li key={idx} style={{ marginBottom: 4 }}>
+                                <strong>{item.itemLabel}:</strong>{" "}
+                                {item.publishedAmountNote ? (
+                                  <span>{item.publishedAmountNote} — </span>
+                                ) : null}
+                                <span>{item.scopeAndRuleNote}</span>
+                                {item.chargeStatus ===
+                                  "conflicting_official_pages_confirm" && (
+                                  <div className={styles.conflictAlert}>
+                                    Official pages differ — confirm in writing
+                                    before paying a deposit.
+                                  </div>
+                                )}
+                              </li>
+                            ),
+                          )}
+                        </ul>
+
+                        {bookingDistinction && (
+                          <div
+                            style={{
+                              padding: "7px 9px",
+                              borderRadius: 8,
+                              background: "#f6f8f8",
+                              border: "1px solid var(--line)",
+                              fontSize: 12,
+                              marginBottom: 8,
+                            }}
+                          >
+                            <strong>Booking setup:</strong> {bookingDistinction}
+                          </div>
+                        )}
+
+                        <div
+                          className={styles.noPrint}
+                          style={{ display: "flex", flexWrap: "wrap", gap: 6 }}
                         >
-                          {lodge.packageSeller.primaryCtaLabel} ↗
-                        </a>
-                      </div>
-                      <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 4 }}>
-                        {lodge.operatingCompany.officialWebsite}
-                        {lodge.operatingCompany.officialPhone
-                          ? ` · ${lodge.operatingCompany.officialPhone}`
-                          : ""}
-                      </div>
-                    </td>
-                  ))}
+                          <Link
+                            href={`${SEAK_FISHING_LODGES_PATH}/${lodge.slug}`}
+                            className="button secondary small"
+                          >
+                            Full Details →
+                          </Link>
+                          <a
+                            href={
+                              lodge.packageSeller.officialBookingOrInquiryUrl
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="button small"
+                            onClick={() =>
+                              trackFishingLodgeDirectoryEvent({
+                                event: "lfse_lodge_official_outbound_click",
+                                lodgeSlug: lodge.slug,
+                                targetUrl:
+                                  lodge.packageSeller
+                                    .officialBookingOrInquiryUrl,
+                              })
+                            }
+                          >
+                            {lodge.packageSeller.primaryCtaLabel} ↗
+                          </a>
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 11.2,
+                            color: "var(--muted)",
+                            marginTop: 5,
+                          }}
+                        >
+                          Free listing · Checked {lodge.verifiedAt} ·{" "}
+                          {lodge.operatingCompany.officialWebsite}
+                          {lodge.operatingCompany.officialPhone
+                            ? ` · ${lodge.operatingCompany.officialPhone}`
+                            : ""}
+                        </div>
+                      </td>
+                    );
+                  })}
                 </tr>
               </tbody>
             </table>
@@ -1138,11 +1241,11 @@ export function LfseFishingLodgesDirectoryClient({
           style={{ textAlign: "center", padding: "36px 24px" }}
         >
           <h3 style={{ margin: "0 0 8px" }}>
-            No Southeast Alaska lodges match this exact filter combination
+            No lodges match these exact filters
           </h3>
           <p style={{ margin: "0 0 14px", color: "var(--muted)" }}>
-            Try broadening your stay format, subregion, or published rate filter to
-            compare all {totalCount} verified properties.
+            Try widening your stay type, region, or rate filter to view all{" "}
+            {totalCount} properties.
           </p>
           <div>
             <button
@@ -1169,6 +1272,10 @@ export function LfseFishingLodgesDirectoryClient({
             const compareFull = !isSelected && selectedCompareSlugs.length >= 4;
             const isWholeProperty =
               lodge.stayFormat === "whole_lodge_private_property";
+            const bookingDistinction = summarizeBookingDistinction(lodge);
+            const hasTransferConflict =
+              leadAccess.provisionStatus ===
+              "conflicting_official_pages_confirm";
 
             return (
               <article
@@ -1179,7 +1286,7 @@ export function LfseFishingLodgesDirectoryClient({
                 data-testid={`lodge-card-${lodge.slug}`}
               >
                 <div>
-                  {/* Honest Regional Waterway Visual Context */}
+                  {/* Regional Scenery Image with Concise Disclosure */}
                   <div className={styles.visualContextBox}>
                     <img
                       src={lodge.visualRepresentation.imagePath}
@@ -1216,10 +1323,12 @@ export function LfseFishingLodgesDirectoryClient({
                         ? "Whole-Lodge Private Stay · Services Separate"
                         : ARCHETYPE_LABELS[lodge.operationArchetype]}
                     </span>
-                    <span className="chip">{lodge.accommodation.gatewayLabel}</span>
+                    <span className="chip">
+                      {lodge.accommodation.gatewayLabel}
+                    </span>
                   </div>
 
-                  {/* Title & Neutral Monogram */}
+                  {/* Title & Monogram */}
                   <div
                     style={{
                       display: "flex",
@@ -1249,49 +1358,51 @@ export function LfseFishingLodgesDirectoryClient({
                     {lodge.headlineSummary}
                   </p>
 
-                  {/* Explicit Entity Separation Mini-Ledger */}
-                  <div className={styles.roleMiniBox}>
-                    <div className={styles.roleMiniRow}>
-                      <strong>Physical Property:</strong>{" "}
-                      {lodge.accommodation.propertyName} (
-                      {lodge.accommodation.actualLocationLabel})
-                    </div>
-                    <div className={styles.roleMiniRow}>
-                      <strong>Operator / Seller:</strong>{" "}
-                      {lodge.operatingCompany.legalOrDisplayName ===
-                      lodge.packageSeller.sellerName
-                        ? lodge.operatingCompany.legalOrDisplayName
-                        : `${lodge.operatingCompany.legalOrDisplayName} · Sold by ${lodge.packageSeller.sellerName}`}
-                    </div>
-                    <div className={styles.roleMiniRow}>
-                      <strong>Primary Access:</strong> {leadAccess.legTitle} (
-                      <em>{PROVISION_STATUS_LABELS[leadAccess.provisionStatus]}</em>)
-                    </div>
-                  </div>
-
-                  {/* Scoped Package Rate Box (Zero Synthetic Totals) */}
+                  {/* Price & Stay Length First */}
                   <div className={styles.priceCalloutBox}>
                     <span className={styles.priceHeadline}>
                       {leadPkg.priceDisplayLabel}
                     </span>
                     <span className={styles.priceScopeSub}>
-                      {PRICE_STATE_LABELS[leadPkg.priceState]} ·{" "}
+                      {leadPkg.durationSummaryLabel} ·{" "}
                       {leadPkg.applicableSeason === "season_not_stated_on_source"
-                        ? "Season undated on source"
+                        ? "Confirm season year with lodge"
                         : `${leadPkg.applicableSeason} season`}{" "}
-                      · {leadPkg.durationSummaryLabel} ({leadPkg.occupancyAndSharingBasis}
-                      )
+                      · {leadPkg.occupancyAndSharingBasis}
                     </span>
+                  </div>
+
+                  {/* Concise Location, Access & Booking-Role Note */}
+                  <div className={styles.roleMiniBox}>
+                    <div className={styles.roleMiniRow}>
+                      <strong>Location:</strong>{" "}
+                      {lodge.accommodation.actualLocationLabel}
+                    </div>
+                    <div className={styles.roleMiniRow}>
+                      <strong>Getting there:</strong> {leadAccess.legTitle} (
+                      <em>
+                        {PROVISION_STATUS_LABELS[leadAccess.provisionStatus]}
+                      </em>
+                      )
+                    </div>
+                    {bookingDistinction && (
+                      <div className={styles.roleMiniRow}>
+                        <strong>Booking setup:</strong> {bookingDistinction}
+                      </div>
+                    )}
+                    {hasTransferConflict && (
+                      <div className={styles.conflictAlert}>
+                        Official pages differ on whether Ketchikan–Klawock
+                        flights are included — confirm before booking.
+                      </div>
+                    )}
                   </div>
 
                   <div className="chips" style={{ marginTop: 8 }}>
                     <span className="chip">
                       {lodge.fishingProgram.waterTypes.join(" + ")}
                     </span>
-                    <span className="chip">
-                      {lodge.claimEvidence.length} cited claims
-                    </span>
-                    <span className="chip">Unclaimed ($0 free listing)</span>
+                    <span className="chip">Free listing</span>
                   </div>
                 </div>
 
@@ -1308,13 +1419,15 @@ export function LfseFishingLodgesDirectoryClient({
                     data-testid={`compare-toggle-${lodge.slug}`}
                   >
                     {isSelected
-                      ? "✓ In Comparison"
+                      ? "✓ Comparing"
                       : compareFull
                         ? "Max 4 Selected"
                         : "+ Compare"}
                   </button>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  >
                     <a
                       href={lodge.packageSeller.officialBookingOrInquiryUrl}
                       target="_blank"
@@ -1334,7 +1447,7 @@ export function LfseFishingLodgesDirectoryClient({
                         })
                       }
                     >
-                      Official Site ↗
+                      {lodge.packageSeller.primaryCtaLabel} ↗
                     </a>
                     <Link
                       href={`${SEAK_FISHING_LODGES_PATH}/${lodge.slug}`}
@@ -1344,7 +1457,7 @@ export function LfseFishingLodgesDirectoryClient({
                         color: "var(--forest)",
                       }}
                     >
-                      Fact Sheet →
+                      View Lodge →
                     </Link>
                   </div>
                 </div>

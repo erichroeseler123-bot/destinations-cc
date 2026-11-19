@@ -253,7 +253,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Forested Inside Passage fjord waters and snow-dusted peaks in Southeast Alaska",
       imageCredit: "CC BY-SA 4.0 · DJ Cane",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -548,7 +548,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Turbine floatplane on calm coastal Alaska fjord waters",
       imageCredit: "CC BY-SA 2.0 · Neal",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -813,7 +813,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Humpback whale breaching in Southeast Alaska Inside Passage waters",
       imageCredit: "Public domain · NPS / Kaitlin Thoreson",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -1071,7 +1071,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Humpback whale in Favorite Channel / Inside Passage waters near Juneau",
       imageCredit: "Public domain · NPS / Kaitlin Thoreson",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -1322,7 +1322,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Tour vessel in Glacier Bay National Park and Preserve near Gustavus",
       imageCredit: "Public domain · National Park Service",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -1535,7 +1535,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Humpback whale surfacing in Icy Strait feeding waters near Point Adolphus",
       imageCredit: "Public domain · NOAA / National Marine Sanctuaries",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -1753,7 +1753,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "De Havilland Otter floatplane docked on Southeast Alaska coastal waters",
       imageCredit: "CC BY-SA 2.0 · Neal",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -2004,7 +2004,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Coastal rainforest and Chichagof Island shoreline along Icy Strait",
       imageCredit: "CC BY-SA 4.0 · Enrico Blasutto",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -2245,7 +2245,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Southern Southeast Alaska fjord cliffs and forested waterways near Ketchikan",
       imageCredit: "CC BY-SA 4.0 · Ulises Icardi",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -2530,7 +2530,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Coastal totem heritage in southern Southeast Alaska",
       imageCredit: "CC BY 3.0 · Jerzy Strzelecki",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -2756,7 +2756,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Waterfront boardwalk and coastal spruce forest in Ketchikan, Alaska",
       imageCredit: "CC BY-SA 4.0 · Diego Delso",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -2958,7 +2958,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Coastal black bear along Tongass National Forest shoreline in Southeast Alaska",
       imageCredit: "Public domain · U.S. Forest Service",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -3185,7 +3185,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Old-growth Tongass National Forest trail in Southeast Alaska",
       imageCredit: "Public domain · U.S. Forest Service",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -3255,7 +3255,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       },
       relationshipToPackageSeller: "common_individual_owner_documented_on_official_site",
       relationshipExplanation:
-        "DISTINCTION: Fish Baranof is the self-guided boat-rental company and custom package seller (office at 485 Katlian St; mailing 712 Lake St), while physical guest rooms are in Longliner Lodge & Suites. Fish Baranof's homepage explicitly states owner Joel Martin purchased Longliner Lodge & Suites so lodging, rental boats, fish processing, and the seasonal Galley Restaurant operate at one waterfront address.",
+        "You book boats and custom stay packages through Fish Baranof (office at 485 Katlian St), while your room is at Longliner Lodge & Suites at the same waterfront address (Fish Baranof owner Joel Martin also owns Longliner Lodge & Suites).",
       roomAndCabinSummary:
         "14 year-round waterfront rooms and suites at Longliner Lodge & Suites (queen/queen, queen/twin, studio apartment with 3 queens + 1 twin + full kitchen + balcony, and 1,200 sq ft Master Suite); all rooms include fridge, microwave, coffee maker, and free laundry access.",
       bathroomConfiguration: "private_ensuite_documented",
@@ -3434,7 +3434,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Forested islands and mountain peaks across Sitka Sound, Alaska",
       imageCredit: "CC BY-SA 2.0 · David Baron",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -3718,7 +3718,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Marine wildlife in calm Southeast Alaska Inside Passage waters",
       imageCredit: "CC BY 2.0 · gailhampshire",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {
@@ -3789,7 +3789,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       },
       relationshipToPackageSeller: "same_operating_business",
       relationshipExplanation:
-        "CRITICAL MODEL DISTINCTION: Boardwalk Lodge books the entire property exclusively to one private group directly through a conversation with the owners. Unlike traditional per-person fishing resorts, chef/catering, independent fishing guides, housekeeping, and boat access for qualified groups are optional arrangements confirmed separately.",
+        "Boardwalk Lodge rents the entire property privately to one group directly through the owners; chef/catering, independent fishing guides, housekeeping, and boat access for qualified groups are arranged separately.",
       roomAndCabinSummary:
         "Exclusive group use of Standard Rooms (bedroom + private bath), Boardwalk Suites, Aurora great room, dock, fly-fishing room, and full kitchen/dining facilities (connected by a 300-yard boardwalk).",
       bathroomConfiguration: "private_ensuite_documented",
@@ -3963,7 +3963,7 @@ export const SOUTHEAST_ALASKA_FISHING_LODGES_CANDIDATES: readonly SoutheastAlask
       imageAlt: "Southeast Alaska coastal harbor and forested Prince of Wales Island waters",
       imageCredit: "CC0 1.0 Public Domain · Bernard Spragg. NZ",
       isActualPropertyPhoto: false,
-      visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo",
+      visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.",
     },
     claimEvidence: [
       {

@@ -7,7 +7,6 @@ import { LodgeParticipationPanel } from "@/components/LodgeParticipationPanel";
 import { PrintFactSheetButton } from "@/components/PrintFactSheetButton";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 import {
-  DCC_ALASKA_FISHING_LODGES_API_URL,
   SEAK_FISHING_LODGES_CANONICAL_URL,
   SEAK_FISHING_LODGES_PATH,
   SEAK_FISHING_LODGES_RELEASE_READY,
@@ -19,10 +18,8 @@ import {
   UNCLAIMED_LODGE_FACT_SHEET_NOTICE,
   type LodgeClaimScope,
   type LodgeOperationArchetype,
-  type PackagePriceState,
   type ProvisionStatus,
   type RemainingAvailabilityState,
-  type TransportOperationState,
   type TriStateFact,
 } from "../../../../../../lib/dcc/shared/southeastAlaskaFishingLodgesContract";
 import {
@@ -33,61 +30,50 @@ import styles from "../fishing-lodges.module.css";
 
 const ARCHETYPE_LABELS: Record<LodgeOperationArchetype, string> = {
   all_inclusive_guided_lodge: "All-Inclusive Guided Lodge",
-  self_guided_or_hybrid_lodge: "Self-Guided or Hybrid Guided/Unguided Lodge",
-  modular_lodging_plus_separate_charters: "Modular Lodging + Separate Local Charters",
-  diy_boat_rental_with_lodging_partner: "DIY Boat Rental + Partner Lodging Package",
+  self_guided_or_hybrid_lodge: "Self-Guided or Hybrid Guided/Unguided",
+  modular_lodging_plus_separate_charters: "Lodge Stay + Separate Local Charters",
+  diy_boat_rental_with_lodging_partner: "Self-Guided Boat Rental + Partner Hotel",
   whole_property_private_stay_services_separate:
     "Whole-Lodge Private Stay (Services Arranged Separately)",
 };
 
-const PRICE_STATE_LABELS: Record<PackagePriceState, string> = {
-  published_dated_season_rate: "Published Dated Season Rate",
-  published_undated_current_rate: "Published Rate (Season Undated on Source)",
-  published_starting_from_rate: "Published Starting-From Rate",
-  quote_required: "Direct Quote Required",
-};
-
-const TRANSPORT_STATE_LABELS: Record<TransportOperationState, string> = {
-  lodge_operated_or_chartered_transfer: "Lodge-Operated or Lodge-Chartered Transfer",
-  scheduled_third_party_carrier_corridor: "Scheduled Third-Party Carrier Corridor",
-  road_or_local_courtesy_shuttle: "Road System or Local Courtesy Shuttle",
-  conflicting_official_transfer_pages:
-    "Conflicting Official Transfer Pages — Confirm Directly",
-  unknown: "Unknown — Confirm Directly",
-};
-
-const AVAILABILITY_STATE_LABELS: Record<RemainingAvailabilityState, string> = {
-  not_checked_contact_official_channel:
-    "Live Availability Not Checked — Contact Official Channel",
+const AVAILABILITY_LABELS: Record<RemainingAvailabilityState, string> = {
+  not_checked_contact_official_channel: "Check directly with the lodge",
   static_page_note_only_unverified_live:
-    "Static Page Note Only (Not Verified Live)",
-  verified_live_feed: "Verified Live Feed",
+    "General note on website — confirm current openings directly",
+  verified_live_feed: "Live availability shown",
 };
 
 const PROVISION_LABELS: Record<ProvisionStatus, string> = {
-  included_in_published_package: "Included in published package",
-  extra_charge_published: "Extra charge (published amount)",
-  extra_charge_quote_required: "Extra charge / quote required",
-  arranged_separately_by_guest_or_group: "Arranged separately by guest/group",
+  included_in_published_package: "Included in package",
+  extra_charge_published: "Extra fee (published rate)",
+  extra_charge_quote_required: "Extra cost — request quote",
+  arranged_separately_by_guest_or_group: "Arranged separately",
   not_provided: "Not provided by lodge",
   conflicting_official_pages_confirm:
-    "Conflicting official pages — confirm before booking",
-  unknown: "Unknown — confirm directly",
+    "Official pages differ — confirm before booking",
+  unknown: "Not listed — confirm with lodge",
 };
 
 const CLAIM_SCOPE_LABELS: Record<LodgeClaimScope, string> = {
-  identity_and_roles: "Identity & Entity Roles",
-  accommodation_and_capacity: "Accommodation & Capacity",
-  package_pricing_and_inclusions: "Packages, Pricing & Inclusions",
-  access_and_baggage: "Gateway Access & Baggage",
-  fishing_and_regulations: "Fishing & Scoped Rules",
-  non_fishing_options: "Non-Fishing & Companion Fit",
+  identity_and_roles: "Business & Booking Setup",
+  accommodation_and_capacity: "Rooms, Meals & Group Size",
+  package_pricing_and_inclusions: "Rates & What's Included",
+  access_and_baggage: "Getting There & Baggage",
+  fishing_and_regulations: "Fishing, Processing & Licenses",
+  non_fishing_options: "Non-Angler & Companion Options",
 };
 
-function formatTriState(val: TriStateFact): string {
-  if (val === "yes") return "Yes (documented on official source)";
-  if (val === "no") return "No (documented on official source)";
-  return "Unknown (not disclosed on retrieved source)";
+function formatYesNoUnknown(val: TriStateFact): string {
+  if (val === "yes") return "Yes";
+  if (val === "no") return "No";
+  return "Not listed — confirm with lodge";
+}
+
+function formatNonAnglerBadge(val: TriStateFact): string {
+  if (val === "yes") return "Guided Non-Fishing Outings Offered";
+  if (val === "no") return "Fishing-Focused Program";
+  return "Guided Non-Angler Outings Not Confirmed";
 }
 
 export function generateStaticParams() {
@@ -107,7 +93,7 @@ export async function generateMetadata({
   const entry = findPublishedSoutheastAlaskaFishingLodgeBySlug(lodgeSlug);
   if (!entry) {
     return {
-      title: "Fishing Lodge Fact Sheet Not Found",
+      title: "Fishing Lodge Not Found",
       robots: { index: false, follow: false },
     };
   }
@@ -115,15 +101,15 @@ export async function generateMetadata({
   const canonicalUrl = `${SEAK_FISHING_LODGES_CANONICAL_URL}/${lodge.slug}`;
 
   return {
-    title: `${lodge.displayName} — Southeast Alaska Fishing Lodge Fact Sheet`,
-    description: `${lodge.headlineSummary} Review verified property vs. operator roles, scoped package inclusions, gateway access from ${lodge.accommodation.gatewayLabel}, and primary sources.`,
+    title: `${lodge.displayName} — Southeast Alaska Fishing Lodge Guide`,
+    description: `${lodge.headlineSummary} Compare rates, what's included, fishing setup, non-angler options, and transfers via ${lodge.accommodation.gatewayLabel}.`,
     alternates: { canonical: canonicalUrl },
     robots: {
       index: SEAK_FISHING_LODGES_RELEASE_READY,
       follow: SEAK_FISHING_LODGES_RELEASE_READY,
     },
     openGraph: {
-      title: `${lodge.displayName} | Southeast Alaska Fishing Lodges Directory`,
+      title: `${lodge.displayName} | Southeast Alaska Fishing Lodges`,
       description: lodge.headlineSummary,
       url: canonicalUrl,
       siteName: "Last Frontier Shore Excursions",
@@ -154,6 +140,13 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
   const leadPkg = lodge.packages[0]!;
   const leadAccess = lodge.accessConnections[0]!;
   const isWholeProperty = lodge.stayFormat === "whole_lodge_private_property";
+  const rolesDiffer =
+    lodge.accommodation.propertyName !==
+      lodge.operatingCompany.legalOrDisplayName ||
+    lodge.operatingCompany.legalOrDisplayName !==
+      lodge.packageSeller.sellerName ||
+    isWholeProperty ||
+    lodge.operationArchetype === "modular_lodging_plus_separate_charters";
 
   return (
     <main>
@@ -165,13 +158,13 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
       {/* Print-only Header */}
       <div className="shell">
         <div className={styles.printOnlyHeader}>
-          <h1 style={{ margin: "0 0 4px", fontSize: 21 }}>
-            {lodge.displayName} — Independent Southeast Alaska Lodge Fact Sheet
+          <h1 style={{ margin: "0 0 4px", fontSize: 20 }}>
+            {lodge.displayName} — Southeast Alaska Lodge Summary
           </h1>
-          <p style={{ margin: 0, fontSize: 11 }}>
-            Retrieved {lodge.verifiedAt} from {gate.distinctSourceUrlCount}{" "}
-            official primary-source URLs ({gate.evidenceCount} cited claims).
-            Official website: {lodge.operatingCompany.officialWebsite}
+          <p style={{ margin: 0, fontSize: 10.5 }}>
+            Checked {lodge.verifiedAt} across {gate.distinctSourceUrlCount}{" "}
+            official pages. Official website:{" "}
+            {lodge.operatingCompany.officialWebsite}
             {lodge.operatingCompany.officialPhone
               ? ` · Phone: ${lodge.operatingCompany.officialPhone}`
               : ""}
@@ -179,7 +172,7 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
         </div>
       </div>
 
-      {/* 1. Fact Sheet Hero */}
+      {/* 1. Lodge Hero */}
       <section className={`hero ${styles.noPrint}`}>
         <div className="shell">
           <nav
@@ -203,8 +196,8 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
           </nav>
 
           <p className="eyebrow">
-            {SOUTHEAST_ALASKA_LODGE_SUBREGION_LABELS[lodge.subRegion]} · Gateway:{" "}
-            {lodge.accommodation.gatewayLabel}
+            {SOUTHEAST_ALASKA_LODGE_SUBREGION_LABELS[lodge.subRegion]} ·
+            Gateway: {lodge.accommodation.gatewayLabel}
           </p>
 
           <div
@@ -220,7 +213,10 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
             <h1 style={{ margin: 0 }}>{lodge.displayName}</h1>
           </div>
 
-          <p className="lead" style={{ color: "#e4f1f4", maxWidth: 860, marginTop: 14 }}>
+          <p
+            className="lead"
+            style={{ color: "#e4f1f4", maxWidth: 860, marginTop: 14 }}
+          >
             {lodge.headlineSummary}
           </p>
 
@@ -230,12 +226,10 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
                 ? "Whole-Lodge Private Stay · Services Separate"
                 : ARCHETYPE_LABELS[lodge.operationArchetype]}
             </span>
+            <span className={styles.heroPill}>Free listing</span>
             <span className={styles.heroPill}>
-              Unclaimed Public Fact Sheet ($0 Free Inclusion)
-            </span>
-            <span className={styles.heroPill}>
-              {gate.evidenceCount} Cited Claims Across{" "}
-              {gate.distinctSourceUrlCount} Official Pages ({lodge.verifiedAt})
+              Checked {lodge.verifiedAt} ({gate.distinctSourceUrlCount} official
+              pages)
             </span>
           </div>
 
@@ -253,17 +247,17 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
               href={`${SEAK_FISHING_LODGES_PATH}?compare=${lodge.slug}`}
               className="button secondary"
             >
-              Compare Side by Side (Up to 4 Lodges) →
+              Compare Side by Side →
             </Link>
             <PrintFactSheetButton lodgeSlug={lodge.slug} />
             <a href="#corrections-and-claim" className="button secondary">
-              Suggest Correction or Claim ($0) ↓
+              Suggest an Update or Claim Listing ↓
             </a>
           </div>
         </div>
       </section>
 
-      {/* 2. Separate Operational States + Honest Visual Context */}
+      {/* 2. Plain-Language Trip Snapshot + Concise Regional Scenery Disclosure */}
       <section
         className="section"
         style={{
@@ -277,92 +271,121 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
           <div className="lfse-two-col" style={{ alignItems: "start" }}>
             <div>
               <p className="eyebrow" style={{ color: "var(--muted)" }}>
-                Separated Operational &amp; Verification States
+                At a Glance
               </p>
-              <h2 style={{ marginTop: 4 }}>
-                At-a-Glance Fact Sheet Governance
-              </h2>
-              <p style={{ color: "var(--muted)", fontSize: 14, margin: "0 0 12px" }}>
+              <h2 style={{ marginTop: 4 }}>Trip Snapshot</h2>
+              <p
+                style={{
+                  color: "var(--muted)",
+                  fontSize: 14,
+                  margin: "0 0 12px",
+                }}
+              >
                 {UNCLAIMED_LODGE_FACT_SHEET_NOTICE}
               </p>
 
               <div className={styles.stateGrid}>
                 <div className={styles.stateCard}>
-                  <span className={styles.stateKicker}>Package Pricing State</span>
-                  <strong>{PRICE_STATE_LABELS[leadPkg.priceState]}</strong>
-                  <div style={{ fontSize: 12.2, color: "var(--muted)", marginTop: 3 }}>
-                    {leadPkg.priceDisplayLabel} ({leadPkg.durationSummaryLabel})
+                  <span className={styles.stateKicker}>
+                    Price &amp; Stay Length
+                  </span>
+                  <strong>{leadPkg.priceDisplayLabel}</strong>
+                  <div
+                    style={{
+                      fontSize: 12.2,
+                      color: "var(--muted)",
+                      marginTop: 3,
+                    }}
+                  >
+                    {leadPkg.durationSummaryLabel} ·{" "}
+                    {leadPkg.applicableSeason === "season_not_stated_on_source"
+                      ? "Confirm season year with lodge"
+                      : `${leadPkg.applicableSeason} season`}
                   </div>
                 </div>
 
                 <div className={styles.stateCard}>
-                  <span className={styles.stateKicker}>
-                    Transport Operation State
-                  </span>
-                  <strong>
-                    {TRANSPORT_STATE_LABELS[leadAccess.transportOperationState]}
-                  </strong>
-                  <div style={{ fontSize: 12.2, color: "var(--muted)", marginTop: 3 }}>
+                  <span className={styles.stateKicker}>Getting There</span>
+                  <strong>{leadAccess.legTitle}</strong>
+                  <div
+                    style={{
+                      fontSize: 12.2,
+                      color: "var(--muted)",
+                      marginTop: 3,
+                    }}
+                  >
+                    {PROVISION_LABELS[leadAccess.provisionStatus]} ·{" "}
                     {leadAccess.carrierOrDockName}
                   </div>
                 </div>
 
                 <div className={styles.stateCard}>
-                  <span className={styles.stateKicker}>
-                    Remaining Availability State
-                  </span>
+                  <span className={styles.stateKicker}>Availability</span>
                   <strong>
-                    {AVAILABILITY_STATE_LABELS[leadPkg.remainingAvailabilityState]}
+                    {AVAILABILITY_LABELS[leadPkg.remainingAvailabilityState]}
                   </strong>
-                  <div style={{ fontSize: 12.2, color: "var(--muted)", marginTop: 3 }}>
+                  <div
+                    style={{
+                      fontSize: 12.2,
+                      color: "var(--muted)",
+                      marginTop: 3,
+                    }}
+                  >
                     {leadPkg.availabilityNote}
                   </div>
                 </div>
 
                 <div className={styles.stateCard}>
-                  <span className={styles.stateKicker}>
-                    Operator Identity vs. Facts
-                  </span>
-                  <strong>
-                    Identity: {lodge.operatingCompany.identityClaimStatus}
-                  </strong>
-                  <div style={{ fontSize: 12.2, color: "var(--muted)", marginTop: 3 }}>
-                    Facts independently sourced from official pages ({lodge.verifiedAt})
+                  <span className={styles.stateKicker}>Who You Book With</span>
+                  <strong>{lodge.packageSeller.sellerName}</strong>
+                  <div
+                    style={{
+                      fontSize: 12.2,
+                      color: "var(--muted)",
+                      marginTop: 3,
+                    }}
+                  >
+                    Property: {lodge.accommodation.propertyName}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Honest Waterway Visual Representation */}
+            {/* Regional Scenery Card */}
             <div className={styles.noPrint}>
-              <div className={styles.visualContextBox} style={{ marginBottom: 8 }}>
+              <div
+                className={styles.visualContextBox}
+                style={{ marginBottom: 8 }}
+              >
                 <img
                   src={lodge.visualRepresentation.imagePath}
                   alt={lodge.visualRepresentation.imageAlt}
                   width={680}
                   height={400}
-                  style={{ height: 230 }}
+                  style={{ height: 225 }}
                 />
                 <div className={styles.visualContextOverlayBadge}>
                   <span className={styles.contextPhotoTag}>
-                    {lodge.visualRepresentation.visualDisclosureBadge}
+                    Regional scenery
                   </span>
                 </div>
                 <span className={styles.contextCreditFooter}>
                   {lodge.visualRepresentation.imageCredit}
                 </span>
               </div>
-              <p style={{ margin: 0, fontSize: 12.5, color: "var(--muted)" }}>
-                <strong>Honest Visual Policy:</strong> We never scrape unlicensed
-                room or boat photos. Above is verified regional waterway context;{" "}
+              <p style={{ margin: 0, fontSize: 12.8, color: "var(--muted)" }}>
+                Regional scenery;{" "}
                 <a
                   href={lodge.operatingCompany.officialWebsite}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "var(--forest)", fontWeight: 700, textDecoration: "underline" }}
+                  style={{
+                    color: "var(--forest)",
+                    fontWeight: 700,
+                    textDecoration: "underline",
+                  }}
                 >
-                  view official cabin, vessel, and property photos on{" "}
-                  {lodge.operatingCompany.legalOrDisplayName}&apos;s site ↗
+                  see the lodge&apos;s website for property photos ↗
                 </a>
                 .
               </p>
@@ -371,227 +394,23 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
         </div>
       </section>
 
-      {/* 3. Entity Role Separation: Accommodation vs. Operator vs. Seller vs. Partners */}
-      <section className="section" id="entity-roles">
+      {/* 3. Prices, Duration, Inclusions & Additional Costs */}
+      <section className="section" id="packages-and-rates">
         <div className="shell">
           <p className="eyebrow" style={{ color: "var(--muted)" }}>
-            Entity Separation
+            Rates, Stay Length &amp; What&apos;s Included
           </p>
-          <h2>
-            Physical Accommodation, Operating Company, Seller &amp; Partner Roles
-          </h2>
-          <p style={{ color: "var(--muted)", maxWidth: 820, margin: "0 0 18px" }}>
-            Alaska fishing trips frequently combine a physical hotel or remote
-            lodge with separate boat rentals, charter air carriers, or independent
-            guides. Here is how {lodge.displayName} is structured according to
-            retrieved primary sources:
-          </p>
-
-          <div className={styles.rolesGrid}>
-            {/* Physical Accommodation */}
-            <div className="card" data-testid="entity-card-accommodation">
-              <span className="badge badge-safety" style={{ alignSelf: "flex-start" }}>
-                1. Physical Accommodation
-              </span>
-              <h3 style={{ marginTop: 10 }}>{lodge.accommodation.propertyName}</h3>
-              <p style={{ fontSize: 13.8, marginBottom: 8 }}>
-                <strong>Location:</strong> {lodge.accommodation.actualLocationLabel}
-                {lodge.accommodation.streetOrPostalAddress
-                  ? ` (${lodge.accommodation.streetOrPostalAddress})`
-                  : ""}
-              </p>
-              <p style={{ fontSize: 13.5, marginBottom: 8 }}>
-                <strong>Coordinates:</strong>{" "}
-                {lodge.accommodation.coordinates.latitude.toFixed(4)}° N,{" "}
-                {Math.abs(lodge.accommodation.coordinates.longitude).toFixed(4)}° W{" "}
-                <span style={{ color: "var(--muted)", fontSize: 12.2 }}>
-                  ({lodge.accommodation.coordinates.coordinateNote})
-                </span>
-              </p>
-              <p style={{ fontSize: 13.5, marginBottom: 8 }}>
-                <strong>Rooms &amp; Cabins:</strong>{" "}
-                {lodge.accommodation.roomAndCabinSummary}
-              </p>
-              <p style={{ fontSize: 13.5, marginBottom: 8 }}>
-                <strong>Bathrooms:</strong>{" "}
-                {lodge.accommodation.bathroomConfiguration ===
-                "private_ensuite_documented"
-                  ? "Private en-suite bathrooms documented"
-                  : lodge.accommodation.bathroomConfiguration ===
-                      "private_or_group_shared_documented"
-                    ? "Private or group-shared bathrooms documented"
-                    : "Unknown (not disclosed on retrieved source)"}{" "}
-                · <strong>Guest Kitchen:</strong>{" "}
-                {formatTriState(lodge.accommodation.guestKitchenOrSelfCaterAccess)}
-              </p>
-              <p style={{ fontSize: 13.5, marginBottom: 8 }}>
-                <strong>Meals:</strong> {lodge.accommodation.mealProvisionSummary}
-              </p>
-              <p style={{ fontSize: 13.2, marginBottom: 6, color: "var(--muted)" }}>
-                <strong>Group Size &amp; Children:</strong>{" "}
-                {lodge.accommodation.groupSizeGuidanceNote}{" "}
-                {lodge.accommodation.childrenAndYouthNote}
-              </p>
-              <p style={{ fontSize: 13.2, margin: 0, color: "var(--muted)" }}>
-                <strong>Documented Accessibility:</strong>{" "}
-                {lodge.accommodation.documentedAccessibilityNote}
-              </p>
-            </div>
-
-            {/* Operating Company */}
-            <div className="card" data-testid="entity-card-operator">
-              <span className="badge badge-safety" style={{ alignSelf: "flex-start" }}>
-                2. Operating Company
-              </span>
-              <h3 style={{ marginTop: 10 }}>
-                {lodge.operatingCompany.legalOrDisplayName}
-              </h3>
-              <p style={{ fontSize: 13.8, marginBottom: 8 }}>
-                {lodge.operatingCompany.ownershipOrHistorySummary}
-              </p>
-              <p style={{ fontSize: 13.5, marginBottom: 8 }}>
-                <strong>Relationship to Property:</strong>{" "}
-                {lodge.accommodation.relationshipExplanation}
-              </p>
-              {lodge.operatingCompany.legacyOrBuildingAliases &&
-                lodge.operatingCompany.legacyOrBuildingAliases.length > 0 && (
-                  <p style={{ fontSize: 13.2, marginBottom: 8 }}>
-                    <strong>Documented Building / Historical Names:</strong>{" "}
-                    {lodge.operatingCompany.legacyOrBuildingAliases.join(", ")}
-                  </p>
-                )}
-              {lodge.operatingCompany.separationDisambiguationNote && (
-                <div className={styles.conflictAlert} style={{ marginBottom: 10 }}>
-                  <strong>Entity Disambiguation:</strong>{" "}
-                  {lodge.operatingCompany.separationDisambiguationNote}
-                </div>
-              )}
-              <div style={{ marginTop: "auto", paddingTop: 8, fontSize: 13.5 }}>
-                <div>
-                  <strong>Official Website:</strong>{" "}
-                  <a
-                    href={lodge.operatingCompany.officialWebsite}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "var(--forest)", textDecoration: "underline" }}
-                  >
-                    {lodge.operatingCompany.officialWebsite} ↗
-                  </a>
-                </div>
-                {lodge.operatingCompany.officialPhone && (
-                  <div style={{ marginTop: 4 }}>
-                    <strong>Official Phone:</strong>{" "}
-                    {lodge.operatingCompany.officialPhone}
-                  </div>
-                )}
-                {lodge.operatingCompany.existingLfseOperatorSlug && (
-                  <div style={{ marginTop: 8 }}>
-                    <Link
-                      href={`/operators/${lodge.operatingCompany.existingLfseOperatorSlug}`}
-                      style={{ color: "var(--forest)", fontWeight: 700 }}
-                    >
-                      View Connected LFSE Excursion Operator Profile →
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Package Seller */}
-            <div className="card" data-testid="entity-card-seller">
-              <span className="badge badge-safety" style={{ alignSelf: "flex-start" }}>
-                3. Package Seller &amp; Inquiry Channel
-              </span>
-              <h3 style={{ marginTop: 10 }}>{lodge.packageSeller.sellerName}</h3>
-              <p style={{ fontSize: 13.8, marginBottom: 10 }}>
-                {lodge.packageSeller.bookingMechanismSummary}
-              </p>
-              <div style={{ marginTop: "auto", paddingTop: 10 }}>
-                <a
-                  href={lodge.packageSeller.officialBookingOrInquiryUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="button small"
-                >
-                  {lodge.packageSeller.primaryCtaLabel} Directly ↗
-                </a>
-              </div>
-            </div>
-
-            {/* Partner & Separately Arranged Services */}
-            <div className="card" data-testid="entity-card-partners">
-              <span className="badge badge-warning" style={{ alignSelf: "flex-start" }}>
-                4. Partner &amp; Separately Arranged Services
-              </span>
-              <h3 style={{ marginTop: 10 }}>
-                Carriers, Guides &amp; Connected Services
-              </h3>
-              {lodge.partnerServices.length === 0 ? (
-                <p style={{ fontSize: 13.5, color: "var(--muted)" }}>
-                  No third-party service partners disclosed on retrieved official
-                  pages.
-                </p>
-              ) : (
-                <ul className={styles.cleanList}>
-                  {lodge.partnerServices.map((partner, idx) => (
-                    <li key={idx}>
-                      <strong>{partner.providerName}:</strong> {partner.details}{" "}
-                      {partner.existingLfseOperatorSlug ? (
-                        <Link
-                          href={`/operators/${partner.existingLfseOperatorSlug}`}
-                          style={{
-                            color: "var(--forest)",
-                            fontWeight: 700,
-                            textDecoration: "underline",
-                          }}
-                        >
-                          (LFSE Operator Profile →)
-                        </Link>
-                      ) : partner.officialUrl ? (
-                        <a
-                          href={partner.officialUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            color: "var(--forest)",
-                            fontWeight: 700,
-                            textDecoration: "underline",
-                          }}
-                        >
-                          (Official Site ↗)
-                        </a>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Scoped Packages & Known Exclusions (NO Synthetic Totals) */}
-      <section
-        className="section"
-        id="packages-and-rates"
-        style={{
-          background: "#ffffff",
-          borderTop: "1px solid var(--line)",
-          borderBottom: "1px solid var(--line)",
-        }}
-      >
-        <div className="shell">
-          <p className="eyebrow" style={{ color: "var(--muted)" }}>
-            Scoped Package Pricing &amp; Exclusions
-          </p>
-          <h2>
-            Published Stays, Applicable Seasons &amp; Costs Requiring a Quote
-          </h2>
-          <p style={{ color: "var(--muted)", maxWidth: 840, margin: "0 0 20px" }}>
-            We publish package prices strictly with their documented season, length
-            of stay, occupancy basis, and tax treatment—and never invent blended
-            &ldquo;complete trip&rdquo; totals across airfare, licenses, tips, or
-            unquoted add-ons.
+          <h2>Published Stays &amp; Additional Costs to Budget For</h2>
+          <p
+            style={{
+              color: "var(--muted)",
+              maxWidth: 840,
+              margin: "0 0 20px",
+            }}
+          >
+            Published rates are listed for their specific season, stay length,
+            and occupancy—alongside excluded expenses and items that require a
+            direct quote.
           </p>
 
           {lodge.packages.map((pkg) => (
@@ -602,18 +421,27 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
             >
               <div className={styles.packageTopRow}>
                 <div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 6,
+                      marginBottom: 6,
+                    }}
+                  >
                     <span className="badge badge-safety">
                       {pkg.applicableSeason === "season_not_stated_on_source"
-                        ? "Season Undated on Official Page"
+                        ? "Confirm Season Year with Lodge"
                         : `${pkg.applicableSeason} Season`}
                     </span>
                     <span className="chip">{pkg.durationSummaryLabel}</span>
                     <span className="chip">{pkg.applicableDatesLabel}</span>
                   </div>
-                  <h3 style={{ margin: "0 0 4px", fontSize: 20 }}>{pkg.packageName}</h3>
+                  <h3 style={{ margin: "0 0 4px", fontSize: 20 }}>
+                    {pkg.packageName}
+                  </h3>
                   <div style={{ fontSize: 13.5, color: "var(--muted)" }}>
-                    <strong>Occupancy &amp; Boat Basis:</strong>{" "}
+                    <strong>Occupancy &amp; Boat Sharing:</strong>{" "}
                     {pkg.occupancyAndSharingBasis}
                   </div>
                 </div>
@@ -631,15 +459,21 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
                   <div style={{ fontSize: 12.5, color: "var(--muted)" }}>
                     {pkg.taxDetailNote}
                   </div>
-                  <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
-                    Source:{" "}
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "var(--muted)",
+                      marginTop: 2,
+                    }}
+                  >
+                    Checked {pkg.retrievedAt} ·{" "}
                     <a
                       href={pkg.sourceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ textDecoration: "underline" }}
                     >
-                      Official rate page ({pkg.retrievedAt}) ↗
+                      Official rate page ↗
                     </a>
                   </div>
                 </div>
@@ -648,7 +482,7 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
               <div className={styles.packageTwoCol}>
                 <div>
                   <strong style={{ color: "var(--deep)", fontSize: 14.5 }}>
-                    Verified Inclusions on Official Source
+                    What&apos;s Included
                   </strong>
                   <ul className={styles.cleanList}>
                     {pkg.verifiedInclusions.map((inc, idx) => (
@@ -659,7 +493,7 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
 
                 <div>
                   <strong style={{ color: "var(--deep)", fontSize: 14.5 }}>
-                    Known Exclusions, Separate Rates &amp; Items Requiring a Quote
+                    Additional Costs &amp; Items to Confirm
                   </strong>
                   <ul className={styles.cleanList}>
                     {pkg.knownExclusionsAndAdditionalCharges.map((ex, idx) => (
@@ -672,8 +506,8 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
                         {ex.chargeStatus ===
                           "conflicting_official_pages_confirm" && (
                           <div className={styles.conflictAlert}>
-                            Conflicting official pages detected — verify in writing
-                            before paying deposit.
+                            Official pages differ on this item — confirm in
+                            writing before paying a deposit.
                           </div>
                         )}
                       </li>
@@ -696,7 +530,7 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
                 }}
               >
                 <span style={{ color: "var(--muted)" }}>
-                  <strong>Remaining Availability:</strong> {pkg.availabilityNote}
+                  <strong>Openings:</strong> {pkg.availabilityNote}
                 </span>
                 <a
                   href={pkg.ctaUrl}
@@ -712,18 +546,129 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
         </div>
       </section>
 
-      {/* 5. Gateway Access Connections & Scoped Baggage Rules */}
-      <section className="section" id="access-and-baggage">
+      {/* 4. Fishing Arrangements & Non-Angler Options */}
+      <section
+        className="section"
+        id="fishing-and-non-angler"
+        style={{
+          background: "#ffffff",
+          borderTop: "1px solid var(--line)",
+          borderBottom: "1px solid var(--line)",
+        }}
+      >
         <div className="shell">
           <p className="eyebrow" style={{ color: "var(--muted)" }}>
-            Gateway Airport, Harbor &amp; Baggage Logistics
+            On the Water &amp; Ashore
           </p>
-          <h2>How You Reach {lodge.displayName}</h2>
+          <h2>Fishing Setup &amp; Options for Non-Anglers</h2>
 
+          <div className="lfse-two-col" style={{ marginTop: 18 }}>
+            <div className="card">
+              <h3>Boats, Target Fish &amp; Fish Processing</h3>
+              <p style={{ fontSize: 13.8, marginBottom: 8 }}>
+                <strong>Waters:</strong>{" "}
+                {lodge.fishingProgram.waterTypes.join(" & ")}
+              </p>
+              <p style={{ fontSize: 13.8, marginBottom: 8 }}>
+                <strong>Boats &amp; Gear:</strong>{" "}
+                {lodge.fishingProgram.vesselsAndEquipmentSummary}
+              </p>
+              <p style={{ fontSize: 13.8, marginBottom: 8 }}>
+                <strong>Target Species:</strong>{" "}
+                {lodge.fishingProgram.targetSpeciesSummary}
+              </p>
+              <p style={{ fontSize: 13.5, marginBottom: 8 }}>
+                <strong>Season Timing:</strong>{" "}
+                {lodge.fishingProgram.seasonalRunNote}
+              </p>
+              <p style={{ fontSize: 13.5, marginBottom: 12 }}>
+                <strong>Fish Processing &amp; Boxes:</strong>{" "}
+                {lodge.fishingProgram.fishProcessingAndBoxesSummary}
+              </p>
+
+              <strong style={{ fontSize: 14, color: "var(--deep)" }}>
+                Licenses, Stamps &amp; Boat Rules
+              </strong>
+              <ul className={styles.cleanList}>
+                {lodge.fishingProgram.scopedRequirements.map((req, idx) => (
+                  <li key={idx} style={{ marginBottom: 8 }}>
+                    <strong>{req.requirementName}</strong>{" "}
+                    <span className="chip" style={{ marginLeft: 4 }}>
+                      {req.applicableActivityAndDateScope}
+                    </span>
+                    <div style={{ fontSize: 13, marginTop: 2 }}>
+                      <em>{PROVISION_LABELS[req.provisionStatus]}:</em>{" "}
+                      {req.detail}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="card">
+              <h3>Options for Companions &amp; Non-Anglers</h3>
+              <div style={{ marginBottom: 10 }}>
+                <span
+                  className={`badge ${
+                    lodge.nonFishingContext
+                      .simultaneousNonAnglerActivitiesProven === "yes"
+                      ? "badge-safety"
+                      : "badge-warning"
+                  }`}
+                >
+                  {formatNonAnglerBadge(
+                    lodge.nonFishingContext
+                      .simultaneousNonAnglerActivitiesProven,
+                  )}
+                </span>
+              </div>
+              <p style={{ fontSize: 13.8, marginBottom: 10 }}>
+                {lodge.nonFishingContext.simultaneousNonAnglerExplanation}
+              </p>
+              {lodge.nonFishingContext.simultaneousNonAnglerActivitiesProven ===
+                "unknown" && (
+                <div
+                  className={styles.conflictAlert}
+                  style={{ marginBottom: 10 }}
+                >
+                  Note for mixed groups: On-site kayaks or shore gear do not
+                  guarantee separate guided outings while anglers are out on the
+                  boats—confirm daily options with the lodge before booking.
+                </div>
+              )}
+              <p style={{ fontSize: 13.5, marginBottom: 8 }}>
+                <strong>On-Site Gear:</strong>{" "}
+                {lodge.nonFishingContext.onSiteUnguidedEquipment.summary}
+              </p>
+              <p style={{ fontSize: 13.5, margin: 0 }}>
+                <strong>Guided Wildlife &amp; Sightseeing:</strong>{" "}
+                {lodge.nonFishingContext.guidedNonFishingExcursions.summary}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Getting There, Baggage & Accommodations / Booking Setup */}
+      <section className="section" id="access-and-accommodations">
+        <div className="shell">
+          <p className="eyebrow" style={{ color: "var(--muted)" }}>
+            Transfers, Rooms &amp; Booking Setup
+          </p>
+          <h2>Getting to {lodge.displayName} &amp; Where You Stay</h2>
+
+          {/* Access Connections */}
           <div className="lfse-two-col" style={{ marginTop: 18 }}>
             {lodge.accessConnections.map((conn) => (
               <div key={conn.connectionId} className="card">
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 6,
+                    marginBottom: 8,
+                  }}
+                >
                   <span className="badge badge-safety">
                     Gateway: {conn.gatewayAirportIata}
                   </span>
@@ -737,9 +682,20 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
                   <strong>Carrier / Dock:</strong> {conn.carrierOrDockName}
                 </p>
                 <p style={{ fontSize: 13.5, marginBottom: 8 }}>
-                  <strong>Transfer Rate &amp; Inclusion Note:</strong>{" "}
+                  <strong>Transfer Cost &amp; Details:</strong>{" "}
                   {conn.publishedTransferRateNote}
                 </p>
+                {conn.provisionStatus ===
+                  "conflicting_official_pages_confirm" && (
+                  <div
+                    className={styles.conflictAlert}
+                    style={{ marginBottom: 10 }}
+                  >
+                    Official pages differ on whether this transfer is included
+                    in the package rate — confirm directly before booking
+                    flights.
+                  </div>
+                )}
                 <div
                   style={{
                     padding: "10px 12px",
@@ -751,15 +707,21 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
                   }}
                 >
                   <strong>
-                    Scoped Baggage &amp; Fish Freight Rule (
+                    Baggage &amp; Fish-Box Rules (
                     {conn.scopedBaggageAndFreightRule.applicableServiceScope}):
                   </strong>
                   <div style={{ marginTop: 3 }}>
                     {conn.scopedBaggageAndFreightRule.ruleSummary}
                   </div>
                 </div>
-                <p style={{ fontSize: 13.2, color: "var(--muted)", margin: "0 0 10px" }}>
-                  <strong>Check-In &amp; Overnight Buffer:</strong>{" "}
+                <p
+                  style={{
+                    fontSize: 13.2,
+                    color: "var(--muted)",
+                    margin: "0 0 10px",
+                  }}
+                >
+                  <strong>Arrival &amp; Overnight Timing:</strong>{" "}
                   {conn.reportingAndOvernightBufferNote}
                 </p>
                 <div style={{ marginTop: "auto", fontSize: 13 }}>
@@ -767,193 +729,209 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
                     href={`/ports/${conn.gatewayPortSlug}`}
                     style={{ color: "var(--forest)", fontWeight: 700 }}
                   >
-                    Open LFSE {conn.gatewayPortSlug.replace(/-/g, " ")} gateway
-                    harbor guide →
+                    Explore our {conn.gatewayPortSlug.replace(/-/g, " ")}{" "}
+                    gateway guide →
                   </Link>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* 6. Fishing Program & Scoped Regulatory Requirements */}
-      <section
-        className="section"
-        id="fishing-and-regulations"
-        style={{
-          background: "#ffffff",
-          borderTop: "1px solid var(--line)",
-          borderBottom: "1px solid var(--line)",
-        }}
-      >
-        <div className="shell">
-          <p className="eyebrow" style={{ color: "var(--muted)" }}>
-            Boats, Target Species &amp; Scoped Rules
-          </p>
-          <h2>Fishing Program, Fish Processing &amp; Regulatory Scope</h2>
-
-          <div className="lfse-two-col" style={{ marginTop: 18 }}>
-            <div className="card">
-              <h3>Vessels, Waters &amp; Catch Care</h3>
-              <p style={{ fontSize: 13.8, marginBottom: 8 }}>
-                <strong>Water Types:</strong>{" "}
-                {lodge.fishingProgram.waterTypes.join(" & ")}
-              </p>
-              <p style={{ fontSize: 13.8, marginBottom: 8 }}>
-                <strong>Boats &amp; Gear:</strong>{" "}
-                {lodge.fishingProgram.vesselsAndEquipmentSummary}
-              </p>
-              <p style={{ fontSize: 13.8, marginBottom: 8 }}>
-                <strong>Target Species:</strong>{" "}
-                {lodge.fishingProgram.targetSpeciesSummary}
-              </p>
-              <p style={{ fontSize: 13.5, marginBottom: 8 }}>
-                <strong>Seasonal Run Context:</strong>{" "}
-                {lodge.fishingProgram.seasonalRunNote}
-              </p>
-              <p style={{ fontSize: 13.5, margin: 0 }}>
-                <strong>Fish Processing &amp; Airline Boxes:</strong>{" "}
-                {lodge.fishingProgram.fishProcessingAndBoxesSummary}
-              </p>
-            </div>
-
-            <div className="card">
-              <h3>Scoped Licenses, Stamps &amp; Operational Rules</h3>
-              <p style={{ fontSize: 13.2, color: "var(--muted)", marginTop: 0 }}>
-                Requirements below are scoped to the specific activity, guiding mode,
-                and season documented on official pages:
-              </p>
-              <ul className={styles.cleanList}>
-                {lodge.fishingProgram.scopedRequirements.map((req, idx) => (
-                  <li key={idx} style={{ marginBottom: 10 }}>
-                    <strong>{req.requirementName}</strong>{" "}
-                    <span className="chip" style={{ marginLeft: 4 }}>
-                      {req.applicableActivityAndDateScope}
-                    </span>
-                    <div style={{ fontSize: 13.2, marginTop: 2 }}>
-                      <em>{PROVISION_LABELS[req.provisionStatus]}:</em> {req.detail}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 7. Non-Fishing Companion Fit & Ecosystem Cross-Links */}
-      <section className="section" id="non-fishing-and-ecosystem">
-        <div className="shell">
-          <p className="eyebrow" style={{ color: "var(--muted)" }}>
-            Mixed-Interest Party Planning
-          </p>
-          <h2>
-            Non-Fishing Activities, Simultaneous Companion Fit &amp; Connected Guides
-          </h2>
-
-          <div className="lfse-two-col" style={{ marginTop: 18 }}>
-            <div className="card">
-              <h3>What Non-Anglers Can Actually Expect</h3>
-              <p style={{ fontSize: 13.8, marginBottom: 8 }}>
-                <strong>Simultaneous Guided Non-Angler Activities Proven?</strong>{" "}
-                <span
-                  className={`badge ${
-                    lodge.nonFishingContext.simultaneousNonAnglerActivitiesProven ===
-                    "yes"
-                      ? "badge-safety"
-                      : "badge-warning"
-                  }`}
-                >
-                  {lodge.nonFishingContext.simultaneousNonAnglerActivitiesProven.toUpperCase()}
-                </span>
-              </p>
-              <p style={{ fontSize: 13.5, marginBottom: 10 }}>
-                {lodge.nonFishingContext.simultaneousNonAnglerExplanation}
-              </p>
-              <p style={{ fontSize: 13.5, marginBottom: 8 }}>
-                <strong>On-Site Unguided Gear:</strong>{" "}
-                {lodge.nonFishingContext.onSiteUnguidedEquipment.summary}
-              </p>
-              <p style={{ fontSize: 13.5, margin: 0 }}>
-                <strong>Guided Wildlife / Eco Options:</strong>{" "}
-                {lodge.nonFishingContext.guidedNonFishingExcursions.summary}
-              </p>
-            </div>
-
-            <div className="card">
-              <h3>Connected Alaska Trip Guides (LFSE · JFD · CP)</h3>
-              <p style={{ fontSize: 13.2, color: "var(--muted)", marginTop: 0 }}>
-                Combine {lodge.displayName} with pre/post-lodge town stays,
-                helicopter flightseeing, or independent ferry legs:
-              </p>
-              <ul className={styles.cleanList}>
-                {lodge.nonFishingContext.contextualEcosystemLinks.map(
-                  (link, idx) => (
-                    <li key={idx} style={{ marginBottom: 10 }}>
-                      {link.surface === "lfse" ? (
-                        <Link
-                          href={link.href}
-                          style={{
-                            color: "var(--forest)",
-                            fontWeight: 700,
-                            textDecoration: "underline",
-                          }}
-                        >
-                          {link.label} →
-                        </Link>
-                      ) : (
-                        <a
-                          href={link.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            color: "var(--forest)",
-                            fontWeight: 700,
-                            textDecoration: "underline",
-                          }}
-                        >
-                          {link.label} ↗
-                        </a>
-                      )}
-                      <div style={{ fontSize: 12.8, color: "var(--muted)", marginTop: 2 }}>
-                        {link.relationshipNote}
-                      </div>
-                    </li>
-                  ),
-                )}
-              </ul>
-            </div>
-          </div>
-
-          {/* Unresolved Questions Checklist */}
-          {lodge.unresolvedQuestionsForTraveler.length > 0 && (
-            <div
-              className="card"
-              id="questions-to-confirm"
-              style={{
-                marginTop: 22,
-                background: "#ffffff",
-                borderLeft: "4px solid var(--forest)",
-              }}
-            >
-              <h3 style={{ marginTop: 0 }}>
-                Questions to Confirm Directly Before Paying a Deposit
+          {/* Rooms & Concise Property / Operator / Seller Distinction */}
+          <div className="lfse-two-col" style={{ marginTop: 22 }}>
+            <div className="card" data-testid="entity-card-accommodation">
+              <span
+                className="badge badge-safety"
+                style={{ alignSelf: "flex-start" }}
+              >
+                Accommodations &amp; Meals
+              </span>
+              <h3 style={{ marginTop: 10 }}>
+                {lodge.accommodation.propertyName}
               </h3>
-              <ul className={styles.cleanList}>
-                {lodge.unresolvedQuestionsForTraveler.map((q, idx) => (
-                  <li key={idx}>{q}</li>
-                ))}
-              </ul>
+              <p style={{ fontSize: 13.8, marginBottom: 8 }}>
+                <strong>Location:</strong>{" "}
+                {lodge.accommodation.actualLocationLabel}
+                {lodge.accommodation.streetOrPostalAddress
+                  ? ` (${lodge.accommodation.streetOrPostalAddress})`
+                  : ""}
+              </p>
+              <p style={{ fontSize: 13.5, marginBottom: 8 }}>
+                <strong>Rooms &amp; Cabins:</strong>{" "}
+                {lodge.accommodation.roomAndCabinSummary}
+              </p>
+              <p style={{ fontSize: 13.5, marginBottom: 8 }}>
+                <strong>Bathrooms:</strong>{" "}
+                {lodge.accommodation.bathroomConfiguration ===
+                "private_ensuite_documented"
+                  ? "Private bathrooms"
+                  : lodge.accommodation.bathroomConfiguration ===
+                      "private_or_group_shared_documented"
+                    ? "Private or group-shared bathrooms"
+                    : "Not listed — confirm with lodge"}{" "}
+                · <strong>Guest Kitchen:</strong>{" "}
+                {formatYesNoUnknown(
+                  lodge.accommodation.guestKitchenOrSelfCaterAccess,
+                )}
+              </p>
+              <p style={{ fontSize: 13.5, marginBottom: 8 }}>
+                <strong>Meals:</strong>{" "}
+                {lodge.accommodation.mealProvisionSummary}
+              </p>
+              <p
+                style={{
+                  fontSize: 13.2,
+                  marginBottom: 6,
+                  color: "var(--muted)",
+                }}
+              >
+                <strong>Group Size &amp; Families:</strong>{" "}
+                {lodge.accommodation.groupSizeGuidanceNote}{" "}
+                {lodge.accommodation.childrenAndYouthNote}
+              </p>
+              <p style={{ fontSize: 13.2, margin: 0, color: "var(--muted)" }}>
+                <strong>Accessibility:</strong>{" "}
+                {lodge.accommodation.documentedAccessibilityNote}
+              </p>
             </div>
-          )}
+
+            <div className="card" data-testid="entity-card-operator">
+              <span
+                className={`badge ${
+                  rolesDiffer ? "badge-warning" : "badge-safety"
+                }`}
+                style={{ alignSelf: "flex-start" }}
+              >
+                {rolesDiffer
+                  ? "How Lodging, Boats & Services Are Booked"
+                  : "Operator & Direct Booking Contact"}
+              </span>
+              <h3 style={{ marginTop: 10 }}>
+                {lodge.packageSeller.sellerName}
+              </h3>
+              <p style={{ fontSize: 13.8, marginBottom: 8 }}>
+                {lodge.accommodation.relationshipExplanation}
+              </p>
+              <p style={{ fontSize: 13.5, marginBottom: 8 }}>
+                <strong>How to book:</strong>{" "}
+                {lodge.packageSeller.bookingMechanismSummary}
+              </p>
+              <p
+                style={{
+                  fontSize: 13.2,
+                  color: "var(--muted)",
+                  marginBottom: 8,
+                }}
+              >
+                <strong>Operating business:</strong>{" "}
+                {lodge.operatingCompany.legalOrDisplayName} —{" "}
+                {lodge.operatingCompany.ownershipOrHistorySummary}
+              </p>
+              {lodge.operatingCompany.legacyOrBuildingAliases &&
+                lodge.operatingCompany.legacyOrBuildingAliases.length > 0 && (
+                  <p style={{ fontSize: 13.2, marginBottom: 8 }}>
+                    <strong>Also includes / formerly known as:</strong>{" "}
+                    {lodge.operatingCompany.legacyOrBuildingAliases.join(", ")}
+                  </p>
+                )}
+              {lodge.operatingCompany.separationDisambiguationNote && (
+                <div
+                  className={styles.conflictAlert}
+                  style={{ marginBottom: 10 }}
+                >
+                  {lodge.operatingCompany.separationDisambiguationNote}
+                </div>
+              )}
+
+              {lodge.partnerServices.length > 0 && (
+                <div style={{ marginBottom: 12 }}>
+                  <strong style={{ fontSize: 13.5, color: "var(--deep)" }}>
+                    Transfer Carriers &amp; Separately Arranged Services:
+                  </strong>
+                  <ul className={styles.cleanList}>
+                    {lodge.partnerServices.map((partner, idx) => (
+                      <li key={idx}>
+                        <strong>{partner.providerName}:</strong>{" "}
+                        {partner.details}{" "}
+                        {partner.existingLfseOperatorSlug ? (
+                          <Link
+                            href={`/operators/${partner.existingLfseOperatorSlug}`}
+                            style={{
+                              color: "var(--forest)",
+                              fontWeight: 700,
+                              textDecoration: "underline",
+                            }}
+                          >
+                            (Operator profile →)
+                          </Link>
+                        ) : partner.officialUrl ? (
+                          <a
+                            href={partner.officialUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: "var(--forest)",
+                              fontWeight: 700,
+                              textDecoration: "underline",
+                            }}
+                          >
+                            (Official site ↗)
+                          </a>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div
+                style={{
+                  marginTop: "auto",
+                  paddingTop: 10,
+                  borderTop: "1px solid var(--line)",
+                  fontSize: 13.5,
+                }}
+              >
+                <div>
+                  <strong>Official Website:</strong>{" "}
+                  <a
+                    href={lodge.operatingCompany.officialWebsite}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: "var(--forest)",
+                      textDecoration: "underline",
+                    }}
+                  >
+                    {lodge.operatingCompany.officialWebsite} ↗
+                  </a>
+                </div>
+                {lodge.operatingCompany.officialPhone && (
+                  <div style={{ marginTop: 4 }}>
+                    <strong>Phone:</strong>{" "}
+                    {lodge.operatingCompany.officialPhone}
+                  </div>
+                )}
+                {lodge.operatingCompany.existingLfseOperatorSlug && (
+                  <div style={{ marginTop: 8 }}>
+                    <Link
+                      href={`/operators/${lodge.operatingCompany.existingLfseOperatorSlug}`}
+                      style={{ color: "var(--forest)", fontWeight: 700 }}
+                    >
+                      View Excursion Operator Profile →
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 8. Claim-by-Claim Primary-Source Evidence Ledger */}
+      {/* 6. Connected Guides + Expandable Unresolved Details & Sources */}
       <section
         className="section"
-        id="primary-source-evidence"
+        id="connected-guides-and-sources"
         style={{
           background: "#ffffff",
           borderTop: "1px solid var(--line)",
@@ -961,46 +939,28 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
         }}
       >
         <div className="shell">
-          <p className="eyebrow" style={{ color: "var(--muted)" }}>
-            Claim-Level Evidence ({lodge.claimEvidence.length} Primary-Source Citations)
-          </p>
-          <h2>Primary Sources &amp; Retrieval Ledger</h2>
-          <p style={{ color: "var(--muted)", maxWidth: 820, margin: "0 0 16px" }}>
-            A reachable homepage never verifies rates, transfers, or inclusions on
-            its own. Every published section above maps to the specific retrieved
-            pages below:
-          </p>
-
-          <div className={styles.evidenceTableWrap}>
-            <table className={styles.evidenceTable}>
-              <thead>
-                <tr>
-                  <th>Claim ID</th>
-                  <th>Scope</th>
-                  <th>Applicable Season / Date</th>
-                  <th>Verified Claim Summary</th>
-                  <th>Official Source &amp; Check Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {lodge.claimEvidence.map((ev) => (
-                  <tr key={ev.claimId}>
-                    <td>
-                      <code>{ev.claimId}</code>
-                    </td>
-                    <td>{CLAIM_SCOPE_LABELS[ev.scope]}</td>
-                    <td>{ev.applicableSeasonOrDate}</td>
-                    <td>
-                      <div>{ev.claimSummary}</div>
-                      {ev.unresolvedOrConflictNote && (
-                        <div className={styles.conflictAlert}>
-                          {ev.unresolvedOrConflictNote}
-                        </div>
-                      )}
-                    </td>
-                    <td>
+          <div className="card" style={{ marginBottom: 20 }}>
+            <h3 style={{ marginTop: 0 }}>
+              Plan Gateway Stays, Flights &amp; Ferry Connections
+            </h3>
+            <ul className={styles.cleanList}>
+              {lodge.nonFishingContext.contextualEcosystemLinks.map(
+                (link, idx) => (
+                  <li key={idx} style={{ marginBottom: 10 }}>
+                    {link.surface === "lfse" ? (
+                      <Link
+                        href={link.href}
+                        style={{
+                          color: "var(--forest)",
+                          fontWeight: 700,
+                          textDecoration: "underline",
+                        }}
+                      >
+                        {link.label} →
+                      </Link>
+                    ) : (
                       <a
-                        href={ev.source.url}
+                        href={link.href}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
@@ -1009,33 +969,120 @@ export default async function SoutheastAlaskaFishingLodgeDetailPage({
                           textDecoration: "underline",
                         }}
                       >
-                        {ev.source.label} ↗
+                        {link.label} ↗
                       </a>
-                      <div style={{ fontSize: 11.8, color: "var(--muted)", marginTop: 2 }}>
-                        Checked {ev.source.checkedAt}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    )}
+                    <div
+                      style={{
+                        fontSize: 12.8,
+                        color: "var(--muted)",
+                        marginTop: 2,
+                      }}
+                    >
+                      {link.relationshipNote}
+                    </div>
+                  </li>
+                ),
+              )}
+            </ul>
           </div>
 
-          <div style={{ marginTop: 16, fontSize: 13, color: "var(--muted)" }}>
-            <strong>Canonical DCC Snapshot Feed:</strong>{" "}
-            <a
-              href={DCC_ALASKA_FISHING_LODGES_API_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ textDecoration: "underline" }}
-            >
-              {DCC_ALASKA_FISHING_LODGES_API_URL} ↗
-            </a>
+          {/* Expandable 1: Unresolved Details & Questions to Confirm */}
+          {lodge.unresolvedQuestionsForTraveler.length > 0 && (
+            <div style={{ marginBottom: 14 }} id="questions-to-confirm">
+              <details className="lfse-sources-details">
+                <summary>
+                  Details to confirm before paying a deposit (
+                  {lodge.unresolvedQuestionsForTraveler.length})
+                </summary>
+                <div className="lfse-sources-body">
+                  <ul className={styles.cleanList} style={{ marginTop: 0 }}>
+                    {lodge.unresolvedQuestionsForTraveler.map((q, idx) => (
+                      <li key={idx}>{q}</li>
+                    ))}
+                  </ul>
+                </div>
+              </details>
+            </div>
+          )}
+
+          {/* Expandable 2: Official Sources & Check Dates */}
+          <div id="primary-source-evidence">
+            <details className="lfse-sources-details">
+              <summary>
+                Official sources &amp; check dates ({lodge.claimEvidence.length}{" "}
+                pages checked {lodge.verifiedAt})
+              </summary>
+              <div className="lfse-sources-body">
+                <p style={{ margin: "0 0 12px", fontSize: 13.5 }}>
+                  Information on this page was compiled from the official pages
+                  below (coordinates:{" "}
+                  {lodge.accommodation.coordinates.latitude.toFixed(4)}° N,{" "}
+                  {Math.abs(lodge.accommodation.coordinates.longitude).toFixed(
+                    4,
+                  )}
+                  ° W — {lodge.accommodation.coordinates.coordinateNote}):
+                </p>
+                <div className={styles.evidenceTableWrap}>
+                  <table className={styles.evidenceTable}>
+                    <thead>
+                      <tr>
+                        <th>Topic</th>
+                        <th>Applicable Season / Date</th>
+                        <th>What Was Checked</th>
+                        <th>Official Source &amp; Check Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lodge.claimEvidence.map((ev) => (
+                        <tr key={ev.claimId}>
+                          <td>
+                            <strong>{CLAIM_SCOPE_LABELS[ev.scope]}</strong>
+                          </td>
+                          <td>{ev.applicableSeasonOrDate}</td>
+                          <td>
+                            <div>{ev.claimSummary}</div>
+                            {ev.unresolvedOrConflictNote && (
+                              <div className={styles.conflictAlert}>
+                                {ev.unresolvedOrConflictNote}
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <a
+                              href={ev.source.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                color: "var(--forest)",
+                                fontWeight: 700,
+                                textDecoration: "underline",
+                              }}
+                            >
+                              {ev.source.label} ↗
+                            </a>
+                            <div
+                              style={{
+                                fontSize: 11.8,
+                                color: "var(--muted)",
+                                marginTop: 2,
+                              }}
+                            >
+                              Checked {ev.source.checkedAt}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </details>
           </div>
         </div>
       </section>
 
-      {/* 9. Free Corrections & $0 Operator Claim Flow */}
+      {/* 7. Free Updates & Listing Claim */}
       <section className={`section ${styles.noPrint}`}>
         <div className="shell">
           <LodgeParticipationPanel

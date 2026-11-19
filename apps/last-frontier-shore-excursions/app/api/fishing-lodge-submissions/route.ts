@@ -200,7 +200,7 @@ export async function POST(request: Request) {
           ? "free_lodge_identity_claim_facts_quarantined"
           : "quarantined_fact_correction_pending_steward_review",
       notes: [
-        `[${submissionType === "lodge_profile_claim" ? "Lodge Identity Claim ($0)" : "Lodge Fact Correction"}]`,
+        `[${submissionType === "lodge_profile_claim" ? "Free Lodge Listing Claim" : "Lodge Fact Correction"}]`,
         `Lodge: ${lodge.displayName} (${lodge.lodgeId})`,
         `Operator: ${lodge.operatingCompany.legalOrDisplayName} (${lodge.operatingCompany.operatorId})`,
         `Scope: ${targetSectionOrClaimId}`,
@@ -247,7 +247,7 @@ export async function POST(request: Request) {
       suppressForTest: isTest,
       subject: `${isTest ? "[TEST] " : ""}[LFSE Lodge ${submissionType === "lodge_profile_claim" ? "Claim" : "Correction"}] ${lodge.displayName}`,
       html: `
-        <h2>Southeast Alaska Fishing Lodge ${submissionType === "lodge_profile_claim" ? "Free Profile Claim ($0)" : "Factual Correction"}</h2>
+        <h2>Southeast Alaska Fishing Lodge ${submissionType === "lodge_profile_claim" ? "Free Listing Claim" : "Suggested Update"}</h2>
         <p><strong>Submission ID:</strong> ${escapeHtml(submissionId)}</p>
         <p><strong>Lodge:</strong> ${escapeHtml(lodge.displayName)} (${escapeHtml(lodge.lodgeId)})</p>
         <p><strong>Submitter:</strong> ${escapeHtml(contactName)} (${escapeHtml(roleOrRelationship)})</p>
@@ -283,8 +283,8 @@ export async function POST(request: Request) {
         autoPublishesSubmittedFacts: false,
         message:
           submissionType === "lodge_profile_claim"
-            ? `Free lodge claim recorded (${submissionId}) for ${lodge.displayName}. Identity verification establishes operator contact control only; any submitted factual edits remain quarantined until primary-source review.`
-            : `Factual correction recorded (${submissionId}) for ${lodge.displayName} in the DCC Steward Quarantine Queue for primary-source verification.`,
+            ? `Free listing claim received (${submissionId}) for ${lodge.displayName}. Claiming confirms your business contact; any updates are checked against published sources before appearing on the page.`
+            : `Suggested update received (${submissionId}) for ${lodge.displayName}. Our team will check the source before updating the listing.`,
       },
       { status: 201 },
     );

@@ -229,7 +229,7 @@ test("SSR rendering: Directory client, Whole-Lodge filter, 4-lodge printable com
     assert.equal(lodge.visualRepresentation.isActualPropertyPhoto, false);
     assert.equal(
       lodge.visualRepresentation.visualDisclosureBadge,
-      "Regional Waterway Context · Not a Property Photo",
+      "Regional scenery; see the lodge’s website for property photos.",
     );
     const relImg = lodge.visualRepresentation.imagePath.replace(
       /^\/images\//,
@@ -258,20 +258,37 @@ test("SSR rendering: Directory client, Whole-Lodge filter, 4-lodge printable com
   );
   assert.match(
     compareHtml,
-    /Showing <strong>16<\/strong> of <strong>16<\/strong> source-backed properties/,
+    /Showing <strong>16<\/strong> of <strong>16<\/strong> properties/,
   );
   assert.match(compareHtml, /Whole-Lodge Private Stays \(1\)/);
-  assert.match(compareHtml, /Side-by-Side Trip Comparison \(4 of 4 Selected\)/);
-  assert.match(compareHtml, /Print \/ Save Comparison Sheet/);
+  assert.match(compareHtml, /Side-by-Side Comparison \(4 of 4 Lodges\)/);
+  assert.match(compareHtml, /Print \/ Save PDF/);
   assert.match(compareHtml, /Longliner Lodge &amp; Suites/);
   assert.match(compareHtml, /Whole-Lodge Private Stay/);
+  assert.match(compareHtml, /Free listing/);
   assert.doesNotMatch(
     compareHtml,
-    /Estimated Complete Trip Total:\s*\$/i,
-    "Must never synthesize blended 'complete trip total' dollar quotes",
+    /\$0|forever|quarantin|governance|Entity Separation|Estimated Complete Trip Total:\s*\$/i,
   );
 
-  // SSR render of full directory page and detail fact sheet
+  // Verify traveler-first comparison row order:
+  // Price & Stay Length -> What's Included & Rooms -> Fishing Arrangements -> Non-Angler -> Getting There -> Additional Costs
+  const rowOrder = [
+    "Price &amp; Stay Length",
+    "What&#x27;s Included &amp; Rooms",
+    "Fishing Arrangements",
+    "Non-Angler &amp; Companion Options",
+    "Getting There &amp; Baggage",
+    "Additional Costs &amp; Who You Book With",
+  ];
+  let prevIdx = -1;
+  for (const label of rowOrder) {
+    const idx = compareHtml.indexOf(label);
+    assert.ok(idx > prevIdx, `Comparison row "${label}" must appear in order`);
+    prevIdx = idx;
+  }
+
+  // SSR render of full directory page and detail pages
   const { default: DirectoryPage } = await import(
     "../app/southeast-alaska/fishing-lodges/page"
   );
@@ -291,9 +308,15 @@ test("SSR rendering: Directory client, Whole-Lodge filter, 4-lodge printable com
     directoryPageHtml,
     /https:\/\/cruisepromenade\.com\/guides\/cruise-alaska-without-a-cruise-ship/,
   );
-  assert.match(directoryPageHtml, /Fishlodges/);
-  assert.match(directoryPageHtml, /Alaska Fishing Match/);
-  assert.match(directoryPageHtml, /The Alaska Field Guide/);
+  // Competitor analysis stays in research docs — never on public traveler page
+  assert.doesNotMatch(
+    directoryPageHtml,
+    /Fishlodges|Alaska Fishing Match|Alaska Field Guide|\$0 forever|quarantin|governance/i,
+  );
+  assert.match(
+    directoryPageHtml,
+    /<details[^>]*class="lfse-sources-details"/,
+  );
 
   const { default: DetailPage } = await import(
     "../app/southeast-alaska/fishing-lodges/[lodgeSlug]/page"
@@ -306,11 +329,29 @@ test("SSR rendering: Directory client, Whole-Lodge filter, 4-lodge printable com
   assert.match(detailHtml, /Longliner Lodge &amp; Suites/);
   assert.match(detailHtml, /485 Katlian/);
   assert.match(detailHtml, /4:00 p\.m\./);
+  assert.match(detailHtml, /see the lodge&#x27;s website for property photos/);
+  assert.match(detailHtml, /Details to confirm before paying a deposit/);
+  assert.match(detailHtml, /Official sources &amp; check dates/);
+  assert.doesNotMatch(
+    detailHtml,
+    /\$0|forever|quarantin|Fact Sheet Governance|Entity Separation/i,
+  );
   assert.match(
     detailHtml,
     new RegExp(
       UNCLAIMED_LODGE_FACT_SHEET_NOTICE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
     ),
+  );
+
+  // Verify material booking uncertainty renders inline beside transfer/costs on Alaska's Kingfisher Lodge
+  const kingfisherDetailHtml = renderToStaticMarkup(
+    await DetailPage({
+      params: Promise.resolve({ lodgeSlug: "alaska-kingfisher-lodge-craig" }),
+    }),
+  );
+  assert.match(
+    kingfisherDetailHtml,
+    /Official pages differ on whether this transfer is included/,
   );
 
   // Ensure neither page uses Next <Link> for external origins

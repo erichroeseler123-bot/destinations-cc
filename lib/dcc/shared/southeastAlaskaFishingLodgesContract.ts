@@ -33,7 +33,7 @@ export const ALASKA_FISHING_LODGES_CONTRACT_VERSION =
   "dcc.directory.ext.alaska-lodges.v1" as const;
 
 export const UNCLAIMED_LODGE_FACT_SHEET_NOTICE =
-  "Independently researched public fact sheet ($0 free inclusion). This business has not claimed this page; claiming verifies operator contact identity only, while all factual edits require primary-source review." as const;
+  "Free listing researched from official sources. This business has not claimed this page; updates are checked against published sources before appearing here." as const;
 
 export type TriStateFact = "yes" | "no" | "unknown";
 
@@ -345,7 +345,7 @@ export interface RegionalVisualRepresentation {
   imageAlt: string;
   imageCredit: string;
   isActualPropertyPhoto: false; // Honest labeling: public-domain regional waterway context, not lodge room photo
-  visualDisclosureBadge: "Regional Waterway Context · Not a Property Photo";
+  visualDisclosureBadge: "Regional scenery; see the lodge’s website for property photos.";
 }
 
 export interface SoutheastAlaskaFishingLodgeRecord {

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 import { LfseFishingLodgesDirectoryClient } from "@/components/LfseFishingLodgesDirectoryClient";
 import {
-  DCC_ALASKA_FISHING_LODGES_API_URL,
   SEAK_FISHING_LODGES_CANONICAL_URL,
   SEAK_FISHING_LODGES_RELEASE_READY,
   buildFishingLodgesDirectoryJsonLd,
@@ -15,9 +14,9 @@ import styles from "./fishing-lodges.module.css";
 
 export const metadata: Metadata = {
   title:
-    "Southeast Alaska Fishing Lodges, Basecamps & Private Stays — Independent Directory",
+    "Southeast Alaska Fishing Lodges, Basecamps & Private Stays — Independent Guide",
   description:
-    "Compare 16 source-backed Southeast Alaska fishing lodges, DIY boat-and-lodging basecamps, and whole-lodge private stays across Juneau, Sitka, Elfin Cove, Gustavus, Petersburg, Ketchikan, and Prince of Wales Island.",
+    "Compare 16 Southeast Alaska fishing lodges, self-guided boat-and-hotel stays, and whole-lodge private rentals across Juneau, Sitka, Elfin Cove, Gustavus, Petersburg, Ketchikan, and Prince of Wales Island.",
   alternates: { canonical: SEAK_FISHING_LODGES_CANONICAL_URL },
   robots: {
     index: SEAK_FISHING_LODGES_RELEASE_READY,
@@ -25,9 +24,9 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title:
-      "Southeast Alaska Fishing Lodges Directory | Whole-Trip Access, Scoped Rates & Sources",
+      "Southeast Alaska Fishing Lodges | Compare Rates, Inclusions, Access & Companion Fit",
     description:
-      "Independent $0-inclusion directory comparing Southeast Alaska fishing lodges, gateway floatplane/ferry connections, scoped package inclusions, and non-fishing companion options.",
+      "Independent guide comparing Southeast Alaska fishing lodges, floatplane and boat transfers, package inclusions, and non-fishing options for companions.",
     url: SEAK_FISHING_LODGES_CANONICAL_URL,
     siteName: "Last Frontier Shore Excursions",
     type: "website",
@@ -43,7 +42,10 @@ export const metadata: Metadata = {
 };
 
 interface FishingLodgesDirectoryPageProps {
-  searchParams?: Promise<{ compare?: string | string[]; print?: string | string[] }>;
+  searchParams?: Promise<{
+    compare?: string | string[];
+    print?: string | string[];
+  }>;
 }
 
 export default async function SoutheastAlaskaFishingLodgesPage({
@@ -75,7 +77,7 @@ export default async function SoutheastAlaskaFishingLodgesPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* 1. Independent Directory Hero */}
+      {/* 1. Traveler-Focused Hero */}
       <section
         className={`hero ${styles.noPrint}`}
         style={hideChromeForPrintSheet ? { display: "none" } : undefined}
@@ -98,39 +100,39 @@ export default async function SoutheastAlaskaFishingLodgesPage({
           </nav>
 
           <p className="eyebrow">
-            Independent Southeast Alaska Directory · $0 Free Operator Inclusion
+            Independent Southeast Alaska Guide · Free Listings
           </p>
           <h1>
             Southeast Alaska Fishing Lodges, Basecamps &amp; Whole-Lodge Stays
           </h1>
           <p className="lead" style={{ color: "#e4f1f4", maxWidth: 880 }}>
-            Built for travelers comparing the <strong>entire trip</strong>—not just
-            a list of business names. Whether four of you want five nights in July
-            with two dedicated anglers and two companions looking for wildlife and
-            kayaking, compare physical properties, operating companies, gateway
-            floatplane or boat connections, scoped package rates, and non-fishing
-            options side by side.
+            Planning five nights in July where two of you want serious fishing
+            and two want wildlife and kayaking? Compare prices, stay lengths,
+            what&apos;s included, boat setups, companion activities, and how you
+            actually reach each property—then connect directly with the lodge.
           </p>
 
           <div className={styles.heroMetaStrip}>
             <span className={styles.heroPill}>
-              {snapshot.counts.totalPublishedProperties} Source-Backed Properties
+              {snapshot.counts.totalPublishedProperties} Southeast Alaska
+              Properties
             </span>
             <span className={styles.heroPill}>
-              {snapshot.counts.individualRoomOrCabinProperties} Individual Room / Cabin
+              {snapshot.counts.individualRoomOrCabinProperties} Room &amp; Cabin
               Stays
             </span>
             <span className={styles.heroPill}>
-              {snapshot.counts.wholeLodgePrivateProperties} Whole-Lodge Private Stay
+              {snapshot.counts.wholeLodgePrivateProperties} Whole-Lodge Private
+              Stay
             </span>
             <span className={styles.heroPill}>
-              Compare up to 4 Side by Side + Printable PDF
+              Compare up to 4 + Printable PDF
             </span>
           </div>
         </div>
       </section>
 
-      {/* 2. Four-Pillar Editorial & Truthfulness Standard */}
+      {/* 2. Plain-Language Comparison Guide Strip */}
       <section
         className={`${styles.trustBanner} ${styles.noPrint}`}
         style={hideChromeForPrintSheet ? { display: "none" } : undefined}
@@ -138,26 +140,24 @@ export default async function SoutheastAlaskaFishingLodgesPage({
         <div className="shell">
           <div className={styles.trustGrid}>
             <div className={styles.trustItem}>
-              <strong>1. Free Basic Inclusion ($0 Forever)</strong>
-              Properties are listed on verified public facts whether or not the
-              operator participates, with direct links to official booking and
-              inquiry channels.
+              <strong>Rates &amp; Extra Costs Up Front</strong>
+              Published rates appear with their dates, nights, and occupancy—plus
+              transfers, taxes, licenses, and fish shipping to budget separately.
             </div>
             <div className={styles.trustItem}>
-              <strong>2. Separate Property, Operator &amp; Seller Roles</strong>
-              We distinguish physical lodging from package sellers, boat rentals,
-              and separately arranged guides or catering (such as Fish Baranof +
-              Longliner Lodge, or Boardwalk&apos;s whole-property model).
+              <strong>Anglers &amp; Non-Anglers Together</strong>
+              See which lodges run guided wildlife or glacier outings alongside
+              fishing, and which focus strictly on time on the water.
             </div>
             <div className={styles.trustItem}>
-              <strong>3. Scoped Rates Only — Zero Synthetic Totals</strong>
-              Package prices appear strictly with their published season, nights,
-              and occupancy basis alongside excluded charges requiring a quote.
+              <strong>Real Transfer &amp; Baggage Details</strong>
+              Check floatplane, commuter plane, ferry, and shuttle connections
+              plus soft-sided luggage and fish-box weight rules.
             </div>
             <div className={styles.trustItem}>
-              <strong>4. Identity Claim ≠ Automatic Fact Approval</strong>
-              Claiming a page verifies company contact control only; every factual
-              update requires primary-source review before publication.
+              <strong>Free, Independent Listings</strong>
+              Every listing is free for lodges to appear in and links straight
+              to the official website or reservation contact.
             </div>
           </div>
         </div>
@@ -174,10 +174,10 @@ export default async function SoutheastAlaskaFishingLodgesPage({
         </div>
       </section>
 
-      {/* 4. Contextual Alaska Ecosystem Connections (LFSE, JFD, Cruise Promenade) */}
+      {/* 4. Choosing a Lodge Style & Connecting Your Trip */}
       <section
         className={`section ${styles.noPrint}`}
-        id="ecosystem-connections"
+        id="choosing-a-stay-style"
         style={{
           background: "#ffffff",
           borderTop: "1px solid var(--line)",
@@ -187,30 +187,159 @@ export default async function SoutheastAlaskaFishingLodgesPage({
       >
         <div className="shell">
           <p className="eyebrow" style={{ color: "var(--muted)" }}>
-            Connect Your Lodge Stay to the Rest of Your Trip
+            Choosing the Right Setup
+          </p>
+          <h2>Four Ways Fishing Stays Work in Southeast Alaska</h2>
+          <p
+            className="lead"
+            style={{ color: "var(--muted)", maxWidth: 840 }}
+          >
+            Lodges in Southeast Alaska don&apos;t all bundle trips the same way.
+            Matching the stay format to your group avoids surprises when you ask
+            for a quote:
+          </p>
+
+          <div className="lfse-two-col" style={{ marginTop: 22 }}>
+            <div className="card">
+              <span
+                className="badge badge-safety"
+                style={{ alignSelf: "flex-start" }}
+              >
+                All-Inclusive Guided Lodges
+              </span>
+              <h3 style={{ marginTop: 10 }}>
+                Bundled Meals, Boats &amp; Fish Processing
+              </h3>
+              <p>
+                Remote fly-in and boat-in resorts (such as Admiralty Island,
+                Elfin Cove, Yes Bay, and Prince of Wales lodges) typically
+                bundle meals, guided boats, tackle, rain gear, and vacuum-packed
+                fish boxes—though gateway floatplane flights, taxes, and daily
+                halibut stamps vary by property.
+              </p>
+            </div>
+
+            <div className="card">
+              <span
+                className="badge badge-safety"
+                style={{ alignSelf: "flex-start" }}
+              >
+                Self-Guided Skiffs &amp; Boat-Plus-Hotel Stays
+              </span>
+              <h3 style={{ marginTop: 10 }}>
+                Run Your Own Boat on Protected Waters
+              </h3>
+              <p>
+                Experienced boaters can choose cabin resorts with skiffs (such
+                as Rocky Point Resort or Clover Pass Resort) or pair a dedicated
+                boat-rental operator with a waterfront hotel—such as{" "}
+                <Link
+                  href="/southeast-alaska/fishing-lodges/fish-baranof-sitka"
+                  style={{
+                    color: "var(--forest)",
+                    fontWeight: 700,
+                    textDecoration: "underline",
+                  }}
+                >
+                  Fish Baranof with Longliner Lodge &amp; Suites
+                </Link>{" "}
+                in Sitka, where unguided sport halibut rules apply.
+              </p>
+            </div>
+
+            <div className="card">
+              <span
+                className="badge badge-safety"
+                style={{ alignSelf: "flex-start" }}
+              >
+                Gateway Inns + Local Day Charters
+              </span>
+              <h3 style={{ marginTop: 10 }}>
+                Easy Splitting for Mixed-Interest Groups
+              </h3>
+              <p>
+                Full-service inns in gateway communities like Gustavus (Bear
+                Track Inn and Glacier Bay Country Inn) let two travelers book
+                halibut or salmon charters while companions spend the day on a
+                Glacier Bay National Park boat tour or guided sea kayak paddle.
+              </p>
+            </div>
+
+            <div
+              className="card"
+              style={{
+                background: "#fffdf8",
+                borderColor: "var(--safety-border)",
+              }}
+            >
+              <span
+                className="badge badge-warning"
+                style={{ alignSelf: "flex-start" }}
+              >
+                Whole-Lodge Private Rentals
+              </span>
+              <h3 style={{ marginTop: 10 }}>
+                One Private Group, Services Arranged Separately
+              </h3>
+              <p>
+                At{" "}
+                <Link
+                  href="/southeast-alaska/fishing-lodges/boardwalk-lodge"
+                  style={{
+                    color: "var(--forest)",
+                    fontWeight: 700,
+                    textDecoration: "underline",
+                  }}
+                >
+                  Alaska&apos;s Boardwalk Lodge
+                </Link>{" "}
+                on Prince of Wales Island, one group books the entire
+                waterfront property directly with the owners, while private
+                chefs, independent guides, housekeeping, and boat access are
+                arranged separately.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Contextual Alaska Ecosystem Connections (LFSE, JFD, Cruise Promenade) */}
+      <section
+        className={`section ${styles.noPrint}`}
+        id="ecosystem-connections"
+        style={hideChromeForPrintSheet ? { display: "none" } : undefined}
+      >
+        <div className="shell">
+          <p className="eyebrow" style={{ color: "var(--muted)" }}>
+            Plan the Rest of Your Trip
           </p>
           <h2>
-            Gateway Overnight Buffers, Flight Weather &amp; Ferry Connections
+            Gateway Overnight Stays, Flight Weather &amp; Ferry Connections
           </h2>
-          <p className="lead" style={{ color: "var(--muted)", maxWidth: 840 }}>
-            Coordinates locate a property; gateway air, harbor, and weather buffers
-            determine whether your trip actually works. Connect lodge logistics with
-            our companion Southeast Alaska planning guides:
+          <p
+            className="lead"
+            style={{ color: "var(--muted)", maxWidth: 840 }}
+          >
+            Remote floatplanes and island ferries run on Southeast Alaska
+            weather and tide windows. Use these companion guides to plan buffer
+            nights and onward travel:
           </p>
 
           <div className="lfse-cards-grid" style={{ marginTop: 22 }}>
             <div className="card">
-              <span className="badge badge-safety" style={{ alignSelf: "flex-start" }}>
-                Juneau Gateway Stays (LFSE)
+              <span
+                className="badge badge-safety"
+                style={{ alignSelf: "flex-start" }}
+              >
+                Juneau Stays &amp; Activities
               </span>
               <h3 style={{ marginTop: 10 }}>
                 Weekend in Juneau: Pre- &amp; Post-Lodge Buffer Nights
               </h3>
               <p>
-                Fly-in lodges on Admiralty Island, Shelter Island, and Chichagof
-                Island frequently recommend arriving in Juneau a day early. Compare
-                Downtown vs. Mendenhall Valley stays, glacier treks, and evening
-                dining.
+                Fly-in lodges out of Juneau often recommend arriving a day
+                early. Compare Downtown vs. Mendenhall Valley hotels, glacier
+                outings, and evening dining.
               </p>
               <div style={{ marginTop: "auto", paddingTop: 10 }}>
                 <Link
@@ -223,16 +352,19 @@ export default async function SoutheastAlaskaFishingLodgesPage({
             </div>
 
             <div className="card">
-              <span className="badge badge-safety" style={{ alignSelf: "flex-start" }}>
-                Air Access &amp; Flightseeing (Juneau Flight Deck)
+              <span
+                className="badge badge-safety"
+                style={{ alignSelf: "flex-start" }}
+              >
+                Juneau Flight Deck
               </span>
               <h3 style={{ marginTop: 10 }}>
-                Floatplane Ceilings, Weight Rules &amp; Helicopter Add-Ons
+                Floatplane Weather Holds &amp; Helicopter Add-Ons
               </h3>
               <p>
-                Review Southeast Alaska VFR cloud-ceiling weather holds, passenger +
-                baggage weight rules, and pre/post-trip Juneau Icefield helicopter
-                options before locking tight commercial airline connections.
+                Check cloud-ceiling weather patterns, aircraft weight rules, and
+                Juneau Icefield helicopter options before booking tight airline
+                connections home.
               </p>
               <div
                 className="chips"
@@ -244,7 +376,7 @@ export default async function SoutheastAlaskaFishingLodgesPage({
                   rel="noopener noreferrer"
                   className="chip lfse-chip-link"
                 >
-                  Juneau Flight Weather Guide ↗
+                  Juneau Flight Weather ↗
                 </a>
                 <a
                   href="https://juneauflightdeck.com/guides/uncruise-juneau-helicopter-tours"
@@ -266,16 +398,19 @@ export default async function SoutheastAlaskaFishingLodgesPage({
             </div>
 
             <div className="card">
-              <span className="badge badge-safety" style={{ alignSelf: "flex-start" }}>
-                Independent Ferry &amp; Multi-Town Routing (Cruise Promenade)
+              <span
+                className="badge badge-safety"
+                style={{ alignSelf: "flex-start" }}
+              >
+                Cruise Promenade
               </span>
               <h3 style={{ marginTop: 10 }}>
                 Cruise Alaska Without a Cruise Ship
               </h3>
               <p>
-                Pair a Sitka, Gustavus, Juneau, Petersburg, or Ketchikan fishing
-                stay with Alaska Marine Highway System ferries, Goldbelt fast
-                catamarans, and commuter flights across the Inside Passage.
+                Connect a Sitka, Gustavus, Juneau, Petersburg, or Ketchikan
+                fishing stay with state ferries, fast catamarans, and small-plane
+                hops between Inside Passage towns.
               </p>
               <div
                 className="chips"
@@ -295,7 +430,7 @@ export default async function SoutheastAlaskaFishingLodgesPage({
                   rel="noopener noreferrer"
                   className="chip lfse-chip-link"
                 >
-                  Printable 9-Night Example Journey ↗
+                  Printable 9-Night Journey ↗
                 </a>
               </div>
             </div>
@@ -305,8 +440,10 @@ export default async function SoutheastAlaskaFishingLodgesPage({
             className="chips"
             style={{ marginTop: 20, alignItems: "center" }}
           >
-            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--muted)" }}>
-              Gateway Port &amp; Community Guides:
+            <span
+              style={{ fontSize: 13, fontWeight: 700, color: "var(--muted)" }}
+            >
+              Gateway Town &amp; Harbor Guides:
             </span>
             <Link className="chip lfse-chip-link" href="/ports/juneau">
               Juneau (JNU) →
@@ -327,89 +464,42 @@ export default async function SoutheastAlaskaFishingLodgesPage({
               Wrangell →
             </Link>
           </div>
-        </div>
-      </section>
 
-      {/* 5. Market Context, Methodology & Sources */}
-      <section
-        className={`section ${styles.noPrint}`}
-        id="methodology-and-sources"
-        style={hideChromeForPrintSheet ? { display: "none" } : undefined}
-      >
-        <div className="shell">
-          <details
-            className="lfse-sources-details"
-            open
-            data-testid="fishing-lodges-methodology-and-sources"
-          >
-            <summary>Methodology, Market Context &amp; Primary Sources</summary>
-            <div className="lfse-sources-body">
-              <p style={{ margin: "0 0 10px" }}>
-                <strong>How this directory fits the market:</strong> Several
-                established directories already serve Alaska angling travelers—including{" "}
-                <a
-                  href="https://www.fishlodges.com/lodges"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ textDecoration: "underline" }}
-                >
-                  Fishlodges
-                </a>{" "}
-                (advertising 246 lodges across Alaska, BC, and other regions),{" "}
-                <a
-                  href="https://alaskafishingmatch.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ textDecoration: "underline" }}
-                >
-                  Alaska Fishing Match
-                </a>
-                , and{" "}
-                <a
-                  href="https://www.alaskafieldguide.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ textDecoration: "underline" }}
-                >
-                  The Alaska Field Guide
-                </a>{" "}
-                (advertising 226 Alaska wilderness lodges). Those counts are
-                published directory claims rather than an independently verified
-                census of active Alaska lodges. Our focus in Southeast Alaska is
-                claim-by-claim primary-source citations, clear separation between
-                physical lodging and package sellers, honest handling of unknowns,
-                and direct connection to gateway flight, harbor, and ferry planning.
-              </p>
-              <p style={{ margin: "0 0 10px" }}>
-                <strong>Primary-source retrieval date:</strong> 2026-11-19. Every
-                published lodge in this Preview passed fail-closed publication
-                checks requiring at least 3 page-level claim citations across at
-                least 2 distinct official URLs (a reachable homepage alone never
-                verifies rates, transfers, ownership, or inclusions). Candidate
-                properties with anti-bot gates, unreachable subpages, or unresolved
-                domain collisions remain held out of public listings and public API
-                responses pending direct verification.
-              </p>
-              <p style={{ margin: "0 0 10px" }}>
-                <strong>Visual imagery disclosure:</strong> Until operators opt in
-                to supply licensed property photography, cards display public-domain
-                and Creative Commons Southeast Alaska waterway photography documented
-                in <code>public/images/SOURCES.md</code>, explicitly labeled{" "}
-                <em>&ldquo;Regional Waterway Context · Not a Property Photo.&rdquo;</em>
-              </p>
-              <p style={{ margin: "0 0 10px" }}>
-                <strong>Canonical DCC snapshot endpoint:</strong>{" "}
-                <a
-                  href={DCC_ALASKA_FISHING_LODGES_API_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Destination Command Center Southeast Alaska Fishing Lodges API ↗
-                </a>
-              </p>
-              <TrustDisclosure compact />
-            </div>
-          </details>
+          {/* Expandable Sources & Check Dates */}
+          <div style={{ marginTop: 28 }}>
+            <details
+              className="lfse-sources-details"
+              data-testid="fishing-lodges-methodology-and-sources"
+            >
+              <summary>Sources, check dates &amp; how listings work</summary>
+              <div className="lfse-sources-body">
+                <p style={{ margin: "0 0 10px" }}>
+                  <strong>Last checked:</strong> November 19, 2026. Rates,
+                  inclusions, transfer notes, and fishing details are compiled
+                  from each lodge&apos;s published official pages, with
+                  page-by-page source links available inside every lodge page.
+                  Because seasonal schedules, aircraft baggage limits, and
+                  Alaska Department of Fish &amp; Game sportfishing rules can
+                  change, confirm current details directly with the lodge before
+                  paying a deposit.
+                </p>
+                <p style={{ margin: "0 0 10px" }}>
+                  <strong>Photos:</strong> Cards show licensed Southeast Alaska
+                  regional scenery documented in{" "}
+                  <code>public/images/SOURCES.md</code>; follow each lodge&apos;s
+                  official website link to see cabin, dining room, and boat
+                  photos.
+                </p>
+                <p style={{ margin: "0 0 10px" }}>
+                  <strong>Free listings &amp; updates:</strong> Businesses are
+                  listed free of charge whether or not they participate. Lodge
+                  owners and travelers can suggest updates or claim a listing on
+                  any lodge page.
+                </p>
+                <TrustDisclosure compact />
+              </div>
+            </details>
+          </div>
         </div>
       </section>
     </main>

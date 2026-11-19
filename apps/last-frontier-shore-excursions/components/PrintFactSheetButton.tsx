@@ -27,7 +27,7 @@ export function PrintFactSheetButton({ lodgeSlug }: PrintFactSheetButtonProps) {
       style={{ cursor: "pointer" }}
       data-testid="print-fact-sheet-btn"
     >
-      Print / Save Fact Sheet
+      Print / Save Page
     </button>
   );
 }
