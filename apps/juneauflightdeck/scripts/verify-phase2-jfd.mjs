@@ -362,7 +362,7 @@ const shipSlugCount = (fleetTxt.match(/slug:\s*['"][^'"]+['"]/g) || []).length;
 assertCondition(
   sitemapTxt.includes('"2026-11-18"') &&
     !sitemapTxt.includes("new Date()") &&
-    coreRouteCount + shipSlugCount === 41,
+    coreRouteCount + shipSlugCount === 42,
   `Deterministic sitemap has lastModified="2026-11-18" and ${coreRouteCount + shipSlugCount} URLs (${coreRouteCount} core + ${shipSlugCount} ships)`,
   `Sitemap check failed: core=${coreRouteCount}, ships=${shipSlugCount}`,
 );

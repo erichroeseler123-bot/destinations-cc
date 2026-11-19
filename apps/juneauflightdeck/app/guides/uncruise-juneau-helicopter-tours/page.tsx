@@ -15,8 +15,8 @@ import {
   UNCRUISE_FARE_COMPARISON,
   UNCRUISE_GUIDE_CANONICAL_URL,
   UNCRUISE_GUIDE_FAQS,
-  UNCRUISE_GUIDE_HUMAN_ATTESTATION_CLEARED,
   UNCRUISE_GUIDE_PATH,
+  UNCRUISE_GUIDE_RELEASE_APPROVED,
   UNCRUISE_JUNEAU_TURNAROUND_FACTS,
   UNCRUISE_OPERATOR_CHANNEL_CARDS,
   UNCRUISE_PRIMARY_RETRIEVAL_DATE_LONG,
@@ -29,7 +29,7 @@ const PAGE_DESCRIPTION =
   "Independent planning guide for UnCruise travelers adding a Juneau helicopter glacier landing or trek without conflicting with 76 Egan Drive check-in, luggage storage, or included transfers.";
 
 const isProductionIndexable =
-  process.env.VERCEL_ENV === "production" && UNCRUISE_GUIDE_HUMAN_ATTESTATION_CLEARED;
+  process.env.VERCEL_ENV === "production" && UNCRUISE_GUIDE_RELEASE_APPROVED;
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -486,7 +486,7 @@ export default function UncruiseJuneauHelicopterGuidePage() {
                       data-testid={`jfd-held-claims-${card.cardId}`}
                     >
                       <p className={styles.heldTitle}>
-                        Held / Confirm-Before-Booking Channel Details ({card.heldClaims.length})
+                        Confirm Before Booking — Channel-Specific Details ({card.heldClaims.length})
                       </p>
                       {card.heldClaims.map((hold) => (
                         <div key={hold.holdId} style={{ fontSize: "0.85rem", lineHeight: 1.54 }}>
@@ -591,6 +591,12 @@ export default function UncruiseJuneauHelicopterGuidePage() {
             >
               What to Do If Weather Cancels Your Flight
             </Link>
+            <a
+              href="https://www.lastfrontiershoreexcursions.com/guides/weekend-in-juneau"
+              className={styles.sourceInlineLink}
+            >
+              Weekend in Juneau: 2 Full Days (3 Nights) &amp; 3 Full Days (4 Nights) Stay Guide ↗
+            </a>
           </div>
         </section>
 

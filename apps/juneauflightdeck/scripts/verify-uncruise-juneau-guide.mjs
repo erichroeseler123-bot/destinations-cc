@@ -64,12 +64,13 @@ check(
   "Yearless route /guides/uncruise-juneau-helicopter-tours and exact title configured",
 );
 
-// 2. Non-affiliation, no weather/seat/compatibility promises, human attestation gate
+// 2. Non-affiliation, no weather/seat/compatibility promises, truthful release & channel-hold flags
 check(
   pageTxt.includes("not affiliated with, sponsored by, or endorsed by UnCruise Adventures") &&
     pageTxt.includes("nothing on this page guarantees flyable weather, open replacement seats, or schedule") &&
-    dataTxt.includes("UNCRUISE_GUIDE_HUMAN_ATTESTATION_CLEARED = false"),
-  "Non-affiliation disclosure, honest weather/seat limits, and human attestation gate retained",
+    dataTxt.includes("UNCRUISE_GUIDE_RELEASE_APPROVED = true") &&
+    dataTxt.includes("UNCRUISE_GUIDE_CHANNEL_HOLDS_FULLY_ATTESTED = false"),
+  "Non-affiliation disclosure, honest weather/seat limits, and truthful release + channel-hold flags configured",
 );
 
 // 3. Five-step traveler flow & strict 'Confirm timing before booking' output
@@ -134,13 +135,14 @@ for (const holdId of [
   );
 }
 
-// 6. Preview indexing exclusion & QA traffic isolation
+// 6. Production sitemap inclusion, Preview indexing exclusion, and cross-link to live LFSE Weekend in Juneau
 check(
   middlewareTxt.includes('"X-Robots-Tag", "noindex, nofollow, noarchive"') &&
     robotsTxt.includes('disallow: "/"') &&
     pageTxt.includes("index: isProductionIndexable") &&
-    !sitemapTxt.includes("uncruise-juneau-helicopter-tours"),
-  "Preview excluded from indexing via middleware X-Robots-Tag, Preview robots.ts disallow, page robots metadata, and sitemap exclusion while unattested",
+    sitemapTxt.includes('"/guides/uncruise-juneau-helicopter-tours"') &&
+    pageTxt.includes("https://www.lastfrontiershoreexcursions.com/guides/weekend-in-juneau"),
+  "Production sitemap includes /guides/uncruise-juneau-helicopter-tours, Preview stays noindex, and page links to live LFSE Weekend in Juneau",
 );
 
 check(

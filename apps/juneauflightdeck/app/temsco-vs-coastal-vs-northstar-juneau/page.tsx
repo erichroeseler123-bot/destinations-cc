@@ -1603,6 +1603,26 @@ export default function OperatorComparisonPage() {
               dog sledding ($759 vs. $769, as of {VERIFIED_TARIFF_DATE_LONG}).
             </p>
           </Link>
+
+          <Link
+            href="/guides/uncruise-juneau-helicopter-tours"
+            style={{
+              textDecoration: "none",
+              background: "#0c121e",
+              border: "1px solid #1e293b",
+              borderRadius: 8,
+              padding: "16px",
+              display: "block",
+            }}
+          >
+            <h4 style={{ color: "#f0b35b", margin: "0 0 6px", fontSize: "1rem" }}>
+              UnCruise Pre/Post-Cruise Guide →
+            </h4>
+            <p style={{ color: "#94a3b8", fontSize: "0.82rem", margin: 0, lineHeight: 1.5 }}>
+              Plan a Juneau glacier flight around 76 Egan Drive luggage &amp; check-in cutoffs or a
+              dedicated hotel land day.
+            </p>
+          </Link>
         </div>
       </section>
 

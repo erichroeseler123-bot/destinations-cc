@@ -50,6 +50,7 @@ export default function SiteFooter() {
             <Link href="/juneau-glacier-flight-weather">Flight Weather</Link>
             <Link href="/temsco-vs-coastal-vs-northstar-juneau">Compare Operators</Link>
             <Link href="/helicopter-waitlist">Sold-Out Concierge</Link>
+            <Link href="/guides/uncruise-juneau-helicopter-tours">UnCruise Pre/Post Guide</Link>
             <Link href="/juneau/what-to-do-if-helicopter-tour-canceled">Weather Backups</Link>
             <Link href="/about">About</Link>
             <Link href="/faq">FAQ</Link>

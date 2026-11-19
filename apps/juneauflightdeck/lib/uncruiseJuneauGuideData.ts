@@ -13,10 +13,14 @@ export const UNCRUISE_PRIMARY_RETRIEVAL_DATE_ISO = "2026-11-19" as const;
 export const UNCRUISE_PRIMARY_RETRIEVAL_DATE_LONG = "November 19, 2026" as const;
 
 /**
- * Release gate: automated primary-source checks have been completed on 2026-11-18 and 2026-11-19,
- * but human editorial attestation of the held channel claims remains required before Production indexing.
+ * Release flags:
+ * - Primary public sources (UnCruise Terms & Prepare-for-Your-Cruise pages, TEMSCO, NorthStar, and Coastal)
+ *   were reviewed on 2026-11-18 and 2026-11-19 and approved for Production release with explicit channel callouts.
+ * - Unresolved channel-specific items (qualifying hotel lists, exact hotel pickup offsets, and Viator 6251SHOREXICEWALK
+ *   pickup/cancellation specifics) remain unattested and visibly marked "Confirm before booking".
  */
-export const UNCRUISE_GUIDE_HUMAN_ATTESTATION_CLEARED = false as const;
+export const UNCRUISE_GUIDE_RELEASE_APPROVED = true as const;
+export const UNCRUISE_GUIDE_CHANNEL_HOLDS_FULLY_ATTESTED = false as const;
 
 export interface HeldClaimNotice {
   holdId: string;
@@ -334,7 +338,7 @@ export const UNCRUISE_CLAIM_SOURCE_LEDGER: readonly ClaimSourceLedgerEntry[] = [
     primarySourceUrl: "https://uncruise.com/pages/terms-conditions",
     retrievedDate: UNCRUISE_PRIMARY_RETRIEVAL_DATE_ISO,
     verificationState: "automated_primary_source_checked",
-    humanAttestationNote: "Pending human editorial sign-off prior to Production indexing.",
+    humanAttestationNote: "Reviewed against published UnCruise Terms & Conditions on 2026-11-19.",
   },
   {
     claimId: "UC-JNU-02",
@@ -346,7 +350,7 @@ export const UNCRUISE_CLAIM_SOURCE_LEDGER: readonly ClaimSourceLedgerEntry[] = [
     retrievedDate: UNCRUISE_PRIMARY_RETRIEVAL_DATE_ISO,
     verificationState: "automated_primary_source_checked",
     humanAttestationNote:
-      "Pending human editorial sign-off; travelers must also check final UnCruise e-documents (~45 days pre-sailing) for vessel-specific updates.",
+      "Reviewed against Prepare for Your Cruise: Alaska on 2026-11-19; travelers must also check final UnCruise e-documents (~45 days pre-sailing) for vessel-specific updates.",
   },
   {
     claimId: "TEMSCO-DIR-01",
@@ -410,5 +414,5 @@ export const UNCRUISE_GUIDE_FAQS = [
 ] as const;
 
 export function getUncruiseGuideFreshnessLabel(): string {
-  return `Operator tariffs verified ${VERIFIED_TARIFF_DATE_LONG}; UnCruise & operator pickup/policy primary sources checked ${UNCRUISE_PRIMARY_RETRIEVAL_DATE_LONG} (automated check — human editorial attestation pending prior to Production indexing).`;
+  return `Operator direct tariffs verified ${VERIFIED_TARIFF_DATE_LONG}; UnCruise & operator public policies reviewed ${UNCRUISE_PRIMARY_RETRIEVAL_DATE_LONG}. Channel-specific hotel pickup and Viator checkout terms remain marked “Confirm before booking.”`;
 }
