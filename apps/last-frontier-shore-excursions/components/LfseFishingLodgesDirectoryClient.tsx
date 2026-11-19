@@ -22,6 +22,7 @@ import styles from "@/app/southeast-alaska/fishing-lodges/fishing-lodges.module.
 export interface LfseFishingLodgesDirectoryClientProps {
   lodges: readonly SoutheastAlaskaFishingLodgeRecord[];
   initialCompareSlugs?: readonly string[];
+  initialPrintMode?: boolean;
 }
 
 const ARCHETYPE_LABELS: Record<LodgeOperationArchetype, string> = {
@@ -82,6 +83,7 @@ function formatTriStateNonAngler(val: TriStateFact): string {
 export function LfseFishingLodgesDirectoryClient({
   lodges,
   initialCompareSlugs = [],
+  initialPrintMode = false,
 }: LfseFishingLodgesDirectoryClientProps) {
   const validInitialCompare = useMemo(() => {
     const validSet = new Set(lodges.map((l) => l.slug));
@@ -116,6 +118,9 @@ export function LfseFishingLodgesDirectoryClient({
   >("all");
   const [selectedCompareSlugs, setSelectedCompareSlugs] =
     useState<string[]>(validInitialCompare);
+  const [printSheetMode, setPrintSheetMode] = useState<boolean>(
+    Boolean(initialPrintMode && validInitialCompare.length > 0),
+  );
 
   const totalCount = lodges.length;
   const individualCount = useMemo(
@@ -313,7 +318,45 @@ export function LfseFishingLodgesDirectoryClient({
   }
 
   return (
-    <div>
+    <div
+      className={
+        printSheetMode && selectedLodges.length > 0
+          ? styles.printSheetModeActive
+          : undefined
+      }
+      data-testid="lodge-directory-root"
+    >
+      {printSheetMode && selectedLodges.length > 0 && (
+        <div
+          className={styles.printModeToolbar}
+          data-testid="printable-sheet-toolbar"
+        >
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--deep)" }}>
+            Printable Comparison Sheet Preview ({selectedLodges.length}{" "}
+            {selectedLodges.length === 1 ? "Lodge" : "Lodges"})
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={handlePrintComparison}
+              className="button small"
+              style={{ cursor: "pointer" }}
+            >
+              Print / Save as PDF
+            </button>
+            <button
+              type="button"
+              onClick={() => setPrintSheetMode(false)}
+              className="button secondary small"
+              style={{ cursor: "pointer" }}
+              data-testid="exit-print-sheet-mode-btn"
+            >
+              ← Back to Interactive Directory
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Print-only title banner when printing from the directory comparison sheet */}
       <div className={styles.printOnlyHeader}>
         <h1 style={{ margin: "0 0 4px", fontSize: 20 }}>
@@ -716,6 +759,22 @@ export function LfseFishingLodgesDirectoryClient({
               </p>
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setPrintSheetMode(true);
+                  trackFishingLodgeDirectoryEvent({
+                    event: "lfse_lodge_printable_compare_used",
+                    action: "open_printable_sheet_view",
+                    compareCount: selectedCompareSlugs.length,
+                  });
+                }}
+                className="button secondary small"
+                style={{ cursor: "pointer" }}
+                data-testid="open-print-sheet-view-btn"
+              >
+                Printable Sheet View
+              </button>
               <button
                 type="button"
                 onClick={handlePrintComparison}

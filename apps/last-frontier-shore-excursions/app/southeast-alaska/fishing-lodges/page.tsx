@@ -43,7 +43,7 @@ export const metadata: Metadata = {
 };
 
 interface FishingLodgesDirectoryPageProps {
-  searchParams?: Promise<{ compare?: string | string[] }>;
+  searchParams?: Promise<{ compare?: string | string[]; print?: string | string[] }>;
 }
 
 export default async function SoutheastAlaskaFishingLodgesPage({
@@ -57,6 +57,12 @@ export default async function SoutheastAlaskaFishingLodgesPage({
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+  const rawPrint = Array.isArray(resolvedParams?.print)
+    ? resolvedParams.print[0]
+    : resolvedParams?.print;
+  const initialPrintMode = rawPrint === "1" || rawPrint === "true";
+  const hideChromeForPrintSheet =
+    initialPrintMode && initialCompareSlugs.length > 0;
 
   const snapshot = getPublicSoutheastAlaskaFishingLodgesSnapshot();
   const lodges = snapshot.lodges;
@@ -70,7 +76,10 @@ export default async function SoutheastAlaskaFishingLodgesPage({
       />
 
       {/* 1. Independent Directory Hero */}
-      <section className={`hero ${styles.noPrint}`}>
+      <section
+        className={`hero ${styles.noPrint}`}
+        style={hideChromeForPrintSheet ? { display: "none" } : undefined}
+      >
         <div className="shell">
           <nav
             className="breadcrumbs"
@@ -122,7 +131,10 @@ export default async function SoutheastAlaskaFishingLodgesPage({
       </section>
 
       {/* 2. Four-Pillar Editorial & Truthfulness Standard */}
-      <section className={`${styles.trustBanner} ${styles.noPrint}`}>
+      <section
+        className={`${styles.trustBanner} ${styles.noPrint}`}
+        style={hideChromeForPrintSheet ? { display: "none" } : undefined}
+      >
         <div className="shell">
           <div className={styles.trustGrid}>
             <div className={styles.trustItem}>
@@ -157,6 +169,7 @@ export default async function SoutheastAlaskaFishingLodgesPage({
           <LfseFishingLodgesDirectoryClient
             lodges={lodges}
             initialCompareSlugs={initialCompareSlugs}
+            initialPrintMode={initialPrintMode}
           />
         </div>
       </section>
@@ -169,6 +182,7 @@ export default async function SoutheastAlaskaFishingLodgesPage({
           background: "#ffffff",
           borderTop: "1px solid var(--line)",
           borderBottom: "1px solid var(--line)",
+          ...(hideChromeForPrintSheet ? { display: "none" } : {}),
         }}
       >
         <div className="shell">
@@ -317,7 +331,11 @@ export default async function SoutheastAlaskaFishingLodgesPage({
       </section>
 
       {/* 5. Market Context, Methodology & Sources */}
-      <section className={`section ${styles.noPrint}`} id="methodology-and-sources">
+      <section
+        className={`section ${styles.noPrint}`}
+        id="methodology-and-sources"
+        style={hideChromeForPrintSheet ? { display: "none" } : undefined}
+      >
         <div className="shell">
           <details
             className="lfse-sources-details"
