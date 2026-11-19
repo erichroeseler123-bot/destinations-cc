@@ -67,10 +67,28 @@ function tierBadge(tier: string) {
           Supplemental
         </span>
       );
+    case "uninstrumented_unavailable":
+      return (
+        <span className="rounded-md border border-amber-400/40 bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-200">
+          Uninstrumented
+        </span>
+      );
+    case "retired_or_redirected":
+      return (
+        <span className="rounded-md border border-zinc-500/40 bg-zinc-800/80 px-2 py-0.5 text-xs text-zinc-400">
+          Retired
+        </span>
+      );
+    case "excluded_external":
+      return (
+        <span className="rounded-md border border-orange-400/40 bg-orange-500/15 px-2 py-0.5 text-xs text-orange-200">
+          Contained External
+        </span>
+      );
     default:
       return (
         <span className="rounded-md border border-zinc-600 bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
-          Excluded
+          Excluded Community
         </span>
       );
   }
@@ -124,6 +142,26 @@ export default function AnalyticsDashboardClient({
     });
   }
 
+  function toggleRuntimeKillSwitch(nextActive: boolean) {
+    startTransition(async () => {
+      try {
+        const res = await fetch("/api/admin/analytics/control", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            killSwitchActive: nextActive,
+            actorNote: "admin_dashboard_toggle",
+          }),
+        });
+        if (res.ok) {
+          refreshReport({ processPending: false });
+        }
+      } catch {
+        // ignore
+      }
+    });
+  }
+
   const ts = report.trafficSummary;
   const tl = report.tripLifecycle;
   const th = report.telemetryHealth;
@@ -149,6 +187,20 @@ export default function AnalyticsDashboardClient({
               <span className="rounded bg-indigo-500/20 px-2 py-0.5 text-indigo-200">
                 Env: {report.environment}
               </span>
+              <span>·</span>
+              <span
+                data-testid="analytics-backend-badge"
+                className="rounded border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-emerald-200"
+              >
+                DB: {report.backendInfo?.backend}:{report.backendInfo?.databaseName}
+                {report.backendInfo?.cacheHit ? " (cached)" : ""}
+              </span>
+              {report.dbTelemetry && (
+                <span className="rounded bg-white/10 px-2 py-0.5 text-zinc-300">
+                  {report.dbTelemetry.queryCount}q · {(report.dbTelemetry.transferredBytes / 1024).toFixed(1)} KB ·{" "}
+                  {report.dbTelemetry.dbElapsedMs.toFixed(1)}ms
+                </span>
+              )}
             </div>
             <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
               Acquisition Traffic &amp; Connected Trip Lifecycle
@@ -257,6 +309,9 @@ export default function AnalyticsDashboardClient({
                   <option value="vibearoundtown">Vibing Around Tour Co.</option>
                   <option value="brinkberry">Brinkberry</option>
                   <option value="420friendlyairportpickup">420 Friendly Airport Pickup</option>
+                  <option value="bluehillsoutpost">Blue Hills Outpost</option>
+                  <option value="somersetshuttle">Somerset Amphitheater Shuttle</option>
+                  <option value="welcometoalaskatours">Welcome to Alaska Tours (Contained)</option>
                 </select>
               </div>
               <div>
@@ -283,17 +338,33 @@ export default function AnalyticsDashboardClient({
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-zinc-900/50 p-4 text-xs">
-            <div className="flex items-center justify-between font-bold text-zinc-200">
-              <span>Pipeline Health &amp; Backpressure</span>
-              <span
-                className={`rounded px-2 py-0.5 ${
-                  th?.killSwitchActive
-                    ? "bg-rose-500/20 text-rose-200"
-                    : "bg-emerald-500/20 text-emerald-200"
-                }`}
-              >
-                {th?.killSwitchActive ? "Kill Switch ON" : "Collector Healthy"}
-              </span>
+            <div className="flex items-center justify-between gap-2 font-bold text-zinc-200">
+              <span>Pipeline Health &amp; Runtime Kill Switch</span>
+              <div className="flex items-center gap-1.5">
+                <span
+                  data-testid="kill-switch-status-badge"
+                  className={`rounded px-2 py-0.5 ${
+                    th?.killSwitchActive
+                      ? "bg-rose-500/20 text-rose-200"
+                      : "bg-emerald-500/20 text-emerald-200"
+                  }`}
+                >
+                  {th?.killSwitchActive
+                    ? `Kill Switch ON (${th.killSwitchSource})`
+                    : "Collector Healthy"}
+                </span>
+                {th && th.killSwitchSource !== "env_override" && (
+                  <button
+                    type="button"
+                    data-testid="runtime-kill-switch-toggle"
+                    disabled={isPending}
+                    onClick={() => toggleRuntimeKillSwitch(!th.killSwitchActive)}
+                    className="rounded border border-white/20 bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-zinc-200 hover:bg-white/15 disabled:opacity-50"
+                  >
+                    {th.killSwitchActive ? "Resume" : "Halt Ingest"}
+                  </button>
+                )}
+              </div>
             </div>
             {th ? (
               <div className="mt-2 grid grid-cols-3 gap-2 text-zinc-300">
@@ -713,18 +784,31 @@ export default function AnalyticsDashboardClient({
               <tbody className="divide-y divide-white/5 text-zinc-200">
                 {report.sites.map((s) => (
                   <tr key={s.siteId}>
-                    <td className="py-2.5 pr-3">
+                    <td className="py-2.5 pr-3 max-w-xs">
                       <div className="font-semibold text-white">{s.displayName}</div>
-                      <div className="text-[11px] text-zinc-500">{s.canonicalDomain}</div>
+                      <div className="text-[11px] text-zinc-400">{s.canonicalDomain}</div>
+                      <div className="mt-0.5 text-[10px] text-zinc-500 leading-snug">
+                        {s.redirectAndSourceNotes}
+                      </div>
                     </td>
-                    <td className="py-2.5 pr-3">{tierBadge(s.instrumentationTier)}</td>
+                    <td className="py-2.5 pr-3">
+                      <div>{tierBadge(s.instrumentationTier)}</div>
+                      <div className="mt-1 text-[10px] text-zinc-500">
+                        GSC:{" "}
+                        {s.externalSourcesStatus.gsc === "snapshot_attached_2026_11_19"
+                          ? "Nov 19 zip"
+                          : "Unavailable"}{" "}
+                        · GA4: Unavailable
+                      </div>
+                    </td>
                     <td className="py-2.5 pr-3">
                       {renderMetricOrUnavailable(s.observedBrowsers)}
                     </td>
                     <td className="py-2.5 pr-3">{renderMetricOrUnavailable(s.sessions)}</td>
                     <td className="py-2.5 pr-3">{renderMetricOrUnavailable(s.pageviews)}</td>
                     <td className="py-2.5 pr-3">
-                      {s.guideEngagements} / {s.printableOpens}
+                      {renderMetricOrUnavailable(s.guideEngagements)} /{" "}
+                      {renderMetricOrUnavailable(s.printableOpens)}
                     </td>
                     <td className="py-2.5 pr-3">{s.sellerHandoffs}</td>
                     <td className="py-2.5 pr-3 text-zinc-400">

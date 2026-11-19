@@ -19,10 +19,12 @@ import {
 import {
   closeAndResetAnalyticsDbForTests,
   enqueueNormalizedAnalyticsBatch,
+  getAnalyticsExecutor,
   getAnalyticsSqliteDb,
   readAnalyticsHealthCounters,
   setSimulateAnalyticsStoreOutageForTests,
 } from "@/lib/dcc/analytics/store";
+import { flushServerlessAfterTasks } from "@/lib/dcc/analytics/serverlessLifecycle";
 import { collectAnalyticsRawPayload } from "@/lib/dcc/analytics/collector";
 import {
   purgeSyntheticOrExpiredAnalyticsRecords,
@@ -145,7 +147,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
       });
 
     // 1. JFD UnCruise helicopter guide discovery + cross-site handoff click to LFSE
-    const jfdCollect = collectAnalyticsRawPayload({
+    const jfdCollect = await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         deliveryId: "dlv_jfd_1",
         events: [
@@ -182,7 +184,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     assert.equal(jfdCollect.queuedCount, 2);
 
     // 2. LFSE Weekend in Juneau + Fishing Lodges arrival, guide engagement, printable view, and handoff to CP
-    const lfseCollect = collectAnalyticsRawPayload({
+    const lfseCollect = await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         deliveryId: "dlv_lfse_1",
         events: [
@@ -265,7 +267,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
 
     // 3. Cruise Promenade arrival, planning entry, local draft, template/no-op saves, and persisted trip unification
     const rawPrivateShareCode = "68a1b2c3d4e5f60718293a4b";
-    const cpClientCollect = collectAnalyticsRawPayload({
+    const cpClientCollect = await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         deliveryId: "dlv_cp_client_1",
         events: [
@@ -358,7 +360,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
       "x-dcc-internal-secret": "test-internal-secret-121",
     });
 
-    collectAnalyticsRawPayload({
+    await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         deliveryId: "dlv_cp_srv_persist",
         events: [
@@ -392,8 +394,8 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     });
 
     // Run worker mid-journey to verify Stage 4 === 0 (template/no-op ignored) and Stage 6 === 1 while Stage 7 === 0!
-    runAnalyticsWorker({ nowMs: baseTimeMs + 20 * 60_000 });
-    const midReport = buildNetworkAndTripAnalyticsReport({
+    await runAnalyticsWorker({ nowMs: baseTimeMs + 20 * 60_000 });
+    const midReport = await buildNetworkAndTripAnalyticsReport({
       environment: "production",
       windowPreset: "28d",
       endIso: isoPlusMin(25),
@@ -409,7 +411,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     assert.equal(midReport.tripLifecycle.milestones.stage7_distinctCompanionsCount, 0);
 
     // 4. Meaningful customization + 4-dimension confirmation staged -> reviewed_edited -> applied + companion participation + duplicate merge + aged return + seller handoff
-    collectAnalyticsRawPayload({
+    await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         deliveryId: "dlv_cp_srv_lifecycle_2",
         events: [
@@ -613,8 +615,8 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     const spoofRes = await collectPost(spoofedClientReq);
     assert.equal(spoofRes.status, 403);
 
-    runAnalyticsWorker({ nowMs: baseTimeMs + 3000 * 60_000 });
-    const beforeOutcomeReport = buildNetworkAndTripAnalyticsReport({
+    await runAnalyticsWorker({ nowMs: baseTimeMs + 3000 * 60_000 });
+    const beforeOutcomeReport = await buildNetworkAndTripAnalyticsReport({
       environment: "production",
       windowPreset: "28d",
       endIso: isoPlusMin(3000),
@@ -627,7 +629,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     assert.equal(beforeOutcomeReport.tripLifecycle.milestones.stage10_confirmedOutcome, 0);
 
     // 6. Now emit genuine server-authenticated booking_outcome_confirmed (affiliate commission settled + GoSno direct MoR paid)
-    collectAnalyticsRawPayload({
+    await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         events: [
           {
@@ -663,8 +665,8 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
       headers: cpServerHeaders,
     });
 
-    runAnalyticsWorker({ nowMs: baseTimeMs + 3010 * 60_000 });
-    const fullReport = buildNetworkAndTripAnalyticsReport({
+    await runAnalyticsWorker({ nowMs: baseTimeMs + 3010 * 60_000 });
+    const fullReport = await buildNetworkAndTripAnalyticsReport({
       environment: "production",
       windowPreset: "28d",
       endIso: isoPlusMin(3010),
@@ -724,7 +726,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     assert.equal(fullReport.financialOutcomesSeparation.verifiedAffiliateCommissionsUsd, 68.4);
   });
 
-  test("121c. Retry idempotency vs genuine repeated actions, cold-start closed-window determinism, and late-arriving event rollup healing", () => {
+  test("121c. Retry idempotency vs genuine repeated actions, cold-start closed-window determinism, and late-arriving event rollup healing", async () => {
     resetTestSqliteStore();
 
     const browserHeaders = new Headers({
@@ -751,16 +753,16 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     });
 
     // Deliver exact same logicalEventId 3 times (simulating client timeout + 2 retries)
-    const r1 = collectAnalyticsRawPayload({ rawBodyText: singleRetryPayload, headers: browserHeaders });
-    const r2 = collectAnalyticsRawPayload({ rawBodyText: singleRetryPayload, headers: browserHeaders });
-    const r3 = collectAnalyticsRawPayload({ rawBodyText: singleRetryPayload, headers: browserHeaders });
+    const r1 = await collectAnalyticsRawPayload({ rawBodyText: singleRetryPayload, headers: browserHeaders });
+    const r2 = await collectAnalyticsRawPayload({ rawBodyText: singleRetryPayload, headers: browserHeaders });
+    const r3 = await collectAnalyticsRawPayload({ rawBodyText: singleRetryPayload, headers: browserHeaders });
     assert.equal(r1.queuedCount, 1);
     assert.equal(r2.queuedCount, 0);
     assert.equal(r2.deduplicatedCount, 1);
     assert.equal(r3.deduplicatedCount, 1);
 
     // Deliver a genuine second pageview with a distinct logicalEventId
-    collectAnalyticsRawPayload({
+    await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         events: [
           {
@@ -778,9 +780,9 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
       headers: browserHeaders,
     });
 
-    runAnalyticsWorker({ nowMs: Date.parse("2026-11-18T12:00:00.000Z") });
+    await runAnalyticsWorker({ nowMs: Date.parse("2026-11-18T12:00:00.000Z") });
 
-    const warmReport = buildNetworkAndTripAnalyticsReport({
+    const warmReport = await buildNetworkAndTripAnalyticsReport({
       environment: "production",
       windowPreset: "24h",
       endIso: "2026-11-18T12:00:00.000Z",
@@ -794,7 +796,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     closeAndResetAnalyticsDbForTests(false);
     clearReportMemorySnapshotsForTests();
 
-    const coldReport = buildNetworkAndTripAnalyticsReport({
+    const coldReport = await buildNetworkAndTripAnalyticsReport({
       environment: "production",
       windowPreset: "24h",
       endIso: "2026-11-18T12:00:00.000Z",
@@ -805,7 +807,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     assert.deepEqual(coldReport.sites, warmReport.sites);
 
     // Late-arriving event rollup healing: watermark is at 12:00Z, now an offline tab flushes an event from 08:30Z
-    collectAnalyticsRawPayload({
+    await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         events: [
           {
@@ -823,10 +825,10 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
       headers: browserHeaders,
     });
 
-    const lateRun = runAnalyticsWorker({ nowMs: Date.parse("2026-11-18T12:05:00.000Z") });
+    const lateRun = await runAnalyticsWorker({ nowMs: Date.parse("2026-11-18T12:05:00.000Z") });
     assert.equal(lateRun.lateEventsReconciledCount, 1);
 
-    const healedReport = buildNetworkAndTripAnalyticsReport({
+    const healedReport = await buildNetworkAndTripAnalyticsReport({
       environment: "production",
       windowPreset: "24h",
       endIso: "2026-11-18T12:05:00.000Z",
@@ -840,7 +842,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     resetTestSqliteStore();
 
     // 1. Known bot (Googlebot)
-    collectAnalyticsRawPayload({
+    await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         events: [
           {
@@ -862,7 +864,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     });
 
     // 2. Next.js router prefetch
-    collectAnalyticsRawPayload({
+    await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         events: [
           {
@@ -885,7 +887,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     });
 
     // 3. Preview .vercel.app host attempting to spoof environment: "production"
-    collectAnalyticsRawPayload({
+    await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         events: [
           {
@@ -909,7 +911,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     });
 
     // 4. QA query param (`?qa=1`) on Production host
-    collectAnalyticsRawPayload({
+    await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         events: [
           {
@@ -943,15 +945,16 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
         },
       ),
     );
+    await flushServerlessAfterTasks();
     assert.equal(goRes.status, 302);
     const redirectLoc = goRes.headers.get("location") || "";
     assert.match(redirectLoc, /viator\.com/);
     assert.match(redirectLoc, /pid=/);
     assert.match(redirectLoc, /mcid=/);
 
-    runAnalyticsWorker({ nowMs: Date.parse("2026-11-19T23:55:00.000Z") });
+    await runAnalyticsWorker({ nowMs: Date.parse("2026-11-19T23:55:00.000Z") });
 
-    const prodReport = buildNetworkAndTripAnalyticsReport({
+    const prodReport = await buildNetworkAndTripAnalyticsReport({
       environment: "production",
       windowPreset: "24h",
       endIso: "2026-11-19T23:59:59.000Z",
@@ -965,7 +968,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     assert.equal(prodReport.trafficHygieneAndExclusions?.qaOrSyntheticEvents, 1);
 
     // Preview report accurately captures the Preview-origin event!
-    const previewReport = buildNetworkAndTripAnalyticsReport({
+    const previewReport = await buildNetworkAndTripAnalyticsReport({
       environment: "preview",
       windowPreset: "24h",
       endIso: "2026-11-19T23:59:59.000Z",
@@ -1047,7 +1050,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     assert.ok(!reconciledLegacy.reconciliation.visitorsAndPageviews.portfolioUniqueVisitors.toString().includes("clk_vis"));
   });
 
-  test("121e. Zero-leak privacy redaction audit and authenticated trip_deleted tombstone purge", () => {
+  test("121e. Zero-leak privacy redaction audit and authenticated trip_deleted tombstone purge", async () => {
     resetTestSqliteStore();
 
     const secretShareCode = "99f8e7d6c5b4a39281706f5e";
@@ -1092,7 +1095,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
       "x-dcc-internal-secret": "test-internal-secret-121",
     });
 
-    collectAnalyticsRawPayload({
+    await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         events: [
           {
@@ -1115,7 +1118,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
       headers: srvHeaders,
     });
 
-    runAnalyticsWorker({ nowMs: Date.parse("2026-11-19T03:05:00.000Z") });
+    await runAnalyticsWorker({ nowMs: Date.parse("2026-11-19T03:05:00.000Z") });
 
     const db = getAnalyticsSqliteDb();
     const queueDump = JSON.stringify(db.prepare("SELECT * FROM dcc_analytics_ingest_queue").all());
@@ -1140,7 +1143,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
       Number(db.prepare("SELECT COUNT(*) AS cnt FROM dcc_analytics_trip_state").get()?.cnt),
       1,
     );
-    collectAnalyticsRawPayload({
+    await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         events: [
           {
@@ -1154,7 +1157,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
       }),
       headers: srvHeaders,
     });
-    runAnalyticsWorker({ nowMs: Date.parse("2026-11-19T03:12:00.000Z") });
+    await runAnalyticsWorker({ nowMs: Date.parse("2026-11-19T03:12:00.000Z") });
     assert.equal(
       Number(db.prepare("SELECT COUNT(*) AS cnt FROM dcc_analytics_trip_state").get()?.cnt),
       0,
@@ -1226,7 +1229,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
       props: {},
     });
 
-    const bpBatch = enqueueNormalizedAnalyticsBatch({
+    const bpBatch = await enqueueNormalizedAnalyticsBatch({
       maxQueueDepth: 5,
       records: [
         makeTrafficRec("bp_1"),
@@ -1255,9 +1258,9 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
                  '2026-11-19T04:01:00.000Z', '2026-11-19T04:01:00.000Z', 'queued', 0, '{corrupt_json')`,
     ).run();
 
-    runAnalyticsWorker({ nowMs: Date.parse("2026-11-19T04:05:00.000Z") });
-    runAnalyticsWorker({ nowMs: Date.parse("2026-11-19T04:06:00.000Z") });
-    runAnalyticsWorker({ nowMs: Date.parse("2026-11-19T04:07:00.000Z") });
+    await runAnalyticsWorker({ nowMs: Date.parse("2026-11-19T04:05:00.000Z") });
+    await runAnalyticsWorker({ nowMs: Date.parse("2026-11-19T04:06:00.000Z") });
+    await runAnalyticsWorker({ nowMs: Date.parse("2026-11-19T04:07:00.000Z") });
 
     const poisonRow = db
       .prepare("SELECT status, attempts FROM dcc_analytics_ingest_queue WHERE logical_event_id = 'poison_pill_row'")
@@ -1265,13 +1268,14 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     assert.equal(poisonRow?.status, "dead_letter");
     assert.equal(Number(poisonRow?.attempts), 3);
 
-    const counters = readAnalyticsHealthCounters(db);
+    const exec = await getAnalyticsExecutor();
+    const counters = await readAnalyticsHealthCounters(exec);
     assert.equal(counters.deadLetterTotal, 1);
     assert.equal(counters.processedTotal, 6); // All 6 valid events processed cleanly!
 
     // 3. Kill switch returns 202 immediately without writing to store
     process.env.DCC_ANALYTICS_KILL_SWITCH = "1";
-    const ksRes = collectAnalyticsRawPayload({
+    const ksRes = await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         events: [
           {
@@ -1288,7 +1292,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     delete process.env.DCC_ANALYTICS_KILL_SWITCH;
 
     // 4. Prime last-good snapshot, then simulate store outage -> returns stale_last_good_snapshot, and when cleared returns honest "unavailable" (never 0s!)
-    const goodPreview = buildNetworkAndTripAnalyticsReport({
+    const goodPreview = await buildNetworkAndTripAnalyticsReport({
       environment: "preview",
       windowPreset: "24h",
       endIso: "2026-11-19T04:10:00.000Z",
@@ -1297,7 +1301,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     assert.equal(goodPreview.trafficSummary?.pageviews, 5);
 
     setSimulateAnalyticsStoreOutageForTests(true);
-    const fallbackPreview = buildNetworkAndTripAnalyticsReport({
+    const fallbackPreview = await buildNetworkAndTripAnalyticsReport({
       environment: "preview",
       windowPreset: "24h",
       endIso: "2026-11-19T04:10:00.000Z",
@@ -1306,7 +1310,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     assert.equal(fallbackPreview.trafficSummary?.pageviews, 5);
 
     clearReportMemorySnapshotsForTests();
-    const unavailPreview = buildNetworkAndTripAnalyticsReport({
+    const unavailPreview = await buildNetworkAndTripAnalyticsReport({
       environment: "preview",
       windowPreset: "24h",
       endIso: "2026-11-19T04:10:00.000Z",
@@ -1331,7 +1335,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     assert.equal(authAdminRes.status, 200);
 
     // 6. Synthetic QA labeling & purge leaves genuine records untouched
-    collectAnalyticsRawPayload({
+    await collectAnalyticsRawPayload({
       rawBodyText: JSON.stringify({
         events: [
           {
@@ -1348,9 +1352,9 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
         "user-agent": "Mozilla/5.0 Chrome/131.0.0.0",
       }),
     });
-    runAnalyticsWorker({ nowMs: Date.parse("2026-11-19T04:15:00.000Z") });
+    await runAnalyticsWorker({ nowMs: Date.parse("2026-11-19T04:15:00.000Z") });
 
-    const purged = purgeSyntheticOrExpiredAnalyticsRecords({
+    const purged = await purgeSyntheticOrExpiredAnalyticsRecords({
       environment: "preview",
       onlyQaOrSynthetic: true,
     });

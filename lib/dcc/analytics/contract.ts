@@ -17,6 +17,8 @@ export type InstrumentationCoverageTier =
   | "v2_end_to_end"
   | "v2_server_adapter"
   | "supplemental_manifest"
+  | "uninstrumented_unavailable"
+  | "retired_or_redirected"
   | "excluded_community"
   | "excluded_external";
 
@@ -36,6 +38,13 @@ export type CanonicalAnalyticsSiteId =
   | "welcometothedells"
   | "saveonthestrip"
   | "frenchquarterorientation"
+  | "bluehillsoutpost"
+  | "somersetshuttle"
+  | "shuttleya"
+  | "laketahoebus"
+  | "sedonajeep"
+  | "redrocksfastpass"
+  | "mightyargoshuttle"
   | "rollcallusa"
   | "welcometoalaskatours"
   | "unregistered_or_legacy";
@@ -110,10 +119,18 @@ export interface AnalyticsSiteRegistryEntry {
     | "owned_direct_checkout"
     | "dcc_sourced_direct_10pct"
     | "owned_hosted_community"
+    | "retired_or_redirected"
     | "excluded_external";
   inActive12Portfolio: boolean;
   instrumentationTier: InstrumentationCoverageTier;
+  pageviewCollectionWired: boolean;
   residency: string;
+  redirectAndSourceNotes: string;
+  externalSourcesStatus: {
+    ga4: "unavailable" | "not_configured";
+    gsc: "snapshot_attached_2026_11_19" | "unavailable";
+    vercelWebAnalytics: "unavailable" | "not_configured";
+  };
   outcomeFeedMode:
     | "modified_since_poller"
     | "direct_mor_summary"
@@ -136,7 +153,10 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "owned_planning_hub",
     inActive12Portfolio: true,
     instrumentationTier: "v2_end_to_end",
+    pageviewCollectionWired: true,
     residency: "destinations-cc (root app)",
+    redirectAndSourceNotes: "v2 DccAnalyticsBridge + /go/out & /go/commerce/handoff server bridges active.",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "modified_since_poller",
   },
   {
@@ -147,7 +167,10 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "owned_planning_hub",
     inActive12Portfolio: true,
     instrumentationTier: "v2_end_to_end",
+    pageviewCollectionWired: true,
     residency: "cruisepromenade (dedicated repo)",
+    redirectAndSourceNotes: "v2 client + 10-stage server lifecycle + durable outbox; Nov 19 GSC export attached.",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "snapshot_attached_2026_11_19", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "click_level_only",
   },
   {
@@ -165,7 +188,10 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "owned_storefront_external_checkout",
     inActive12Portfolio: true,
     instrumentationTier: "v2_end_to_end",
+    pageviewCollectionWired: true,
     residency: "destinations-cc (apps/last-frontier-shore-excursions)",
+    redirectAndSourceNotes: "v2 LfseAnalyticsBridge + /api/telemetry proxy active across all SE Alaska & lodge pages.",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "click_level_only",
   },
   {
@@ -176,7 +202,10 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "owned_storefront_external_checkout",
     inActive12Portfolio: true,
     instrumentationTier: "v2_end_to_end",
+    pageviewCollectionWired: true,
     residency: "destinations-cc (apps/juneauflightdeck)",
+    redirectAndSourceNotes: "v2 DccNetworkBridge + /api/network/telemetry proxy active; /go/juneau/helicopter-tours edge route.",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "click_level_only",
   },
   {
@@ -195,7 +224,10 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "owned_storefront_external_checkout",
     inActive12Portfolio: true,
     instrumentationTier: "v2_server_adapter",
-    residency: "destinations-cc (root host rewrites)",
+    pageviewCollectionWired: true,
+    residency: "destinations-cc (root host rewrites to /new-orleans/*)",
+    redirectAndSourceNotes: "Host-rewritten inside DCC root layout (DccAnalyticsBridge + /api/internal/corridor-events + /go/commerce/handoff).",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "click_level_only",
   },
   {
@@ -206,7 +238,10 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "owned_storefront_external_checkout",
     inActive12Portfolio: true,
     instrumentationTier: "v2_server_adapter",
+    pageviewCollectionWired: false,
     residency: "destinations-cc (apps/welcometotheswamp)",
+    redirectAndSourceNotes: "Bridged via /api/network/telemetry & /go/new-orleans/swamp-tours; v2 client SDK pending rollout.",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "modified_since_poller",
   },
   {
@@ -217,18 +252,30 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "owned_inquiry_feeder",
     inActive12Portfolio: true,
     instrumentationTier: "v2_server_adapter",
+    pageviewCollectionWired: false,
     residency: "vibing-around (external repo)",
+    redirectAndSourceNotes: "Bridged via DCC /api/network/telemetry; external repo v2 client SDK pending rollout.",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "inquiry_only",
   },
   {
     siteId: "gosno",
     displayName: "GoSno",
     canonicalDomain: "gosno.co",
-    aliases: ["gosno-production", "bigsky-gosno", "denver-to-mountains", "dcc:site:gosno"],
+    aliases: [
+      "gosno-production",
+      "bigsky-gosno",
+      "bigsky.gosno.co",
+      "denver-to-mountains",
+      "dcc:site:gosno",
+    ],
     commercialModel: "owned_direct_checkout",
     inActive12Portfolio: true,
     instrumentationTier: "v2_server_adapter",
-    residency: "gosno-production (external repo)",
+    pageviewCollectionWired: false,
+    residency: "gosno-production (external repo) + bigsky.gosno.co",
+    redirectAndSourceNotes: "Inbound /go/dcc-to-gosno & /go/denver/breckenridge/shared; Direct MoR summary API; client pageview SDK not wired.",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "direct_mor_summary",
   },
   {
@@ -245,7 +292,10 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "owned_direct_checkout",
     inActive12Portfolio: true,
     instrumentationTier: "v2_server_adapter",
+    pageviewCollectionWired: false,
     residency: "v0-feastlyspread (external repo)",
+    redirectAndSourceNotes: "External Direct MoR repo; client pageview SDK not yet wired (`unavailable` until instrumented).",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "direct_mor_summary",
   },
   {
@@ -256,7 +306,10 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "owned_inquiry_feeder",
     inActive12Portfolio: true,
     instrumentationTier: "v2_server_adapter",
+    pageviewCollectionWired: false,
     residency: "brinkberry (external repo)",
+    redirectAndSourceNotes: "External inquiry feeder repo; client pageview SDK not yet wired (`unavailable` until instrumented).",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "inquiry_only",
   },
   {
@@ -267,7 +320,10 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "owned_direct_checkout",
     inActive12Portfolio: true,
     instrumentationTier: "v2_server_adapter",
+    pageviewCollectionWired: false,
     residency: "partyatredrocks (external repo)",
+    redirectAndSourceNotes: "Inbound /go/red-rocks/shared edge redirect; Direct MoR summary API; client pageview SDK pending.",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "direct_mor_summary",
   },
   {
@@ -283,8 +339,31 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "owned_direct_checkout",
     inActive12Portfolio: true,
     instrumentationTier: "v2_server_adapter",
+    pageviewCollectionWired: false,
     residency: "destinations-cc (apps/420-airport-pickup)",
+    redirectAndSourceNotes: "Bridged via /api/network/telemetry & /go/denver/420-airport-pickup; Square Direct MoR.",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "direct_mor_summary",
+  },
+  {
+    siteId: "bluehillsoutpost",
+    displayName: "Blue Hills Outpost",
+    canonicalDomain: "bluehillsoutpost.com",
+    aliases: [
+      "bluehills",
+      "blue-hills",
+      "blue-hills-outpost",
+      "dcc:site:blue-hills-outpost",
+    ],
+    commercialModel: "owned_inquiry_feeder",
+    inActive12Portfolio: false,
+    instrumentationTier: "uninstrumented_unavailable",
+    pageviewCollectionWired: false,
+    residency: "blue-hills-outpost/src (static HTML/JS + Vercel functions)",
+    redirectAndSourceNotes:
+      "Active Northern WI directory (42 URLs); 6 internal 308 slug redirects; inbound /handoff/dcc 302; direct /api/outbound/viator (pid=P00281144, bypasses DCC /go/out) & /api/inquiries email. Zero GA4, Vercel Analytics, or DCC telemetry wired (`unavailable`).",
+    externalSourcesStatus: { ga4: "not_configured", gsc: "unavailable", vercelWebAnalytics: "not_configured" },
+    outcomeFeedMode: "inquiry_only",
   },
   {
     siteId: "welcometothedells",
@@ -294,7 +373,10 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "dcc_sourced_direct_10pct",
     inActive12Portfolio: false,
     instrumentationTier: "supplemental_manifest",
+    pageviewCollectionWired: false,
     residency: "destinations-cc (apps/welcometothedells)",
+    redirectAndSourceNotes: "Supplemental sub-app; outbound /out/wisconsin-dells/[slug] -> createCommercialHandoff; v2 pageviews not wired.",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "modified_since_poller",
   },
   {
@@ -305,7 +387,10 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "owned_storefront_external_checkout",
     inActive12Portfolio: false,
     instrumentationTier: "supplemental_manifest",
+    pageviewCollectionWired: false,
     residency: "destinations-cc (apps/saveonthestrip)",
+    redirectAndSourceNotes: "Supplemental sub-app; /go/vegas/deals edge redirect; v2 pageviews not wired (`unavailable`).",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "click_level_only",
   },
   {
@@ -316,8 +401,95 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "owned_inquiry_feeder",
     inActive12Portfolio: false,
     instrumentationTier: "supplemental_manifest",
+    pageviewCollectionWired: false,
     residency: "destinations-cc (apps/frenchquarterorientation)",
+    redirectAndSourceNotes: "Supplemental sub-app; v2 pageviews not wired (`unavailable`).",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "inquiry_only",
+  },
+  {
+    siteId: "somersetshuttle",
+    displayName: "Somerset Amphitheater Shuttle",
+    canonicalDomain: "shuttletosomersetamphitheater.com",
+    aliases: ["somerset", "somerset-wi", "shuttletosomersetamphitheater"],
+    commercialModel: "owned_inquiry_feeder",
+    inActive12Portfolio: false,
+    instrumentationTier: "supplemental_manifest",
+    pageviewCollectionWired: true,
+    residency: "destinations-cc (proxy.ts host rewrites to /somerset-wi/*)",
+    redirectAndSourceNotes: "Host-rewritten in DCC root (inherits DccAnalyticsBridge); 6 legacy paths 301-redirected on host.",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
+    outcomeFeedMode: "click_level_only",
+  },
+  {
+    siteId: "redrocksfastpass",
+    displayName: "Red Rocks Fast Pass",
+    canonicalDomain: "redrocksfastpass.com",
+    aliases: ["rrfp", "red-rocks-fastpass", "red-rocks-fast-pass"],
+    commercialModel: "owned_storefront_external_checkout",
+    inActive12Portfolio: false,
+    instrumentationTier: "supplemental_manifest",
+    pageviewCollectionWired: false,
+    residency: "destinations-cc (apps/redrocksfastpass)",
+    redirectAndSourceNotes: "Inbound /go/red-rocks/fastpass edge redirect; v2 pageviews not wired (`unavailable`).",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
+    outcomeFeedMode: "click_level_only",
+  },
+  {
+    siteId: "shuttleya",
+    displayName: "ShuttleYa",
+    canonicalDomain: "shuttleya.com",
+    aliases: ["shuttle-ya"],
+    commercialModel: "owned_inquiry_feeder",
+    inActive12Portfolio: false,
+    instrumentationTier: "uninstrumented_unavailable",
+    pageviewCollectionWired: false,
+    residency: "destinations-cc (apps/shuttleya)",
+    redirectAndSourceNotes: "Supplemental sub-app; v2 telemetry not wired (`unavailable`).",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
+    outcomeFeedMode: "inquiry_only",
+  },
+  {
+    siteId: "laketahoebus",
+    displayName: "Lake Tahoe Bus",
+    canonicalDomain: "laketahoebus.com",
+    aliases: ["laketahoe", "lake-tahoe-bus"],
+    commercialModel: "owned_inquiry_feeder",
+    inActive12Portfolio: false,
+    instrumentationTier: "uninstrumented_unavailable",
+    pageviewCollectionWired: false,
+    residency: "destinations-cc (apps/laketahoe)",
+    redirectAndSourceNotes: "Supplemental sub-app; v2 telemetry not wired (`unavailable`).",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
+    outcomeFeedMode: "inquiry_only",
+  },
+  {
+    siteId: "sedonajeep",
+    displayName: "Sedona Jeep",
+    canonicalDomain: "sedonajeep.com",
+    aliases: ["sedona-jeep"],
+    commercialModel: "owned_storefront_external_checkout",
+    inActive12Portfolio: false,
+    instrumentationTier: "uninstrumented_unavailable",
+    pageviewCollectionWired: false,
+    residency: "destinations-cc (apps/sedonajeep)",
+    redirectAndSourceNotes: "Supplemental sub-app; v2 telemetry not wired (`unavailable`).",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
+    outcomeFeedMode: "click_level_only",
+  },
+  {
+    siteId: "mightyargoshuttle",
+    displayName: "Mighty Argo Shuttle (Retired)",
+    canonicalDomain: "mightyargoshuttle.com",
+    aliases: ["mighty-argo", "mighty-argo-shuttle"],
+    commercialModel: "retired_or_redirected",
+    inActive12Portfolio: false,
+    instrumentationTier: "retired_or_redirected",
+    pageviewCollectionWired: false,
+    residency: "destinations-cc (app/mighty-argo-shuttle — retired corridor)",
+    redirectAndSourceNotes: "Retired/deprecated corridor; historical external traffic `unavailable`.",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
+    outcomeFeedMode: "not_applicable",
   },
   {
     siteId: "rollcallusa",
@@ -327,18 +499,32 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     commercialModel: "owned_hosted_community",
     inActive12Portfolio: false,
     instrumentationTier: "excluded_community",
+    pageviewCollectionWired: false,
     residency: "rollcallusa (external community repo, Mode B beta_allowlist)",
+    redirectAndSourceNotes: "Optional community layer strictly separated from private trip membership & active-12 traffic.",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "not_applicable",
   },
   {
     siteId: "welcometoalaskatours",
-    displayName: "Welcome to Alaska Tours",
+    displayName: "Welcome to Alaska Tours (Legacy Contained)",
     canonicalDomain: "welcometoalaskatours.com",
-    aliases: ["wta", "wta-renderer", "wta-ui", "welcome-to-alaska", "welcome-to-alaska-tours"],
+    aliases: [
+      "wta",
+      "wta-renderer",
+      "wta-ui",
+      "welcome-to-alaska",
+      "welcome-to-alaska-tours",
+      "dcc:site:welcome-to-alaska-tours",
+    ],
     commercialModel: "excluded_external",
     inActive12Portfolio: false,
     instrumentationTier: "excluded_external",
-    residency: "wta-renderer (contained external property)",
+    pageviewCollectionWired: false,
+    residency: "wta-renderer (contained independent partner property)",
+    redirectAndSourceNotes:
+      "Serves 156+ pages under 503_BOOKINGS_DISABLED checkout containment; ZERO external 301/302/308 consolidation redirects to LFSE/JFD/CP/DCC (only 2 internal 308s `/home`->`/`, `/contact`->`/contact-us`, plus optional `<a>` links to CP with `utm_source=welcometoalaskatours`). Inbound `/handoff/dcc` strips `payload`/`sig`/`token` on 302; organic WTA->DCC callbacks blocked; WTA GA4/Redis/logs `unavailable` from DCC.",
+    externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "not_configured" },
     outcomeFeedMode: "not_applicable",
   },
 ] as const;

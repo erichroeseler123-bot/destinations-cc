@@ -434,7 +434,7 @@ function sanitizeTelemetryPath(rawPath?: string | null): string | null {
   if (/^\/p\/[^/]+/i.test(pathOnly)) {
     pathOnly = pathOnly.replace(/^(\/p\/)[^/]+/i, "$1[redacted]");
   }
-  if (/^\/organizer\/[^/]+/i.test(pathOnly)) {
+  if (/^\/organizer\/(?!hosted(?:\/|$))[^/]+/i.test(pathOnly)) {
     pathOnly = pathOnly.replace(/^(\/organizer\/)[^/]+/i, "$1[redacted]");
   }
   if (/^\/(claim|recover|share|invite)\/[^/]+/i.test(pathOnly)) {

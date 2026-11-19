@@ -39,12 +39,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const result = collectAnalyticsRawPayload({
+  const result = await collectAnalyticsRawPayload({
     rawBodyText,
     headers: request.headers,
   });
 
   const response = NextResponse.json(result, { status: result.status });
+  if (result.dbTelemetry) {
+    response.headers.set(
+      "X-DCC-Analytics-Backend",
+      `${result.dbTelemetry.backend}:${result.dbTelemetry.databaseName}`,
+    );
+  }
   if (result.status === 429) {
     response.headers.set("Retry-After", "60");
   }

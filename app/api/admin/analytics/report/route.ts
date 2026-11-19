@@ -46,13 +46,13 @@ export async function GET(request: NextRequest) {
 
   if (sp.get("processPending") === "1") {
     try {
-      runAnalyticsWorker();
+      await runAnalyticsWorker();
     } catch {
       // If store is in outage, buildNetworkAndTripAnalyticsReport will surface stale/unavailable cleanly
     }
   }
 
-  const report = buildNetworkAndTripAnalyticsReport({
+  const report = await buildNetworkAndTripAnalyticsReport({
     environment,
     windowPreset,
     siteId,
@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
     startIso,
     endIso,
     asOfWatermarkIso,
+    bypassCache: sp.get("bypassCache") === "1",
   });
 
   const status = report.dataStatus === "unavailable" ? 503 : 200;
@@ -68,6 +69,7 @@ export async function GET(request: NextRequest) {
     headers: {
       "Cache-Control": "private, no-store",
       "X-Robots-Tag": "noindex, nofollow",
+      "X-DCC-Analytics-Backend": `${report.backendInfo.backend}:${report.backendInfo.databaseName}`,
     },
   });
 }

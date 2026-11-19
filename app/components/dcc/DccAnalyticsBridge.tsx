@@ -22,6 +22,18 @@ const NETWORK_DOMAIN_MAP: Array<[string, string]> = [
   ["brinkberry.com", "brinkberry"],
 ];
 
+function resolveRootHostSiteId(): string {
+  if (typeof window === "undefined") return "destinationcommandcenter";
+  const h = window.location.hostname.toLowerCase();
+  if (h.includes("welcometoneworleanstours")) return "welcometoneworleanstours";
+  if (h.includes("shuttletosomersetamphitheater")) return "somersetshuttle";
+  if (h.includes("lastfrontiershoreexcursions")) return "lastfrontiershoreexcursions";
+  if (h.includes("juneauflightdeck")) return "juneauflightdeck";
+  if (h.includes("welcometothedells")) return "welcometothedells";
+  if (h.includes("saveonthestrip")) return "saveonthestrip";
+  return "destinationcommandcenter";
+}
+
 function inferDccContentFamily(pathname: string): string {
   const lower = pathname.toLowerCase();
   if (lower.includes("uncruise")) return "uncruise";
@@ -49,10 +61,11 @@ export default function DccAnalyticsBridge() {
     if (prevPathRef.current === pathname) return;
     prevPathRef.current = pathname;
 
+    const activeSiteId = resolveRootHostSiteId();
     const contentFamily = inferDccContentFamily(pathname);
     enqueueClientAnalyticsEvent({
       eventType: "page_viewed",
-      site: "destinationcommandcenter",
+      site: activeSiteId,
       path: pathname,
       navigationType: isInitial ? "initial_load" : "spa_route_change",
       contentFamily,
@@ -65,7 +78,7 @@ export default function DccAnalyticsBridge() {
       if (handoffId || hasCtx) {
         enqueueClientAnalyticsEvent({
           eventType: "cross_site_handoff_arrived",
-          site: "destinationcommandcenter",
+          site: activeSiteId,
           path: pathname,
           handoffId,
           contextTokenPresent: hasCtx,
@@ -92,11 +105,12 @@ export default function DccAnalyticsBridge() {
       const hostLower = parsed.hostname.toLowerCase();
       if (hostLower === window.location.hostname.toLowerCase()) return;
 
+      const currentSiteId = resolveRootHostSiteId();
       for (const [domain, siteId] of NETWORK_DOMAIN_MAP) {
         if (hostLower === domain || hostLower.endsWith(`.${domain}`)) {
           enqueueClientAnalyticsEvent({
             eventType: "cross_site_handoff_clicked",
-            site: "destinationcommandcenter",
+            site: currentSiteId,
             path: window.location.pathname,
             targetSite: siteId,
             handoffId: parsed.searchParams.get("dcc_handoff_id") || undefined,
@@ -121,7 +135,7 @@ export default function DccAnalyticsBridge() {
             : "fareharbor";
         enqueueClientAnalyticsEvent({
           eventType: "seller_handoff_initiated",
-          site: "destinationcommandcenter",
+          site: currentSiteId,
           path: window.location.pathname,
           provider,
           targetSite: hostLower,

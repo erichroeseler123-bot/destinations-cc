@@ -46,7 +46,7 @@ export default async function NetworkAndTripAnalyticsAdminPage({
         ? "production"
         : "preview";
 
-  const initialReport = buildNetworkAndTripAnalyticsReport({
+  const initialReport = await buildNetworkAndTripAnalyticsReport({
     environment,
     windowPreset,
   });

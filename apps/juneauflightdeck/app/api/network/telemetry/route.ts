@@ -9,6 +9,7 @@ import {
   bridgeLegacyEventToV2Collector,
   collectAnalyticsRawPayload,
 } from "@/lib/dcc/analytics/collector";
+import { scheduleServerlessAfterTask } from "@/lib/dcc/analytics/serverlessLifecycle";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const collectRes = collectAnalyticsRawPayload({
+      const collectRes = await collectAnalyticsRawPayload({
         rawBodyText: raw,
         headers: request.headers,
       });
@@ -87,16 +88,18 @@ export async function POST(request: NextRequest) {
         (prodDccOrigin ? `${prodDccOrigin}/api/v2/analytics/collect` : "");
 
       if (upstreamUrl) {
-        void fetch(upstreamUrl, {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            ...(incomingUa ? { "user-agent": incomingUa } : {}),
-            ...(incomingLang ? { "accept-language": incomingLang } : {}),
-            ...(incomingHost ? { "x-forwarded-host": incomingHost } : {}),
-          },
-          body: raw,
-        }).catch(() => undefined);
+        scheduleServerlessAfterTask(async () => {
+          await fetch(upstreamUrl, {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              ...(incomingUa ? { "user-agent": incomingUa } : {}),
+              ...(incomingLang ? { "accept-language": incomingLang } : {}),
+              ...(incomingHost ? { "x-forwarded-host": incomingHost } : {}),
+            },
+            body: raw,
+          }).catch(() => undefined);
+        });
       }
 
       return NextResponse.json(collectRes, { status: collectRes.status });
@@ -128,8 +131,8 @@ export async function POST(request: NextRequest) {
         ? "https://www.destinationcommandcenter.com"
         : "");
     if (dccOrigin) {
-      try {
-        fetch(`${dccOrigin}/api/network/telemetry`, {
+      scheduleServerlessAfterTask(async () => {
+        await fetch(`${dccOrigin}/api/network/telemetry`, {
           method: "POST",
           headers: {
             "content-type": "application/json",
@@ -139,9 +142,7 @@ export async function POST(request: NextRequest) {
           },
           body: raw,
         }).catch(() => undefined);
-      } catch {
-        // Silently ignore upstream connection or certificate failures
-      }
+      });
     }
 
     return NextResponse.json({ ok: true });

@@ -33,14 +33,23 @@ export async function POST(request: NextRequest) {
     const body = (await request.json().catch(() => ({}))) as {
       batchSize?: number;
       maxBatches?: number;
+      singleLeaseMode?: boolean;
     };
-    const result = runAnalyticsWorker({
+    const result = await runAnalyticsWorker({
       batchSize: typeof body.batchSize === "number" ? body.batchSize : undefined,
       maxBatches: typeof body.maxBatches === "number" ? body.maxBatches : undefined,
+      singleLeaseMode: Boolean(body.singleLeaseMode),
     });
     return NextResponse.json(result, {
       status: 200,
-      headers: { "Cache-Control": "no-store" },
+      headers: {
+        "Cache-Control": "no-store",
+        ...(result.dbTelemetry
+          ? {
+              "X-DCC-Analytics-Backend": `${result.dbTelemetry.backend}:${result.dbTelemetry.databaseName}`,
+            }
+          : {}),
+      },
     });
   } catch (err) {
     return NextResponse.json(
@@ -60,10 +69,17 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const result = runAnalyticsWorker();
+    const result = await runAnalyticsWorker();
     return NextResponse.json(result, {
       status: 200,
-      headers: { "Cache-Control": "no-store" },
+      headers: {
+        "Cache-Control": "no-store",
+        ...(result.dbTelemetry
+          ? {
+              "X-DCC-Analytics-Backend": `${result.dbTelemetry.backend}:${result.dbTelemetry.databaseName}`,
+            }
+          : {}),
+      },
     });
   } catch (err) {
     return NextResponse.json(

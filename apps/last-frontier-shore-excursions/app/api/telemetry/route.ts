@@ -5,6 +5,7 @@ import {
   bridgeLegacyEventToV2Collector,
   collectAnalyticsRawPayload,
 } from "../../../../../lib/dcc/analytics/collector";
+import { scheduleServerlessAfterTask } from "../../../../../lib/dcc/analytics/serverlessLifecycle";
 import { getLfseTelemetryFetch } from "@/lib/fishingLodgesTelemetry";
 
 const PII_KEY_SET = new Set<string>(
@@ -86,25 +87,28 @@ export async function POST(req: NextRequest) {
 
     // Native v2 batched analytics envelope support
     if (Array.isArray(data.events)) {
-      const collectRes = collectAnalyticsRawPayload({
+      const collectRes = await collectAnalyticsRawPayload({
         rawBodyText: rawText,
         headers: req.headers,
       });
       if (process.env.DCC_ANALYTICS_COLLECT_URL) {
+        const collectUrl = process.env.DCC_ANALYTICS_COLLECT_URL;
         const incomingUa = req.headers.get("user-agent")?.trim() || "";
         const incomingLang = req.headers.get("accept-language")?.trim() || "";
         const incomingHost = req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
-        void fetch(process.env.DCC_ANALYTICS_COLLECT_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(incomingUa ? { "User-Agent": incomingUa } : {}),
-            ...(incomingLang ? { "Accept-Language": incomingLang } : {}),
-            ...(incomingHost ? { "x-forwarded-host": incomingHost } : {}),
-          },
-          body: rawText,
-          cache: "no-store",
-        }).catch(() => undefined);
+        scheduleServerlessAfterTask(async () => {
+          await fetch(collectUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(incomingUa ? { "User-Agent": incomingUa } : {}),
+              ...(incomingLang ? { "Accept-Language": incomingLang } : {}),
+              ...(incomingHost ? { "x-forwarded-host": incomingHost } : {}),
+            },
+            body: rawText,
+            cache: "no-store",
+          }).catch(() => undefined);
+        });
       }
       return NextResponse.json(collectRes, { status: collectRes.status });
     }

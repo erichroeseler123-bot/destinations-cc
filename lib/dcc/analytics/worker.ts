@@ -1,8 +1,14 @@
 import crypto from "node:crypto";
 import { performance } from "node:perf_hooks";
 import {
-  getAnalyticsSqliteDb,
+  ensureAnalyticsStoreAvailable,
   incrementHealthCounter,
+  normalizeSqlIso,
+  normalizeSqlJson,
+  withAnalyticsDbTelemetry,
+  withAnalyticsTransaction,
+  type AnalyticsDbTelemetry,
+  type AnalyticsQueryExecutor,
   type NormalizedAnalyticsRecord,
 } from "./store";
 
@@ -10,6 +16,7 @@ export const WORKER_DEFAULT_BATCH_SIZE = 250;
 export const WORKER_MAX_BATCHES_PER_RUN = 8;
 export const WORKER_MAX_ATTEMPTS = 3;
 export const WORKER_LEASE_TTL_MS = 15_000;
+export const WORKER_CLAIM_TTL_MS = 45_000;
 
 function minIso(a: string | null | undefined, b: string | null | undefined): string | null {
   if (!a) return b || null;
@@ -23,7 +30,11 @@ function maxIso(a: string | null | undefined, b: string | null | undefined): str
   return Date.parse(a) >= Date.parse(b) ? a : b;
 }
 
-function toHourBucketIso(iso: string): { hourStartIso: string; hourEndIso: string; dayBucket: string } {
+function toHourBucketIso(iso: string): {
+  hourStartIso: string;
+  hourEndIso: string;
+  dayBucket: string;
+} {
   const d = new Date(Date.parse(iso));
   const y = d.getUTCFullYear();
   const m = String(d.getUTCMonth() + 1).padStart(2, "0");
@@ -37,6 +48,7 @@ function toHourBucketIso(iso: string): { hourStartIso: string; hourEndIso: strin
 export interface AnalyticsWorkerRunResult {
   ok: boolean;
   leased: boolean;
+  workerId: string;
   batchesRun: number;
   claimedCount: number;
   processedCount: number;
@@ -46,166 +58,318 @@ export interface AnalyticsWorkerRunResult {
   deadLetteredCount: number;
   watermarkIso: string | null;
   durationMs: number;
+  dbTelemetry?: AnalyticsDbTelemetry;
   reason?: string;
 }
 
-export function runAnalyticsWorker(options?: {
+export async function runAnalyticsWorker(options?: {
   batchSize?: number;
   maxBatches?: number;
   workerId?: string;
   nowMs?: number;
-}): AnalyticsWorkerRunResult {
+  claimLeaseMs?: number;
+  singleLeaseMode?: boolean;
+  simulateCrashAfterClaim?: boolean;
+}): Promise<AnalyticsWorkerRunResult> {
   const t0 = performance.now();
-  const db = getAnalyticsSqliteDb();
   const batchSize = Math.min(Math.max(1, options?.batchSize ?? WORKER_DEFAULT_BATCH_SIZE), 500);
   const maxBatches = Math.min(Math.max(1, options?.maxBatches ?? WORKER_MAX_BATCHES_PER_RUN), 20);
   const workerId = options?.workerId || `wrk_${crypto.randomUUID().slice(0, 12)}`;
   const nowMs = options?.nowMs ?? Date.now();
   const nowIso = new Date(nowMs).toISOString();
+  const claimLeaseMs = Math.max(50, options?.claimLeaseMs ?? WORKER_CLAIM_TTL_MS);
+  const claimExpiresIso = new Date(nowMs + claimLeaseMs).toISOString();
 
-  // 1. Acquire non-overlapping worker lease (`MAX_CONCURRENT_WORKERS = 1`)
-  const existingLease = db
-    .prepare("SELECT worker_id, leased_until_ms FROM dcc_analytics_worker_lease WHERE lease_name = 'primary'")
-    .get();
-  if (
-    existingLease &&
-    Number(existingLease.leased_until_ms) > nowMs &&
-    String(existingLease.worker_id) !== workerId
-  ) {
-    return {
-      ok: true,
-      leased: false,
-      batchesRun: 0,
-      claimedCount: 0,
-      processedCount: 0,
-      deduplicatedWorkerCount: 0,
-      lateEventsReconciledCount: 0,
-      retriedCount: 0,
-      deadLetteredCount: 0,
-      watermarkIso: null,
-      durationMs: Number((performance.now() - t0).toFixed(2)),
-      reason: "lease_busy",
-    };
-  }
+  const { result, dbTelemetry } = await withAnalyticsDbTelemetry(async () => {
+    const exec = await ensureAnalyticsStoreAvailable();
 
-  db.prepare(
-    `INSERT INTO dcc_analytics_worker_lease (lease_name, worker_id, leased_until_ms, updated_at)
-     VALUES ('primary', ?, ?, ?)
-     ON CONFLICT(lease_name) DO UPDATE SET
-       worker_id = excluded.worker_id,
-       leased_until_ms = excluded.leased_until_ms,
-       updated_at = excluded.updated_at`,
-  ).run(workerId, nowMs + WORKER_LEASE_TTL_MS, nowIso);
+    // Optional strict single-worker lease mode (used by cron when singleLeaseMode=true)
+    if (options?.singleLeaseMode) {
+      const leaseGranted = await withAnalyticsTransaction(async (tx) => {
+        await tx.advisoryXactLock("dcc_analytics_worker_primary_lease");
+        const existingRes = await tx.query<{
+          worker_id: string;
+          leased_until_ms: string | number;
+        }>("SELECT worker_id, leased_until_ms FROM dcc_analytics_worker_lease WHERE lease_name = 'primary'");
+        const existing = existingRes.rows[0];
+        if (
+          existing &&
+          Number(existing.leased_until_ms) > nowMs &&
+          String(existing.worker_id) !== workerId
+        ) {
+          return false;
+        }
+        await tx.query(
+          `INSERT INTO dcc_analytics_worker_lease (lease_name, worker_id, leased_until_ms, updated_at)
+           VALUES ('primary', $1, $2, $3::timestamptz)
+           ON CONFLICT (lease_name) DO UPDATE SET
+             worker_id = excluded.worker_id,
+             leased_until_ms = excluded.leased_until_ms,
+             updated_at = excluded.updated_at`,
+          [workerId, nowMs + WORKER_LEASE_TTL_MS, nowIso],
+        );
+        return true;
+      });
 
-  let batchesRun = 0;
-  let claimedCount = 0;
-  let processedCount = 0;
-  let deduplicatedWorkerCount = 0;
-  let lateEventsReconciledCount = 0;
-  let retriedCount = 0;
-  let deadLetteredCount = 0;
-  let latestWatermarkIso: string | null = null;
-  let lastQueueSeq = 0;
+      if (!leaseGranted) {
+        return {
+          ok: true,
+          leased: false,
+          workerId,
+          batchesRun: 0,
+          claimedCount: 0,
+          processedCount: 0,
+          deduplicatedWorkerCount: 0,
+          lateEventsReconciledCount: 0,
+          retriedCount: 0,
+          deadLetteredCount: 0,
+          watermarkIso: null,
+          durationMs: Number((performance.now() - t0).toFixed(2)),
+          reason: "lease_busy",
+        } satisfies AnalyticsWorkerRunResult;
+      }
+    } else {
+      // Record worker heartbeat without blocking concurrent `SKIP LOCKED` workers
+      await exec.query(
+        `INSERT INTO dcc_analytics_worker_lease (lease_name, worker_id, leased_until_ms, updated_at)
+         VALUES ($1, $2, $3, $4::timestamptz)
+         ON CONFLICT (lease_name) DO UPDATE SET
+           worker_id = excluded.worker_id,
+           leased_until_ms = excluded.leased_until_ms,
+           updated_at = excluded.updated_at`,
+        [`worker:${workerId}`, workerId, nowMs + WORKER_LEASE_TTL_MS, nowIso],
+      );
+    }
 
-  try {
-    const currentWmRow = db
-      .prepare("SELECT processed_through_iso, last_queue_seq FROM dcc_analytics_watermarks WHERE scope_key = 'primary'")
-      .get();
-    latestWatermarkIso = currentWmRow?.processed_through_iso
-      ? String(currentWmRow.processed_through_iso)
-      : null;
-    lastQueueSeq = Number(currentWmRow?.last_queue_seq || 0);
-
+    let batchesRun = 0;
+    let claimedCount = 0;
+    let processedCount = 0;
+    let deduplicatedWorkerCount = 0;
+    let lateEventsReconciledCount = 0;
+    let retriedCount = 0;
+    let deadLetteredCount = 0;
+    let latestWatermarkIso: string | null = null;
+    let lastQueueSeq = 0;
     let minQueueSeqCursor = 0;
 
-    for (let b = 0; b < maxBatches; b++) {
-      const queueRows = db
-        .prepare(
-          `SELECT queue_seq, logical_event_id, attempts, payload_json
-           FROM dcc_analytics_ingest_queue
-           WHERE status IN ('queued', 'processing') AND attempts < ? AND queue_seq > ?
-           ORDER BY queue_seq ASC
-           LIMIT ?`,
-        )
-        .all(WORKER_MAX_ATTEMPTS, minQueueSeqCursor, batchSize);
+    try {
+      const wmRes = await exec.query<{
+        processed_through_iso: string | Date | null;
+        last_queue_seq: string | number | null;
+      }>("SELECT processed_through_iso, last_queue_seq FROM dcc_analytics_watermarks WHERE scope_key = 'primary'");
+      latestWatermarkIso = normalizeSqlIso(wmRes.rows[0]?.processed_through_iso);
+      lastQueueSeq = Number(wmRes.rows[0]?.last_queue_seq || 0);
 
-      if (queueRows.length === 0) break;
-      batchesRun += 1;
-      claimedCount += queueRows.length;
+      // Sweep expired `processing` claims that already exhausted WORKER_MAX_ATTEMPTS into `dead_letter`
+      const expiredDlRes = await withAnalyticsTransaction(async (tx) => {
+        const res = await tx.query<{ queue_seq: string | number }>(
+          `UPDATE dcc_analytics_ingest_queue
+           SET status = 'dead_letter',
+               last_error = COALESCE(last_error, 'claim_expired_max_attempts')
+           WHERE status = 'processing'
+             AND claim_expires_at IS NOT NULL
+             AND claim_expires_at <= $1::timestamptz
+             AND attempts >= $2
+           RETURNING queue_seq`,
+          [nowIso, WORKER_MAX_ATTEMPTS],
+        );
+        if (res.rows.length > 0) {
+          await incrementHealthCounter(tx, "dead_letter_total", res.rows.length, nowIso);
+        }
+        return res.rows.length;
+      });
+      deadLetteredCount += expiredDlRes;
 
-      let batchProcessedCount = 0;
-      let batchDeduplicatedCount = 0;
-      let batchLateCount = 0;
-      let batchRetriedCount = 0;
-      let batchDeadLetteredCount = 0;
-
-      const dirtyHourSlices = new Map<
-        string,
-        { environment: string; hourStartIso: string; hourEndIso: string; siteId: string }
-      >();
-      const dirtySubjects = new Set<string>();
-
-      db.exec("BEGIN IMMEDIATE TRANSACTION;");
-      try {
-        for (const qRow of queueRows) {
-          const qSeq = Number(qRow.queue_seq);
-          minQueueSeqCursor = Math.max(minQueueSeqCursor, qSeq);
-          const attempts = Number(qRow.attempts || 0);
-
-          try {
-            const rec = JSON.parse(String(qRow.payload_json)) as NormalizedAnalyticsRecord;
-
-            // Handle explicit privacy / user trip deletion first
-            if (rec.eventType === "trip_deleted" && rec.analyticsTripKey) {
-              db.prepare(
-                `INSERT INTO dcc_analytics_tombstones (environment, target_type, target_key, deleted_at, reason)
-                 VALUES (?, 'trip', ?, ?, 'trip_deleted')
-                 ON CONFLICT(environment, target_type, target_key) DO UPDATE SET deleted_at = excluded.deleted_at`,
-              ).run(rec.environment, rec.analyticsTripKey, rec.occurredAt);
-
-              db.prepare(
-                "DELETE FROM dcc_analytics_trip_state WHERE environment = ? AND (trip_unit_key = ? OR analytics_trip_key = ?)",
-              ).run(rec.environment, rec.analyticsTripKey, rec.analyticsTripKey);
-              db.prepare(
-                "DELETE FROM dcc_analytics_trip_links WHERE environment = ? AND analytics_trip_key = ?",
-              ).run(rec.environment, rec.analyticsTripKey);
-              db.prepare(
-                "UPDATE dcc_analytics_events SET analytics_trip_key = NULL, draft_key_hash = NULL, participant_key = NULL WHERE environment = ? AND analytics_trip_key = ?",
-              ).run(rec.environment, rec.analyticsTripKey);
-
-              incrementHealthCounter(db, "tombstoned_trips_total", 1, nowIso);
-              db.prepare(
-                "UPDATE dcc_analytics_ingest_queue SET status = 'processed', attempts = ? WHERE queue_seq = ?",
-              ).run(attempts + 1, qSeq);
-              batchProcessedCount += 1;
-              lastQueueSeq = Math.max(lastQueueSeq, qSeq);
-              latestWatermarkIso = maxIso(latestWatermarkIso, rec.occurredAt);
-              continue;
-            }
-
-            // Detect late arrival relative to prior watermark
-            const isLate = Boolean(
-              latestWatermarkIso && Date.parse(rec.occurredAt) < Date.parse(latestWatermarkIso) - 1000,
+      for (let b = 0; b < maxBatches; b++) {
+        // Phase 1: Atomically claim a disjoint batch (`FOR UPDATE SKIP LOCKED` on Postgres)
+        const claimedRows = await withAnalyticsTransaction(async (tx) => {
+          if (tx.backend === "postgres") {
+            const res = await tx.query<{
+              queue_seq: string | number;
+              logical_event_id: string;
+              attempts: number | string;
+              payload_json: unknown;
+            }>(
+              `WITH candidates AS (
+                 SELECT queue_seq
+                 FROM dcc_analytics_ingest_queue
+                 WHERE (
+                   status = 'queued'
+                   OR (status = 'processing' AND claim_expires_at IS NOT NULL AND claim_expires_at <= $1::timestamptz)
+                 )
+                   AND attempts < $2
+                   AND queue_seq > $3
+                 ORDER BY queue_seq ASC
+                 LIMIT $4
+                 FOR UPDATE SKIP LOCKED
+               )
+               UPDATE dcc_analytics_ingest_queue q
+               SET status = 'processing',
+                   claimed_by = $5,
+                   claim_expires_at = $6::timestamptz,
+                   attempts = q.attempts + 1
+               FROM candidates c
+               WHERE q.queue_seq = c.queue_seq
+               RETURNING q.queue_seq, q.logical_event_id, q.attempts, q.payload_json`,
+              [nowIso, WORKER_MAX_ATTEMPTS, minQueueSeqCursor, batchSize, workerId, claimExpiresIso],
             );
+            return res.rows;
+          }
 
-            // Check if trip is tombstoned
-            const effectiveTripCheckKey = rec.analyticsTripKey;
-            const isTombstoned = effectiveTripCheckKey
-              ? Boolean(
-                  db
-                    .prepare(
-                      "SELECT 1 FROM dcc_analytics_tombstones WHERE environment = ? AND target_type = 'trip' AND target_key = ?",
-                    )
-                    .get(rec.environment, effectiveTripCheckKey),
-                )
-              : false;
+          // Local-test SQLite atomic claim inside BEGIN IMMEDIATE
+          const candidates = await tx.query<{
+            queue_seq: number;
+            logical_event_id: string;
+            attempts: number;
+            payload_json: string;
+          }>(
+            `SELECT queue_seq, logical_event_id, attempts, payload_json
+             FROM dcc_analytics_ingest_queue
+             WHERE (
+               status = 'queued'
+               OR (status = 'processing' AND claim_expires_at IS NOT NULL AND claim_expires_at <= $1)
+             )
+               AND attempts < $2
+               AND queue_seq > $3
+             ORDER BY queue_seq ASC
+             LIMIT $4`,
+            [nowIso, WORKER_MAX_ATTEMPTS, minQueueSeqCursor, batchSize],
+          );
+          const out: Array<{
+            queue_seq: number;
+            logical_event_id: string;
+            attempts: number;
+            payload_json: unknown;
+          }> = [];
+          for (const row of candidates.rows) {
+            const nextAtt = Number(row.attempts || 0) + 1;
+            await tx.query(
+              `UPDATE dcc_analytics_ingest_queue
+               SET status = 'processing', claimed_by = $1, claim_expires_at = $2, attempts = $3
+               WHERE queue_seq = $4`,
+              [workerId, claimExpiresIso, nextAtt, row.queue_seq],
+            );
+            out.push({ ...row, attempts: nextAtt });
+          }
+          return out;
+        });
 
-            const safeTripKey = isTombstoned ? null : rec.analyticsTripKey;
-            const safeDraftHash = isTombstoned ? null : rec.draftKeyHash;
+        if (claimedRows.length === 0) break;
+        claimedRows.sort((a, bRow) => Number(a.queue_seq) - Number(bRow.queue_seq));
+        batchesRun += 1;
+        claimedCount += claimedRows.length;
 
-            // Insert into append-only `dcc_analytics_events` idempotently
-            const insertRes = db
-              .prepare(
+        // Test hook: simulate collector/worker crash mid-claim BEFORE processing rows
+        if (options?.simulateCrashAfterClaim) {
+          throw new Error("SIMULATED_WORKER_CRASH_AFTER_CLAIM");
+        }
+
+        let batchProcessedCount = 0;
+        let batchDeduplicatedCount = 0;
+        let batchLateCount = 0;
+        let batchRetriedCount = 0;
+        let batchDeadLetteredCount = 0;
+
+        const dirtyHourSlices = new Map<
+          string,
+          { environment: string; hourStartIso: string; hourEndIso: string; siteId: string }
+        >();
+        const dirtySubjects = new Set<string>();
+
+        // Phase 2: Process claimed rows + recompute dirty rollups atomically
+        await withAnalyticsTransaction(async (tx) => {
+          // Pre-acquire sorted advisory locks for any trip keys in this batch to prevent concurrent worker deadlocks
+          const batchLockKeys = new Set<string>();
+          for (const qRow of claimedRows) {
+            const parsed =
+              typeof qRow.payload_json === "string"
+                ? (() => {
+                    try {
+                      return JSON.parse(qRow.payload_json) as Partial<NormalizedAnalyticsRecord>;
+                    } catch {
+                      return null;
+                    }
+                  })()
+                : (qRow.payload_json as Partial<NormalizedAnalyticsRecord> | null);
+            if (parsed && typeof parsed === "object" && parsed.environment) {
+              if (parsed.analyticsTripKey) {
+                batchLockKeys.add(`trip:${parsed.environment}:${parsed.analyticsTripKey}`);
+              }
+              if (parsed.draftKeyHash) {
+                batchLockKeys.add(`trip:${parsed.environment}:${parsed.draftKeyHash}`);
+              }
+            }
+          }
+          for (const lk of Array.from(batchLockKeys).sort()) {
+            await tx.advisoryXactLock(lk);
+          }
+
+          for (const qRow of claimedRows) {
+            const qSeq = Number(qRow.queue_seq);
+            minQueueSeqCursor = Math.max(minQueueSeqCursor, qSeq);
+            const currentAttempts = Number(qRow.attempts || 1);
+
+            await tx.query("SAVEPOINT sp_queue_row");
+            try {
+              const rec: NormalizedAnalyticsRecord =
+                typeof qRow.payload_json === "string"
+                  ? (JSON.parse(qRow.payload_json) as NormalizedAnalyticsRecord)
+                  : (qRow.payload_json as NormalizedAnalyticsRecord);
+
+              if (!rec || typeof rec !== "object" || !rec.logicalEventId || !rec.eventType) {
+                throw new Error("malformed_queue_payload");
+              }
+
+              // Handle explicit privacy / user trip deletion first
+              if (rec.eventType === "trip_deleted" && rec.analyticsTripKey) {
+                await tx.query(
+                  `INSERT INTO dcc_analytics_tombstones (environment, target_type, target_key, deleted_at, reason)
+                   VALUES ($1, 'trip', $2, $3::timestamptz, 'trip_deleted')
+                   ON CONFLICT (environment, target_type, target_key) DO UPDATE SET deleted_at = excluded.deleted_at`,
+                  [rec.environment, rec.analyticsTripKey, rec.occurredAt],
+                );
+                await tx.query(
+                  "DELETE FROM dcc_analytics_trip_state WHERE environment = $1 AND (trip_unit_key = $2 OR analytics_trip_key = $3)",
+                  [rec.environment, rec.analyticsTripKey, rec.analyticsTripKey],
+                );
+                await tx.query(
+                  "DELETE FROM dcc_analytics_trip_links WHERE environment = $1 AND analytics_trip_key = $2",
+                  [rec.environment, rec.analyticsTripKey],
+                );
+                await tx.query(
+                  "UPDATE dcc_analytics_events SET analytics_trip_key = NULL, draft_key_hash = NULL, participant_key = NULL WHERE environment = $1 AND analytics_trip_key = $2",
+                  [rec.environment, rec.analyticsTripKey],
+                );
+
+                await incrementHealthCounter(tx, "tombstoned_trips_total", 1, nowIso);
+                await tx.query(
+                  "UPDATE dcc_analytics_ingest_queue SET status = 'processed', claim_expires_at = NULL, last_error = NULL WHERE queue_seq = $1",
+                  [qSeq],
+                );
+                await tx.query("RELEASE SAVEPOINT sp_queue_row");
+                batchProcessedCount += 1;
+                lastQueueSeq = Math.max(lastQueueSeq, qSeq);
+                latestWatermarkIso = maxIso(latestWatermarkIso, rec.occurredAt);
+                continue;
+              }
+
+              const isLate = Boolean(
+                latestWatermarkIso && Date.parse(rec.occurredAt) < Date.parse(latestWatermarkIso) - 1000,
+              );
+
+              let isTombstoned = false;
+              if (rec.analyticsTripKey) {
+                const tombRes = await tx.query(
+                  "SELECT 1 AS ok FROM dcc_analytics_tombstones WHERE environment = $1 AND target_type = 'trip' AND target_key = $2",
+                  [rec.environment, rec.analyticsTripKey],
+                );
+                isTombstoned = tombRes.rows.length > 0;
+              }
+
+              const safeTripKey = isTombstoned ? null : rec.analyticsTripKey;
+              const safeDraftHash = isTombstoned ? null : rec.draftKeyHash;
+
+              const insertRes = await tx.query<{ logical_event_id: string }>(
                 `INSERT INTO dcc_analytics_events (
                    logical_event_id, delivery_id, schema_version, event_type, layer,
                    environment, site_id, traffic_class, classification_reason,
@@ -219,264 +383,301 @@ export function runAnalyticsWorker(options?: {
                    lead_time_bucket, confirmation_provenance_json,
                    outcome_type, gross_amount_usd, commission_amount_usd, props_json
                  ) VALUES (
-                   ?, ?, ?, ?, ?,
-                   ?, ?, ?, ?,
-                   ?, ?, ?, ?, ?,
-                   ?, ?, ?, ?,
-                   ?, ?, ?, ?,
-                   ?, ?, ?, ?, ?, ?,
-                   ?, ?, ?,
-                   ?, ?, ?, ?,
-                   ?, ?, ?, ?,
-                   ?, ?,
-                   ?, ?, ?, ?
+                   $1, $2, $3, $4, $5,
+                   $6, $7, $8, $9,
+                   $10::timestamptz, $11::timestamptz, $12::timestamptz, $13, $14,
+                   $15, $16, $17, $18,
+                   $19, $20, $21, $22,
+                   $23, $24, $25, $26, $27, $28,
+                   $29, $30, $31,
+                   $32, $33, $34, $35,
+                   $36, $37, $38, $39,
+                   $40, $41::jsonb,
+                   $42, $43, $44, $45::jsonb
                  )
-                 ON CONFLICT(logical_event_id) DO NOTHING`,
-              )
-              .run(
-                rec.logicalEventId,
-                rec.deliveryId,
-                rec.schemaVersion,
-                rec.eventType,
-                rec.layer,
-                rec.environment,
-                rec.siteId,
-                rec.trafficClass,
-                rec.classificationReason,
-                rec.occurredAt,
-                rec.receivedAt,
-                nowIso,
-                rec.reportingSubjectId,
-                rec.keyVersion,
-                rec.sessionKey,
-                rec.canonicalPath,
-                rec.landingPath,
-                rec.referrerDomain,
-                rec.utmSource,
-                rec.utmMedium,
-                rec.utmCampaign,
-                rec.contentFamily,
-                rec.handoffId,
-                rec.clickId,
-                rec.continuityTier,
-                rec.targetSiteId,
-                rec.provider,
-                rec.productCode,
-                rec.physicalSailingId,
-                rec.hostedDepartureId,
-                rec.journeyKind,
-                safeDraftHash,
-                safeTripKey,
-                rec.participantRole,
-                isTombstoned ? null : rec.participantKey,
-                rec.partyHeadcountTotal,
-                rec.subMilestone,
-                rec.isTemplateOrHydration ? 1 : 0,
-                rec.isNoOpSave ? 1 : 0,
-                rec.leadTimeBucket,
-                rec.confirmationProvenance ? JSON.stringify(rec.confirmationProvenance) : null,
-                rec.outcomeType,
-                rec.grossAmountUsd,
-                rec.commissionAmountUsd,
-                JSON.stringify(rec.props || {}),
+                 ON CONFLICT (logical_event_id) DO NOTHING
+                 RETURNING logical_event_id`,
+                [
+                  rec.logicalEventId,
+                  rec.deliveryId,
+                  rec.schemaVersion,
+                  rec.eventType,
+                  rec.layer,
+                  rec.environment,
+                  rec.siteId,
+                  rec.trafficClass,
+                  rec.classificationReason,
+                  rec.occurredAt,
+                  rec.receivedAt,
+                  nowIso,
+                  rec.reportingSubjectId,
+                  rec.keyVersion,
+                  rec.sessionKey,
+                  rec.canonicalPath,
+                  rec.landingPath,
+                  rec.referrerDomain,
+                  rec.utmSource,
+                  rec.utmMedium,
+                  rec.utmCampaign,
+                  rec.contentFamily,
+                  rec.handoffId,
+                  rec.clickId,
+                  rec.continuityTier,
+                  rec.targetSiteId,
+                  rec.provider,
+                  rec.productCode,
+                  rec.physicalSailingId,
+                  rec.hostedDepartureId,
+                  rec.journeyKind,
+                  safeDraftHash,
+                  safeTripKey,
+                  rec.participantRole,
+                  isTombstoned ? null : rec.participantKey,
+                  rec.partyHeadcountTotal,
+                  rec.subMilestone,
+                  Boolean(rec.isTemplateOrHydration),
+                  Boolean(rec.isNoOpSave),
+                  rec.leadTimeBucket,
+                  rec.confirmationProvenance ? JSON.stringify(rec.confirmationProvenance) : null,
+                  rec.outcomeType,
+                  rec.grossAmountUsd,
+                  rec.commissionAmountUsd,
+                  JSON.stringify(rec.props || {}),
+                ],
               );
 
-            if (insertRes.changes === 0) {
-              batchDeduplicatedCount += 1;
-            } else {
-              if (isLate) {
-                batchLateCount += 1;
-              }
-              const { hourStartIso, hourEndIso } = toHourBucketIso(rec.occurredAt);
-              const sliceKey = `${rec.environment}|${hourStartIso}|${rec.siteId}`;
-              dirtyHourSlices.set(sliceKey, {
-                environment: rec.environment,
-                hourStartIso,
-                hourEndIso,
-                siteId: rec.siteId,
-              });
+              if (insertRes.rows.length === 0) {
+                batchDeduplicatedCount += 1;
+              } else {
+                if (isLate) {
+                  batchLateCount += 1;
+                }
+                const { hourStartIso, hourEndIso } = toHourBucketIso(rec.occurredAt);
+                const sliceKey = `${rec.environment}|${hourStartIso}|${rec.siteId}`;
+                dirtyHourSlices.set(sliceKey, {
+                  environment: rec.environment,
+                  hourStartIso,
+                  hourEndIso,
+                  siteId: rec.siteId,
+                });
 
-              if (
-                rec.eventType === "page_viewed" &&
-                rec.trafficClass === "observed_browser" &&
-                (rec.reportingSubjectId || rec.sessionKey)
-              ) {
-                dirtySubjects.add(`${rec.environment}|${rec.siteId}|${rec.reportingSubjectId || ""}|${rec.sessionKey || ""}|${rec.occurredAt.slice(0, 10)}`);
+                if (
+                  rec.eventType === "page_viewed" &&
+                  rec.trafficClass === "observed_browser" &&
+                  (rec.reportingSubjectId || rec.sessionKey)
+                ) {
+                  dirtySubjects.add(
+                    `${rec.environment}|${rec.siteId}|${rec.reportingSubjectId || ""}|${rec.sessionKey || ""}|${rec.occurredAt.slice(0, 10)}`,
+                  );
+                }
+
+                if (
+                  !isTombstoned &&
+                  rec.trafficClass !== "known_bot" &&
+                  rec.trafficClass !== "suspected_automation" &&
+                  (safeTripKey || safeDraftHash)
+                ) {
+                  await projectEventIntoTripState(tx, rec, safeTripKey, safeDraftHash, nowIso);
+                }
               }
 
-              // Project Trip Lifecycle State (only for non-bot, non-QA-in-prod or matching env observed/server events)
-              if (
-                !isTombstoned &&
-                rec.trafficClass !== "known_bot" &&
-                rec.trafficClass !== "suspected_automation" &&
-                (safeTripKey || safeDraftHash)
-              ) {
-                projectEventIntoTripState(db, rec, safeTripKey, safeDraftHash, nowIso);
+              await tx.query(
+                "UPDATE dcc_analytics_ingest_queue SET status = 'processed', claim_expires_at = NULL, last_error = NULL WHERE queue_seq = $1",
+                [qSeq],
+              );
+              await tx.query("RELEASE SAVEPOINT sp_queue_row");
+              batchProcessedCount += 1;
+              lastQueueSeq = Math.max(lastQueueSeq, qSeq);
+              latestWatermarkIso = maxIso(latestWatermarkIso, rec.occurredAt);
+            } catch (rowErr) {
+              await tx.query("ROLLBACK TO SAVEPOINT sp_queue_row");
+              await tx.query("RELEASE SAVEPOINT sp_queue_row");
+              const errMsg =
+                rowErr instanceof Error ? rowErr.message.slice(0, 240) : "worker_row_error";
+              if (currentAttempts >= WORKER_MAX_ATTEMPTS) {
+                await tx.query(
+                  "UPDATE dcc_analytics_ingest_queue SET status = 'dead_letter', claim_expires_at = NULL, last_error = $1 WHERE queue_seq = $2",
+                  [errMsg, qSeq],
+                );
+                batchDeadLetteredCount += 1;
+              } else {
+                await tx.query(
+                  "UPDATE dcc_analytics_ingest_queue SET status = 'queued', claimed_by = NULL, claim_expires_at = NULL, last_error = $1 WHERE queue_seq = $2",
+                  [errMsg, qSeq],
+                );
+                batchRetriedCount += 1;
               }
-            }
-
-            db.prepare(
-              "UPDATE dcc_analytics_ingest_queue SET status = 'processed', attempts = ?, last_error = NULL WHERE queue_seq = ?",
-            ).run(attempts + 1, qSeq);
-            batchProcessedCount += 1;
-            lastQueueSeq = Math.max(lastQueueSeq, qSeq);
-            latestWatermarkIso = maxIso(latestWatermarkIso, rec.occurredAt);
-          } catch (rowErr) {
-            const nextAttempts = attempts + 1;
-            const errMsg = rowErr instanceof Error ? rowErr.message.slice(0, 240) : "worker_row_error";
-            if (nextAttempts >= WORKER_MAX_ATTEMPTS) {
-              db.prepare(
-                "UPDATE dcc_analytics_ingest_queue SET status = 'dead_letter', attempts = ?, last_error = ? WHERE queue_seq = ?",
-              ).run(nextAttempts, errMsg, qSeq);
-              batchDeadLetteredCount += 1;
-            } else {
-              db.prepare(
-                "UPDATE dcc_analytics_ingest_queue SET status = 'queued', attempts = ?, last_error = ? WHERE queue_seq = ?",
-              ).run(nextAttempts, errMsg, qSeq);
-              batchRetriedCount += 1;
             }
           }
-        }
 
-        processedCount += batchProcessedCount;
-        deduplicatedWorkerCount += batchDeduplicatedCount;
-        lateEventsReconciledCount += batchLateCount;
-        retriedCount += batchRetriedCount;
-        deadLetteredCount += batchDeadLetteredCount;
+          processedCount += batchProcessedCount;
+          deduplicatedWorkerCount += batchDeduplicatedCount;
+          lateEventsReconciledCount += batchLateCount;
+          retriedCount += batchRetriedCount;
+          deadLetteredCount += batchDeadLetteredCount;
 
-        // Recompute exact hourly rollups for all dirty slices (supports late-event correction automatically!)
-        for (const slice of dirtyHourSlices.values()) {
-          recomputeHourlyRollupSlice(db, slice, nowIso);
-        }
+          // Acquire sorted slice advisory locks so concurrent workers recomputing overlapping hours/days serialize cleanly
+          const sortedHourKeys = Array.from(dirtyHourSlices.keys()).sort();
+          for (const hk of sortedHourKeys) {
+            await tx.advisoryXactLock(`rollup_hr:${hk}`);
+            await recomputeHourlyRollupSlice(tx, dirtyHourSlices.get(hk)!, nowIso);
+          }
 
-        // Recompute dirty subject/session daily rollups
-        if (dirtySubjects.size > 0) {
-          recomputeSubjectAndSessionRollups(db, dirtySubjects);
-        }
+          if (dirtySubjects.size > 0) {
+            await recomputeSubjectAndSessionRollups(tx, dirtySubjects);
+          }
 
-        const runElapsedMs = Math.round(performance.now() - t0);
-        db.prepare(
-          `INSERT INTO dcc_analytics_watermarks (
-             scope_key, processed_through_iso, last_queue_seq,
-             last_worker_success_at, last_worker_duration_ms, updated_at
-           ) VALUES ('primary', ?, ?, ?, ?, ?)
-           ON CONFLICT(scope_key) DO UPDATE SET
-             processed_through_iso = COALESCE(excluded.processed_through_iso, dcc_analytics_watermarks.processed_through_iso),
-             last_queue_seq = MAX(dcc_analytics_watermarks.last_queue_seq, excluded.last_queue_seq),
-             last_worker_success_at = excluded.last_worker_success_at,
-             last_worker_duration_ms = excluded.last_worker_duration_ms,
-             updated_at = excluded.updated_at`,
-        ).run(latestWatermarkIso, lastQueueSeq, nowIso, runElapsedMs, nowIso);
+          const runElapsedMs = Math.round(performance.now() - t0);
+          await tx.query(
+            `INSERT INTO dcc_analytics_watermarks (
+               scope_key, processed_through_iso, last_queue_seq,
+               last_worker_success_at, last_worker_duration_ms, updated_at
+             ) VALUES ('primary', $1, $2, $3, $4, $5::timestamptz)
+             ON CONFLICT (scope_key) DO UPDATE SET
+               processed_through_iso = CASE
+                 WHEN dcc_analytics_watermarks.processed_through_iso IS NULL THEN excluded.processed_through_iso
+                 WHEN excluded.processed_through_iso IS NULL THEN dcc_analytics_watermarks.processed_through_iso
+                 WHEN excluded.processed_through_iso > dcc_analytics_watermarks.processed_through_iso THEN excluded.processed_through_iso
+                 ELSE dcc_analytics_watermarks.processed_through_iso
+               END,
+               last_queue_seq = CASE
+                 WHEN excluded.last_queue_seq > dcc_analytics_watermarks.last_queue_seq THEN excluded.last_queue_seq
+                 ELSE dcc_analytics_watermarks.last_queue_seq
+               END,
+               last_worker_success_at = excluded.last_worker_success_at,
+               last_worker_duration_ms = excluded.last_worker_duration_ms,
+               updated_at = excluded.updated_at`,
+            [latestWatermarkIso, lastQueueSeq, nowIso, runElapsedMs, nowIso],
+          );
 
-        incrementHealthCounter(db, "processed_total", batchProcessedCount, nowIso);
-        incrementHealthCounter(db, "deduplicated_worker_total", batchDeduplicatedCount, nowIso);
-        incrementHealthCounter(db, "late_events_reconciled_total", batchLateCount, nowIso);
-        incrementHealthCounter(db, "retried_total", batchRetriedCount, nowIso);
-        incrementHealthCounter(db, "dead_letter_total", batchDeadLetteredCount, nowIso);
+          await incrementHealthCounter(tx, "processed_total", batchProcessedCount, nowIso);
+          await incrementHealthCounter(
+            tx,
+            "deduplicated_worker_total",
+            batchDeduplicatedCount,
+            nowIso,
+          );
+          await incrementHealthCounter(
+            tx,
+            "late_events_reconciled_total",
+            batchLateCount,
+            nowIso,
+          );
+          await incrementHealthCounter(tx, "retried_total", batchRetriedCount, nowIso);
+          await incrementHealthCounter(tx, "dead_letter_total", batchDeadLetteredCount, nowIso);
 
-        // Invalidate stale report cache entries when data changes so next report read refreshes cleanly
-        if (dirtyHourSlices.size > 0 || batchProcessedCount > 0) {
-          db.prepare("DELETE FROM dcc_analytics_report_cache").run();
-        }
-
-        db.exec("COMMIT;");
-      } catch (txErr) {
+          if (dirtyHourSlices.size > 0 || batchProcessedCount > 0) {
+            await tx.query("DELETE FROM dcc_analytics_report_cache");
+          }
+        });
+      }
+    } finally {
+      if (options?.singleLeaseMode) {
         try {
-          db.exec("ROLLBACK;");
+          await exec.query(
+            "UPDATE dcc_analytics_worker_lease SET leased_until_ms = 0, updated_at = $1::timestamptz WHERE lease_name = 'primary' AND worker_id = $2",
+            [new Date().toISOString(), workerId],
+          );
         } catch {
           // ignore
         }
-        throw txErr;
       }
     }
-  } finally {
-    // Release lease cleanly
-    try {
-      db.prepare(
-        "UPDATE dcc_analytics_worker_lease SET leased_until_ms = 0, updated_at = ? WHERE lease_name = 'primary' AND worker_id = ?",
-      ).run(new Date().toISOString(), workerId);
-    } catch {
-      // ignore
-    }
-  }
+
+    return {
+      ok: true,
+      leased: true,
+      workerId,
+      batchesRun,
+      claimedCount,
+      processedCount,
+      deduplicatedWorkerCount,
+      lateEventsReconciledCount,
+      retriedCount,
+      deadLetteredCount,
+      watermarkIso: latestWatermarkIso,
+      durationMs: Number((performance.now() - t0).toFixed(2)),
+    } satisfies AnalyticsWorkerRunResult;
+  });
 
   return {
-    ok: true,
-    leased: true,
-    batchesRun,
-    claimedCount,
-    processedCount,
-    deduplicatedWorkerCount,
-    lateEventsReconciledCount,
-    retriedCount,
-    deadLetteredCount,
-    watermarkIso: latestWatermarkIso,
-    durationMs: Number((performance.now() - t0).toFixed(2)),
+    ...result,
+    dbTelemetry,
   };
 }
 
-function recomputeHourlyRollupSlice(
-  db: ReturnType<typeof getAnalyticsSqliteDb>,
+async function recomputeHourlyRollupSlice(
+  tx: AnalyticsQueryExecutor,
   slice: { environment: string; hourStartIso: string; hourEndIso: string; siteId: string },
   nowIso: string,
-): void {
-  db.prepare(
+): Promise<void> {
+  await tx.query(
     `DELETE FROM dcc_analytics_hourly_rollups
-     WHERE environment = ? AND hour_bucket_iso = ? AND site_id = ?`,
-  ).run(slice.environment, slice.hourStartIso, slice.siteId);
-
-  const grouped = db
-    .prepare(
-      `SELECT
-         content_family,
-         traffic_class,
-         SUM(CASE WHEN event_type = 'page_viewed' THEN 1 ELSE 0 END) AS pageviews_count,
-         SUM(CASE WHEN event_type = 'guide_engaged' THEN 1 ELSE 0 END) AS guide_engagements_count,
-         SUM(CASE WHEN event_type = 'printable_view_opened' THEN 1 ELSE 0 END) AS printable_opens_count,
-         SUM(CASE WHEN event_type = 'cross_site_handoff_clicked' THEN 1 ELSE 0 END) AS cross_site_clicks_count,
-         SUM(CASE WHEN event_type = 'cross_site_handoff_arrived' THEN 1 ELSE 0 END) AS cross_site_arrivals_count,
-         SUM(CASE WHEN event_type = 'cross_site_handoff_arrived' AND continuity_tier = 'verified_dcc_ctx' THEN 1 ELSE 0 END) AS verified_ctx_arrivals_count,
-         SUM(CASE WHEN event_type = 'seller_handoff_initiated' THEN 1 ELSE 0 END) AS seller_handoffs_count,
-         SUM(CASE WHEN event_type = 'seller_handoff_initiated' AND reporting_subject_id IS NULL THEN 1 ELSE 0 END) AS unidentified_outbound_count
-       FROM dcc_analytics_events
-       WHERE environment = ? AND site_id = ? AND occurred_at >= ? AND occurred_at < ?
-       GROUP BY content_family, traffic_class`,
-    )
-    .all(slice.environment, slice.siteId, slice.hourStartIso, slice.hourEndIso);
-
-  const insertRollup = db.prepare(
-    `INSERT INTO dcc_analytics_hourly_rollups (
-       environment, hour_bucket_iso, site_id, content_family, traffic_class,
-       pageviews_count, guide_engagements_count, printable_opens_count,
-       cross_site_clicks_count, cross_site_arrivals_count, verified_ctx_arrivals_count,
-       seller_handoffs_count, unidentified_outbound_count, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     WHERE environment = $1 AND hour_bucket_iso = $2 AND site_id = $3`,
+    [slice.environment, slice.hourStartIso, slice.siteId],
   );
 
-  for (const row of grouped) {
-    insertRollup.run(
-      slice.environment,
-      slice.hourStartIso,
-      slice.siteId,
-      String(row.content_family),
-      String(row.traffic_class),
-      Number(row.pageviews_count || 0),
-      Number(row.guide_engagements_count || 0),
-      Number(row.printable_opens_count || 0),
-      Number(row.cross_site_clicks_count || 0),
-      Number(row.cross_site_arrivals_count || 0),
-      Number(row.verified_ctx_arrivals_count || 0),
-      Number(row.seller_handoffs_count || 0),
-      Number(row.unidentified_outbound_count || 0),
-      nowIso,
+  const groupedRes = await tx.query<{
+    content_family: string;
+    traffic_class: string;
+    pageviews_count: string | number;
+    guide_engagements_count: string | number;
+    printable_opens_count: string | number;
+    cross_site_clicks_count: string | number;
+    cross_site_arrivals_count: string | number;
+    verified_ctx_arrivals_count: string | number;
+    seller_handoffs_count: string | number;
+    unidentified_outbound_count: string | number;
+  }>(
+    `SELECT
+       content_family,
+       traffic_class,
+       SUM(CASE WHEN event_type = 'page_viewed' THEN 1 ELSE 0 END) AS pageviews_count,
+       SUM(CASE WHEN event_type = 'guide_engaged' THEN 1 ELSE 0 END) AS guide_engagements_count,
+       SUM(CASE WHEN event_type = 'printable_view_opened' THEN 1 ELSE 0 END) AS printable_opens_count,
+       SUM(CASE WHEN event_type = 'cross_site_handoff_clicked' THEN 1 ELSE 0 END) AS cross_site_clicks_count,
+       SUM(CASE WHEN event_type = 'cross_site_handoff_arrived' THEN 1 ELSE 0 END) AS cross_site_arrivals_count,
+       SUM(CASE WHEN event_type = 'cross_site_handoff_arrived' AND continuity_tier = 'verified_dcc_ctx' THEN 1 ELSE 0 END) AS verified_ctx_arrivals_count,
+       SUM(CASE WHEN event_type = 'seller_handoff_initiated' THEN 1 ELSE 0 END) AS seller_handoffs_count,
+       SUM(CASE WHEN event_type = 'seller_handoff_initiated' AND reporting_subject_id IS NULL THEN 1 ELSE 0 END) AS unidentified_outbound_count
+     FROM dcc_analytics_events
+     WHERE environment = $1 AND site_id = $2 AND occurred_at >= $3::timestamptz AND occurred_at < $4::timestamptz
+     GROUP BY content_family, traffic_class`,
+    [slice.environment, slice.siteId, slice.hourStartIso, slice.hourEndIso],
+  );
+
+  for (const row of groupedRes.rows) {
+    await tx.query(
+      `INSERT INTO dcc_analytics_hourly_rollups (
+         environment, hour_bucket_iso, site_id, content_family, traffic_class,
+         pageviews_count, guide_engagements_count, printable_opens_count,
+         cross_site_clicks_count, cross_site_arrivals_count, verified_ctx_arrivals_count,
+         seller_handoffs_count, unidentified_outbound_count, updated_at
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14::timestamptz)`,
+      [
+        slice.environment,
+        slice.hourStartIso,
+        slice.siteId,
+        String(row.content_family),
+        String(row.traffic_class),
+        Number(row.pageviews_count || 0),
+        Number(row.guide_engagements_count || 0),
+        Number(row.printable_opens_count || 0),
+        Number(row.cross_site_clicks_count || 0),
+        Number(row.cross_site_arrivals_count || 0),
+        Number(row.verified_ctx_arrivals_count || 0),
+        Number(row.seller_handoffs_count || 0),
+        Number(row.unidentified_outbound_count || 0),
+        nowIso,
+      ],
     );
   }
 }
 
-function recomputeSubjectAndSessionRollups(
-  db: ReturnType<typeof getAnalyticsSqliteDb>,
+async function recomputeSubjectAndSessionRollups(
+  tx: AnalyticsQueryExecutor,
   dirtyKeys: Set<string>,
-): void {
+): Promise<void> {
   const uniqueEnvSiteSubjects = new Set<string>();
   const uniqueEnvSiteDays = new Set<string>();
 
@@ -490,36 +691,47 @@ function recomputeSubjectAndSessionRollups(
     }
   }
 
-  for (const key of uniqueEnvSiteSubjects) {
+  for (const key of Array.from(uniqueEnvSiteSubjects).sort()) {
+    await tx.advisoryXactLock(`rollup_subj:${key}`);
     const [env, siteId, subjectId] = key.split("|") as [string, string, string];
-    const events = db
-      .prepare(
-        `SELECT occurred_at, session_key, landing_path, utm_source, utm_campaign, referrer_domain
-         FROM dcc_analytics_events
-         WHERE environment = ? AND site_id = ? AND reporting_subject_id = ?
-           AND event_type = 'page_viewed' AND traffic_class = 'observed_browser'
-         ORDER BY occurred_at ASC`,
-      )
-      .all(env, siteId, subjectId);
+    const eventsRes = await tx.query<{
+      occurred_at: string | Date;
+      session_key: string | null;
+      landing_path: string;
+      utm_source: string | null;
+      utm_campaign: string | null;
+      referrer_domain: string | null;
+    }>(
+      `SELECT occurred_at, session_key, landing_path, utm_source, utm_campaign, referrer_domain
+       FROM dcc_analytics_events
+       WHERE environment = $1 AND site_id = $2 AND reporting_subject_id = $3
+         AND event_type = 'page_viewed' AND traffic_class = 'observed_browser'
+       ORDER BY occurred_at ASC`,
+      [env, siteId, subjectId],
+    );
 
+    const events = eventsRes.rows;
     if (events.length === 0) continue;
     const first = events[0]!;
     const last = events[events.length - 1]!;
+    const firstIso = normalizeSqlIso(first.occurred_at)!;
+    const lastIso = normalizeSqlIso(last.occurred_at)!;
     const sessions = new Set<string>();
     const days = new Set<string>();
     for (const e of events) {
       if (e.session_key) sessions.add(String(e.session_key));
-      days.add(String(e.occurred_at).slice(0, 10));
+      const iso = normalizeSqlIso(e.occurred_at);
+      if (iso) days.add(iso.slice(0, 10));
     }
 
-    db.prepare(
+    await tx.query(
       `INSERT INTO dcc_analytics_subject_activity (
          environment, site_id, subject_id, first_pageview_at, last_pageview_at,
          total_pageviews, distinct_session_count, distinct_day_count,
          last_session_key, last_day_bucket, first_landing_path,
          first_utm_source, first_utm_campaign, first_referrer_domain
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT(environment, site_id, subject_id) DO UPDATE SET
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+       ON CONFLICT (environment, site_id, subject_id) DO UPDATE SET
          first_pageview_at = excluded.first_pageview_at,
          last_pageview_at = excluded.last_pageview_at,
          total_pageviews = excluded.total_pageviews,
@@ -531,46 +743,59 @@ function recomputeSubjectAndSessionRollups(
          first_utm_source = excluded.first_utm_source,
          first_utm_campaign = excluded.first_utm_campaign,
          first_referrer_domain = excluded.first_referrer_domain`,
-    ).run(
-      env,
-      siteId,
-      subjectId,
-      String(first.occurred_at),
-      String(last.occurred_at),
-      events.length,
-      Math.max(1, sessions.size),
-      days.size,
-      last.session_key ? String(last.session_key) : null,
-      String(last.occurred_at).slice(0, 10),
-      String(first.landing_path || "/"),
-      first.utm_source ? String(first.utm_source) : null,
-      first.utm_campaign ? String(first.utm_campaign) : null,
-      first.referrer_domain ? String(first.referrer_domain) : null,
+      [
+        env,
+        siteId,
+        subjectId,
+        firstIso,
+        lastIso,
+        events.length,
+        Math.max(1, sessions.size),
+        days.size,
+        last.session_key ? String(last.session_key) : null,
+        lastIso.slice(0, 10),
+        String(first.landing_path || "/"),
+        first.utm_source ? String(first.utm_source) : null,
+        first.utm_campaign ? String(first.utm_campaign) : null,
+        first.referrer_domain ? String(first.referrer_domain) : null,
+      ],
     );
   }
 
-  for (const dayKey of uniqueEnvSiteDays) {
+  for (const dayKey of Array.from(uniqueEnvSiteDays).sort()) {
+    await tx.advisoryXactLock(`rollup_day:${dayKey}`);
     const [env, siteId, dayBucket] = dayKey.split("|") as [string, string, string];
     const dayStart = `${dayBucket}T00:00:00.000Z`;
     const dayEnd = `${dayBucket}T23:59:59.999Z`;
 
-    db.prepare(
-      "DELETE FROM dcc_analytics_daily_subjects WHERE environment = ? AND site_id = ? AND day_bucket = ?",
-    ).run(env, siteId, dayBucket);
-    db.prepare(
-      "DELETE FROM dcc_analytics_daily_sessions WHERE environment = ? AND site_id = ? AND day_bucket = ?",
-    ).run(env, siteId, dayBucket);
+    await tx.query(
+      "DELETE FROM dcc_analytics_daily_subjects WHERE environment = $1 AND site_id = $2 AND day_bucket = $3",
+      [env, siteId, dayBucket],
+    );
+    await tx.query(
+      "DELETE FROM dcc_analytics_daily_sessions WHERE environment = $1 AND site_id = $2 AND day_bucket = $3",
+      [env, siteId, dayBucket],
+    );
 
-    const dayEvents = db
-      .prepare(
-        `SELECT occurred_at, content_family, reporting_subject_id, session_key,
-                landing_path, utm_source, utm_campaign, referrer_domain
-         FROM dcc_analytics_events
-         WHERE environment = ? AND site_id = ? AND occurred_at >= ? AND occurred_at <= ?
-           AND event_type = 'page_viewed' AND traffic_class = 'observed_browser'
-         ORDER BY occurred_at ASC`,
-      )
-      .all(env, siteId, dayStart, dayEnd);
+    const dayEventsRes = await tx.query<{
+      occurred_at: string | Date;
+      content_family: string;
+      reporting_subject_id: string | null;
+      session_key: string | null;
+      landing_path: string;
+      utm_source: string | null;
+      utm_campaign: string | null;
+      referrer_domain: string | null;
+    }>(
+      `SELECT occurred_at, content_family, reporting_subject_id, session_key,
+              landing_path, utm_source, utm_campaign, referrer_domain
+       FROM dcc_analytics_events
+       WHERE environment = $1 AND site_id = $2
+         AND occurred_at >= $3::timestamptz AND occurred_at <= $4::timestamptz
+         AND event_type = 'page_viewed' AND traffic_class = 'observed_browser'
+       ORDER BY occurred_at ASC`,
+      [env, siteId, dayStart, dayEnd],
+    );
 
     const subjMap = new Map<
       string,
@@ -603,9 +828,9 @@ function recomputeSubjectAndSessionRollups(
       }
     >();
 
-    for (const ev of dayEvents) {
+    for (const ev of dayEventsRes.rows) {
       const cf = String(ev.content_family);
-      const occurredAt = String(ev.occurred_at);
+      const occurredAt = normalizeSqlIso(ev.occurred_at)!;
       const subj = ev.reporting_subject_id ? String(ev.reporting_subject_id) : null;
       const sess = ev.session_key ? String(ev.session_key) : subj;
 
@@ -657,21 +882,17 @@ function recomputeSubjectAndSessionRollups(
       }
     }
 
-    const insertSubj = db.prepare(
-      `INSERT INTO dcc_analytics_daily_subjects (
-         environment, day_bucket, site_id, content_family, subject_id,
-         session_count, pageview_count, first_seen_in_day_at, last_seen_in_day_at,
-         is_returning_subject, landing_path, utm_source, utm_campaign, referrer_domain
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    );
-
     for (const item of subjMap.values()) {
-      const lifetime = db
-        .prepare(
-          "SELECT first_pageview_at, distinct_session_count FROM dcc_analytics_subject_activity WHERE environment = ? AND site_id = ? AND subject_id = ?",
-        )
-        .get(env, siteId, item.subjectId);
-      const lifetimeFirst = lifetime?.first_pageview_at ? String(lifetime.first_pageview_at) : item.firstAt;
+      const lifetimeRes = await tx.query<{
+        first_pageview_at: string | null;
+        distinct_session_count: number | string | null;
+      }>(
+        "SELECT first_pageview_at, distinct_session_count FROM dcc_analytics_subject_activity WHERE environment = $1 AND site_id = $2 AND subject_id = $3",
+        [env, siteId, item.subjectId],
+      );
+      const lifetimeFirst = lifetimeRes.rows[0]?.first_pageview_at
+        ? String(lifetimeRes.rows[0].first_pageview_at)
+        : item.firstAt;
       const isReturning =
         lifetimeFirst.slice(0, 10) < dayBucket ||
         item.sessions.size > 1 ||
@@ -679,106 +900,118 @@ function recomputeSubjectAndSessionRollups(
           ? 1
           : 0;
 
-      insertSubj.run(
-        env,
-        dayBucket,
-        siteId,
-        item.contentFamily,
-        item.subjectId,
-        Math.max(1, item.sessions.size),
-        item.pageviews,
-        item.firstAt,
-        item.lastAt,
-        isReturning,
-        item.landingPath,
-        item.utmSource,
-        item.utmCampaign,
-        item.referrerDomain,
+      await tx.query(
+        `INSERT INTO dcc_analytics_daily_subjects (
+           environment, day_bucket, site_id, content_family, subject_id,
+           session_count, pageview_count, first_seen_in_day_at, last_seen_in_day_at,
+           is_returning_subject, landing_path, utm_source, utm_campaign, referrer_domain
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+        [
+          env,
+          dayBucket,
+          siteId,
+          item.contentFamily,
+          item.subjectId,
+          Math.max(1, item.sessions.size),
+          item.pageviews,
+          item.firstAt,
+          item.lastAt,
+          isReturning,
+          item.landingPath,
+          item.utmSource,
+          item.utmCampaign,
+          item.referrerDomain,
+        ],
       );
     }
 
-    const insertSess = db.prepare(
-      `INSERT INTO dcc_analytics_daily_sessions (
-         environment, day_bucket, site_id, content_family, session_key, subject_id,
-         first_pageview_at, last_pageview_at, pageview_count,
-         landing_path, utm_source, utm_campaign, referrer_domain
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    );
-
     for (const s of sessMap.values()) {
-      insertSess.run(
-        env,
-        dayBucket,
-        siteId,
-        s.contentFamily,
-        s.sessionKey,
-        s.subjectId,
-        s.firstAt,
-        s.lastAt,
-        s.pageviews,
-        s.landingPath,
-        s.utmSource,
-        s.utmCampaign,
-        s.referrerDomain,
+      await tx.query(
+        `INSERT INTO dcc_analytics_daily_sessions (
+           environment, day_bucket, site_id, content_family, session_key, subject_id,
+           first_pageview_at, last_pageview_at, pageview_count,
+           landing_path, utm_source, utm_campaign, referrer_domain
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+        [
+          env,
+          dayBucket,
+          siteId,
+          s.contentFamily,
+          s.sessionKey,
+          s.subjectId,
+          s.firstAt,
+          s.lastAt,
+          s.pageviews,
+          s.landingPath,
+          s.utmSource,
+          s.utmCampaign,
+          s.referrerDomain,
+        ],
       );
     }
   }
 }
 
-function projectEventIntoTripState(
-  db: ReturnType<typeof getAnalyticsSqliteDb>,
+async function projectEventIntoTripState(
+  tx: AnalyticsQueryExecutor,
   rec: NormalizedAnalyticsRecord,
   analyticsTripKey: string | null,
   draftKeyHash: string | null,
   nowIso: string,
-): void {
-  // 1. Resolve canonical trip_unit_key via dcc_analytics_trip_links so drafts becoming saved trips NEVER double-count
+): Promise<void> {
   let resolvedAtk = analyticsTripKey;
   if (!resolvedAtk && draftKeyHash) {
-    const linkRow = db
-      .prepare(
-        "SELECT analytics_trip_key FROM dcc_analytics_trip_links WHERE environment = ? AND draft_key_hash = ?",
-      )
-      .get(rec.environment, draftKeyHash);
-    if (linkRow?.analytics_trip_key) {
-      resolvedAtk = String(linkRow.analytics_trip_key);
+    const linkRes = await tx.query<{ analytics_trip_key: string }>(
+      "SELECT analytics_trip_key FROM dcc_analytics_trip_links WHERE environment = $1 AND draft_key_hash = $2",
+      [rec.environment, draftKeyHash],
+    );
+    if (linkRes.rows[0]?.analytics_trip_key) {
+      resolvedAtk = String(linkRes.rows[0].analytics_trip_key);
     }
   }
 
   if (resolvedAtk && draftKeyHash) {
-    db.prepare(
+    await tx.query(
       `INSERT INTO dcc_analytics_trip_links (environment, draft_key_hash, analytics_trip_key, linked_at)
-       VALUES (?, ?, ?, ?)
-       ON CONFLICT(environment, draft_key_hash) DO UPDATE SET analytics_trip_key = excluded.analytics_trip_key`,
-    ).run(rec.environment, draftKeyHash, resolvedAtk, nowIso);
+       VALUES ($1, $2, $3, $4::timestamptz)
+       ON CONFLICT (environment, draft_key_hash) DO UPDATE SET analytics_trip_key = excluded.analytics_trip_key`,
+      [rec.environment, draftKeyHash, resolvedAtk, nowIso],
+    );
   }
 
   const tripUnitKey = resolvedAtk || draftKeyHash;
   if (!tripUnitKey) return;
 
-  // Check if an unlinked draft state row exists under `draftKeyHash` that needs to merge into `resolvedAtk`
   let draftStateToMerge: Record<string, unknown> | undefined;
   if (resolvedAtk && draftKeyHash && resolvedAtk !== draftKeyHash) {
-    draftStateToMerge = db
-      .prepare(
-        "SELECT * FROM dcc_analytics_trip_state WHERE environment = ? AND trip_unit_key = ?",
-      )
-      .get(rec.environment, draftKeyHash);
+    const draftRes = await tx.query(
+      "SELECT * FROM dcc_analytics_trip_state WHERE environment = $1 AND trip_unit_key = $2",
+      [rec.environment, draftKeyHash],
+    );
+    draftStateToMerge = draftRes.rows[0];
     if (draftStateToMerge) {
-      db.prepare(
-        "DELETE FROM dcc_analytics_trip_state WHERE environment = ? AND trip_unit_key = ?",
-      ).run(rec.environment, draftKeyHash);
+      await tx.query(
+        "DELETE FROM dcc_analytics_trip_state WHERE environment = $1 AND trip_unit_key = $2",
+        [rec.environment, draftKeyHash],
+      );
     }
   }
 
-  const existing = db
-    .prepare(
-      "SELECT * FROM dcc_analytics_trip_state WHERE environment = ? AND trip_unit_key = ?",
-    )
-    .get(rec.environment, tripUnitKey);
+  const existingRes = await tx.query(
+    "SELECT * FROM dcc_analytics_trip_state WHERE environment = $1 AND trip_unit_key = $2",
+    [rec.environment, tripUnitKey],
+  );
+  const existing = existingRes.rows[0];
 
-  const strOrNull = (v: unknown): string | null => (typeof v === "string" && v ? v : null);
-  const numOrZero = (v: unknown): number => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+  const strOrNull = (v: unknown): string | null => {
+    if (!v) return null;
+    if (v instanceof Date) return v.toISOString();
+    return typeof v === "string" && v ? v : null;
+  };
+  const numOrZero = (v: unknown): number => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
 
   let entrySelectedAt = minIso(
     strOrNull(existing?.entry_selected_at),
@@ -823,16 +1056,21 @@ function projectEventIntoTripState(
     strOrNull(existing?.confirmation_cancelled_at),
     strOrNull(draftStateToMerge?.confirmation_cancelled_at),
   );
-  let latestConfProvJson =
-    strOrNull(existing?.latest_confirmation_provenance_json) ||
-    strOrNull(draftStateToMerge?.latest_confirmation_provenance_json);
+
+  const existingProvObj = normalizeSqlJson<Record<string, unknown> | null>(
+    existing?.latest_confirmation_provenance_json ??
+      draftStateToMerge?.latest_confirmation_provenance_json,
+    null,
+  );
+  let latestConfProvJson: string | null = existingProvObj ? JSON.stringify(existingProvObj) : null;
 
   let invitationSharedAt = minIso(
     strOrNull(existing?.invitation_shared_at),
     strOrNull(draftStateToMerge?.invitation_shared_at),
   );
   let invitationShareCount =
-    numOrZero(existing?.invitation_share_count) + numOrZero(draftStateToMerge?.invitation_share_count);
+    numOrZero(existing?.invitation_share_count) +
+    numOrZero(draftStateToMerge?.invitation_share_count);
 
   let companionFirstOpenedAt = minIso(
     strOrNull(existing?.companion_first_opened_at),
@@ -844,39 +1082,22 @@ function projectEventIntoTripState(
   );
 
   const companionKeysSet = new Set<string>();
-  for (const rawJson of [
-    strOrNull(existing?.companion_keys_json),
-    strOrNull(draftStateToMerge?.companion_keys_json),
-  ]) {
-    if (rawJson) {
-      try {
-        for (const k of JSON.parse(rawJson) as string[]) {
-          if (k) companionKeysSet.add(k);
-        }
-      } catch {
-        // ignore
-      }
+  for (const rawCol of [existing?.companion_keys_json, draftStateToMerge?.companion_keys_json]) {
+    for (const k of normalizeSqlJson<string[]>(rawCol, [])) {
+      if (k) companionKeysSet.add(k);
     }
   }
 
-  const mergedCompanionMap: Record<string, string> = {};
-  for (const rawJson of [
-    strOrNull(existing?.merged_companion_map_json),
-    strOrNull(draftStateToMerge?.merged_companion_map_json),
-  ]) {
-    if (rawJson) {
-      try {
-        Object.assign(mergedCompanionMap, JSON.parse(rawJson));
-      } catch {
-        // ignore
-      }
-    }
-  }
+  const mergedCompanionMap: Record<string, string> = {
+    ...normalizeSqlJson<Record<string, string>>(draftStateToMerge?.merged_companion_map_json, {}),
+    ...normalizeSqlJson<Record<string, string>>(existing?.merged_companion_map_json, {}),
+  };
 
   let latestPartyHeadcount: number | null =
-    typeof existing?.latest_party_headcount === "number"
+    existing?.latest_party_headcount !== null && existing?.latest_party_headcount !== undefined
       ? Number(existing.latest_party_headcount)
-      : typeof draftStateToMerge?.latest_party_headcount === "number"
+      : draftStateToMerge?.latest_party_headcount !== null &&
+          draftStateToMerge?.latest_party_headcount !== undefined
         ? Number(draftStateToMerge.latest_party_headcount)
         : null;
 
@@ -905,7 +1126,8 @@ function projectEventIntoTripState(
     strOrNull(draftStateToMerge?.confirmed_outcome_at),
   );
   let confirmedOutcomeType =
-    strOrNull(existing?.confirmed_outcome_type) || strOrNull(draftStateToMerge?.confirmed_outcome_type);
+    strOrNull(existing?.confirmed_outcome_type) ||
+    strOrNull(draftStateToMerge?.confirmed_outcome_type);
   let confirmedGrossUsd =
     numOrZero(existing?.confirmed_gross_usd) + numOrZero(draftStateToMerge?.confirmed_gross_usd);
   let confirmedCommissionUsd =
@@ -929,7 +1151,6 @@ function projectEventIntoTripState(
     latestPartyHeadcount = rec.partyHeadcountTotal;
   }
 
-  // Apply current milestone
   switch (rec.eventType) {
     case "planning_entry_selected":
       entrySelectedAt = minIso(entrySelectedAt, rec.occurredAt);
@@ -974,7 +1195,6 @@ function projectEventIntoTripState(
       if (rec.confirmationProvenance) latestConfProvJson = JSON.stringify(rec.confirmationProvenance);
       break;
     case "invitation_shared":
-      // Explicitly distinct from companion collaboration!
       invitationSharedAt = minIso(invitationSharedAt, rec.occurredAt);
       invitationShareCount += 1;
       break;
@@ -1035,7 +1255,6 @@ function projectEventIntoTripState(
       break;
   }
 
-  // Automatic return detection on any real traveler interaction after `persistedAt`
   if (
     persistedAt &&
     rec.participantRole !== "system" &&
@@ -1086,8 +1305,13 @@ function projectEventIntoTripState(
     strOrNull(existing?.first_touch_referrer_domain) ||
     strOrNull(draftStateToMerge?.first_touch_referrer_domain) ||
     rec.referrerDomain;
+  const latestTripEventAt =
+    maxIso(
+      maxIso(strOrNull(existing?.updated_at), strOrNull(draftStateToMerge?.updated_at)),
+      rec.occurredAt,
+    ) || rec.occurredAt;
 
-  db.prepare(
+  await tx.query(
     `INSERT INTO dcc_analytics_trip_state (
        environment, trip_unit_key, analytics_trip_key, draft_key_hash,
        origin_site_id, journey_kind, content_family, physical_sailing_id, hosted_departure_id,
@@ -1105,23 +1329,23 @@ function projectEventIntoTripState(
        confirmed_outcome_at, confirmed_outcome_type, confirmed_gross_usd, confirmed_commission_usd,
        first_touch_utm_source, first_touch_referrer_domain, updated_at
      ) VALUES (
-       ?, ?, ?, ?,
-       ?, ?, ?, ?, ?,
-       ?, ?,
-       ?, ?, ?,
-       ?, ?,
-       ?, ?, ?,
-       ?, ?, ?,
-       ?,
-       ?, ?,
-       ?, ?,
-       ?, ?, ?,
-       ?, ?, ?,
-       ?, ?,
-       ?, ?, ?, ?,
-       ?, ?, ?
+       $1, $2, $3, $4,
+       $5, $6, $7, $8, $9,
+       $10, $11,
+       $12, $13, $14,
+       $15, $16,
+       $17, $18, $19,
+       $20, $21, $22,
+       $23::jsonb,
+       $24, $25,
+       $26, $27,
+       $28::jsonb, $29::jsonb, $30,
+       $31, $32, $33,
+       $34, $35,
+       $36, $37, $38, $39,
+       $40, $41, $42
      )
-     ON CONFLICT(environment, trip_unit_key) DO UPDATE SET
+     ON CONFLICT (environment, trip_unit_key) DO UPDATE SET
        analytics_trip_key = COALESCE(excluded.analytics_trip_key, dcc_analytics_trip_state.analytics_trip_key),
        draft_key_hash = COALESCE(excluded.draft_key_hash, dcc_analytics_trip_state.draft_key_hash),
        journey_kind = excluded.journey_kind,
@@ -1160,106 +1384,104 @@ function projectEventIntoTripState(
        first_touch_utm_source = COALESCE(dcc_analytics_trip_state.first_touch_utm_source, excluded.first_touch_utm_source),
        first_touch_referrer_domain = COALESCE(dcc_analytics_trip_state.first_touch_referrer_domain, excluded.first_touch_referrer_domain),
        updated_at = excluded.updated_at`,
-  ).run(
-    rec.environment,
-    tripUnitKey,
-    resolvedAtk,
-    draftKeyHash,
-    originSiteId,
-    journeyKind,
-    contentFamily,
-    physicalSailingId,
-    hostedDepartureId,
-    organizerSubjectId,
-    organizerFirstSessionKey,
-    entrySelectedAt,
-    draftStartedAt,
-    persistedAt,
-    firstCustomizedAt,
-    customizationCount,
-    confStagedAt,
-    confReviewedAt,
-    confAppliedAt,
-    confRejectedAt,
-    confAmendedAt,
-    confCancelledAt,
-    latestConfProvJson,
-    invitationSharedAt,
-    invitationShareCount,
-    companionFirstOpenedAt,
-    companionFirstContributedAt,
-    JSON.stringify(Array.from(companionKeysSet)),
-    JSON.stringify(mergedCompanionMap),
-    latestPartyHeadcount,
-    laterSessionReturnAt,
-    laterDayD1ReturnAt,
-    laterDayD7ReturnAt,
-    sellerHandoffAt,
-    sellerHandoffCount,
-    confirmedOutcomeAt,
-    confirmedOutcomeType,
-    confirmedGrossUsd,
-    confirmedCommissionUsd,
-    firstTouchUtmSource,
-    firstTouchReferrer,
-    nowIso,
+    [
+      rec.environment,
+      tripUnitKey,
+      resolvedAtk,
+      draftKeyHash,
+      originSiteId,
+      journeyKind,
+      contentFamily,
+      physicalSailingId,
+      hostedDepartureId,
+      organizerSubjectId,
+      organizerFirstSessionKey,
+      entrySelectedAt,
+      draftStartedAt,
+      persistedAt,
+      firstCustomizedAt,
+      customizationCount,
+      confStagedAt,
+      confReviewedAt,
+      confAppliedAt,
+      confRejectedAt,
+      confAmendedAt,
+      confCancelledAt,
+      latestConfProvJson,
+      invitationSharedAt,
+      invitationShareCount,
+      companionFirstOpenedAt,
+      companionFirstContributedAt,
+      JSON.stringify(Array.from(companionKeysSet)),
+      JSON.stringify(mergedCompanionMap),
+      latestPartyHeadcount,
+      laterSessionReturnAt,
+      laterDayD1ReturnAt,
+      laterDayD7ReturnAt,
+      sellerHandoffAt,
+      sellerHandoffCount,
+      confirmedOutcomeAt,
+      confirmedOutcomeType,
+      confirmedGrossUsd,
+      confirmedCommissionUsd,
+      firstTouchUtmSource,
+      firstTouchReferrer,
+      latestTripEventAt,
+    ],
   );
 }
 
-/**
- * Purges or archives synthetic/expired records cleanly by flag or retention cutoff.
- */
-export function purgeSyntheticOrExpiredAnalyticsRecords(params: {
+export async function purgeSyntheticOrExpiredAnalyticsRecords(params: {
   environment?: string;
   onlyQaOrSynthetic?: boolean;
   olderThanIso?: string;
-}): { deletedEventsCount: number; deletedQueueCount: number; deletedTripsCount: number } {
-  const db = getAnalyticsSqliteDb();
-  let deletedEventsCount = 0;
-  let deletedQueueCount = 0;
-  let deletedTripsCount = 0;
+}): Promise<{
+  deletedEventsCount: number;
+  deletedQueueCount: number;
+  deletedTripsCount: number;
+}> {
+  await ensureAnalyticsStoreAvailable();
+  return withAnalyticsTransaction(async (tx) => {
+    let deletedEventsCount = 0;
+    let deletedQueueCount = 0;
+    let deletedTripsCount = 0;
 
-  db.exec("BEGIN IMMEDIATE TRANSACTION;");
-  try {
     if (params.onlyQaOrSynthetic) {
       const envFilter = params.environment || "preview";
-      deletedEventsCount = db
-        .prepare(
-          "DELETE FROM dcc_analytics_events WHERE environment = ? AND traffic_class = 'qa_or_synthetic'",
-        )
-        .run(envFilter).changes;
-      deletedQueueCount = db
-        .prepare(
-          "DELETE FROM dcc_analytics_ingest_queue WHERE environment = ? AND traffic_class = 'qa_or_synthetic'",
-        )
-        .run(envFilter).changes;
-      db.prepare(
-        "DELETE FROM dcc_analytics_hourly_rollups WHERE environment = ? AND traffic_class = 'qa_or_synthetic'",
-      ).run(envFilter);
-      db.prepare("DELETE FROM dcc_analytics_report_cache WHERE environment = ?").run(envFilter);
+      const eRes = await tx.query(
+        "DELETE FROM dcc_analytics_events WHERE environment = $1 AND traffic_class = 'qa_or_synthetic'",
+        [envFilter],
+      );
+      deletedEventsCount = eRes.rowCount;
+      const qRes = await tx.query(
+        "DELETE FROM dcc_analytics_ingest_queue WHERE environment = $1 AND traffic_class = 'qa_or_synthetic'",
+        [envFilter],
+      );
+      deletedQueueCount = qRes.rowCount;
+      await tx.query(
+        "DELETE FROM dcc_analytics_hourly_rollups WHERE environment = $1 AND traffic_class = 'qa_or_synthetic'",
+        [envFilter],
+      );
+      await tx.query("DELETE FROM dcc_analytics_report_cache WHERE environment = $1", [envFilter]);
     } else if (params.olderThanIso) {
-      deletedEventsCount = db
-        .prepare("DELETE FROM dcc_analytics_events WHERE occurred_at < ?")
-        .run(params.olderThanIso).changes;
-      deletedQueueCount = db
-        .prepare(
-          "DELETE FROM dcc_analytics_ingest_queue WHERE status = 'processed' AND received_at < ?",
-        )
-        .run(params.olderThanIso).changes;
-      deletedTripsCount = db
-        .prepare("DELETE FROM dcc_analytics_trip_state WHERE updated_at < ?")
-        .run(params.olderThanIso).changes;
-      db.prepare("DELETE FROM dcc_analytics_report_cache").run();
+      const eRes = await tx.query(
+        "DELETE FROM dcc_analytics_events WHERE occurred_at < $1::timestamptz",
+        [params.olderThanIso],
+      );
+      deletedEventsCount = eRes.rowCount;
+      const qRes = await tx.query(
+        "DELETE FROM dcc_analytics_ingest_queue WHERE status = 'processed' AND received_at < $1::timestamptz",
+        [params.olderThanIso],
+      );
+      deletedQueueCount = qRes.rowCount;
+      const tRes = await tx.query(
+        "DELETE FROM dcc_analytics_trip_state WHERE updated_at < $1",
+        [params.olderThanIso],
+      );
+      deletedTripsCount = tRes.rowCount;
+      await tx.query("DELETE FROM dcc_analytics_report_cache");
     }
-    db.exec("COMMIT;");
-  } catch (err) {
-    try {
-      db.exec("ROLLBACK;");
-    } catch {
-      // ignore
-    }
-    throw err;
-  }
 
-  return { deletedEventsCount, deletedQueueCount, deletedTripsCount };
+    return { deletedEventsCount, deletedQueueCount, deletedTripsCount };
+  });
 }
