@@ -5,10 +5,6 @@ import {
   getRecentTelemetryEvents,
   type TelemetryEventPayload,
 } from "../../../../lib/telemetryStore";
-import {
-  bridgeLegacyEventToV2Collector,
-  collectAnalyticsRawPayload,
-} from "@/lib/dcc/analytics/collector";
 import { scheduleServerlessAfterTask } from "@/lib/dcc/analytics/serverlessLifecycle";
 
 export const dynamic = "force-dynamic";
@@ -91,11 +87,6 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const collectRes = await collectAnalyticsRawPayload({
-        rawBodyText: raw,
-        headers: request.headers,
-      });
-
       const explicitCollectUrl = process.env.DCC_ANALYTICS_COLLECT_URL?.trim();
       const prodDccOrigin =
         process.env.DCC_ORIGIN?.trim() ||
@@ -105,8 +96,12 @@ export async function POST(request: NextRequest) {
       const upstreamUrl =
         explicitCollectUrl ||
         (prodDccOrigin ? `${prodDccOrigin}/api/v2/analytics/collect` : "");
+      const previewBypass = process.env.DCC_ANALYTICS_PREVIEW_BYPASS_SECRET?.trim() || "";
+      const isQa =
+        request.headers.get("x-qa-test") === "1" ||
+        request.headers.get("x-dcc-synthetic-verification") === "1";
 
-      if (upstreamUrl) {
+      if (upstreamUrl && payload.events.length > 0) {
         scheduleServerlessAfterTask(async () => {
           await fetch(upstreamUrl, {
             method: "POST",
@@ -115,32 +110,33 @@ export async function POST(request: NextRequest) {
               ...(incomingUa ? { "user-agent": incomingUa } : {}),
               ...(incomingLang ? { "accept-language": incomingLang } : {}),
               ...(incomingHost ? { "x-forwarded-host": incomingHost } : {}),
+              ...(previewBypass ? { "x-vercel-protection-bypass": previewBypass } : {}),
+              ...(isQa ? { "x-qa-test": "1" } : {}),
             },
             body: raw,
+            cache: "no-store",
+            signal:
+              typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
+                ? AbortSignal.timeout(1200)
+                : undefined,
           }).catch(() => undefined);
         });
       }
 
-      return NextResponse.json(collectRes, { status: collectRes.status });
+      return NextResponse.json(
+        {
+          ok: true,
+          accepted: true,
+          batchSize: payload.events.length,
+          forwardedTo: upstreamUrl ? "dcc_v2_collect" : "preview_local_sink",
+        },
+        { status: 202 },
+      );
     }
 
     // 1. Record legacy single event durably in JFD PostgreSQL / local telemetry store
     if (payload && typeof payload === "object") {
       recordTelemetryEvent(payload);
-      bridgeLegacyEventToV2Collector({
-        rawSite: "juneauflightdeck",
-        rawEventName: String(payload.eventName || "page_viewed"),
-        sessionId: typeof payload.sessionId === "string" ? payload.sessionId : undefined,
-        sourcePage: typeof payload.sourcePage === "string" ? payload.sourcePage : "/",
-        landingPath: typeof payload.landingPath === "string" ? payload.landingPath : undefined,
-        targetPath: typeof payload.targetPath === "string" ? payload.targetPath : undefined,
-        isTest: request.headers.get("x-qa-test") === "1",
-        metadata:
-          payload.outcome && typeof payload.outcome === "object"
-            ? (payload.outcome as Record<string, unknown>)
-            : {},
-        headers: request.headers,
-      });
     }
 
     // 2. Fire-and-forget relay to upstream DCC telemetry endpoint ONLY when explicitly configured or in Production (never leak Preview hits to Production)

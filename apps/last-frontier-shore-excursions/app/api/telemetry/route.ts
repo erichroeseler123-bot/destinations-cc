@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveDccIngestBaseUrl } from "../../../../../lib/dcc/shared/envCompat";
 import { EDGE_PII_QUERY_PARAM_KEYS } from "../../../../../lib/dcc/shared/edgeContextAndPii";
-import {
-  bridgeLegacyEventToV2Collector,
-  collectAnalyticsRawPayload,
-} from "../../../../../lib/dcc/analytics/collector";
 import { scheduleServerlessAfterTask } from "../../../../../lib/dcc/analytics/serverlessLifecycle";
 import { getLfseTelemetryFetch } from "@/lib/fishingLodgesTelemetry";
 
@@ -83,6 +79,20 @@ function isLfseAnalyticsDisabled(): boolean {
   });
 }
 
+function resolveLfseDccCollectEndpoint(): string | null {
+  if (isLfseAnalyticsDisabled()) return null;
+  const explicit = process.env.DCC_ANALYTICS_COLLECT_URL?.trim();
+  if (explicit) return explicit;
+  const base = resolveDccIngestBaseUrl()?.trim().replace(/\/+$/, "");
+  if (base && (process.env.VERCEL_ENV === "production" || Boolean(process.env.DCC_BASE_URL))) {
+    return `${base}/api/v2/analytics/collect`;
+  }
+  if (process.env.VERCEL_ENV === "production") {
+    return "https://www.destinationcommandcenter.com/api/v2/analytics/collect";
+  }
+  return null;
+}
+
 export async function POST(req: NextRequest) {
   try {
     if (isLfseAnalyticsDisabled()) {
@@ -92,6 +102,12 @@ export async function POST(req: NextRequest) {
       );
     }
     const rawText = await req.text().catch(() => "");
+    if (rawText.length > 32_768) {
+      return NextResponse.json(
+        { ok: false, accepted: false, reason: "payload_too_large" },
+        { status: 413 },
+      );
+    }
     const data = (rawText ? JSON.parse(rawText) : null) as Record<
       string,
       unknown
@@ -104,17 +120,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Native v2 batched analytics envelope support
+    // Native v2 batched analytics envelope support -> forward via supported `after()` lifecycle
     if (Array.isArray(data.events)) {
-      const collectRes = await collectAnalyticsRawPayload({
-        rawBodyText: rawText,
-        headers: req.headers,
-      });
-      if (process.env.DCC_ANALYTICS_COLLECT_URL) {
-        const collectUrl = process.env.DCC_ANALYTICS_COLLECT_URL;
+      const collectUrl = resolveLfseDccCollectEndpoint();
+      const previewBypass = process.env.DCC_ANALYTICS_PREVIEW_BYPASS_SECRET?.trim() || "";
+      if (collectUrl && data.events.length > 0) {
         const incomingUa = req.headers.get("user-agent")?.trim() || "";
         const incomingLang = req.headers.get("accept-language")?.trim() || "";
         const incomingHost = req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
+        const isQa =
+          req.headers.get("x-qa-test") === "1" ||
+          req.headers.get("x-dcc-synthetic-verification") === "1";
         scheduleServerlessAfterTask(async () => {
           await fetch(collectUrl, {
             method: "POST",
@@ -123,13 +139,27 @@ export async function POST(req: NextRequest) {
               ...(incomingUa ? { "User-Agent": incomingUa } : {}),
               ...(incomingLang ? { "Accept-Language": incomingLang } : {}),
               ...(incomingHost ? { "x-forwarded-host": incomingHost } : {}),
+              ...(previewBypass ? { "x-vercel-protection-bypass": previewBypass } : {}),
+              ...(isQa ? { "x-qa-test": "1" } : {}),
             },
             body: rawText,
             cache: "no-store",
+            signal:
+              typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
+                ? AbortSignal.timeout(1200)
+                : undefined,
           }).catch(() => undefined);
         });
       }
-      return NextResponse.json(collectRes, { status: collectRes.status });
+      return NextResponse.json(
+        {
+          ok: true,
+          accepted: true,
+          batchSize: data.events.length,
+          forwardedTo: collectUrl ? "dcc_v2_collect" : "preview_local_sink",
+        },
+        { status: 202 },
+      );
     }
 
     const eventName = String(
@@ -175,31 +205,6 @@ export async function POST(req: NextRequest) {
     const dccBase = resolveDccIngestBaseUrl();
     let forwarded = false;
     let storedEventId: string | null = null;
-
-    // Ingest into bounded v2 durable analytics queue (classifies QA/Preview vs Production cleanly without leaking Preview hits to Production)
-    if (process.env.DCC_ANALYTICS_PREVIEW_INGEST !== "0") {
-      bridgeLegacyEventToV2Collector({
-        rawSite: "lastfrontiershoreexcursions",
-        rawEventName: eventName,
-        sessionId:
-          typeof sanitizedProps.sessionId === "string" ? sanitizedProps.sessionId : undefined,
-        sourcePage: pagePath,
-        landingPath: pagePath,
-        targetPath:
-          typeof sanitizedProps.targetUrl === "string"
-            ? sanitizedProps.targetUrl
-            : typeof sanitizedProps.destinationUrl === "string"
-              ? sanitizedProps.destinationUrl
-              : undefined,
-        isTest: Boolean(
-          sanitizedProps.qa === true ||
-            sanitizedProps.is_test === true ||
-            req.headers.get("x-qa-test") === "1",
-        ),
-        metadata: sanitizedProps,
-        headers: req.headers,
-      });
-    }
 
     if (
       !isQaOrPreview &&
