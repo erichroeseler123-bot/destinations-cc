@@ -119,6 +119,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
               <nav className="lfse-footer-links" aria-label="Footer navigation">
                 <Link href="/southeast-alaska">Southeast Alaska</Link>
+                <Link href="/southeast-alaska/fishing-lodges">Fishing Lodges</Link>
                 <Link href="/ports">Ports &amp; Communities</Link>
                 <Link href="/guides/weekend-in-juneau">Weekend in Juneau</Link>
                 <Link href="/operators">Local Operators</Link>

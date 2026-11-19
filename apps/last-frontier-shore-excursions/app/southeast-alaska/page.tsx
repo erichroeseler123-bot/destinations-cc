@@ -507,6 +507,74 @@ export default async function SoutheastAlaskaHubPage() {
         </div>
       </section>
 
+      {/* 5b. Multi-Night Fishing Lodges, Basecamps & Private Stays */}
+      <section
+        className="section"
+        id="fishing-lodges-directory"
+        style={{
+          background: "#f4f7f6",
+          borderTop: "1px solid var(--line)",
+        }}
+      >
+        <div className="shell">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+              gap: 18,
+            }}
+          >
+            <div style={{ maxWidth: 760 }}>
+              <p className="eyebrow" style={{ color: "var(--forest)" }}>
+                Multi-Night Fly-In &amp; Coastal Stays
+              </p>
+              <h2 style={{ marginTop: 4 }}>
+                Southeast Alaska Fishing Lodges, Basecamps &amp; Whole-Lodge Stays
+              </h2>
+              <p style={{ margin: "0 0 12px", color: "var(--muted)" }}>
+                Planning a dedicated fishing trip or pairing a multi-night island stay
+                with Juneau, Sitka, Gustavus, Petersburg, Ketchikan, or Prince of Wales
+                Island? Compare 16 Southeast Alaska properties side by side—including
+                published package dates and rates, guided vs. self-guided boats,
+                options for non-angling companions, floatplane and ferry baggage rules,
+                and whole-lodge private rentals.
+              </p>
+              <div className="chips">
+                <Link
+                  className="chip lfse-chip-link"
+                  href="/southeast-alaska/fishing-lodges/favorite-bay-lodge"
+                >
+                  Admiralty Island Fly-In Lodges →
+                </Link>
+                <Link
+                  className="chip lfse-chip-link"
+                  href="/southeast-alaska/fishing-lodges/elfin-cove-resort"
+                >
+                  Elfin Cove &amp; Cross Sound →
+                </Link>
+                <Link
+                  className="chip lfse-chip-link"
+                  href="/southeast-alaska/fishing-lodges/fish-baranof-sitka"
+                >
+                  Sitka DIY Boat + Waterfront Hotel →
+                </Link>
+                <Link
+                  className="chip lfse-chip-link"
+                  href="/southeast-alaska/fishing-lodges/boardwalk-lodge"
+                >
+                  Prince of Wales Whole-Lodge Stay →
+                </Link>
+              </div>
+            </div>
+            <Link href="/southeast-alaska/fishing-lodges" className="button">
+              Compare All 16 Fishing Lodges →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* 6. Representative Cruise Ships & Port Windows */}
       <section className="section" style={{ borderTop: "1px solid var(--line)" }}>
         <div className="shell">

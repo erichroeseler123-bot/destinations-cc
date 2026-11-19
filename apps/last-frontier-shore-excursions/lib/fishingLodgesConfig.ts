@@ -12,11 +12,10 @@ export const DCC_ALASKA_FISHING_LODGES_API_URL =
   "https://www.destinationcommandcenter.com/api/v1/alaska/fishing-lodges" as const;
 
 /**
- * Bounded Preview release gate:
- * Remains `false` on isolated Preview so search indexing, Production sitemap.xml,
- * and Production global chrome remain untouched until explicit owner promotion.
+ * Production release gate:
+ * Enabled on 2026-11-19 for canonical hub and 16 approved lodge pages.
  */
-export const SEAK_FISHING_LODGES_RELEASE_READY = false as const;
+export const SEAK_FISHING_LODGES_RELEASE_READY = true as const;
 
 export function buildFishingLodgesDirectoryJsonLd(
   lodges: readonly Pick<SoutheastAlaskaFishingLodgeRecord, "slug" | "displayName">[],

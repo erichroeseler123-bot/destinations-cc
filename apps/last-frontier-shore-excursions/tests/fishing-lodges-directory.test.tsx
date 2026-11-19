@@ -368,14 +368,78 @@ test("SSR rendering: Directory client, Whole-Lodge filter, 4-lodge printable com
     );
   }
 
-  // Preview indexing & JSON-LD checks
+  // Production release flag, canonical query consolidation, sitemap, discovery links & JSON-LD checks
   assert.equal(SEAK_FISHING_LODGES_PATH, "/southeast-alaska/fishing-lodges");
   assert.equal(
     SEAK_FISHING_LODGES_CANONICAL_URL,
     "https://www.lastfrontiershoreexcursions.com/southeast-alaska/fishing-lodges",
   );
-  assert.equal(SEAK_FISHING_LODGES_RELEASE_READY, false);
-  assert.equal(sitemap().length, 158);
+  assert.equal(SEAK_FISHING_LODGES_RELEASE_READY, true);
+
+  const { generateMetadata: generateDirectoryMetadata } = await import(
+    "../app/southeast-alaska/fishing-lodges/page"
+  );
+  const cleanMeta = await generateDirectoryMetadata({
+    searchParams: Promise.resolve({}),
+  });
+  assert.deepEqual(cleanMeta.robots, { index: true, follow: true });
+  assert.equal(
+    cleanMeta.alternates?.canonical,
+    SEAK_FISHING_LODGES_CANONICAL_URL,
+  );
+
+  const queryMeta = await generateDirectoryMetadata({
+    searchParams: Promise.resolve({
+      compare: "favorite-bay-lodge,boardwalk-lodge",
+      print: "1",
+    }),
+  });
+  assert.deepEqual(queryMeta.robots, { index: false, follow: true });
+  assert.equal(
+    queryMeta.alternates?.canonical,
+    SEAK_FISHING_LODGES_CANONICAL_URL,
+  );
+
+  const entries = sitemap();
+  assert.equal(entries.length, 175);
+  const sitemapUrls = entries.map((e) => e.url);
+  assert.ok(sitemapUrls.includes(SEAK_FISHING_LODGES_CANONICAL_URL));
+  for (const lodge of snapshot.lodges) {
+    assert.ok(
+      sitemapUrls.includes(`${SEAK_FISHING_LODGES_CANONICAL_URL}/${lodge.slug}`),
+      `Sitemap must include canonical lodge URL for ${lodge.slug}`,
+    );
+  }
+  assert.equal(
+    sitemapUrls.some((u) => u.includes("?")),
+    false,
+    "Sitemap must never contain comparison, filter, or print query URLs",
+  );
+  assert.equal(
+    sitemapUrls.some((u) =>
+      /dove-island|salmon-falls|talon-lodge|the-cedars|silver-king/i.test(u),
+    ),
+    false,
+    "Sitemap must never contain held candidate slugs",
+  );
+
+  // Contextual discovery links wired across Southeast Alaska hub, ports, Weekend in Juneau, and footer
+  assert.match(
+    readLfseFile("app/layout.tsx"),
+    /href="\/southeast-alaska\/fishing-lodges"/,
+  );
+  assert.match(
+    readLfseFile("app/southeast-alaska/page.tsx"),
+    /href="\/southeast-alaska\/fishing-lodges"/,
+  );
+  assert.match(
+    readLfseFile("app/ports/[slug]/page.tsx"),
+    /data-testid="port-fishing-lodges-callout"/,
+  );
+  assert.match(
+    readLfseFile("app/guides/weekend-in-juneau/page.tsx"),
+    /href="\/southeast-alaska\/fishing-lodges"/,
+  );
 
   const dirJsonLd = JSON.stringify(
     buildFishingLodgesDirectoryJsonLd(snapshot.lodges),
@@ -388,6 +452,99 @@ test("SSR rendering: Directory client, Whole-Lodge filter, 4-lodge printable com
       raw,
       /"logo"|"aggregateRating"|"review"|"offers"|"priceRange"|"parentOrganization"/i,
     );
+  }
+});
+
+test("Production telemetry forwarding & QA exclusion: non-QA Production hits forward to dcc_corridor_events (lastfrontier-alaska) while QA traffic is excluded", async () => {
+  const { POST: postLfseTelemetry } = await import(
+    "../app/api/telemetry/route"
+  );
+  const { setLfseTelemetryFetchForTests } = await import(
+    "../lib/fishingLodgesTelemetry"
+  );
+
+  let forwardedCalls: Array<{ url: string; body: Record<string, unknown> }> = [];
+  setLfseTelemetryFetchForTests(async (input, init) => {
+    const url = typeof input === "string" ? input : input.toString();
+    const body = JSON.parse(String(init?.body || "{}")) as Record<
+      string,
+      unknown
+    >;
+    forwardedCalls.push({ url, body });
+    return new Response(
+      JSON.stringify({ ok: true, stored: true, eventId: "evt_prod_test_123" }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  });
+
+  try {
+    // 1. QA traffic (qa: true) on Production host MUST NOT forward
+    const qaReq = new NextRequest(
+      "https://www.lastfrontiershoreexcursions.com/api/telemetry",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          host: "www.lastfrontiershoreexcursions.com",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        },
+        body: JSON.stringify({
+          event: "lfse_lodge_page_view",
+          page: "/southeast-alaska/fishing-lodges",
+          qa: true,
+        }),
+      },
+    );
+    const qaRes = await postLfseTelemetry(qaReq);
+    const qaJson = (await qaRes.json()) as Record<string, unknown>;
+    assert.equal(qaJson.qaExcluded, true);
+    assert.equal(qaJson.forwarded, false);
+    assert.equal(forwardedCalls.length, 0);
+
+    // 2. Genuine Production engagement forwards with corridor_id = lastfrontier-alaska and exact site/page labels
+    const prodReq = new NextRequest(
+      "https://www.lastfrontiershoreexcursions.com/api/telemetry",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          host: "www.lastfrontiershoreexcursions.com",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        },
+        body: JSON.stringify({
+          event: "lfse_lodge_official_outbound_click",
+          page: "/southeast-alaska/fishing-lodges/fish-baranof-sitka",
+          lodgeSlug: "fish-baranof-sitka",
+          targetUrl: "https://fishbaranof.com/sitka-boat-rentals/",
+          qa: false,
+        }),
+      },
+    );
+    const prodRes = await postLfseTelemetry(prodReq);
+    const prodJson = (await prodRes.json()) as Record<string, unknown>;
+    assert.equal(prodJson.qaExcluded, false);
+    assert.equal(prodJson.forwarded, true);
+    assert.equal(prodJson.site, "lastfrontiershoreexcursions.com");
+    assert.equal(
+      prodJson.page,
+      "/southeast-alaska/fishing-lodges/fish-baranof-sitka",
+    );
+    assert.equal(forwardedCalls.length, 1);
+    assert.match(forwardedCalls[0]!.url, /\/api\/internal\/corridor-events$/);
+    assert.equal(forwardedCalls[0]!.body.corridor_id, "lastfrontier-alaska");
+    assert.equal(forwardedCalls[0]!.body.event_name, "booking_handoff");
+    assert.equal(
+      forwardedCalls[0]!.body.source_page,
+      "/southeast-alaska/fishing-lodges/fish-baranof-sitka",
+    );
+    const meta = forwardedCalls[0]!.body.metadata as Record<string, unknown>;
+    assert.equal(meta.site, "lastfrontiershoreexcursions.com");
+    assert.equal(
+      meta.page,
+      "/southeast-alaska/fishing-lodges/fish-baranof-sitka",
+    );
+  } finally {
+    setLfseTelemetryFetchForTests(null);
   }
 });
 

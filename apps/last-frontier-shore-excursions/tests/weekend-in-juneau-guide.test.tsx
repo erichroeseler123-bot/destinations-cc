@@ -143,9 +143,9 @@ test("Weekend in Juneau: distinct telemetry events, Preview indexing exclusion, 
   assert.match(proxySrc, /"X-Robots-Tag",\s*"noindex, nofollow, noarchive"/);
   assert.match(robotsSrc, /disallow:\s*"\/"/);
 
-  // Production sitemap includes /guides/weekend-in-juneau (158 total deterministic entries)
+  // Production sitemap includes /guides/weekend-in-juneau and /southeast-alaska/fishing-lodges (175 total deterministic entries)
   const entries = sitemap();
-  assert.equal(entries.length, 158);
+  assert.equal(entries.length, 175);
   assert.equal(
     entries.some(
       (e) => e.url === "https://www.lastfrontiershoreexcursions.com/guides/weekend-in-juneau",

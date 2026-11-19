@@ -33,6 +33,7 @@ import {
   qualifyLfsePortDirectContexts,
 } from "@/lib/dccResearchFeed";
 import { SOUTHEAST_ALASKA_PLACES } from "../../../../../lib/dcc/shared/southeastAlaskaDirectoryData";
+import { getPublishedSoutheastAlaskaFishingLodges } from "../../../../../lib/dcc/shared/southeastAlaskaFishingLodgesData";
 import {
   isOperatorDirectCheckoutConnected,
   isOperatorLiveAvailabilityConnected,
@@ -465,6 +466,77 @@ export default async function PortPage({
           </div>
         </section>
       )}
+
+      {(() => {
+        const portSlug = place.publicPortSlug;
+        if (!portSlug || !gate.indexable) return null;
+        const connectedLodges = getPublishedSoutheastAlaskaFishingLodges()
+          .map((e) => e.lodge)
+          .filter(
+            (lodge) =>
+              lodge.accommodation.gatewayPublicPortSlug === portSlug ||
+              (portSlug === "klawock" &&
+                lodge.subRegion === "prince_of_wales_island"),
+          );
+        if (connectedLodges.length === 0) return null;
+
+        return (
+          <section
+            data-testid="port-fishing-lodges-callout"
+            style={{
+              background: "#f8faf9",
+              borderBottom: "1px solid var(--line)",
+              padding: "24px 0",
+            }}
+          >
+            <div className="shell">
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 16,
+                }}
+              >
+                <div style={{ maxWidth: 760 }}>
+                  <span className="badge badge-safety">
+                    Multi-Night Fishing Lodges &amp; Basecamps
+                  </span>
+                  <h2 style={{ fontSize: 21, margin: "6px 0 6px" }}>
+                    Fishing Lodges &amp; Multi-Night Stays Connected via{" "}
+                    {cleanPlaceName}
+                  </h2>
+                  <p style={{ margin: "0 0 10px", fontSize: 14.5, color: "var(--muted)" }}>
+                    Compare package rates, stay lengths, guided vs. self-guided
+                    boats, non-angler options, and floatplane or ferry baggage
+                    rules across {connectedLodges.length} verified{" "}
+                    {connectedLodges.length === 1 ? "property" : "properties"}{" "}
+                    reached through {cleanPlaceName}:
+                  </p>
+                  <div className="chips">
+                    {connectedLodges.map((lodge) => (
+                      <Link
+                        key={lodge.slug}
+                        href={`/southeast-alaska/fishing-lodges/${lodge.slug}`}
+                        className="chip lfse-chip-link"
+                      >
+                        {lodge.displayName} →
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+                <Link
+                  href="/southeast-alaska/fishing-lodges"
+                  className="button secondary"
+                >
+                  Compare All 16 Lodges →
+                </Link>
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* Related Distinct Places Cross-Links */}
       {place.relatedPlaces.length > 0 && (

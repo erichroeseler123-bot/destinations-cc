@@ -288,13 +288,18 @@ test("Priority A.4: Fixed /ports/glacier-bay H1, verbatim 2-hour planning standa
     "Independent source-backed profile. This company has not yet claimed or verified this page.",
   );
 
-  // Sitemap invariant: 158 entries (157 directory/ship/decision + /guides/weekend-in-juneau) and 0 held URLs
+  // Sitemap invariant: 175 entries (157 directory/ship/decision + /guides/weekend-in-juneau + 1 fishing-lodges hub + 16 approved lodges) and 0 held URLs
   const sitemapEntries = sitemap();
-  assert.equal(sitemapEntries.length, 158);
+  assert.equal(sitemapEntries.length, 175);
   const sitemapUrls = sitemapEntries.map((e) => e.url);
   assert.ok(
     sitemapUrls.includes(
       "https://www.lastfrontiershoreexcursions.com/guides/weekend-in-juneau",
+    ),
+  );
+  assert.ok(
+    sitemapUrls.includes(
+      "https://www.lastfrontiershoreexcursions.com/southeast-alaska/fishing-lodges",
     ),
   );
   assert.equal(

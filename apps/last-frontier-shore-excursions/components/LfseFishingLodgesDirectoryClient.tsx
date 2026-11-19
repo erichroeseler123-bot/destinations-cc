@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { OperatorIdentityMark } from "@/components/OperatorIdentityMark";
 import { SEAK_FISHING_LODGES_PATH } from "@/lib/fishingLodgesConfig";
@@ -134,6 +134,15 @@ export function LfseFishingLodgesDirectoryClient({
   const [printSheetMode, setPrintSheetMode] = useState<boolean>(
     Boolean(initialPrintMode && validInitialCompare.length > 0),
   );
+
+  useEffect(() => {
+    trackFishingLodgeDirectoryEvent({
+      event: "lfse_lodge_page_view",
+      pagePath: SEAK_FISHING_LODGES_PATH,
+      compareCount: validInitialCompare.length,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const totalCount = lodges.length;
   const individualCount = useMemo(

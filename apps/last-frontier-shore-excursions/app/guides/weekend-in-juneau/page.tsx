@@ -707,6 +707,9 @@ export default function WeekendInJuneauGuidePage() {
             <Link href="/ports/juneau/mendenhall-glacier-tours" className={styles.inlineTextLink}>
               Mendenhall Glacier Tours &amp; Shuttles →
             </Link>
+            <Link href="/southeast-alaska/fishing-lodges" className={styles.inlineTextLink}>
+              Southeast Alaska Fishing Lodges &amp; Fly-In Basecamps →
+            </Link>
             <WeekendOutboundLink
               href="https://juneauflightdeck.com/guides/uncruise-juneau-helicopter-tours"
               telemetryKind="jfd_guide"

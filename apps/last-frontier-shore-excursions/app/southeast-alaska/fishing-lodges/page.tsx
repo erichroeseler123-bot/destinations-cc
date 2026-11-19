@@ -12,16 +12,12 @@ import { LFSE_SITE_URL } from "@/lib/structuredData";
 import { getPublicSoutheastAlaskaFishingLodgesSnapshot } from "../../../../../lib/dcc/shared/southeastAlaskaFishingLodgesData";
 import styles from "./fishing-lodges.module.css";
 
-export const metadata: Metadata = {
+const BASE_FISHING_LODGES_METADATA: Omit<Metadata, "robots"> = {
   title:
     "Southeast Alaska Fishing Lodges, Basecamps & Private Stays — Independent Guide",
   description:
     "Compare 16 Southeast Alaska fishing lodges, self-guided boat-and-hotel stays, and whole-lodge private rentals across Juneau, Sitka, Elfin Cove, Gustavus, Petersburg, Ketchikan, and Prince of Wales Island.",
   alternates: { canonical: SEAK_FISHING_LODGES_CANONICAL_URL },
-  robots: {
-    index: SEAK_FISHING_LODGES_RELEASE_READY,
-    follow: SEAK_FISHING_LODGES_RELEASE_READY,
-  },
   openGraph: {
     title:
       "Southeast Alaska Fishing Lodges | Compare Rates, Inclusions, Access & Companion Fit",
@@ -42,10 +38,30 @@ export const metadata: Metadata = {
 };
 
 interface FishingLodgesDirectoryPageProps {
-  searchParams?: Promise<{
-    compare?: string | string[];
-    print?: string | string[];
-  }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export async function generateMetadata({
+  searchParams,
+}: FishingLodgesDirectoryPageProps): Promise<Metadata> {
+  const resolvedParams = searchParams ? await searchParams : {};
+  const hasQueryVariant = Object.values(resolvedParams).some(
+    (val) =>
+      val !== undefined &&
+      (Array.isArray(val) ? val.some(Boolean) : String(val).trim().length > 0),
+  );
+
+  return {
+    ...BASE_FISHING_LODGES_METADATA,
+    // Query variants (?compare=..., ?print=1, filters) always consolidate to the clean canonical hub
+    alternates: { canonical: SEAK_FISHING_LODGES_CANONICAL_URL },
+    robots: hasQueryVariant
+      ? { index: false, follow: SEAK_FISHING_LODGES_RELEASE_READY }
+      : {
+          index: SEAK_FISHING_LODGES_RELEASE_READY,
+          follow: SEAK_FISHING_LODGES_RELEASE_READY,
+        },
+  };
 }
 
 export default async function SoutheastAlaskaFishingLodgesPage({

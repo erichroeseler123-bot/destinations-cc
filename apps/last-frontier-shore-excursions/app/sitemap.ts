@@ -2,7 +2,12 @@ import type { MetadataRoute } from "next";
 import { PORT_ACTIVITIES } from "../lib/portActivities";
 import { DECISION_PAGES } from "../lib/decisionPages";
 import { getAllAlaskaShips } from "../lib/alaska-ships";
+import {
+  SEAK_FISHING_LODGES_PATH,
+  SEAK_FISHING_LODGES_RELEASE_READY,
+} from "../lib/fishingLodgesConfig";
 import { getSoutheastAlaskaDirectorySnapshot } from "../../../lib/dcc/shared/southeastAlaskaDirectoryOperatorsAndTours";
+import { getPublishedSoutheastAlaskaFishingLodges } from "../../../lib/dcc/shared/southeastAlaskaFishingLodgesData";
 
 const SITE = "https://www.lastfrontiershoreexcursions.com";
 
@@ -119,9 +124,30 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
   );
 
+  // Canonical Southeast Alaska Fishing Lodges hub + 16 gate-passing lodge fact sheets ONLY
+  // (excludes all held research queue candidates and all ?compare= / ?print= query URLs)
+  const fishingLodgeRoutes: MetadataRoute.Sitemap =
+    SEAK_FISHING_LODGES_RELEASE_READY
+      ? [
+          {
+            url: `${SITE}${SEAK_FISHING_LODGES_PATH}`,
+            lastModified: "2026-11-19",
+            changeFrequency: "weekly" as const,
+            priority: 0.91,
+          },
+          ...getPublishedSoutheastAlaskaFishingLodges().map(({ lodge }) => ({
+            url: `${SITE}${SEAK_FISHING_LODGES_PATH}/${lodge.slug}`,
+            lastModified: lodge.lastModifiedAt,
+            changeFrequency: "weekly" as const,
+            priority: 0.87,
+          })),
+        ]
+      : [];
+
   // Deduplicate by URL just in case
   const allEntries = [
     ...staticRoutes,
+    ...fishingLodgeRoutes,
     ...portRoutes,
     ...portCategoryRoutes,
     ...operatorRoutes,

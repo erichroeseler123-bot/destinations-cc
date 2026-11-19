@@ -19,6 +19,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: [
           "/",
           "/southeast-alaska",
+          "/southeast-alaska/fishing-lodges",
           "/ports/",
           "/operators/",
           "/guides/",
