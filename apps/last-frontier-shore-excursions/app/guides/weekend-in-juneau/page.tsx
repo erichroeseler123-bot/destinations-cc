@@ -707,6 +707,22 @@ export default function WeekendInJuneauGuidePage() {
             <Link href="/ports/juneau/mendenhall-glacier-tours" className={styles.inlineTextLink}>
               Mendenhall Glacier Tours &amp; Shuttles →
             </Link>
+            <WeekendOutboundLink
+              href="https://juneauflightdeck.com/guides/uncruise-juneau-helicopter-tours"
+              telemetryKind="jfd_guide"
+              operatorName="Juneau Flight Deck"
+              className={styles.inlineTextLink}
+            >
+              Adding a Juneau Helicopter Tour Before or After Your UnCruise ↗
+            </WeekendOutboundLink>
+            <WeekendOutboundLink
+              href="https://cruisepromenade.com/guides/cruise-alaska-without-a-cruise-ship"
+              telemetryKind="official_reference"
+              operatorName="Cruise Promenade"
+              className={styles.inlineTextLink}
+            >
+              Cruise Alaska Without a Cruise Ship (Juneau, Haines &amp; Skagway Ferry + Air Guide) ↗
+            </WeekendOutboundLink>
           </div>
         </div>
       </section>

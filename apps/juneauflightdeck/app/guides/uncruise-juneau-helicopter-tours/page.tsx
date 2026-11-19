@@ -597,6 +597,12 @@ export default function UncruiseJuneauHelicopterGuidePage() {
             >
               Weekend in Juneau: 2 Full Days (3 Nights) &amp; 3 Full Days (4 Nights) Stay Guide ↗
             </a>
+            <a
+              href="https://cruisepromenade.com/guides/cruise-alaska-without-a-cruise-ship"
+              className={styles.sourceInlineLink}
+            >
+              Cruise Alaska Without a Cruise Ship: Juneau, Haines &amp; Skagway Ferry + Air Guide ↗
+            </a>
           </div>
         </section>
 

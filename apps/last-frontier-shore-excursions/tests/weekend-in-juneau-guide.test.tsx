@@ -86,15 +86,15 @@ test("Weekend in Juneau: renders all 8 required standalone sections and separate
   }
 });
 
-test("Weekend in Juneau: network links, seller handoffs (qa=1 on non-prod), and zero links to Preview-only UnCruise route", async () => {
+test("Weekend in Juneau: network links, seller handoffs (qa=1 on non-prod), and live cross-links to JFD UnCruise & CP Independent Alaska guides", async () => {
   const html = await renderGuideHtml();
 
-  // Must NOT link to Preview-only UnCruise route
-  assert.doesNotMatch(html, /uncruise-juneau-helicopter-tours/i);
-
-  // Must link to live public JFD aviation guides via external <a> tags (never Next <Link>)
+  // Must link to now-live Production JFD UnCruise and CP Independent Alaska guides via external <a> tags (never Next <Link>)
   const pageSrc = readLfseFile("app/guides/weekend-in-juneau/page.tsx");
   assert.doesNotMatch(pageSrc, /<Link[^>]+href=["']https:\/\/juneauflightdeck\.com/i);
+  assert.doesNotMatch(pageSrc, /<Link[^>]+href=["']https:\/\/cruisepromenade\.com/i);
+  assert.match(html, /https:\/\/juneauflightdeck\.com\/guides\/uncruise-juneau-helicopter-tours/);
+  assert.match(html, /https:\/\/cruisepromenade\.com\/guides\/cruise-alaska-without-a-cruise-ship/);
   assert.match(html, /https:\/\/juneauflightdeck\.com\/temsco-vs-coastal-vs-northstar-juneau/);
   assert.match(html, /https:\/\/juneauflightdeck\.com\/juneau-glacier-flight-weather/);
   assert.match(
