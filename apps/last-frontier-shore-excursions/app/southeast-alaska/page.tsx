@@ -121,6 +121,9 @@ export default async function SoutheastAlaskaHubPage() {
             <Link className="button secondary" href="/operators">
               {`Browse ${indexableOperators.length} Local Operators →`}
             </Link>
+            <Link className="button secondary" href="/southeast-alaska/fishing-lodges">
+              Compare 16 Fishing Lodges →
+            </Link>
           </div>
         </div>
       </section>
