@@ -230,9 +230,33 @@ function attachExitFlushListeners(): void {
   window.addEventListener("pagehide", flushOnExit);
 }
 
+function isTruthyClientDisableFlag(val?: string): boolean {
+  const n = (val || "").trim().toLowerCase();
+  return n === "1" || n === "true" || n === "yes" || n === "on";
+}
+
+function isClientAnalyticsDisabledForSite(site?: string): boolean {
+  if (isTruthyClientDisableFlag(process.env.NEXT_PUBLIC_DCC_ANALYTICS_DISABLED)) return true;
+  const s = (site || "").trim().toLowerCase();
+  if (
+    (s === "lfse" || s === "last-frontier-shore-excursions") &&
+    isTruthyClientDisableFlag(process.env.NEXT_PUBLIC_LFSE_ANALYTICS_DISABLED)
+  ) {
+    return true;
+  }
+  if (
+    (s === "juneauflightdeck" || s === "jfd" || s === "juneau-flight-deck") &&
+    isTruthyClientDisableFlag(process.env.NEXT_PUBLIC_JFD_ANALYTICS_DISABLED)
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export function enqueueClientAnalyticsEvent(input: ClientAnalyticsEventInput): string {
   const logicalEventId = input.logicalEventId || randomHexId("evt");
   if (typeof window === "undefined") return logicalEventId;
+  if (isClientAnalyticsDisabledForSite(input.site)) return logicalEventId;
   if (Date.now() < circuitOpenUntilMs) return logicalEventId;
 
   attachExitFlushListeners();

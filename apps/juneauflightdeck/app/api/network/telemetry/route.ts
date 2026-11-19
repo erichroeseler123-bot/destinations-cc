@@ -41,8 +41,27 @@ function isAuthorized(request: NextRequest): boolean {
   return false;
 }
 
+function isJfdAnalyticsDisabled(): boolean {
+  const vals = [
+    process.env.DCC_ANALYTICS_DISABLED,
+    process.env.JFD_ANALYTICS_DISABLED,
+    process.env.NEXT_PUBLIC_DCC_ANALYTICS_DISABLED,
+    process.env.NEXT_PUBLIC_JFD_ANALYTICS_DISABLED,
+  ];
+  return vals.some((v) => {
+    const n = (v || "").trim().toLowerCase();
+    return n === "1" || n === "true" || n === "yes" || n === "on";
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
+    if (isJfdAnalyticsDisabled()) {
+      return NextResponse.json(
+        { ok: true, accepted: false, reason: "site_analytics_disabled" },
+        { status: 202 },
+      );
+    }
     const raw = await request.text();
     let payload: TelemetryEventPayload & { events?: Array<Record<string, unknown>> } = {};
 

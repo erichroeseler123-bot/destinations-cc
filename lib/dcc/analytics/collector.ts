@@ -164,6 +164,7 @@ export interface CollectBatchResult {
   rejectedInvalidCount: number;
   rejectedUnauthorizedOutcomeCount: number;
   droppedBackpressureCount: number;
+  droppedSiteDisabledCount?: number;
   killSwitchSource?: "env_override" | "runtime_db" | "off";
   dbTelemetry?: AnalyticsDbTelemetry;
   error?: string;
@@ -176,8 +177,8 @@ export async function collectAnalyticsRawPayload(params: {
   maxQueueDepth?: number;
 }): Promise<CollectBatchResult> {
   const { result, dbTelemetry } = await withAnalyticsDbTelemetry(async () => {
-    const ks = await isAnalyticsKillSwitchEnabled();
-    if (ks.active) {
+    const runtimeControls = await getAnalyticsRuntimeControls();
+    if (runtimeControls.killSwitchActive) {
       try {
         const exec = await getAnalyticsExecutor();
         await incrementHealthCounter(exec, "dropped_kill_switch_total", 1);
@@ -193,7 +194,7 @@ export async function collectAnalyticsRawPayload(params: {
         rejectedInvalidCount: 0,
         rejectedUnauthorizedOutcomeCount: 0,
         droppedBackpressureCount: 0,
-        killSwitchSource: ks.source,
+        killSwitchSource: runtimeControls.killSwitchSource,
         reason: "kill_switch_active",
       } satisfies CollectBatchResult;
     }
@@ -352,6 +353,45 @@ export async function collectAnalyticsRawPayload(params: {
       } satisfies CollectBatchResult;
     }
 
+    const disabledSiteSet = new Set<string>(runtimeControls.disabledSites || []);
+    let droppedSiteDisabledCount = 0;
+    const enabledValidInputs =
+      disabledSiteSet.size === 0
+        ? validInputs
+        : validInputs.filter((ev) => {
+            const { siteId } = resolveCanonicalAnalyticsSite(ev.site);
+            if (disabledSiteSet.has(siteId.toLowerCase())) {
+              droppedSiteDisabledCount += 1;
+              return false;
+            }
+            return true;
+          });
+
+    if (enabledValidInputs.length === 0 && droppedSiteDisabledCount > 0) {
+      try {
+        const exec = await getAnalyticsExecutor();
+        await incrementHealthCounter(
+          exec,
+          "dropped_site_disabled_total",
+          droppedSiteDisabledCount,
+        );
+      } catch {
+        // runtime per-site disable must never fail even if DB is down
+      }
+      return {
+        ok: true,
+        status: 202,
+        accepted: false,
+        queuedCount: 0,
+        deduplicatedCount: 0,
+        rejectedInvalidCount,
+        rejectedUnauthorizedOutcomeCount,
+        droppedBackpressureCount: 0,
+        droppedSiteDisabledCount,
+        reason: "site_disabled_runtime",
+      } satisfies CollectBatchResult;
+    }
+
     const receivedIso = new Date().toISOString();
     const originHeader = params.headers.get("origin");
     const refererHeader = params.headers.get("referer");
@@ -365,7 +405,7 @@ export async function collectAnalyticsRawPayload(params: {
         cookieHeader,
       );
 
-    const normalizedRecords: NormalizedAnalyticsRecord[] = validInputs.map((ev) => {
+    const normalizedRecords: NormalizedAnalyticsRecord[] = enabledValidInputs.map((ev) => {
       const { siteId, entry } = resolveCanonicalAnalyticsSite(ev.site);
       const environment = resolveAuthoritativeEnvironment({
         claimedEnvironment: ev.environment,
@@ -516,6 +556,15 @@ export async function collectAnalyticsRawPayload(params: {
         );
       }
 
+      if (droppedSiteDisabledCount > 0) {
+        await incrementHealthCounter(
+          exec,
+          "dropped_site_disabled_total",
+          droppedSiteDisabledCount,
+          receivedIso,
+        );
+      }
+
       const enqueued = await enqueueNormalizedAnalyticsBatch({
         records: normalizedRecords,
         maxQueueDepth: params.maxQueueDepth,
@@ -530,6 +579,7 @@ export async function collectAnalyticsRawPayload(params: {
         rejectedInvalidCount,
         rejectedUnauthorizedOutcomeCount,
         droppedBackpressureCount: enqueued.droppedBackpressureCount,
+        ...(droppedSiteDisabledCount > 0 ? { droppedSiteDisabledCount } : {}),
       } satisfies CollectBatchResult;
     } catch (err) {
       return {

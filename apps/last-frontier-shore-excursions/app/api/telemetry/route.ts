@@ -70,8 +70,27 @@ function mapLfseEventToCorridorEventName(eventName: string): string {
   return "plan_modified";
 }
 
+function isLfseAnalyticsDisabled(): boolean {
+  const vals = [
+    process.env.DCC_ANALYTICS_DISABLED,
+    process.env.LFSE_ANALYTICS_DISABLED,
+    process.env.NEXT_PUBLIC_DCC_ANALYTICS_DISABLED,
+    process.env.NEXT_PUBLIC_LFSE_ANALYTICS_DISABLED,
+  ];
+  return vals.some((v) => {
+    const n = (v || "").trim().toLowerCase();
+    return n === "1" || n === "true" || n === "yes" || n === "on";
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
+    if (isLfseAnalyticsDisabled()) {
+      return NextResponse.json(
+        { ok: true, accepted: false, reason: "site_analytics_disabled" },
+        { status: 202 },
+      );
+    }
     const rawText = await req.text().catch(() => "");
     const data = (rawText ? JSON.parse(rawText) : null) as Record<
       string,

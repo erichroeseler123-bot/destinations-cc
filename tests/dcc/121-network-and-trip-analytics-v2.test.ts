@@ -22,6 +22,7 @@ import {
   getAnalyticsExecutor,
   getAnalyticsSqliteDb,
   readAnalyticsHealthCounters,
+  setAnalyticsRuntimeControls,
   setSimulateAnalyticsStoreOutageForTests,
 } from "@/lib/dcc/analytics/store";
 import { flushServerlessAfterTasks } from "@/lib/dcc/analytics/serverlessLifecycle";
@@ -1363,5 +1364,58 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
       .prepare("SELECT COUNT(*) AS cnt FROM dcc_analytics_events WHERE environment = 'preview' AND traffic_class = 'observed_browser'")
       .get();
     assert.equal(Number(remainingGenuine?.cnt), 6);
+
+    // 7. Per-site runtime disable halts only the targeted site while allowing other sites
+    const disabledControls = await setAnalyticsRuntimeControls({
+      disabledSites: ["gosno"],
+      actor: "suite-121",
+    });
+    assert.deepEqual(disabledControls.disabledSites, ["gosno"]);
+
+    const gosnoBlocked = await collectAnalyticsRawPayload({
+      rawBodyText: JSON.stringify({
+        events: [
+          {
+            logicalEventId: "evt_gosno_blocked_runtime_1",
+            eventType: "page_viewed",
+            occurredAt: "2026-11-19T04:16:00.000Z",
+            site: "gosno.co",
+            path: "/ski-shuttle",
+          },
+        ],
+      }),
+      headers: new Headers({
+        host: "gosno-preview.vercel.app",
+        "user-agent": "Mozilla/5.0 Chrome/131.0.0.0",
+      }),
+    });
+    assert.equal(gosnoBlocked.accepted, false);
+    assert.equal(gosnoBlocked.reason, "site_disabled_runtime");
+    assert.equal(gosnoBlocked.queuedCount, 0);
+
+    const parrAllowed = await collectAnalyticsRawPayload({
+      rawBodyText: JSON.stringify({
+        events: [
+          {
+            logicalEventId: "evt_parr_allowed_runtime_1",
+            eventType: "page_viewed",
+            occurredAt: "2026-11-19T04:16:05.000Z",
+            site: "partyatredrocks",
+            path: "/book-shuttle",
+          },
+        ],
+      }),
+      headers: new Headers({
+        host: "partyatredrocks-preview.vercel.app",
+        "user-agent": "Mozilla/5.0 Chrome/131.0.0.0",
+      }),
+    });
+    assert.equal(parrAllowed.accepted, true);
+    assert.equal(parrAllowed.queuedCount, 1);
+
+    await setAnalyticsRuntimeControls({
+      disabledSites: [],
+      actor: "suite-121-restore",
+    });
   });
 });

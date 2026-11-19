@@ -154,6 +154,7 @@ export interface AnalyticsHealthCounters {
   deadLetterTotal: number;
   droppedBackpressureTotal: number;
   droppedKillSwitchTotal: number;
+  droppedSiteDisabledTotal: number;
   lateEventsReconciledTotal: number;
   botClassifiedTotal: number;
   qaClassifiedTotal: number;
@@ -173,6 +174,7 @@ export interface AnalyticsRuntimeControls {
   killSwitchActive: boolean;
   killSwitchSource: "env_override" | "runtime_db" | "off";
   simulateOutageActive: boolean;
+  disabledSites: string[];
   updatedBy: string | null;
   updatedAt: string | null;
 }
@@ -877,19 +879,34 @@ function isEnvKillSwitchHardEnabled(): boolean {
   return raw === "1" || raw === "true" || raw === "on" || raw === "yes";
 }
 
+function parseEnvDisabledSites(): string[] {
+  const raw = (process.env.DCC_ANALYTICS_DISABLED_SITES || "").trim();
+  if (!raw) return [];
+  return Array.from(
+    new Set(
+      raw
+        .split(",")
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0),
+    ),
+  ).sort();
+}
+
 /**
- * Genuine runtime kill-switch & outage control reader (`1.5s` in-process cache TTL,
+ * Genuine runtime kill-switch, per-site disable list & outage control reader (`1.5s` in-process cache TTL,
  * backed by `dcc_analytics_runtime_controls` in Postgres so toggling takes effect
  * cluster-wide in `<= 1.5s` without redeploying!).
  */
 export async function getAnalyticsRuntimeControls(options?: {
   bypassCache?: boolean;
 }): Promise<AnalyticsRuntimeControls> {
+  const envDisabledSites = parseEnvDisabledSites();
   if (isEnvKillSwitchHardEnabled()) {
     return {
       killSwitchActive: true,
       killSwitchSource: "env_override",
       simulateOutageActive: simulateAnalyticsStoreOutageInMemory,
+      disabledSites: envDisabledSites,
       updatedBy: "env:DCC_ANALYTICS_KILL_SWITCH",
       updatedAt: null,
     };
@@ -899,6 +916,9 @@ export async function getAnalyticsRuntimeControls(options?: {
   if (!options?.bypassCache && runtimeControlsCache && runtimeControlsCache.expiresAtMs > nowMs) {
     return {
       ...runtimeControlsCache.value,
+      disabledSites: Array.from(
+        new Set([...runtimeControlsCache.value.disabledSites, ...envDisabledSites]),
+      ).sort(),
       simulateOutageActive:
         simulateAnalyticsStoreOutageInMemory || runtimeControlsCache.value.simulateOutageActive,
     };
@@ -909,6 +929,7 @@ export async function getAnalyticsRuntimeControls(options?: {
       killSwitchActive: false,
       killSwitchSource: "off",
       simulateOutageActive: true,
+      disabledSites: envDisabledSites,
       updatedBy: "in_memory_test_hook",
       updatedAt: null,
     };
@@ -922,11 +943,12 @@ export async function getAnalyticsRuntimeControls(options?: {
       updated_by: string | null;
       updated_at: Date | string | null;
     }>(
-      "SELECT control_key, bool_value, updated_by, updated_at FROM dcc_analytics_runtime_controls WHERE control_key IN ('kill_switch_active', 'simulate_store_outage')",
+      "SELECT control_key, bool_value, updated_by, updated_at FROM dcc_analytics_runtime_controls WHERE control_key IN ('kill_switch_active', 'simulate_store_outage') OR control_key LIKE 'site_disabled:%'",
     );
 
     let killActive = false;
     let simOutage = false;
+    const disabledSet = new Set<string>(envDisabledSites);
     let updatedBy: string | null = null;
     let updatedAt: string | null = null;
 
@@ -934,10 +956,15 @@ export async function getAnalyticsRuntimeControls(options?: {
       const b = r.bool_value === true || r.bool_value === 1;
       if (r.control_key === "kill_switch_active") {
         killActive = b;
-        updatedBy = r.updated_by ? String(r.updated_by) : null;
-        updatedAt = normalizeSqlIso(r.updated_at);
+        updatedBy = r.updated_by ? String(r.updated_by) : updatedBy;
+        updatedAt = normalizeSqlIso(r.updated_at) || updatedAt;
       } else if (r.control_key === "simulate_store_outage") {
         simOutage = b;
+      } else if (r.control_key.startsWith("site_disabled:") && b) {
+        const siteId = r.control_key.slice("site_disabled:".length).trim().toLowerCase();
+        if (siteId) disabledSet.add(siteId);
+        if (!updatedBy && r.updated_by) updatedBy = String(r.updated_by);
+        if (!updatedAt) updatedAt = normalizeSqlIso(r.updated_at);
       }
     }
 
@@ -945,6 +972,7 @@ export async function getAnalyticsRuntimeControls(options?: {
       killSwitchActive: killActive,
       killSwitchSource: killActive ? "runtime_db" : "off",
       simulateOutageActive: simOutage,
+      disabledSites: Array.from(disabledSet).sort(),
       updatedBy,
       updatedAt,
     };
@@ -958,6 +986,7 @@ export async function getAnalyticsRuntimeControls(options?: {
       killSwitchActive: false,
       killSwitchSource: "off",
       simulateOutageActive: simulateAnalyticsStoreOutageInMemory,
+      disabledSites: envDisabledSites,
       updatedBy: null,
       updatedAt: null,
     };
@@ -967,6 +996,8 @@ export async function getAnalyticsRuntimeControls(options?: {
 export async function setAnalyticsRuntimeControls(params: {
   killSwitchActive?: boolean;
   simulateOutageActive?: boolean;
+  disabledSites?: string[];
+  siteControl?: { siteId: string; disabled: boolean };
   actor: string;
 }): Promise<AnalyticsRuntimeControls> {
   const nowIso = new Date().toISOString();
@@ -995,6 +1026,48 @@ export async function setAnalyticsRuntimeControls(params: {
            updated_by = excluded.updated_by,
            updated_at = excluded.updated_at`,
         [params.simulateOutageActive, params.actor, nowIso],
+      );
+    }
+    if (Array.isArray(params.disabledSites)) {
+      await exec.query(
+        `UPDATE dcc_analytics_runtime_controls
+         SET bool_value = $1, updated_by = $2, updated_at = $3::timestamptz
+         WHERE control_key LIKE 'site_disabled:%'`,
+        [false, params.actor, nowIso],
+      );
+      const uniqueSites = Array.from(
+        new Set(
+          params.disabledSites
+            .map((s) => String(s || "").trim().toLowerCase())
+            .filter((s) => /^[a-z0-9_-]{2,48}$/.test(s)),
+        ),
+      );
+      for (const siteId of uniqueSites) {
+        await exec.query(
+          `INSERT INTO dcc_analytics_runtime_controls (control_key, bool_value, updated_by, updated_at)
+           VALUES ($1, $2, $3, $4::timestamptz)
+           ON CONFLICT (control_key) DO UPDATE SET
+             bool_value = excluded.bool_value,
+             updated_by = excluded.updated_by,
+             updated_at = excluded.updated_at`,
+          [`site_disabled:${siteId}`, true, params.actor, nowIso],
+        );
+      }
+    }
+    if (params.siteControl && /^[a-z0-9_-]{2,48}$/.test(params.siteControl.siteId)) {
+      await exec.query(
+        `INSERT INTO dcc_analytics_runtime_controls (control_key, bool_value, updated_by, updated_at)
+         VALUES ($1, $2, $3, $4::timestamptz)
+         ON CONFLICT (control_key) DO UPDATE SET
+           bool_value = excluded.bool_value,
+           updated_by = excluded.updated_by,
+           updated_at = excluded.updated_at`,
+        [
+          `site_disabled:${params.siteControl.siteId.toLowerCase()}`,
+          Boolean(params.siteControl.disabled),
+          params.actor,
+          nowIso,
+        ],
       );
     }
     runtimeControlsCache = null;
@@ -1060,6 +1133,7 @@ export async function readAnalyticsHealthCounters(
     deadLetterTotal: map.get("dead_letter_total") || 0,
     droppedBackpressureTotal: map.get("dropped_backpressure_total") || 0,
     droppedKillSwitchTotal: map.get("dropped_kill_switch_total") || 0,
+    droppedSiteDisabledTotal: map.get("dropped_site_disabled_total") || 0,
     lateEventsReconciledTotal: map.get("late_events_reconciled_total") || 0,
     botClassifiedTotal: map.get("bot_classified_total") || 0,
     qaClassifiedTotal: map.get("qa_classified_total") || 0,

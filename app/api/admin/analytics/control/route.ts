@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_SESSION_COOKIE, isValidAdminSession } from "@/lib/adminAccess";
 import { verifyCollectorServerAuth } from "@/lib/dcc/analytics/collector";
+import { resolveCanonicalAnalyticsSite } from "@/lib/dcc/analytics/contract";
 import {
   describeActiveAnalyticsBackend,
   getAnalyticsRuntimeControls,
@@ -60,6 +61,8 @@ export async function POST(request: NextRequest) {
   let body: {
     killSwitchActive?: unknown;
     simulateOutageActive?: unknown;
+    disabledSites?: unknown;
+    siteControl?: unknown;
     actorNote?: unknown;
   } = {};
   try {
@@ -70,16 +73,43 @@ export async function POST(request: NextRequest) {
 
   const hasKillSwitchField = typeof body.killSwitchActive === "boolean";
   const hasOutageField = typeof body.simulateOutageActive === "boolean";
-  if (!hasKillSwitchField && !hasOutageField) {
+  const hasDisabledSitesField = Array.isArray(body.disabledSites);
+  const parsedSiteControl =
+    body.siteControl &&
+    typeof body.siteControl === "object" &&
+    !Array.isArray(body.siteControl) &&
+    typeof (body.siteControl as { siteId?: unknown }).siteId === "string" &&
+    typeof (body.siteControl as { disabled?: unknown }).disabled === "boolean"
+      ? {
+          siteId: resolveCanonicalAnalyticsSite(
+            (body.siteControl as { siteId: string }).siteId,
+          ).siteId,
+          disabled: Boolean((body.siteControl as { disabled: boolean }).disabled),
+        }
+      : undefined;
+
+  if (
+    !hasKillSwitchField &&
+    !hasOutageField &&
+    !hasDisabledSitesField &&
+    !parsedSiteControl
+  ) {
     return NextResponse.json(
       {
         ok: false,
         error: "missing_boolean_control_field",
-        message: "Provide boolean `killSwitchActive` and/or `simulateOutageActive`.",
+        message:
+          "Provide `killSwitchActive`, `simulateOutageActive`, `disabledSites`, and/or `siteControl`.",
       },
       { status: 400 },
     );
   }
+
+  const normalizedDisabledSites = hasDisabledSitesField
+    ? (body.disabledSites as unknown[])
+        .filter((s): s is string => typeof s === "string" && s.trim().length > 0)
+        .map((s) => resolveCanonicalAnalyticsSite(s).siteId)
+    : undefined;
 
   const actorLabel =
     typeof body.actorNote === "string" && body.actorNote.trim()
@@ -91,6 +121,10 @@ export async function POST(request: NextRequest) {
       setAnalyticsRuntimeControls({
         ...(hasKillSwitchField ? { killSwitchActive: Boolean(body.killSwitchActive) } : {}),
         ...(hasOutageField ? { simulateOutageActive: Boolean(body.simulateOutageActive) } : {}),
+        ...(normalizedDisabledSites !== undefined
+          ? { disabledSites: normalizedDisabledSites }
+          : {}),
+        ...(parsedSiteControl ? { siteControl: parsedSiteControl } : {}),
         actor: actorLabel,
       }),
     );
