@@ -288,10 +288,15 @@ test("Priority A.4: Fixed /ports/glacier-bay H1, verbatim 2-hour planning standa
     "Independent source-backed profile. This company has not yet claimed or verified this page.",
   );
 
-  // Sitemap invariant: 157 entries and 0 held URLs
+  // Sitemap invariant: 158 entries (157 directory/ship/decision + /guides/weekend-in-juneau) and 0 held URLs
   const sitemapEntries = sitemap();
-  assert.equal(sitemapEntries.length, 157);
+  assert.equal(sitemapEntries.length, 158);
   const sitemapUrls = sitemapEntries.map((e) => e.url);
+  assert.ok(
+    sitemapUrls.includes(
+      "https://www.lastfrontiershoreexcursions.com/guides/weekend-in-juneau",
+    ),
+  );
   assert.equal(
     sitemapUrls.some((u) =>
       /\/ports\/(metlakatla|pelican|elfin-cove|tenakee-springs|kake|craig)|\/operators\/island-wings-air-service|aleutian-ballad|\/ports\/wrangell\/river-and-glacier-jetboats/i.test(

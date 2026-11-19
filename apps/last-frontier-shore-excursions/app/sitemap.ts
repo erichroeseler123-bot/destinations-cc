@@ -37,6 +37,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE}/about`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE}/tours`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITE}/cruise-ships`, changeFrequency: "daily", priority: 0.95 },
+    {
+      url: `${SITE}/guides/weekend-in-juneau`,
+      lastModified: "2026-11-19",
+      changeFrequency: "weekly",
+      priority: 0.91,
+    },
   ];
 
   // Strictly gate.indexable places ONLY (excludes all 6 held smaller communities!)

@@ -43,7 +43,7 @@ test("Weekend in Juneau: canonical route, positioning headline, positive destina
     WEEKEND_IN_JUNEAU_CANONICAL_URL,
     "https://www.lastfrontiershoreexcursions.com/guides/weekend-in-juneau",
   );
-  assert.equal(WEEKEND_IN_JUNEAU_RELEASE_READY, false);
+  assert.equal(WEEKEND_IN_JUNEAU_RELEASE_READY, true);
 
   const html = await renderGuideHtml();
   assert.match(html, /Your Alaska Adventure, Based in Juneau/);
@@ -143,12 +143,14 @@ test("Weekend in Juneau: distinct telemetry events, Preview indexing exclusion, 
   assert.match(proxySrc, /"X-Robots-Tag",\s*"noindex, nofollow, noarchive"/);
   assert.match(robotsSrc, /disallow:\s*"\/"/);
 
-  // Sitemap stays at 157 verified Production entries while Preview is held
+  // Production sitemap includes /guides/weekend-in-juneau (158 total deterministic entries)
   const entries = sitemap();
-  assert.equal(entries.length, 157);
+  assert.equal(entries.length, 158);
   assert.equal(
-    entries.some((e) => e.url.includes("weekend-in-juneau")),
-    false,
+    entries.some(
+      (e) => e.url === "https://www.lastfrontiershoreexcursions.com/guides/weekend-in-juneau",
+    ),
+    true,
   );
 
   // JSON-LD shape check

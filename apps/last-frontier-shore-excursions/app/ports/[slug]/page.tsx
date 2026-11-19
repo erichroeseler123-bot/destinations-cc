@@ -426,6 +426,46 @@ export default async function PortPage({
         </section>
       ) : null}
 
+      {place.publicPortSlug === "juneau" && (
+        <section
+          data-testid="juneau-weekend-stay-callout"
+          style={{
+            background: "#f4f7f6",
+            borderBottom: "1px solid var(--line)",
+            padding: "24px 0",
+          }}
+        >
+          <div
+            className="shell"
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 16,
+            }}
+          >
+            <div style={{ maxWidth: 740 }}>
+              <span className="badge badge-safety">
+                Fly-In &amp; Multi-Night Juneau Stay Guide
+              </span>
+              <h2 style={{ fontSize: 21, margin: "6px 0 6px" }}>
+                Making Juneau Your Home Base for Two or Three Full Days?
+              </h2>
+              <p style={{ margin: 0, fontSize: 14.5, color: "var(--muted)" }}>
+                Compare walkable Downtown vs. Mendenhall Valley lodging, separate arrival and
+                departure travel buffers from two full days (three nights) or three full days (four
+                nights) of glaciers, whales, kayaking, and evening dining, and print a pocket trip
+                sheet.
+              </p>
+            </div>
+            <Link href="/guides/weekend-in-juneau" className="button">
+              Explore Weekend in Juneau Guide →
+            </Link>
+          </div>
+        </section>
+      )}
+
       {/* Related Distinct Places Cross-Links */}
       {place.relatedPlaces.length > 0 && (
         <section

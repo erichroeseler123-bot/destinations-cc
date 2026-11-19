@@ -18,7 +18,10 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: [
           "/",
+          "/southeast-alaska",
           "/ports/",
+          "/operators/",
+          "/guides/",
           "/decision/",
           "/tours",
           "/about",

@@ -12,10 +12,10 @@ export const WEEKEND_IN_JUNEAU_RETRIEVAL_DATE_ISO = "2026-11-19" as const;
 export const WEEKEND_IN_JUNEAU_RETRIEVAL_DATE_LONG = "November 19, 2026" as const;
 
 /**
- * Release gate: Preview remains excluded from search indexing until editorial sign-off
- * and Production promotion wiring (sitemap + internal discovery links) are authorized.
+ * Release flag: Primary-source editorial review completed on 2026-11-19;
+ * authorized for Production indexing and sitemap inclusion.
  */
-export const WEEKEND_IN_JUNEAU_RELEASE_READY = false as const;
+export const WEEKEND_IN_JUNEAU_RELEASE_READY = true as const;
 
 export type StayDurationKey = "2_full_days" | "3_full_days";
 export type StayBaseKey = "downtown" | "valley_airport";
@@ -616,7 +616,7 @@ export const WEEKEND_ADVENTURE_CARDS: readonly AdventureCardSpec[] = [
       "Locally employee-owned in Juneau since 2002 (checked Nov 19, 2026): Paddle with Whales Kayak Adventure (6 hrs total, 6-passenger motorboat transfer to Channel Islands State Marine Park, easy–moderate, from $449 + tax direct) and Mendenhall Glacier Canoe Paddle & Hike (5.5 hrs total, moderate, from $349 + tax direct). For a gentler 3.5-hr guided raft option, see Alaska Travel Adventures’ Mendenhall Float Trip.",
     restrictionsAndLogistics:
       "5.5–6 hour active excursions suited to full stay days rather than arrival/departure days; outfitters provide rain gear and dry bags, while guests dress in non-cotton synthetic/wool base layers.",
-    applicableDateLabel: `Verified on beyondak.com ${WEEKEND_IN_JUNEAU_RETRIEVAL_DATE_LONG} (2027 reservations open)`,
+    applicableDateLabel: `Current posted rates checked ${WEEKEND_IN_JUNEAU_RETRIEVAL_DATE_LONG} (confirm 2027 operating dates on booking calendar)`,
     imageSrc: "/images/alaska/mendenhall-glacier.jpg",
     imageAlt: "Mendenhall Glacier, lake waters, and Nugget Falls near Juneau, Alaska",
     imageCredit: "Photo: Diego Delso / Wikimedia Commons (CC BY-SA 4.0)",
