@@ -3,6 +3,10 @@ import fs from "node:fs";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
+import {
+  DECISION_GUIDE_LINKS,
+  resolveDecisionGuidePath,
+} from "../app/components/DellsDecisionPage";
 import { ACTION_CARDS, HUBS, RIVER_OPS_OUTBOUND_TARGETS, RIVER_OPS_TERMINAL, SITE_URL } from "../lib/content";
 
 // Page modules expose only Next.js-supported exports. Inspect the literal comparison
@@ -257,4 +261,83 @@ test("/boat-tours and /first-time include the 60-Second Fit Guide comparing asho
   assert.match(firstTimeSource, /sit without assistance/i);
   assert.match(firstTimeSource, /dispatchers assisting with loading and unloading/i);
   assert.equal(/transfer.*without assistance|transfer.*unassisted/i.test(firstTimeSource), false);
+});
+
+test("DellsDecisionPage and /rainy-day provide accessible breadcrumb and related-guide navigation with aria-current and 320px/375px mobile wrapping", () => {
+  const decisionPageSource = fs.readFileSync(
+    fileURLToPath(new URL("../app/components/DellsDecisionPage.tsx", import.meta.url)),
+    "utf8",
+  );
+  const rainyDaySource = fs.readFileSync(
+    fileURLToPath(new URL("../app/rainy-day/page.tsx", import.meta.url)),
+    "utf8",
+  );
+  const rainyDayAst = ts.createSourceFile(
+    "page.tsx",
+    rainyDaySource,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  );
+
+  // /rainy-day exposes only Next.js-supported exports (metadata and default Page)
+  const rainyDayExports = rainyDayAst.statements.filter(
+    (statement) =>
+      ts.canHaveModifiers(statement) &&
+      ts.getModifiers(statement)?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword),
+  );
+  assert.equal(rainyDayExports.length, 2);
+
+  // Breadcrumb and related-guide navigation semantics in DellsDecisionPage
+  assert.match(decisionPageSource, /<nav[\s\S]*?aria-label="Breadcrumb"/);
+  assert.match(decisionPageSource, /<nav[\s\S]*?aria-label="Related decision guides"/);
+  assert.match(decisionPageSource, /aria-current="page"/);
+  assert.match(decisionPageSource, /aria-current=\{isCurrent\s*\?\s*"page"\s*:\s*undefined\}/);
+
+  // Mobile 320px/375px overflow and wrapping protections on DellsDecisionPage
+  assert.match(decisionPageSource, /overflowX:\s*"hidden"/);
+  assert.match(decisionPageSource, /flexWrap:\s*"wrap"/);
+  assert.match(decisionPageSource, /overflowWrap:\s*"break-word"/);
+  assert.match(decisionPageSource, /whiteSpace:\s*"normal"/);
+
+  // Verify resolveDecisionGuidePath resolves every decision guide accurately
+  assert.equal(resolveDecisionGuidePath("Rainy day", "/rainy-day"), "/rainy-day");
+  assert.equal(resolveDecisionGuidePath("Rainy day"), "/rainy-day");
+  assert.equal(
+    resolveDecisionGuidePath("Wisconsin Dells first-time visitor guide"),
+    "/first-time",
+  );
+  assert.equal(resolveDecisionGuidePath("Families"), "/families");
+  assert.equal(resolveDecisionGuidePath("Adults only"), "/adults");
+  assert.equal(resolveDecisionGuidePath("Tonight"), "/tonight");
+  assert.equal(resolveDecisionGuidePath("Large groups"), "/large-groups");
+  assert.equal(resolveDecisionGuidePath("Downtown"), "/downtown");
+  assert.equal(resolveDecisionGuidePath("The Parkway"), "/parkway");
+  assert.equal(resolveDecisionGuidePath("Lake Delton"), "/lake-delton");
+  assert.equal(DECISION_GUIDE_LINKS.length, 9);
+
+  // Verify /rainy-day preserves all existing factual copy and exposes clean action links
+  assert.match(rainyDaySource, /currentPath="\/rainy-day"/);
+  assert.match(rainyDaySource, /Rain does not have to wreck the Dells\./);
+  assert.match(
+    rainyDaySource,
+    /Build the day around one indoor anchor, then add short low-risk stops instead of driving around looking for a miracle\./,
+  );
+  assert.match(
+    rainyDaySource,
+    /If your resort includes a strong indoor waterpark, use it as the anchor instead of abandoning a benefit you already paid for\./,
+  );
+  assert.match(
+    rainyDaySource,
+    /Arcades, indoor amusement, museums, shows, and other weather-proof options work best when you commit to one instead of venue hopping\./,
+  );
+  assert.match(
+    rainyDaySource,
+    /Bad weather makes traffic and parking more annoying\. Finish near the resort or area where you already are\./,
+  );
+  assert.match(rainyDaySource, /href:\s*"\/waterparks"/);
+  assert.match(rainyDaySource, /href:\s*"\/things-to-do"/);
+  assert.match(rainyDaySource, /href:\s*"\/tonight"/);
+  assert.match(rainyDaySource, /ctaHref="\/families"/);
+  assert.match(rainyDaySource, /ctaLabel="See the family plan"/);
 });
