@@ -83,6 +83,7 @@ export default function ViatorTourGrid({
           productOptionTitles: product.product_option_titles || null,
           displayTags: product.display_tags || [],
           href: buildProductHref(product),
+          isBrowseFallback: false,
           intentQuery: `${placeName} ${product.title}`.trim(),
           categoryLabel: product.title,
           takeaways: summarizeGuestFeedback({
@@ -94,26 +95,30 @@ export default function ViatorTourGrid({
             productCode: product.product_code,
           }),
         }))
-      : fallbacks.slice(0, 6).map((item) => ({
-          key: item.query,
-          title: item.label,
-          shortDescription: null,
-          imageUrl: null,
-          rating: "Live ratings on partner page",
-          duration: "Check live duration",
-          durationMinutes: null,
-          price: "See live price",
-          supplierName: null,
-          itineraryType: null,
-          confirmationType: null,
-          productOptionCount: null,
-          productOptionTitles: null,
-          displayTags: [],
-          href: buildViatorSearchLink(item.query),
-          intentQuery: item.query,
-          categoryLabel: item.label,
-          takeaways: null,
-        }));
+      : fallbacks.slice(0, 6).map((item) => {
+          const searchUrl = buildViatorSearchLink(item.query);
+          return {
+            key: item.query,
+            title: item.label,
+            shortDescription: null,
+            imageUrl: null,
+            rating: "Live ratings on partner page",
+            duration: "Check live duration",
+            durationMinutes: null,
+            price: "See live price",
+            supplierName: null,
+            itineraryType: null,
+            confirmationType: null,
+            productOptionCount: null,
+            productOptionTitles: null,
+            displayTags: [],
+            href: `/go/out?u=${encodeURIComponent(searchUrl)}&surface=dcc_viator_grid_browse`,
+            isBrowseFallback: true,
+            intentQuery: item.query,
+            categoryLabel: item.label,
+            takeaways: null,
+          };
+        });
 
   return (
     <section className="rounded-3xl border border-white/10 bg-white/[0.05] p-6 shadow-[0_16px_50px_rgba(0,0,0,0.35)]">
@@ -227,7 +232,11 @@ export default function ViatorTourGrid({
                     rel={href.startsWith("/tours/") ? undefined : "noopener noreferrer sponsored nofollow"}
                     className="inline-flex w-full items-center justify-center rounded-2xl bg-cyan-600 px-4 py-3 font-semibold text-white hover:bg-cyan-500"
                   >
-                    {href.startsWith("/tours/") ? "Inspect details & recent reviews" : ctaLabel}
+                    {href.startsWith("/tours/")
+                      ? "Inspect details & recent reviews"
+                      : card.isBrowseFallback
+                        ? "Browse tours"
+                        : ctaLabel}
                   </a>
                   <p className="text-[11px] leading-5 text-zinc-500">
                     {viatorPolicy.travelerPhotoNotice}

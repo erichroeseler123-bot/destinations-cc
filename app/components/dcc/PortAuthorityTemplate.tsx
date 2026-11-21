@@ -226,22 +226,46 @@ export default function PortAuthorityTemplate({
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            {config.excursionCategories.map((item) => (
-              <Link
-                key={item.label}
-                href={buildPortTrackedHref({
-                  href: buildPortExcursionHref(plainPortName, item),
-                  port: port.slug,
-                  lane: "authority",
-                  sourceSection: "port_excursions_category",
-                  intentQuery: item.viatorQuery || `${plainPortName} ${item.label}`,
-                  categoryLabel: item.label,
-                })}
-                className="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-sm font-medium text-zinc-100 hover:bg-white/10"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {config.excursionCategories.map((item) => {
+              const rawHref = buildPortExcursionHref(plainPortName, item, port.slug);
+              const trackedHref = buildPortTrackedHref({
+                href: rawHref,
+                port: port.slug,
+                lane: "authority",
+                sourceSection: "port_excursions_category",
+                intentQuery: item.viatorQuery || `${plainPortName} ${item.label}`,
+                categoryLabel: item.label,
+              });
+              const isExactProduct = Boolean(item.viatorTourId?.trim());
+              if (isExactProduct) {
+                return (
+                  <a
+                    key={item.label}
+                    href={trackedHref}
+                    target="_blank"
+                    rel="noopener noreferrer sponsored"
+                    className="flex items-center justify-between gap-2 rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-sm font-medium text-zinc-100 hover:bg-white/10"
+                  >
+                    <span>{item.label}</span>
+                    <span className="shrink-0 text-xs font-semibold text-emerald-300">
+                      Check availability →
+                    </span>
+                  </a>
+                );
+              }
+              return (
+                <Link
+                  key={item.label}
+                  href={trackedHref}
+                  className="flex items-center justify-between gap-2 rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-sm font-medium text-zinc-100 hover:bg-white/10"
+                >
+                  <span>{item.label}</span>
+                  <span className="shrink-0 text-xs font-semibold text-zinc-300">
+                    Browse tours →
+                  </span>
+                </Link>
+              );
+            })}
           </div>
 
           <div className="mt-5 flex flex-col gap-3">

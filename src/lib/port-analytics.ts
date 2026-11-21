@@ -18,7 +18,9 @@ export function buildPortTrackedHref(input: PortAnalyticsLinkInput): string {
   const [pathname, rawQuery = ""] = rawPathAndQuery.split("?");
   const params = new URLSearchParams(rawQuery);
 
-  params.set("port", input.port);
+  if (!params.get("port")) {
+    params.set("port", input.port);
+  }
   params.set("lane", input.lane);
   params.set("source_section", input.sourceSection);
   if (input.intentQuery) params.set("intent_query", input.intentQuery);
@@ -29,10 +31,23 @@ export function buildPortTrackedHref(input: PortAnalyticsLinkInput): string {
   return hash ? `${withQuery}#${hash}` : withQuery;
 }
 
-export function buildPortExcursionHref(portName: string, category: PortExcursionCategory): string {
+export function buildPortExcursionHref(
+  portName: string,
+  category: PortExcursionCategory,
+  portSlug?: string,
+): string {
   const encodedTourId = category.viatorTourId?.trim();
   if (encodedTourId) {
-    return `https://www.viator.com/tours/${encodeURIComponent(encodedTourId)}`;
+    const out = new URLSearchParams();
+    if (category.viatorBookingUrl?.trim()) {
+      out.set("u", category.viatorBookingUrl.trim());
+    }
+    out.set("product", encodedTourId);
+    if (portSlug?.trim()) {
+      out.set("port", portSlug.trim());
+    }
+    out.set("surface", "dcc_port_excursions_category");
+    return `/go/out?${out.toString()}`;
   }
 
   const query = (category.viatorQuery || `${portName} ${category.label}`).trim();

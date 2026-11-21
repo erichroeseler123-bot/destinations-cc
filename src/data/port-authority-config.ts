@@ -10,6 +10,7 @@ export type PortExcursionCategory = {
   label: string;
   viatorQuery?: string;
   viatorTourId?: string;
+  viatorBookingUrl?: string;
 };
 
 export type PortAuthorityConfig = {
@@ -47,8 +48,13 @@ function toursHref(query: string): string {
   return `/tours?q=${encodeURIComponent(query)}`;
 }
 
-function category(label: string, viatorQuery?: string, viatorTourId?: string): PortExcursionCategory {
-  return { label, viatorQuery, viatorTourId };
+function category(
+  label: string,
+  viatorQuery?: string,
+  viatorTourId?: string,
+  viatorBookingUrl?: string,
+): PortExcursionCategory {
+  return { label, viatorQuery, viatorTourId, viatorBookingUrl };
 }
 
 function baseLinks(portName: string): PortAuthorityLink[] {
@@ -1221,11 +1227,13 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
         "Mangrove Lagoon Kayak & Snorkel",
         "St. Thomas Mangrove Lagoon Kayak Hike Snorkel 5199KSML",
         "5199KSML",
+        "https://www.viator.com/tours/St-Thomas/St-Thomas-Mangrove-Lagoon-Kayak-and-Snorkel-Tour/d965-5199KSML",
       ),
       category(
         "Catamaran & Turtle Snorkel",
         "St. Thomas Catamaran Turtle Snorkel",
         "7452P2",
+        "https://www.viator.com/tours/St-Thomas/St-Thomas-Catamaran-Sail-Buck-Island-National-Wildlife-Refuge/d965-7452P2",
       ),
       category(
         "St. John & Trunk Bay Excursions",
@@ -1398,10 +1406,30 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
     nearbyTown:
       "Miðborg (Downtown Reykjavík), Old Harbour (Ægisgarður), Harpa Concert Hall, and Laugavegur.",
     excursionCategories: [
-      category("Golden Circle, Geysers & Waterfalls", "Reykjavik Golden Circle shore excursion", "2970GOLDEN"),
-      category("Geothermal Spas & Lagoons", "Reykjavik Sky Lagoon Blue Lagoon transfer", "5592654P1"),
-      category("Whale Watching & Marine Wildlife", "Reykjavik whale watching Old Harbour", "13489P1"),
-      category("South Coast, Waterfalls & Volcanoes", "Reykjavik South Coast waterfalls tour", "21188P1"),
+      category(
+        "Golden Circle, Geysers & Waterfalls",
+        "Reykjavik Golden Circle shore excursion",
+        "2970AH12",
+        "https://www.viator.com/tours/Reykjavik/Golden-Circle-Classic-Day-Trip-from-Reykjavik/d905-2970AH12",
+      ),
+      category(
+        "Geothermal Spas & Lagoons",
+        "Reykjavik Sky Lagoon Blue Lagoon transfer",
+        "335240P1",
+        "https://www.viator.com/tours/Reykjavik/Sky-Lagoon-Pure-Lite/d905-335240P1",
+      ),
+      category(
+        "Whale Watching & Marine Wildlife",
+        "Reykjavik whale watching Old Harbour",
+        "7090P9",
+        "https://www.viator.com/tours/Reykjavik/Whale-Watching-Tour-from-Reykjavik-Old-Harbour/d905-7090P9",
+      ),
+      category(
+        "South Coast, Waterfalls & Volcanoes",
+        "Reykjavik South Coast waterfalls tour",
+        "36855P2",
+        "https://www.viator.com/tours/Reykjavik/Your-South-Coast-Full-Day-Tour-by-minibus/d905-36855P2",
+      ),
     ],
     cruiseSeason:
       "Peak North Atlantic, Arctic, and Transatlantic cruise calls run May through September, with expedition and Northern Lights turnaround calls extending into October and winter.",
