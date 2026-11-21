@@ -664,7 +664,42 @@ export function getApprovedGetYourGuideExperiencesForHost(host: string): Experie
   return [];
 }
 
+export const juneauGetYourGuideApprovedExperiences: Experience[] = [
+  {
+    id: "approved-getyourguide-juneau-goldbelt-tram-1040499",
+    source: "getyourguide",
+    source_product_id: "juneau-mount-roberts-tram-ride-with-app-and-map-t1040499",
+    title: "Juneau: Goldbelt Mount Roberts Tramway Ride with App & Map",
+    place_id: "juneau-ak",
+    category: "aerial tramway",
+    duration: "Flexible self-paced return",
+    meeting_point: "Walk-up lower terminal directly beside the Juneau cruise ship docks.",
+    price_from: null,
+    booking_url:
+      "https://www.getyourguide.com/juneau-alaska-l171160/juneau-mount-roberts-tram-ride-with-app-and-map-t1040499/",
+    image_url: "",
+  },
+];
+
+const PLACE_ID_ALIASES: Record<string, string> = {
+  "port-canaveral": "port-canaveral-orlando-fl",
+  "orlando": "port-canaveral-orlando-fl",
+  "miami": "portmiami-fl",
+  "port-miami": "portmiami-fl",
+  "nassau": "nassau-bahamas",
+  "port-everglades": "port-everglades-fort-lauderdale-fl",
+  "fort-lauderdale": "port-everglades-fort-lauderdale-fl",
+  "cozumel": "cozumel-mexico",
+  "key-west": "key-west-fl",
+  "port-key-west": "key-west-fl",
+  "new-orleans": "new-orleans-la",
+  "juneau": "juneau-ak",
+  "juneau-alaska": "juneau-ak",
+};
+
 export function getApprovedExperiencesForPlace(placeId: string): Experience[] {
+  const normalizedPlaceId =
+    PLACE_ID_ALIASES[placeId.trim().toLowerCase()] || placeId.trim().toLowerCase();
   const allApproved = [
     ...portCanaveralGetYourGuideApprovedExperiences,
     ...portMiamiGetYourGuideApprovedExperiences,
@@ -672,9 +707,10 @@ export function getApprovedExperiencesForPlace(placeId: string): Experience[] {
     ...portEvergladesGetYourGuideApprovedExperiences,
     ...cozumelGetYourGuideApprovedExperiences,
     ...keyWestGetYourGuideApprovedExperiences,
-    ...welcomeToTheSwampGetYourGuideApprovedExperiences
+    ...welcomeToTheSwampGetYourGuideApprovedExperiences,
+    ...juneauGetYourGuideApprovedExperiences,
   ];
 
-  return allApproved.filter((exp) => exp.place_id === placeId);
+  return allApproved.filter((exp) => exp.place_id === normalizedPlaceId);
 }
 

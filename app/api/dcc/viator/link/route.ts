@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getDurableTourByIdOrAlias } from "@/lib/dcc/catalog/durableCatalogStore";
 import { generateDccTrackedUrl } from "@/lib/dcc/internal/dccViatorAdapter";
+import { buildViatorSearchUrl } from "@/lib/viator/links";
 import { readVerifiedProductFromCache } from "@/lib/viator/verified-product-cache";
 import { resolveViatorCodeForSite } from "@/lib/viator/mappings";
 
@@ -28,9 +30,13 @@ export async function GET(req: NextRequest) {
   }
 
   const cached = readVerifiedProductFromCache(viatorCode);
+  const durableTour = cached?.stable.canonicalViatorUrl
+    ? null
+    : await getDurableTourByIdOrAlias(viatorCode, { projection: "handoff_minimal" });
   const canonicalUrl =
     cached?.stable.canonicalViatorUrl ||
-    `https://www.viator.com/tours/preview/d0-${viatorCode}`;
+    durableTour?.bookingUrl ||
+    buildViatorSearchUrl(viatorCode, { campaign: customCampaign });
 
   const trackedUrl = generateDccTrackedUrl({
     siteId,
@@ -44,6 +50,7 @@ export async function GET(req: NextRequest) {
     siteId,
     internalId,
     viatorCode,
+    isExactProduct: Boolean(cached?.stable.canonicalViatorUrl || durableTour?.bookingUrl),
     trackedUrl,
   });
 }

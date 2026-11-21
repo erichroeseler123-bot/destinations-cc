@@ -164,6 +164,7 @@ export interface CreateCommercialHandoffInput {
   } | null;
   callerClientId?: string | null;
   traceparent?: string | null;
+  handoffId?: string | null;
   clickId?: string | null;
   recommendedOperatorId?: string | null;
   evidenceVersion?: string | null;
@@ -1732,7 +1733,11 @@ export async function createCommercialHandoff(
       ? input.intendedOption.trim()
       : null);
 
-  const handoffId = durableId ?? generateOpaqueHandoffId();
+  const explicitHandoffId =
+    input.handoffId && /^hndf_[0-9a-f]{24}$/i.test(input.handoffId.trim())
+      ? input.handoffId.trim().toLowerCase()
+      : null;
+  const handoffId = durableId ?? explicitHandoffId ?? generateOpaqueHandoffId();
   const urlBuilt = buildProviderAffiliateHandoffUrl({
     originatingSite,
     provider: input.provider,
