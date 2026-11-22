@@ -1,5 +1,5 @@
 import React from "react";
-import dccClaimSnapshot from "@/data/dcc.claim-snapshot.v1.json";
+import dccClaimSnapshot from "../../data/dcc.claim-snapshot.v1.json";
 import {
   LFSE_CANONICAL_LINKS,
   TWO_HOUR_BUFFER_CLARIFICATION,

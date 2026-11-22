@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import dccClaimSnapshot from "@/data/dcc.claim-snapshot.v1.json";
+import dccClaimSnapshot from "../../../data/dcc.claim-snapshot.v1.json";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DECISION_PAGES, getDecisionPage } from "@/lib/decisionPages";
