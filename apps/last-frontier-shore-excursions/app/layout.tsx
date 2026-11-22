@@ -132,6 +132,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </Link>
                 <Link href="/about">About &amp; Disclosures</Link>
                 <Link href="/contact">Contact</Link>
+                <Link href="/privacy">Privacy</Link>
               </nav>
             </div>
             <div className="lfse-footer-bottom">

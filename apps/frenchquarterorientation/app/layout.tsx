@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,5 +17,15 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return (
+    <html lang="en"><body>
+      {children}
+      <footer><div className="shell">
+        <p>French Quarter Orientation — Independent New Orleans orientation resource. The orientation is 30 minutes. Live prices, availability, and final terms come from the relevant provider.</p>
+        <nav aria-label="Contact and policies" style={{ display: "flex", flexWrap: "wrap", gap: "12px 24px" }}>
+          <Link href="/">Home</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy</Link>
+        </nav>
+      </div></footer>
+    </body></html>
+  );
 }
