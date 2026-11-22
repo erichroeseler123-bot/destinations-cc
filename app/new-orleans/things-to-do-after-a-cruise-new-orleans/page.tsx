@@ -10,6 +10,7 @@ export default function Page() {
     eyebrow="After your cruise"
     title="Things to do in New Orleans after a cruise"
     intro="A post-cruise stay gives you more freedom than embarkation day because you are not working backward from a ship departure. Use the time you have left in New Orleans to choose one city experience or, with a full day, a longer Louisiana excursion."
+    showPortNolaSource
     decisionTitle="Match the tour to your departure day"
     decisionPoints={[
       "If you fly home later the same day, protect time for luggage, airport transportation and check-in.",

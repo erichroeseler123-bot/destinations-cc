@@ -1,4 +1,5 @@
 import Link from "next/link";
+import dccClaimSnapshot from "@/apps/welcometoneworleanstours/data/dcc.claim-snapshot.v1.json";
 import type { ReactNode } from "react";
 import ProductCard from "./ProductCard";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
@@ -39,6 +40,7 @@ type IntentTourPageProps = {
   inquiryNotice?: InquiryNotice;
   breadcrumbs?: WnoBreadcrumbItem[];
   topSlot?: ReactNode;
+  showPortNolaSource?: boolean;
 };
 
 const GOVERNED_INTENT_PATHS = new Set([
@@ -76,7 +78,14 @@ export default function IntentTourPage({
   inquiryNotice,
   breadcrumbs,
   topSlot,
+  showPortNolaSource = false,
 }: IntentTourPageProps) {
+  const portNolaClaim = showPortNolaSource
+    ? dccClaimSnapshot.claims.find((claim) => claim.claimId === "port-nola-cruise-terminal-locations")
+    : undefined;
+  const today = new Date().toISOString().slice(0, 10);
+  const portNolaCurrent = portNolaClaim?.status === "verified" && portNolaClaim.effectiveStatus === "verified" &&
+    portNolaClaim.checkedAt <= today && portNolaClaim.nextCheckAt >= today;
   const products = productSlugs
     .filter((slug) => !isHeldProduct(slug))
     .map((slug) => STOREFRONT_PRODUCTS.find((product) => product.slug === slug))
@@ -192,6 +201,17 @@ export default function IntentTourPage({
       )}
 
       {topSlot}
+
+      {portNolaClaim && (
+        <section data-testid="wno-dcc-claim-source" className="mx-auto max-w-6xl px-6 py-5 text-sm text-[#dcd5ca]">
+          <strong>Port NOLA terminal source:</strong>{" "}
+          <a href={portNolaClaim.authorityUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--nola-gold)] underline">
+            {portNolaClaim.authorityName}
+          </a>{" "}· {portNolaCurrent ? `Checked ${portNolaClaim.checkedAt}` : "Needs a fresh check"}{" "}·{" "}
+          <a href={`https://www.destinationcommandcenter.com/r/dcc-claim-${portNolaClaim.claimId}`} className="text-[var(--nola-gold)] underline">DCC research record</a>.
+          Check your ship documents for the actual terminal. This source does not establish airport transfer or tour-to-flight timing.
+        </section>
+      )}
 
       <section className="border-y border-[var(--nola-border)] bg-[var(--nola-surface-subtle)]">
         <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 md:grid-cols-[0.85fr_1.15fr]">

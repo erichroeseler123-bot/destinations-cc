@@ -1,4 +1,5 @@
 import React from "react";
+import dccClaimSnapshot from "../../data/dcc.claim-snapshot.v1.json";
 import {
   LFSE_CANONICAL_LINKS,
   TWO_HOUR_BUFFER_CLARIFICATION,
@@ -23,6 +24,10 @@ export default function SourcesAndFreshness({
   children,
 }: SourcesAndFreshnessProps) {
   const isLight = tone === "light";
+  const temscoClaim = dccClaimSnapshot.claims.find((claim) => claim.claimId === "temsco-juneau-weight-surcharge");
+  const today = new Date().toISOString().slice(0, 10);
+  const temscoCurrent = temscoClaim?.status === "verified" && temscoClaim.effectiveStatus === "verified" &&
+    temscoClaim.checkedAt <= today && temscoClaim.nextCheckAt >= today;
 
   return (
     <details
@@ -48,11 +53,24 @@ export default function SourcesAndFreshness({
           userSelect: "none",
         }}
       >
-        Sources and freshness (verified {VERIFIED_TARIFF_DATE_LONG})
+        Sources and freshness (operator pages checked {VERIFIED_TARIFF_DATE_LONG})
       </summary>
 
       <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
         {children}
+
+        {temscoClaim && (
+          <p style={{ margin: 0 }} data-testid="jfd-dcc-claim-source">
+            <strong>TEMSCO weight policy:</strong>{" "}
+            <a href={temscoClaim.authorityUrl} target="_blank" rel="noopener noreferrer"
+              style={{ color: isLight ? "#0369a1" : "#9ed9ff" }}>
+              {temscoClaim.authorityName}
+            </a>{" "}· {temscoCurrent ? `Checked ${temscoClaim.checkedAt}` : "Needs a fresh check"}{" "}·{" "}
+            <a href={`https://www.destinationcommandcenter.com/r/dcc-claim-${temscoClaim.claimId}`}
+              style={{ color: isLight ? "#0369a1" : "#9ed9ff" }}>DCC research record</a>.
+            This applies to the named TEMSCO product; check current operator terms before booking.
+          </p>
+        )}
 
         <p style={{ margin: 0 }}>
           <strong>Independent Guide Disclosure:</strong> Juneau Flight Deck is an
@@ -62,7 +80,7 @@ export default function SourcesAndFreshness({
         </p>
 
         <p style={{ margin: 0 }}>
-          <strong>Operator Tariffs &amp; Policies (verified {VERIFIED_TARIFF_DATE_LONG}):</strong>{" "}
+          <strong>Operator Tariffs &amp; Policies (checked {VERIFIED_TARIFF_DATE_LONG}):</strong>{" "}
           Published direct base prices, clothed weight-balance thresholds, seasonal
           snowpack windows, and cancellation rules were verified directly against{" "}
           <a

@@ -11,7 +11,9 @@
       "nextCheckAt": "2027-02-22",
       "status": "verified",
       "limitationsNote": "Statewide summary; posted local ordinances, markers and current conditions control at each landing.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "wi-boating-local-ordinances",
@@ -23,7 +25,9 @@
       "nextCheckAt": "2027-02-22",
       "status": "verified",
       "limitationsNote": "This does not certify bridge clearance, water depth, channel passability or individual dock access.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "chetek-city-boat-landing",
@@ -35,7 +39,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "Verify current fee, ramp condition and access with the city before travel; the City Beach at 228 Lakeview Drive is listed separately.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "barron-veterans-park-landing-2026",
@@ -47,7 +53,9 @@
       "nextCheckAt": "2026-12-31",
       "status": "verified",
       "limitationsNote": "2026 seasonal price only. Do not present it as a 2027 fee without a fresh county check.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "chetek-chain-public-landings-2026",
@@ -59,7 +67,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "DNR fisheries reporting groups five named lakes; the City of Chetek describes a chain of six lakes. Neither count verifies individual ramp facilities or present operating conditions.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "wi-boater-safety-certificate",
@@ -71,7 +81,9 @@
       "nextCheckAt": "2027-02-22",
       "status": "verified",
       "limitationsNote": "See the DNR page for the full exceptions and rental requirements; a simplified age rule is not sufficient.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "lake-country-marina-rentals",
@@ -83,7 +95,9 @@
       "nextCheckAt": "2026-12-31",
       "status": "verified",
       "limitationsNote": "Listed rates are a dated snapshot, not a guarantee of 2027 prices or available boats.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "lake-country-marina-delivery",
@@ -95,7 +109,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "The operator's listed delivery areas and fees should be confirmed before booking; do not promise delivery to a particular private dock.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "gilligans-chetek-address",
@@ -107,7 +123,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "Its lodging page includes a dock slip for lodging guests; that is not proof of drop-in restaurant docking, slip counts or water approach.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "gilligans-lodging-dock-slip",
@@ -119,7 +137,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "A lodging guest slip is not an offer of dock access for drop-in restaurant guests.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "hydroflites-aqua-theater",
@@ -131,7 +151,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "The official shows page lists 2026 dates; do not extend that schedule into 2027 without a new source check.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "red-rocks-post-show-pickup-jurassic-lot",
@@ -143,7 +165,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "Event-night traffic control staff and temporary lot closures control on site; accessible shuttles use separate designated pickup points.",
-      "sites": ["partyatredrocks"]
+      "sites": [
+        "partyatredrocks"
+      ]
     },
     {
       "claimId": "red-rocks-dropoff-and-lot-opening",
@@ -155,7 +179,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "Overnight camping in vehicles is prohibited, and overflow parking may be routed to the Jurassic Lot depending on arrival time.",
-      "sites": ["partyatredrocks"]
+      "sites": [
+        "partyatredrocks"
+      ]
     },
     {
       "claimId": "red-rocks-single-pocket-bag-policy",
@@ -167,7 +193,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "Individual shows may impose stricter camera, beverage-lid, or bag rules at the gates; glass, aluminum cans, umbrellas, and hard coolers are prohibited inside the venue.",
-      "sites": ["partyatredrocks"]
+      "sites": [
+        "partyatredrocks"
+      ]
     },
     {
       "claimId": "red-rocks-tailgating-and-lot-rules",
@@ -179,7 +207,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "Full-strength beer and wine in non-glass containers are allowed in parking lots subject to Colorado law, while beer kegs, hard liquor, vending, and bringing outside alcohol through the amphitheatre gates are prohibited.",
-      "sites": ["partyatredrocks"]
+      "sites": [
+        "partyatredrocks"
+      ]
     },
     {
       "claimId": "red-rocks-official-event-calendar",
@@ -191,7 +221,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "Show dates, support acts, and door times can change; confirm ticketed event times on the official calendar or AXS listing before show day.",
-      "sites": ["partyatredrocks"]
+      "sites": [
+        "partyatredrocks"
+      ]
     },
     {
       "claimId": "cdot-i70-traction-law",
@@ -203,7 +235,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "CDOT highly recommends AWD or 4WD in the mountains, and active corridor alerts or closures on COtrip.org control on travel day.",
-      "sites": ["gosno"]
+      "sites": [
+        "gosno"
+      ]
     },
     {
       "claimId": "cdot-passenger-chain-law",
@@ -215,7 +249,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "Check COtrip.org and overhead highway signs before departure; rental car agreements often restrict tire chain installation.",
-      "sites": ["gosno"]
+      "sites": [
+        "gosno"
+      ]
     },
     {
       "claimId": "epic-mountain-express-shared-shuttle-rates",
@@ -227,7 +263,9 @@
       "nextCheckAt": "2027-02-15",
       "status": "verified",
       "limitationsNote": "Dated operator tariff snapshot through April 30, 2027; exact shared-shuttle fares vary by travel date, pickup/drop-off type, baggage rules, and Epic Mountain Rewards discounts.",
-      "sites": ["gosno"]
+      "sites": [
+        "gosno"
+      ]
     },
     {
       "claimId": "cdot-bustang-snowstang-mountain-routes",
@@ -239,7 +277,9 @@
       "nextCheckAt": "2027-02-15",
       "status": "verified",
       "limitationsNote": "Travelers flying into DEN must connect via RTD commuter rail to Denver Union Station and match seasonal operating calendars and departure times.",
-      "sites": ["gosno"]
+      "sites": [
+        "gosno"
+      ]
     },
     {
       "claimId": "breck-free-ride-transit",
@@ -251,7 +291,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "Route frequencies and seasonal schedules change between winter peak and shoulder periods; steep private residential roads may still sit outside bus stops.",
-      "sites": ["gosno"]
+      "sites": [
+        "gosno"
+      ]
     },
     {
       "claimId": "mdt-us191-traveler-info",
@@ -263,7 +305,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "Canyon weather and crash closures can change rapidly; verify current MDT alerts right before departure.",
-      "sites": ["gosno"]
+      "sites": [
+        "gosno"
+      ]
     },
     {
       "claimId": "bzn-ground-transportation",
@@ -275,7 +319,65 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "Airport terminal staging rules do not establish seasonal carrier availability; check individual operator status before travel.",
-      "sites": ["gosno"]
+      "sites": [
+        "gosno"
+      ]
+    },
+    {
+      "claimId": "vacaya-caribbean-2027-charter",
+      "category": "schedule_access",
+      "claimText": "VACAYA advertises its Caribbean Cruise aboard Celebrity Beyond for February 14–21, 2027 as a full-ship charter.",
+      "authorityName": "VACAYA official 2027 Caribbean Cruise",
+      "authorityUrl": "https://www.myvacaya.com/trip/caribbean-cruise-2027/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2026-12-06",
+      "status": "verified",
+      "limitationsNote": "The organizer currently marks the cruise sold out. Itinerary, ports, booking access and onboard programming may change; check the current official trip and Get Ready pages before making plans.",
+      "sites": [
+        "cruisepromenade"
+      ]
+    },
+    {
+      "claimId": "temsco-juneau-weight-surcharge",
+      "category": "price_refund",
+      "claimText": "TEMSCO's Juneau Mendenhall Glacier tour lists a $150 surcharge for passengers weighing 250 pounds or more including shoes and clothing.",
+      "authorityName": "TEMSCO Helicopters official Mendenhall Glacier tour",
+      "authorityUrl": "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2026-12-06",
+      "status": "verified",
+      "limitationsNote": "This is a TEMSCO Juneau product policy, not a rule for Coastal, NorthStar, other TEMSCO products or all flights. Recheck the booking page and operator before purchase.",
+      "sites": [
+        "juneauflightdeck"
+      ]
+    },
+    {
+      "claimId": "ward-cove-2026-downtown-shuttle",
+      "category": "safety_navigation",
+      "claimText": "The Mill at Ward Cove publishes a complimentary shuttle to Berth IV in downtown Ketchikan, an approximately 20-minute drive each way, and asks visitors with appointments to allow at least 30 minutes to reach downtown.",
+      "authorityName": "The Mill at Ward Cove official schedules",
+      "authorityUrl": "https://wardcoveak.com/schedules/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2026-12-15",
+      "status": "verified",
+      "limitationsNote": "The displayed ship schedule is for 2026. Shuttle departure cutoffs vary by ship and date; the published drive time excludes queues, walking and embarkation. Recheck the applicable season and call before promising a tour fit.",
+      "sites": [
+        "last-frontier-shore-excursions"
+      ]
+    },
+    {
+      "claimId": "port-nola-cruise-terminal-locations",
+      "category": "schedule_access",
+      "claimText": "Port NOLA lists Carnival at Erato Street Cruise Terminal, 1100 Port of New Orleans Place, and Norwegian and Royal Caribbean at Julia Street Cruise Terminal, 920 Port of New Orleans Place.",
+      "authorityName": "Port of New Orleans official cruise directions",
+      "authorityUrl": "https://portnola.com/cruise/parking-directions/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2026-12-22",
+      "status": "verified",
+      "limitationsNote": "Verify your particular ship and terminal on the cruise line's travel documents. This source does not establish baggage time, airport transfer time, flight check-in cutoff or any guaranteed tour-to-flight connection.",
+      "sites": [
+        "welcometoneworleanstours"
+      ]
     }
   ]
 }

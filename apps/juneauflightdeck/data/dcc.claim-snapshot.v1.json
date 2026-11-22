@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "dcc.claim-snapshot.v1",
+  "sourcePath": "data/claims/dcc.claim-ledger.v1.json",
+  "sourceSha256": "2edb34d31d71bd492928bc74322c0f854cc55e9f9a9a02fdcf5ff816f29d7827",
+  "asOf": "2026-11-22",
+  "site": "juneauflightdeck",
+  "claims": [
+    {
+      "claimId": "temsco-juneau-weight-surcharge",
+      "category": "price_refund",
+      "claimText": "TEMSCO's Juneau Mendenhall Glacier tour lists a $150 surcharge for passengers weighing 250 pounds or more including shoes and clothing.",
+      "authorityName": "TEMSCO Helicopters official Mendenhall Glacier tour",
+      "authorityUrl": "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2026-12-06",
+      "status": "verified",
+      "limitationsNote": "This is a TEMSCO Juneau product policy, not a rule for Coastal, NorthStar, other TEMSCO products or all flights. Recheck the booking page and operator before purchase.",
+      "sites": [
+        "juneauflightdeck"
+      ],
+      "effectiveStatus": "verified"
+    }
+  ]
+}

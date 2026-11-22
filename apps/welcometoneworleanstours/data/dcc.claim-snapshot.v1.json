@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "dcc.claim-snapshot.v1",
+  "sourcePath": "data/claims/dcc.claim-ledger.v1.json",
+  "sourceSha256": "2edb34d31d71bd492928bc74322c0f854cc55e9f9a9a02fdcf5ff816f29d7827",
+  "asOf": "2026-11-22",
+  "site": "welcometoneworleanstours",
+  "claims": [
+    {
+      "claimId": "port-nola-cruise-terminal-locations",
+      "category": "schedule_access",
+      "claimText": "Port NOLA lists Carnival at Erato Street Cruise Terminal, 1100 Port of New Orleans Place, and Norwegian and Royal Caribbean at Julia Street Cruise Terminal, 920 Port of New Orleans Place.",
+      "authorityName": "Port of New Orleans official cruise directions",
+      "authorityUrl": "https://portnola.com/cruise/parking-directions/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2026-12-22",
+      "status": "verified",
+      "limitationsNote": "Verify your particular ship and terminal on the cruise line's travel documents. This source does not establish baggage time, airport transfer time, flight check-in cutoff or any guaranteed tour-to-flight connection.",
+      "sites": [
+        "welcometoneworleanstours"
+      ],
+      "effectiveStatus": "verified"
+    }
+  ]
+}

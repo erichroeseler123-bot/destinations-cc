@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import dccClaimSnapshot from "../../../data/dcc.claim-snapshot.v1.json";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DECISION_PAGES, getDecisionPage } from "@/lib/decisionPages";
@@ -49,6 +50,12 @@ export default async function DecisionPage({
   const { slug } = await params;
   const guide = getDecisionPage(slug);
   if (!guide) notFound();
+  const wardCoveClaim = guide.cruiseSafetyAdvice.some((advice) => advice.includes("Ward Cove"))
+    ? dccClaimSnapshot.claims.find((claim) => claim.claimId === "ward-cove-2026-downtown-shuttle")
+    : undefined;
+  const today = new Date().toISOString().slice(0, 10);
+  const wardCoveCurrent = wardCoveClaim?.status === "verified" && wardCoveClaim.effectiveStatus === "verified" &&
+    wardCoveClaim.checkedAt <= today && wardCoveClaim.nextCheckAt >= today;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -175,7 +182,7 @@ export default async function DecisionPage({
       <section className="section" style={{ background: "#ffffff", borderBottom: "1px solid var(--line)", padding: "24px 0" }}>
         <div className="shell">
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span className="badge badge-safety">2-Hour Return Buffer Rule</span>
+            <span className="badge badge-safety">Two-hour planning margin</span>
             <strong style={{ fontSize: "16px", color: "var(--deep)" }}>
               {guide.quickRule}
             </strong>
@@ -253,12 +260,26 @@ export default async function DecisionPage({
           ))}
 
           <div className="callout" style={{ marginTop: 24 }}>
-            <h3 style={{ marginTop: 0 }}>Cruise-Day All-Aboard Safety Rules</h3>
+            <h3 style={{ marginTop: 0 }}>Cruise-Day Planning Checks</h3>
+            <p>Returning two hours before your ship&apos;s confirmed all-aboard time is our independent planning margin, not a cruise-line or operator rule and not a guarantee.</p>
             <ul className="list">
               {guide.cruiseSafetyAdvice.map((advice, i) => (
-                <li key={i}>{advice}</li>
+                <li key={i}>{advice.includes("Enforce the 2-Hour Return Buffer Rule")
+                  ? "Plan to return at least two hours before your ship's confirmed all-aboard time; confirm the operator itinerary and ship instructions."
+                  : advice.includes("Ward Cove")
+                    ? "Ward Cove is separate from downtown Ketchikan. Check the terminal operator's shuttle schedule and allow for queues, walking and your ship's cutoff."
+                    : advice}</li>
               ))}
             </ul>
+            {wardCoveClaim && (
+              <p data-testid="lfse-dcc-claim-source" style={{ fontSize: 13, marginTop: 12 }}>
+                <strong>Ward Cove shuttle source:</strong>{" "}
+                <a href={wardCoveClaim.authorityUrl} target="_blank" rel="noopener noreferrer">{wardCoveClaim.authorityName}</a>{" "}
+                · {wardCoveCurrent ? `Checked ${wardCoveClaim.checkedAt}` : "Needs a fresh check"}{" "}·{" "}
+                <a href={`https://www.destinationcommandcenter.com/r/dcc-claim-${wardCoveClaim.claimId}`}>DCC research record</a>.
+                The published 2026 shuttle schedule does not confirm a 2027 ship call.
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -267,9 +288,9 @@ export default async function DecisionPage({
       <section className="section" id="recommendations" style={{ background: "#eef5f6" }}>
         <div className="shell">
           <p className="eyebrow" style={{ color: "var(--muted)" }}>Curated Options</p>
-          <h2>Recommended Cruise-Safe Excursions</h2>
+          <h2>Excursion Ideas to Check</h2>
           <p className="lead" style={{ color: "var(--muted)" }}>
-            These provider excursions match our return-to-ship timing standards and booking boundaries:
+            Confirm the exact product, meeting point, total duration and return time with the operator before booking. Search results are ideas, not verified ship-window matches:
           </p>
 
           <div className="grid" style={{ marginTop: 24 }}>

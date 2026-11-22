@@ -16,14 +16,14 @@ import {
 export const metadata: Metadata = {
   title: "Juneau Helicopter Tour Weight Limits, Surcharges & Seating Math | Juneau Flight Deck",
   description:
-    "Interactive Airbus AStar 350 helicopter weight & balance simulator and verified November 18, 2026 weight surcharge rules across TEMSCO (+$150 at 250+ lbs), Coastal ($609/$918 tiers), and NorthStar (+$250 at 250+ lbs).",
+    "Interactive Airbus AStar 350 helicopter weight & balance simulator and published November 18, 2026 weight surcharge rules across TEMSCO (+$150 at 250+ lbs), Coastal ($609/$918 tiers), and NorthStar (+$250 at 250+ lbs).",
   alternates: {
     canonical: "https://juneauflightdeck.com/juneau-helicopter-tour-weight-limits-and-seating",
   },
   openGraph: {
     title: "Juneau Helicopter Tour Weight Limits, Surcharges & Seating Math",
     description:
-      "Compare exact clothed weight surcharges across TEMSCO, Coastal, and NorthStar (verified November 18, 2026) and simulate 6-passenger AStar cabin balance.",
+      "Compare exact clothed weight surcharges across TEMSCO, Coastal, and NorthStar (checked November 18, 2026) and simulate 6-passenger AStar cabin balance.",
     url: "https://juneauflightdeck.com/juneau-helicopter-tour-weight-limits-and-seating",
   },
 };
@@ -32,7 +32,7 @@ const weightPageGuideSchema = buildFlightGuideJsonLd({
   url: "https://juneauflightdeck.com/juneau-helicopter-tour-weight-limits-and-seating",
   name: "Juneau Helicopter Tour Weight Limits, Surcharges & Seating Math",
   description:
-    "Independent educational guide and payload simulator explaining FAA Part 135 weight-and-balance rules and verified operator weight surcharges (as of November 18, 2026) for TEMSCO Helicopters, Coastal Helicopters, and NorthStar Trekking.",
+    "Independent educational guide and payload simulator explaining FAA Part 135 weight-and-balance rules and published operator weight surcharges (as of November 18, 2026) for TEMSCO Helicopters, Coastal Helicopters, and NorthStar Trekking.",
   breadcrumbs: [
     { name: "Home", url: "https://juneauflightdeck.com/" },
     {
@@ -91,7 +91,7 @@ export default function HelicopterWeightLimitsPage() {
       />
 
       <p className="eyebrow">
-        Independent Aviation Logistics Guide · Verified {VERIFIED_TARIFF_DATE_LONG}
+        Independent Aviation Logistics Guide · Checked {VERIFIED_TARIFF_DATE_LONG}
       </p>
       <h1
         style={{
@@ -177,7 +177,7 @@ export default function HelicopterWeightLimitsPage() {
             marginBottom: "6px",
           }}
         >
-          Verified Operator Weight Surcharges · As of {VERIFIED_TARIFF_DATE_LONG}
+          Published Operator Weight Surcharges · Checked {VERIFIED_TARIFF_DATE_LONG}
         </div>
         <h2
           style={{
@@ -202,7 +202,7 @@ export default function HelicopterWeightLimitsPage() {
               <tr style={{ borderBottom: "1px solid var(--line)", color: "var(--ice)" }}>
                 <th style={{ padding: "10px 12px", textAlign: "left" }}>Operator</th>
                 <th style={{ padding: "10px 12px", textAlign: "left" }}>
-                  Verified Base Tariffs (as of Nov 18, 2026)
+                  Published Base Tariffs (checked Nov 18, 2026)
                 </th>
                 <th style={{ padding: "10px 12px", textAlign: "left" }}>
                   Clothed Weight Surcharge Rule

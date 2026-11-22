@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "dcc.claim-snapshot.v1",
+  "sourcePath": "data/claims/dcc.claim-ledger.v1.json",
+  "sourceSha256": "2edb34d31d71bd492928bc74322c0f854cc55e9f9a9a02fdcf5ff816f29d7827",
+  "asOf": "2026-11-22",
+  "site": "last-frontier-shore-excursions",
+  "claims": [
+    {
+      "claimId": "ward-cove-2026-downtown-shuttle",
+      "category": "safety_navigation",
+      "claimText": "The Mill at Ward Cove publishes a complimentary shuttle to Berth IV in downtown Ketchikan, an approximately 20-minute drive each way, and asks visitors with appointments to allow at least 30 minutes to reach downtown.",
+      "authorityName": "The Mill at Ward Cove official schedules",
+      "authorityUrl": "https://wardcoveak.com/schedules/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2026-12-15",
+      "status": "verified",
+      "limitationsNote": "The displayed ship schedule is for 2026. Shuttle departure cutoffs vary by ship and date; the published drive time excludes queues, walking and embarkation. Recheck the applicable season and call before promising a tour fit.",
+      "sites": [
+        "last-frontier-shore-excursions"
+      ],
+      "effectiveStatus": "verified"
+    }
+  ]
+}
