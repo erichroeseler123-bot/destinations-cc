@@ -18,6 +18,7 @@ import "./wno-exact-surfaces.css";
 import "./wno-remake.css";
 import "@/app/new-orleans/data/truthLayerRuntime";
 import { WnoPublicHeader, WnoPublicFooter } from "./components/WnoPublicShell";
+import { WnoAnalyticsBridge } from "./components/WnoAnalyticsBridge";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.welcometoneworleanstours.com"),
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="flex flex-col min-h-screen">
           <JsonLd data={buildWnoSiteGraph()} />
           <FareHarborLightframeLoader />
+          <WnoAnalyticsBridge />
           <WnoFunnelTracker />
           <WnoPublicHeader />
           <main id="wno-main-content" className="flex-1 w-full relative">
