@@ -1,7 +1,7 @@
 {
   "schemaVersion": "dcc.claim-snapshot.v1",
   "sourcePath": "data/claims/dcc.claim-ledger.v1.json",
-  "sourceSha256": "f0a9c6db14431d44314de3f8c4766d8478887b6279de178b42ef23f096581fc7",
+  "sourceSha256": "2edb34d31d71bd492928bc74322c0f854cc55e9f9a9a02fdcf5ff816f29d7827",
   "asOf": "2026-11-22",
   "site": "juneauflightdeck",
   "claims": [

@@ -11,7 +11,9 @@
       "nextCheckAt": "2027-02-22",
       "status": "verified",
       "limitationsNote": "Statewide summary; posted local ordinances, markers and current conditions control at each landing.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "wi-boating-local-ordinances",
@@ -23,7 +25,9 @@
       "nextCheckAt": "2027-02-22",
       "status": "verified",
       "limitationsNote": "This does not certify bridge clearance, water depth, channel passability or individual dock access.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "chetek-city-boat-landing",
@@ -35,7 +39,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "Verify current fee, ramp condition and access with the city before travel; the City Beach at 228 Lakeview Drive is listed separately.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "barron-veterans-park-landing-2026",
@@ -47,7 +53,9 @@
       "nextCheckAt": "2026-12-31",
       "status": "verified",
       "limitationsNote": "2026 seasonal price only. Do not present it as a 2027 fee without a fresh county check.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "chetek-chain-public-landings-2026",
@@ -59,7 +67,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "DNR fisheries reporting groups five named lakes; the City of Chetek describes a chain of six lakes. Neither count verifies individual ramp facilities or present operating conditions.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "wi-boater-safety-certificate",
@@ -71,7 +81,9 @@
       "nextCheckAt": "2027-02-22",
       "status": "verified",
       "limitationsNote": "See the DNR page for the full exceptions and rental requirements; a simplified age rule is not sufficient.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "lake-country-marina-rentals",
@@ -83,7 +95,9 @@
       "nextCheckAt": "2026-12-31",
       "status": "verified",
       "limitationsNote": "Listed rates are a dated snapshot, not a guarantee of 2027 prices or available boats.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "lake-country-marina-delivery",
@@ -95,7 +109,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "The operator's listed delivery areas and fees should be confirmed before booking; do not promise delivery to a particular private dock.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "gilligans-chetek-address",
@@ -107,7 +123,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "Its lodging page includes a dock slip for lodging guests; that is not proof of drop-in restaurant docking, slip counts or water approach.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "gilligans-lodging-dock-slip",
@@ -119,7 +137,9 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "A lodging guest slip is not an offer of dock access for drop-in restaurant guests.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
     },
     {
       "claimId": "hydroflites-aqua-theater",
@@ -131,7 +151,177 @@
       "nextCheckAt": "2027-03-01",
       "status": "verified",
       "limitationsNote": "The official shows page lists 2026 dates; do not extend that schedule into 2027 without a new source check.",
-      "sites": ["blue-hills-outpost"]
+      "sites": [
+        "blue-hills-outpost"
+      ]
+    },
+    {
+      "claimId": "red-rocks-post-show-pickup-jurassic-lot",
+      "category": "safety_navigation",
+      "claimText": "Red Rocks Amphitheatre directs end-of-event passenger pickup for private vehicles, taxis, and Uber/Lyft to the Jurassic Lot just inside Entrance 2 off Highway 93, recommending the downhill walk via Will Call Trail across from the Trading Post and down Red Rocks Park Road.",
+      "authorityName": "Red Rocks Park & Amphitheatre — Getting Here",
+      "authorityUrl": "https://www.redrocksonline.com/plan-your-visit/getting-here/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "Event-night traffic control staff and temporary lot closures control on site; accessible shuttles use separate designated pickup points.",
+      "sites": [
+        "partyatredrocks"
+      ]
+    },
+    {
+      "claimId": "red-rocks-dropoff-and-lot-opening",
+      "category": "schedule_access",
+      "claimText": "Red Rocks event parking lots open 2 hours before event door time; limo and shuttle bus drop-off uses the Top Circle Lot (or Upper North Lot at traffic-control discretion), and unoccupied vehicles left past 10 a.m. the following day may be ticketed or towed.",
+      "authorityName": "Red Rocks Park & Amphitheatre — Getting Here",
+      "authorityUrl": "https://www.redrocksonline.com/plan-your-visit/getting-here/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "Overnight camping in vehicles is prohibited, and overflow parking may be routed to the Jurassic Lot depending on arrival time.",
+      "sites": [
+        "partyatredrocks"
+      ]
+    },
+    {
+      "claimId": "red-rocks-single-pocket-bag-policy",
+      "category": "operational_status",
+      "claimText": "Red Rocks prohibits multi-pocket bags inside the amphitheatre; permitted bags include single-pocket or clear bags up to 13\" x 15\" x 8\", small purses or fanny packs 6\" x 9\" or smaller, emptied hydration packs up to 2L (at most one extra pocket), six-pack soft coolers up to 10\" x 7\" x 7\", and food in 1-gallon clear plastic bags, and items must fit under the 18\" x 12\" seat space.",
+      "authorityName": "Red Rocks Park & Amphitheatre — Permitted & Prohibited Items",
+      "authorityUrl": "https://www.redrocksonline.com/plan-your-visit/permitted-prohibited-items/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "Individual shows may impose stricter camera, beverage-lid, or bag rules at the gates; glass, aluminum cans, umbrellas, and hard coolers are prohibited inside the venue.",
+      "sites": [
+        "partyatredrocks"
+      ]
+    },
+    {
+      "claimId": "red-rocks-tailgating-and-lot-rules",
+      "category": "operational_status",
+      "claimText": "Red Rocks confines tailgating to the rear of your vehicle without blocking adjacent spaces, prohibits glass containers parkwide as well as tents, canopies, amplified sound, portable generators, open-flame fires, and charcoal grills, and allows small propane grills (at least 12\" off the ground, flame 6\" or under) only when no temporary fire ban is in effect.",
+      "authorityName": "Red Rocks Park & Amphitheatre — Official FAQ",
+      "authorityUrl": "https://www.redrocksonline.com/plan-your-visit/faq/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "Full-strength beer and wine in non-glass containers are allowed in parking lots subject to Colorado law, while beer kegs, hard liquor, vending, and bringing outside alcohol through the amphitheatre gates are prohibited.",
+      "sites": [
+        "partyatredrocks"
+      ]
+    },
+    {
+      "claimId": "red-rocks-official-event-calendar",
+      "category": "schedule_access",
+      "claimText": "Red Rocks Park & Amphitheatre publishes official concert, film, and fitness event dates and door times on its Event Calendar.",
+      "authorityName": "Red Rocks Park & Amphitheatre — Event Calendar",
+      "authorityUrl": "https://www.redrocksonline.com/events/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "Show dates, support acts, and door times can change; confirm ticketed event times on the official calendar or AXS listing before show day.",
+      "sites": [
+        "partyatredrocks"
+      ]
+    },
+    {
+      "claimId": "cdot-i70-traction-law",
+      "category": "safety_navigation",
+      "claimText": "Colorado's Passenger Vehicle Traction Law applies on I-70 between Morrison and Dotsero from Sept. 1 through May 31 (and on any state highway when conditions warrant), requiring 3/16\" minimum tread depth on winter or all-weather (mountain-snowflake or M+S/M/S) tires, or carrying chains or a CDOT-approved alternative traction device; non-compliance carries a $100 fine plus $33 surcharge, or a $500 fine plus $157 surcharge if a travel lane is blocked.",
+      "authorityName": "Colorado Department of Transportation — Traction and Chain Laws",
+      "authorityUrl": "https://www.codot.gov/travel/winter-driving/tractionlaw",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "CDOT highly recommends AWD or 4WD in the mountains, and active corridor alerts or closures on COtrip.org control on travel day.",
+      "sites": [
+        "gosno"
+      ]
+    },
+    {
+      "claimId": "cdot-passenger-chain-law",
+      "category": "safety_navigation",
+      "claimText": "During severe winter storms as the final safety measure before a highway closure, CDOT implements the Passenger Vehicle Chain Law requiring every passenger vehicle—including AWD and 4WD vehicles—to have chains or an approved alternative traction device installed.",
+      "authorityName": "Colorado Department of Transportation — Traction and Chain Laws",
+      "authorityUrl": "https://www.codot.gov/travel/winter-driving/tractionlaw",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "Check COtrip.org and overhead highway signs before departure; rental car agreements often restrict tire chain installation.",
+      "sites": [
+        "gosno"
+      ]
+    },
+    {
+      "claimId": "epic-mountain-express-shared-shuttle-rates",
+      "category": "price_refund",
+      "claimText": "Epic Mountain Express lists shared Denver Airport shuttle rates through April 30, 2027 at $59–$129 per guest door-to-door ($49–$119 to transfer centers) for Breckenridge, Keystone, Frisco, Silverthorne, and Copper, and $69–$139 per guest door-to-door ($59–$129 to Vail Transfer Center) for Vail, Beaver Creek, and Avon, plus a $5/seat same-day booking fee.",
+      "authorityName": "Epic Mountain Express — Shuttle Service Rates",
+      "authorityUrl": "https://www.epicmountainexpress.com/shuttle-rates",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-02-15",
+      "status": "verified",
+      "limitationsNote": "Dated operator tariff snapshot through April 30, 2027; exact shared-shuttle fares vary by travel date, pickup/drop-off type, baggage rules, and Epic Mountain Rewards discounts.",
+      "sites": [
+        "gosno"
+      ]
+    },
+    {
+      "claimId": "cdot-bustang-snowstang-mountain-routes",
+      "category": "schedule_access",
+      "claimText": "CDOT's Bustang network lists West Line, Pegasus (Denver–Avon), and seasonal Snowstang mountain bus routes serving Arapahoe Basin, Breckenridge, Copper Mountain, and Loveland Ski Area from Denver-area transit hubs rather than directly from Denver International Airport.",
+      "authorityName": "Colorado Department of Transportation — Bustang & Snowstang Routes",
+      "authorityUrl": "https://ridebustang.com/routes/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-02-15",
+      "status": "verified",
+      "limitationsNote": "Travelers flying into DEN must connect via RTD commuter rail to Denver Union Station and match seasonal operating calendars and departure times.",
+      "sites": [
+        "gosno"
+      ]
+    },
+    {
+      "claimId": "breck-free-ride-transit",
+      "category": "operational_status",
+      "claimText": "Breck Free Ride operates fare-free local public transit buses across the Town of Breckenridge and Breckenridge Ski Resort.",
+      "authorityName": "Town of Breckenridge — Breck Free Ride Transit",
+      "authorityUrl": "https://www.breckfreeride.com/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "Route frequencies and seasonal schedules change between winter peak and shoulder periods; steep private residential roads may still sit outside bus stops.",
+      "sites": [
+        "gosno"
+      ]
+    },
+    {
+      "claimId": "mdt-us191-traveler-info",
+      "category": "safety_navigation",
+      "claimText": "The Montana Department of Transportation publishes live road condition reports, highway cameras, incidents, construction, and closure alerts for US-191 through Gallatin Canyon and MT-64 into Big Sky.",
+      "authorityName": "Montana Department of Transportation — Traveler Information",
+      "authorityUrl": "https://www.mdt.mt.gov/travinfo/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "Canyon weather and crash closures can change rapidly; verify current MDT alerts right before departure.",
+      "sites": [
+        "gosno"
+      ]
+    },
+    {
+      "claimId": "bzn-ground-transportation",
+      "category": "operational_status",
+      "claimText": "Bozeman Yellowstone International Airport (BZN) publishes official terminal ground transportation, shuttle, rental car, and rideshare pickup guidance.",
+      "authorityName": "Bozeman Yellowstone International Airport — Ground Transportation",
+      "authorityUrl": "https://bozemanairport.com/ground-transportation",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "Airport terminal staging rules do not establish seasonal carrier availability; check individual operator status before travel.",
+      "sites": [
+        "gosno"
+      ]
     },
     {
       "claimId": "vacaya-caribbean-2027-charter",
@@ -143,7 +333,9 @@
       "nextCheckAt": "2026-12-06",
       "status": "verified",
       "limitationsNote": "The organizer currently marks the cruise sold out. Itinerary, ports, booking access and onboard programming may change; check the current official trip and Get Ready pages before making plans.",
-      "sites": ["cruisepromenade"]
+      "sites": [
+        "cruisepromenade"
+      ]
     },
     {
       "claimId": "temsco-juneau-weight-surcharge",
@@ -155,7 +347,9 @@
       "nextCheckAt": "2026-12-06",
       "status": "verified",
       "limitationsNote": "This is a TEMSCO Juneau product policy, not a rule for Coastal, NorthStar, other TEMSCO products or all flights. Recheck the booking page and operator before purchase.",
-      "sites": ["juneauflightdeck"]
+      "sites": [
+        "juneauflightdeck"
+      ]
     },
     {
       "claimId": "ward-cove-2026-downtown-shuttle",
@@ -167,7 +361,9 @@
       "nextCheckAt": "2026-12-15",
       "status": "verified",
       "limitationsNote": "The displayed ship schedule is for 2026. Shuttle departure cutoffs vary by ship and date; the published drive time excludes queues, walking and embarkation. Recheck the applicable season and call before promising a tour fit.",
-      "sites": ["last-frontier-shore-excursions"]
+      "sites": [
+        "last-frontier-shore-excursions"
+      ]
     },
     {
       "claimId": "port-nola-cruise-terminal-locations",
@@ -179,7 +375,9 @@
       "nextCheckAt": "2026-12-22",
       "status": "verified",
       "limitationsNote": "Verify your particular ship and terminal on the cruise line's travel documents. This source does not establish baggage time, airport transfer time, flight check-in cutoff or any guaranteed tour-to-flight connection.",
-      "sites": ["welcometoneworleanstours"]
+      "sites": [
+        "welcometoneworleanstours"
+      ]
     }
   ]
 }
