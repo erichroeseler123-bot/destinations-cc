@@ -2,8 +2,8 @@
  * Export DCC's canonical hosted catalog for a consumer such as Cruise Promenade.
  *
  * Usage:
- *   npx tsx scripts/dcc/export-hosted-catalog-snapshot.ts --write ../cruisepromenade/src/data/dcc-hosted-catalog.snapshot.json
- *   npx tsx scripts/dcc/export-hosted-catalog-snapshot.ts --check ../cruisepromenade/src/data/dcc-hosted-catalog.snapshot.json
+ *   npx tsx scripts/dcc/export-hosted-catalog-snapshot.ts --write ../cruisepromenade/src/generated/dcc-hosted-catalog.snapshot.json
+ *   npx tsx scripts/dcc/export-hosted-catalog-snapshot.ts --check ../cruisepromenade/src/generated/dcc-hosted-catalog.snapshot.json
  */
 import { readFile, writeFile } from "node:fs/promises";
 import { isDeepStrictEqual } from "node:util";
