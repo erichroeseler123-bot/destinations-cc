@@ -752,6 +752,7 @@ test("Extend /operators/onboarding with two choices: Read-only Jean Lafitte (#76
     assert.equal(trace.queryParamsVerified.asn, "aktourcenter");
     assert.equal(trace.queryParamsVerified.ref, trace.referralReferenceTag);
     assert.equal(trace.queryParamsVerified.customTracking, trace.referralReferenceTag);
+    assert.ok(trace.queryParamsVerified.date > new Date().toISOString().slice(0, 10), "QA trace must use a future travel date");
     assert.equal(trace.pricingSummary.subtotalPartyPriceCents, 12400);
     assert.equal(trace.pricingSummary.totalPartyPriceIncludingFeesCents, 13144);
     assert.equal(trace.ledgerVerification.verifiedInLedger, true);

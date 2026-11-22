@@ -193,17 +193,19 @@ test("Journey C: 7 people from Denver airport to Vail with ski bags separates pa
   assert.ok(evidence.citations.length >= 4);
   assert.ok(evidence.citations.every((c) => /^\d{4}-\d{2}-\d{2}$/.test(c.checkedAt)));
   assert.ok(evidence.citations.some((c) => /gosno\.co\/vail/i.test(c.url)));
-  assert.ok(evidence.citations.some((c) => c.url === "https://www.epicmountainexpress.com/shuttle-rates" && c.checkedAt === "2026-11-02"));
+  assert.ok(evidence.citations.some((c) => c.url === "https://www.epicmountainexpress.com/shuttle-rates" && c.checkedAt === "2026-11-06"));
   assert.ok(evidence.citations.some((c) => /codot\.gov/i.test(c.url)));
 
   // Capacity separation & honest pricing/unknowns
-  assert.match(answer, /cannot fit in a single standard private SUV/i);
-  assert.match(answer, /\$499/);
+  assert.match(answer, /private SUVs up to 6 pax/i);
+  assert.match(answer, /private vans up to 10 pax/i);
+  assert.match(answer, /subject to luggage and ski-gear fit/i);
+  assert.match(answer, /Check current price with GoSno/i);
   assert.match(answer, /quoteOnly: true/);
   assert.match(answer, /C\.R\.S\. § 42-4-106/);
   assert.match(answer, /Bustang/i);
   assert.match(answer, /vary by travel date/i);
-  assert.match(answer, /verified 2026-11-02/i);
+  assert.match(answer, /verified 2026-11-06/i);
 
   // Specific context-preserving handoff URL to GoSno /vail using parameters parsed by gosno.co/vail client bundle
   assert.ok(evidence.handoff);

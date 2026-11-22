@@ -15,6 +15,10 @@ on:
       - "tests/dcc/satellite-truth-linkage.test.ts"
       - "scripts/dcc/audit-site-truth-live.ts"
       - ".github/workflows/dcc-truth-audit.yml"
+      - "data/claims/dcc.claim-ledger.v1.json"
+      - "scripts/dcc/report-claim-freshness.mjs"
+      - "tests/dcc/claim-freshness.test.mjs"
+      - "apps/**/data/dcc.claim-snapshot.v1.json"
   workflow_dispatch:
 
 permissions:
@@ -34,6 +38,10 @@ jobs:
           npx --yes tsx --test
           tests/dcc/site-truth.test.ts
           tests/dcc/satellite-truth-linkage.test.ts
+      - name: Check dated claim sources
+        run: |
+          node --test tests/dcc/claim-freshness.test.mjs
+          node scripts/dcc/report-claim-freshness.mjs --fail-on-problem
 
   live-truth:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'

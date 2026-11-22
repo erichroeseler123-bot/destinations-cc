@@ -54,6 +54,15 @@ export type CheckoutOnboardingReferralTrace = {
   };
 };
 
+function nextChicagoQaDate(): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  return new Date(Date.UTC(Number(values.year), Number(values.month) - 1, Number(values.day) + 7))
+    .toISOString().slice(0, 10);
+}
+
 export async function traceCheckoutOnboardingReferral(params: {
   application: PublicOperatorOnboardingRecord;
   placementId?: string;
@@ -65,7 +74,7 @@ export async function traceCheckoutOnboardingReferral(params: {
   const { application } = params;
   const placementId = (params.placementId || "nola-hotel-monteleone-demo-pilot").trim();
   const propertySlug = (params.propertySlug || "hotel-monteleone").trim();
-  const date = (params.date || "2026-11-18").trim();
+  const date = (params.date || nextChicagoQaDate()).trim();
   const adults = typeof params.adults === "number" && params.adults > 0 ? params.adults : 2;
   const isTest = params.isTest !== false;
 
@@ -519,7 +528,7 @@ export async function buildJeanLafitteOnboardingLifecyclePreview(options: {
     application: reviewed.application,
     placementId: "nola-hotel-monteleone-demo-pilot",
     propertySlug: "hotel-monteleone",
-    date: "2026-11-18",
+    date: nextChicagoQaDate(),
     adults: 2,
     isTest: true,
   });
