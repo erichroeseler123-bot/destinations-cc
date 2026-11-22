@@ -7,6 +7,10 @@ import {
   resolveMachineReference,
   toPublicCitationProjection,
 } from "@/lib/dcc/machine";
+import {
+  buildPublicLedgerClaimResponse,
+  isPublicLedgerClaimId,
+} from "@/lib/dcc/claims/publicLedger";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +46,9 @@ async function handleReferenceRequest(
   }
 
   const decodedId = decodeURIComponent(id);
+  if (isPublicLedgerClaimId(decodedId)) {
+    return buildPublicLedgerClaimResponse(request, decodedId, headOnly);
+  }
   if (decodedId.startsWith("evref:")) {
     const store = getV03RuntimeStore();
     await ensureRuntimeStoreHydratedFromNeon(store);
