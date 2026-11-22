@@ -499,11 +499,11 @@ export const FOUNDING_PILOT_SAILINGS: readonly CanonicalHostedSailingFactRecord[
     goodForTags: ["Continuing education (CEUs)", "New Orleans departures"],
     lifecycleStatus: "upcoming",
     primarySourceUrl: "https://www.theonlineitinerant.com/cruise-2027",
-    organizerSourceCheckedAt: "2026-11-16T18:11:55Z",
+    organizerSourceCheckedAt: "2026-11-22T17:45:00Z",
     verificationState: "schedule_hold",
     portScheduleVerificationMode: "clocked_port_windows",
     scheduleHoldReason:
-      "Held on Preview (noindex) for explicit DCC source-conflict review: official /cruise-2027 page and PDF Page 1/3 specify Carnival Valor (Jan 14–18, 2027 from New Orleans), whereas PDF Page 3 FAQ ('What should I wear to dinner?') instructs attendees to 'Watch the Royal Caribbean app for info on themed nights.' Also registration is closed and /member-registration-conference-cruise returns 404.",
+      "Re-checked 2026-11-22: theonlineitinerant.com/cruise-2027 registration remains closed ('*REGISTRATION IS NOW CLOSED*') and official PDF Page 3 FAQ still references the Royal Caribbean app vs. Carnival Valor on Pages 1/3.",
   },
   {
     hostedSailingId: "hosted-sailing:king-con-cruise:ncl:norwegian-joy:2027-02-22",
@@ -561,11 +561,11 @@ export const FOUNDING_PILOT_SAILINGS: readonly CanonicalHostedSailingFactRecord[
     goodForTags: ["Tabletop & D&D gamers", "Bahamas getaways from Miami"],
     lifecycleStatus: "upcoming",
     primarySourceUrl: "https://kingconcruise.com/",
-    organizerSourceCheckedAt: "2026-11-16T18:20:08Z",
+    organizerSourceCheckedAt: "2026-11-22T17:45:00Z",
     verificationState: "schedule_hold",
     portScheduleVerificationMode: "official_day_by_day_route",
     scheduleHoldReason:
-      "Held on Preview (noindex) pending DCC schedule reconciliation: kingconcruise.com/morestuff/ lists Day 2 Great Stirrup Cay / Day 3 At Sea, whereas Academy Travel's Travefy itinerary lists Day 2 At Sea / Day 3 Great Stirrup Cay (with 7:00 AM–5:00 PM vs 8:00 AM–6:00 PM window discrepancy), and /faq/ retains stale Royal Caribbean / 5-night copy.",
+      "Re-checked 2026-11-22: kingconcruise.com returns HTTP 406 Mod_Security to automated verification and the Day 2 vs. Day 3 Great Stirrup Cay / At Sea conflict between /morestuff/ and Academy Travel Travefy (plus /faq/ stale Royal Caribbean 5-night text) remains unresolved.",
   },
   {
     hostedSailingId: "hosted-sailing:the-fan-cruise:rccl:mariner-of-the-seas:2027-04-03",
@@ -622,11 +622,11 @@ export const FOUNDING_PILOT_SAILINGS: readonly CanonicalHostedSailingFactRecord[
     goodForTags: ["Alliance RV owners", "New Orleans departures"],
     lifecycleStatus: "upcoming",
     primarySourceUrl: "https://www.fan-cruise.com/famally2027",
-    organizerSourceCheckedAt: "2026-11-16T18:13:38Z",
+    organizerSourceCheckedAt: "2026-11-22T17:45:00Z",
     verificationState: "schedule_hold",
     portScheduleVerificationMode: "official_day_by_day_route",
     scheduleHoldReason:
-      "Held on Preview (noindex) until exact New Orleans embarkation/debarkation clock times and reconciled Royal Caribbean port windows are verified.",
+      "Re-checked 2026-11-22: fan-cruise.com/famally2027 lists port order (New Orleans, Cozumel, Grand Cayman, Falmouth) without clock hours, and royalcaribbean.com (MA07MSY-1227888471) renders 2027-04-03 port times client-side only; held pending static first-party Royal Caribbean or Port NOLA berth clock publication.",
   },
   {
     hostedSailingId: "hosted-sailing:the-fan-cruise:ccl:carnival-jubilee:2027-04-11",
@@ -684,11 +684,9 @@ export const FOUNDING_PILOT_SAILINGS: readonly CanonicalHostedSailingFactRecord[
     goodForTags: ["Baseball fans", "Galveston departures"],
     lifecycleStatus: "upcoming",
     primarySourceUrl: "https://www.fan-cruise.com/astros2027",
-    organizerSourceCheckedAt: "2026-11-16T18:13:38Z",
-    verificationState: "schedule_hold",
-    portScheduleVerificationMode: "official_day_by_day_route",
-    scheduleHoldReason:
-      "Held on Preview (noindex) until exact ship arrival and departure clock times at Galveston, Cozumel, and Mahogany Bay are reconciled from official Carnival schedule.",
+    organizerSourceCheckedAt: "2026-11-22T17:45:00Z",
+    verificationState: "verified",
+    portScheduleVerificationMode: "clocked_port_windows",
   },
   {
     hostedSailingId: "hosted-sailing:the-fan-cruise:ccl:carnival-breeze:2027-11-06",
@@ -746,11 +744,9 @@ export const FOUNDING_PILOT_SAILINGS: readonly CanonicalHostedSailingFactRecord[
     goodForTags: ["Football fans", "Galveston departures"],
     lifecycleStatus: "upcoming",
     primarySourceUrl: "https://www.fan-cruise.com/texans2027",
-    organizerSourceCheckedAt: "2026-11-16T18:13:38Z",
-    verificationState: "schedule_hold",
-    portScheduleVerificationMode: "official_day_by_day_route",
-    scheduleHoldReason:
-      "Held on Preview (noindex) pending DCC verification of Galveston embark/debark clock times and internal prose typo on /texans2027 ('Saturday, November 7 – Saturday, November 14' in prose vs correct Saturday Nov 6 – Saturday Nov 13, 2027 in banner, booking form, and event lineup).",
+    organizerSourceCheckedAt: "2026-11-22T17:45:00Z",
+    verificationState: "verified",
+    portScheduleVerificationMode: "clocked_port_windows",
   },
 ];
 

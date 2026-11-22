@@ -24,8 +24,8 @@ import {
   FOUNDING_PILOT_SAILINGS,
 } from "./foundingOrganizerPilotCohort";
 
-export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-16T18:30:00Z" as const;
-export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-16.v6-founding-pilot-preview" as const;
+export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-22T18:30:59Z" as const;
+export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-22.v7-source-reconciled" as const;
 
 export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrganizerFactRecord> = [
   {
@@ -7117,7 +7117,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Couples & friends"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-20T22:25:00Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "vesselType": "Oasis-class ocean ship",
@@ -7422,7 +7422,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Oasis-class ship"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-20T22:25:00Z",
     "organizerType": "independent_charter_operator",
     "experienceClassification": "full_ship_charter",
     "vesselType": "Oasis-class mega ocean ship",
@@ -7600,7 +7600,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "First-timers"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-20T22:25:00Z",
     "organizerType": "independent_charter_operator",
     "experienceClassification": "full_ship_charter",
     "vesselType": "Edge-class luxury ocean ship",
@@ -7968,8 +7968,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "scheduleHoldReason": "MSC Cruises first-party itinerary portal (msccruisesusa.com) blocks automated schedule verification and official July 2027 port-authority berth clock hours are not yet published for Miami, Puerto Plata, San Juan, and Ocean Cay.",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "scheduleHoldReason": "Re-checked 2026-11-22: debusktravels.com/GroupRegistrations/view/142382 publishes route summary only (Miami, Dominican Republic, San Juan, Ocean Cay) without port clock hours, msccruisesusa.com blocks automated schedule verification, and official July 2027 port-authority berth clocks are not yet published.",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.debusktravels.com/GroupRegistrations/view/142382",
@@ -8996,8 +8996,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
-    "scheduleHoldReason": "Private full-ship charter omitted from Carnival retail schedule; Port Canaveral confirms turnaround hours, while organizer pages list conflicting Day 3 Bahamas port calls (Princess Cays vs. Half Moon Cay) pending official confirmation.",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "scheduleHoldReason": "Re-checked 2026-11-22: private full-ship charter omitted from Carnival retail schedule; templetontours.com/singingatsea/ prose still names Princess Cays on Wednesday while templetontours.com/singingatsea/itinerary.shtml lists Half Moon Cay (7:30 AM–3:30 PM) and Grand Turk (11:30 AM–6:00 PM)—held until organizer reconciles the Day 3 Bahamas island.",
     "organizerType": "independent_charter_operator",
     "experienceClassification": "full_ship_charter",
     "primarySourceUrl": "https://templetontours.com/singingatsea/",
@@ -11787,7 +11787,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Sandy Beaches Cruise",
       "Western Caribbean & Mexico"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Live Americana, blues, roots, and Texas roadhouse sets + unscripted artist jams featuring Keb' Mo', JJ Grey & Mofro, John Hiatt, The Mavericks & Friends, St. Paul & The Broken Bones, The California Honeydrops, The Band of Heathens, Paul Thorn, Marc Broussard, Shinyribs, Sue Foley, and Mike Zito.",
     "programmingSourceUrl": "https://sandybeachescruises.com/",
     "soloSupport": "Dedicated Interior (Singles) staterooms (Categories M, MM, N) at $3,465 all-in (currently Waitlist); no organizer-run roommate matching.",
     "soloFriendly": true,
@@ -11802,7 +11802,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://sandybeachescruises.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11850,7 +11850,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "David Foster: The Hitman Cruise",
       "Western Caribbean & Mexico"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Live nightly performances curated and directed by 16-time GRAMMY winner David Foster starring Michael McDonald, Dianne Reeves, Leslie Odom Jr., Katharine McPhee, and special guest Erich Bergen.",
     "programmingSourceUrl": "https://davidfosteratsea.com/",
     "soloSupport": "Dedicated Inside Single (Category IS, Deck 3) available at $3,700 + $300 Pass-Through Charges, and Veranda Single (VS, Deck 10) at $5,300 + $350 (Waitlist).",
     "soloFriendly": true,
@@ -11865,7 +11865,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://davidfosteratsea.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-20T22:25:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11913,7 +11913,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Big Easy Cruise",
       "Eastern Caribbean & Bahamas"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Multi-stage New Orleans funk, blues, zydeco, brass band parades, and Crescent City chef demos featuring Keb' Mo', Samantha Fish, Galactic ft. Jelly Joseph, Robert Randolph, Anders Osborne, The Record Company, Kenny Neal, Duane Betts & Palmetto Motel, Jon Cleary & The Absolute Monster Gentlemen, Blind Boys of Alabama, Sue Foley, and Dwayne Dopsie & the Zydeco Hellraisers.",
     "programmingSourceUrl": "https://bigeasycruise.com/",
     "soloSupport": "Dedicated Interior Stateroom (Singles, Categories M, MM, N) at $3,849 all-in (Waitlist); no roommate-matching program.",
     "soloFriendly": true,
@@ -11928,7 +11928,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://bigeasycruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11976,7 +11976,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "The Jazz Cruise",
       "Western Caribbean & Mexico"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "200+ hours of straight-ahead jazz performances, jam sessions, and artist forums hosted by Emmet Cohen with Music Director Eric Marienthal, starring Dee Dee Bridgewater, Christian McBride, Kurt Elling, Cécile McLorin Salvant, Bill Charlap Trio, Catherine Russell, John Pizzarelli, Randy Brecker, and Wycliffe Gordon.",
     "programmingSourceUrl": "https://thejazzcruise.com/",
     "soloSupport": "Dedicated Inside Single (IS, Deck 3) at $4,500 + $400 Pass-Through Charges and Veranda Single (VS, Deck 10) at $6,600 + $425 Pass-Through Charges (both currently Join Waitlist).",
     "soloFriendly": true,
@@ -11991,7 +11991,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://thejazzcruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:00:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12039,7 +12039,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Journey of Jazz",
       "Western Caribbean & Mexico"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Co-hosted by Marcus Miller and Gregory Porter with nightly main-stage jazz concerts, late-night club sets, musician Q&As, and curated jazz history sessions.",
     "programmingSourceUrl": "https://journeyofjazz.com/",
     "soloSupport": "Dedicated Inside Single (IS, Deck 3) at $4,850 + $400 Pass-Through Charges and Veranda Single (VS, Deck 10) at $6,800 + $425 (both currently Join Waitlist; double Inside open at $2,800/pp).",
     "soloFriendly": true,
@@ -12054,7 +12054,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://journeyofjazz.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12102,7 +12102,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "The Smooth Jazz Cruise",
       "Western Caribbean & Mexico"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Hosted by Marcus Miller with nightly contemporary & smooth jazz main-theater shows, late-night lounge sets, artist Q&As, and intimate jam sessions across Celebrity Summit ('27.1 sailing).",
     "programmingSourceUrl": "https://thesmoothjazzcruise.com/27-1/home/",
     "soloSupport": "Dedicated Inside Single (IS, Deck 3) at $4,750 + $400 Pass-Through Charges and Veranda Single (VS, Deck 10) at $6,600 + $425 (Waitlist).",
     "soloFriendly": true,
@@ -12117,7 +12117,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://thesmoothjazzcruise.com/27-1/home/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12165,7 +12165,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "The Country Music Cruise",
       "Eastern Caribbean & Bahamas"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Nightly main-stage country concerts, Grand Ole Opry at Sea, gospel hour, songwriter workshops, and line dancing featuring Clint Black, Wynonna Judd, Joe Nichols, The Bellamy Brothers, Neal McCoy, Brothers of the Heart, Jimmy Fortune, Rhonda Vincent, Darryl Worley, T.G. Sheppard, Billy Dean, and Moe Bandy.",
     "programmingSourceUrl": "https://countrymusiccruise.com/",
     "soloSupport": "Dedicated Single Inside Stateroom (Category SINGLES) at $3,899 all-in (Waitlist); no roommate-matching program.",
     "soloFriendly": true,
@@ -12180,7 +12180,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://countrymusiccruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12228,7 +12228,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "The Smooth Jazz Cruise",
       "Western Caribbean & Mexico"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Hosted by Marcus Miller with nightly contemporary & smooth jazz main-theater concerts, late-night lounge sets, artist Q&As, and jam sessions across Celebrity Summit ('27.2 sailing).",
     "programmingSourceUrl": "https://thesmoothjazzcruise.com/27-2/home/",
     "soloSupport": "Dedicated Inside Single (IS, Deck 3) at $4,750 + $400 Pass-Through Charges and Veranda Single (VS, Deck 10) at $6,600 + $425 (Waitlist).",
     "soloFriendly": true,
@@ -12243,7 +12243,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://thesmoothjazzcruise.com/27-2/home/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12291,7 +12291,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Soul Train Cruise",
       "Southern Caribbean (ABC Islands)"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Classic R&B and soul concerts, Soul Train Line dance parties, comedy, and Q&As featuring The Isley Brothers, Stephanie Mills, Maze, Patrice Rushen, Al McKay's Earth, Wind & Fire Experience, Russell Thompkins, Jr. & The New Stylistics, Evelyn 'Champagne' King, The Chi-Lites, Ready for the World, Maxi Priest, and Dazz Band.",
     "programmingSourceUrl": "https://soultraincruise.com/",
     "soloSupport": "Dedicated Single Inside Stateroom (Category SINGLES) at $3,950 all-in (Waitlist); no roommate-matching program.",
     "soloFriendly": true,
@@ -12306,7 +12306,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://soultraincruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12354,7 +12354,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Ultimate Disco Cruise",
       "Eastern Caribbean & Bahamas"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Nightly disco & funk concerts, Studio 54-inspired dance parties, roller disco, and artist Q&As featuring Kool & The Gang, Gloria Gaynor, The Spinners, Jody Watley, Russell Thompkins, Jr. & The New Stylistics, Al McKay's Earth, Wind & Fire Experience, Lisa Lisa, The Trammps ft. Earl Young, The Family Stone, and CeCe Peniston.",
     "programmingSourceUrl": "https://ultimatediscocruise.com/",
     "soloSupport": "Dedicated Single Inside Stateroom (Category SINGLES) at $3,300 all-in (Waitlist); no roommate-matching program.",
     "soloFriendly": true,
@@ -12369,7 +12369,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://ultimatediscocruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12417,7 +12417,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "The 80s Cruise",
       "Western Caribbean & Mexico"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "7-night 80s festival at sea hosted by original MTV VJs (Mark Goodman, Alan Hunter, Downtown Julie Brown) featuring Chaka Khan, Night Ranger, Loverboy, DMC, John Waite, Peter Hook & The Light, Public Image Ltd, DJ Jazzy Jeff, Bob Geldof & The Boomtown Rats, Stryper, The Romantics, and Nick Heyward.",
     "programmingSourceUrl": "https://the80scruise.com/",
     "soloSupport": "Dedicated Studio Interior single-occupancy staterooms (Category 2W) at $4,570 New Guest / $4,190 Past Guest + $400 port fees/taxes/gratuities (currently Join Waitlist); no roommate-matching program.",
     "soloFriendly": true,
@@ -12432,7 +12432,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://the80scruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12480,7 +12480,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Top Shelf Country Cruise",
       "Western Caribbean & Mexico"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Country concerts, acoustic songwriter rounds, bourbon tastings, and Rodeo Disco sets featuring Riley Green, Chris Young, Lauren Alaina, Randy Houser, Jackson Dean, Jamie O'Neal, Travis Denning, and Aaron Weber.",
     "programmingSourceUrl": "https://topshelfcountrycruise.com/",
     "soloSupport": "Dedicated Inside Single (IS, Deck 3) available at $4,700 + $400 Pass-Through Charges and Veranda Single (VS, Deck 10) at $5,775 + $425 (Waitlist).",
     "soloFriendly": true,
@@ -12495,7 +12495,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://topshelfcountrycruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12543,7 +12543,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "The '70s Rock & Romance Cruise",
       "Southern Caribbean (ABC Islands)"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "10th Anniversary '70s soft-rock & classic-rock concerts, artist Q&As, and theme nights featuring 38 Special, Christopher Cross, Three Dog Night, Grand Funk Railroad, Todd Rundgren, Jefferson Starship, Emerson, Lake & Palmer ('Welcome Back'), The Grass Roots, Orleans, WAR, Exile, Martin Barre, and Nazareth.",
     "programmingSourceUrl": "https://rockandromancecruise.com/",
     "soloSupport": "Dedicated Single Inside Stateroom (Category SINGLES) at $4,160 all-in (Waitlist); no roommate-matching program.",
     "soloFriendly": true,
@@ -12558,7 +12558,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://rockandromancecruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12606,7 +12606,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "The Flower Power Cruise",
       "Eastern Caribbean & Bahamas"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "10th Anniversary '60s & early-'70s concerts, psychedelic theme nights, and artist Q&As featuring Three Dog Night, Jefferson Starship, The Lettermen, Judy Collins, Lulu, The Family Stone, The Bronx Wanderers, The Cowsills, Vanilla Fudge, The Players (formerly of Chicago), The Box Tops, and The Troggs.",
     "programmingSourceUrl": "https://flowerpowercruise.com/",
     "soloSupport": "Dedicated Single Inside Stateroom (Category SINGLES) at $4,160 all-in (Waitlist); no roommate-matching program.",
     "soloFriendly": true,
@@ -12621,7 +12621,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://flowerpowercruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12669,7 +12669,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "The Yacht Rock Cruise",
       "Pacific Coast & Baja Mexico"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Smooth West Coast soft-rock concerts, pool-deck sets, and artist Q&As featuring Kenny Loggins, Christopher Cross, Little River Band, Yacht Rock Revue, Ray Parker, Jr., Peter Beckett, Elliot Lurie, Walter Egan, and Seals & Crofts 2.",
     "programmingSourceUrl": "https://theyachtrockcruise.com/",
     "soloSupport": "Dedicated Inside Single (IS, Deck 3) available at $4,425 + $400 Pass-Through Charges and Veranda Single (VS, Deck 10) at $6,000 + $425 (Waitlist).",
     "soloFriendly": true,
@@ -12684,7 +12684,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://theyachtrockcruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12732,7 +12732,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Chris Botti at Sea",
       "Canada & New England"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Curated and hosted by trumpeter Chris Botti with nightly theater performances and club sets featuring Michael McDonald, Sarah McLachlan, Corinne Bailey Rae, Lizz Wright, José James, Louis Cato, John Splithoff, Candy Dulfer, Sy Smith, Peter Cincotti, and Morgan James.",
     "programmingSourceUrl": "https://bottiatsea.com/",
     "soloSupport": "Dedicated Inside Single (IS, Deck 3) available at $4,750 + $400 Pass-Through Charges and Veranda Single (VS, Deck 10) at $6,600 + $425 (Waitlist).",
     "soloFriendly": true,
@@ -12747,7 +12747,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://bottiatsea.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12795,7 +12795,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "The Smooth Jazz Cruise",
       "Canada & New England"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Canada & New England fall foliage jazz charter hosted by Marcus Miller with nightly smooth-jazz theater concerts, lounge jams, and artist Q&As ('27.3 Quebec City to Boston sailing).",
     "programmingSourceUrl": "https://thesmoothjazzcruise.com/27-3/home/",
     "soloSupport": "Dedicated Inside Single (IS, Deck 3) at $4,750 + $400 Pass-Through Charges and Veranda Single (VS, Deck 10) at $6,600 + $425 (Waitlist; double Inside open at $2,975/pp).",
     "soloFriendly": true,
@@ -12810,7 +12810,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://thesmoothjazzcruise.com/27-3/home/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12858,7 +12858,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Malt Shop Memories Cruise",
       "Southern Caribbean (ABC Islands)"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Late-'50s and '60s rock-and-roll & doo-wop concerts, sock hops, and prom night featuring Dion, Tony Orlando, Tommy James and the Shondells, The Righteous Brothers, Little Anthony, The Lettermen, Peter Asher, The Miracles, The Barricade Boys, and The Skyliners.",
     "programmingSourceUrl": "https://maltshopcruise.com/",
     "soloSupport": "Dedicated Interior Stateroom (Singles, Categories M, MM, N) at $3,815 New Guest / $3,595 Past Guest all-in (Waitlist on suites/singles; general on-sale Nov 19, 2026); no roommate-matching program.",
     "soloFriendly": true,
@@ -12873,7 +12873,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://maltshopcruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12921,7 +12921,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Soul Train Cruise",
       "Eastern Caribbean & Bahamas"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Fall 2027 R&B, new jack swing, and funk concerts + Soul Train dance lines featuring Bell Biv DeVoe, Stephanie Mills, Dru Hill (History of R&B), The Ohio Players, Zapp Band, Ruben Studdard, Lenny Williams, Force MDs, Keith Washington, Sugarhill Gang, and The Bar-Kays.",
     "programmingSourceUrl": "https://fall.soultraincruise.com/",
     "soloSupport": "Dedicated Interior Stateroom (Singles, Categories M, MM, N) at $4,125 New Guest / $4,075 Past Guest all-in; no roommate-matching program.",
     "soloFriendly": true,
@@ -12936,7 +12936,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://fall.soultraincruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12984,7 +12984,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "The Smooth Jazz Cruise",
       "Eastern Caribbean & Bahamas"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Hosted by Marcus Miller aboard Celebrity Reflection with nightly contemporary & smooth jazz theater concerts, late-night lounge sets, and artist Q&As ('28.1 Eastern Caribbean sailing).",
     "programmingSourceUrl": "https://thesmoothjazzcruise.com/28/home/",
     "soloSupport": "Dedicated Inside Single (IS, Deck 7 & 9) available at $5,000 + $425 Pass-Through Charges and Veranda Single (VS, Deck 6) available at $6,925 + $450 Pass-Through Charges.",
     "soloFriendly": true,
@@ -12999,7 +12999,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://thesmoothjazzcruise.com/28/home/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -13047,7 +13047,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "The Smooth Jazz Cruise",
       "Eastern Caribbean & Bahamas"
     ],
-    "announcedHostedProgramming": "[object Object]",
+    "announcedHostedProgramming": "Hosted by Marcus Miller aboard Celebrity Reflection with nightly contemporary & smooth jazz theater concerts, late-night lounge sets, and artist Q&As ('28.2 Eastern Caribbean sailing).",
     "programmingSourceUrl": "https://thesmoothjazzcruise.com/28/home/",
     "soloSupport": "Dedicated Inside Single (IS, Deck 7 & 9) available at $5,000 + $425 Pass-Through Charges and Veranda Single (VS, Deck 6) available at $6,925 + $450 Pass-Through Charges.",
     "soloFriendly": true,
@@ -13062,7 +13062,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://thesmoothjazzcruise.com/28/home/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -13630,6 +13630,22 @@ export const DCC_RECENT_CATALOG_CHANGE_EVENTS: ReadonlyArray<CanonicalHostedCata
     "entityType": "hosted_franchise",
     "entityId": "hosted-franchise:cayamo",
     "summary": "Ingested Music & Festival Cruises Cohort 1 across 10 producers, 42 recurring franchises, 43 gate-verified upcoming sailings, and 35 structured held candidates.",
+    "preservesCommunityIdentity": true
+  },
+  {
+    "eventId": "dcc-hc-evt-2026-11-22-007",
+    "occurredAt": "2026-11-22T17:45:00Z",
+    "entityType": "hosted_sailing",
+    "entityId": "hosted-sailing:the-fan-cruise:ccl:carnival-jubilee:2027-04-11",
+    "summary": "Reconciled first-party Carnival itinerary clocks for the Astros and Texans Fan Cruise departures; promoted both from schedule hold while preserving the three remaining founding pilot holds.",
+    "preservesCommunityIdentity": true
+  },
+  {
+    "eventId": "dcc-hc-evt-2026-11-22-008",
+    "occurredAt": "2026-11-22T17:45:00Z",
+    "entityType": "hosted_sailing",
+    "entityId": "hosted-sailing:starvista-live:hal:eurodam:2027-01-09",
+    "summary": "Reconciled newer first-party organizer checks, corrected hosted programming text on 21 sailings, and updated held-sailing reasons from Cruise Promenade's reviewed November 22 catalog changes.",
     "preservesCommunityIdentity": true
   }
 ];
