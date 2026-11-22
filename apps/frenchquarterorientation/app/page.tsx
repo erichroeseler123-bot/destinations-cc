@@ -39,6 +39,6 @@ export default function Home() {
         <div className="actions"><a className="btn primary" href={WNO_TODAY}>Things to do today ↗</a><a className="btn" style={{border:"1px solid #8c352f",color:"#8c352f"}} href={WNO_FOUR_HOURS}>Only have four hours? ↗</a><a className="btn" style={{border:"1px solid #8c352f",color:"#8c352f"}} href="https://www.destinationcommandcenter.com/new-orleans?utm_source=frenchquarterorientation&utm_medium=satellite">Open deeper New Orleans context ↗</a></div>
       </div></section>
     </main>
-    <footer><div className="shell">French Quarter Orientation · Independent New Orleans orientation resource. The orientation is 30 minutes. Live prices, availability, and final terms come from the relevant provider.</div></footer>
+
   </>;
 }

@@ -1,58 +1,24 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SITE_URL } from "@/lib/content";
-import DellsInquiryForm from "../components/DellsInquiryForm";
 
 export const metadata: Metadata = {
-  title: "Contact & Group Planning Desk",
-  description:
-    "Send a Wisconsin Dells or Lake Delton trip-planning question for river tours, Ducks, multi-family itineraries, or vacation-rental logistics.",
-  alternates: { canonical: `${SITE_URL}/contact` },
+  title: "Contact | Welcome to the Dells",
+  description: "Contact and information for visitors to Welcome to the Dells.",
+  alternates: { canonical: "https://www.welcometothedells.com/contact" },
 };
 
-export default function ContactPage() {
+export default function InformationPage() {
   return (
-    <main style={{ maxWidth: "52rem", margin: "0 auto", padding: "3rem 1.25rem 4rem" }}>
-      <p style={{ fontSize: "0.8rem", letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.75 }}>
-        Welcome to the Dells · Trip &amp; Group Planning Desk
-      </p>
-      <h1 style={{ fontSize: "2.15rem", lineHeight: 1.15, marginTop: "0.5rem" }}>
-        Plan Your Wisconsin Dells River Window or Group Day
-      </h1>
-      <p style={{ fontSize: "1.05rem", lineHeight: 1.65, marginTop: "0.85rem" }}>
-        Coordinating multiple cars, kids and grandparents, Upper Dells vs. Ducks timing, or a Lake Delton
-        rental-house reset? Send your trip notes below and our planning desk will point you to the cleanest route.
-      </p>
-
-      <div
-        style={{
-          marginTop: "1.25rem",
-          padding: "0.95rem 1.1rem",
-          borderRadius: "0.65rem",
-          border: "1px solid rgba(148, 163, 184, 0.35)",
-          fontSize: "0.92rem",
-          lineHeight: 1.55,
-        }}
-      >
-        <strong>Disclosure:</strong> Welcome to the Dells is an independent planning guide in the Destination Command
-        Center network, not an attraction operator or ticket office. Submitting an inquiry requests planning guidance
-        and does not hold seats or process payment; tickets are booked directly with the operating company or
-        disclosed marketplace.
-      </div>
-
-      <DellsInquiryForm />
-
-      <p style={{ marginTop: "2rem", fontSize: "0.95rem" }}>
-        Looking for immediate side-by-side river comparisons?{" "}
-        <Link href="/boat-tours" style={{ textDecoration: "underline", fontWeight: 600 }}>
-          Compare Boat Tours &amp; Ducks
-        </Link>{" "}
-        or{" "}
-        <Link href="/about" style={{ textDecoration: "underline", fontWeight: 600 }}>
-          read how Welcome to the Dells works
-        </Link>
-        .
-      </p>
+    <main style={{ maxWidth: 850, margin: "0 auto", padding: "48px 24px 64px", lineHeight: 1.75 }}>
+      <h1>Contact</h1>
+      <p>Welcome to the Dells</p>
+        <section><h2>Website help</h2><p>Send questions about this guide, suggestions, or corrections to the team using the email address below.</p></section>
+        <section><h2>Tickets and reservations</h2><p>For an existing booking, contact the operator or ticket seller shown on your confirmation. Prices, availability, changes, refunds, and meeting instructions are controlled by that provider.</p></section>
+      <section>
+        <h2>Contact the team</h2>
+        <p>Email <a href="mailto:erich@rollcallusa.com">erich@rollcallusa.com</a> for website questions, corrections, or privacy requests. Include the page address so we can identify the issue. Keep payment details, identity documents, and private booking references out of your message.</p>
+      </section>
+      <p><Link href="/">Return to Welcome to the Dells</Link></p>
     </main>
   );
 }

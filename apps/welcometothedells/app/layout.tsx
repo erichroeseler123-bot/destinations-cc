@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import DccPortfolioBridge from "@/app/components/DccPortfolioBridge";
 import { ACTION_CARDS, HUBS, SITE_URL } from "@/lib/content";
 import "./globals.css";
@@ -34,6 +35,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="network-footer">
           <span>Welcome to the Dells — practical Wisconsin Dells trip planning.</span>
           <a href="https://www.destinationcommandcenter.com/wisconsin-dells?utm_source=welcometothedells&utm_medium=referral&utm_campaign=dells-footer">Research Wisconsin Dells in Destination Command Center</a>
+          <nav aria-label="Contact and policies" style={{ display: "flex", flexWrap: "wrap", gap: "12px 24px" }}>
+            <Link href="/contact">Contact</Link><Link href="/privacy">Privacy</Link>
+          </nav>
         </footer>
       </body>
     </html>
