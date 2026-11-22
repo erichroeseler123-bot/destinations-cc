@@ -197,8 +197,10 @@ test("Journey C: 7 people from Denver airport to Vail with ski bags separates pa
   assert.ok(evidence.citations.some((c) => /codot\.gov/i.test(c.url)));
 
   // Capacity separation & honest pricing/unknowns
-  assert.match(answer, /cannot fit in a single standard private SUV/i);
-  assert.match(answer, /\$499/);
+  assert.match(answer, /private SUVs up to 6 pax/i);
+  assert.match(answer, /private vans up to 10 pax/i);
+  assert.match(answer, /subject to luggage and ski-gear fit/i);
+  assert.match(answer, /Check current price with GoSno/i);
   assert.match(answer, /quoteOnly: true/);
   assert.match(answer, /C\.R\.S\. § 42-4-106/);
   assert.match(answer, /Bustang/i);
