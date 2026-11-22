@@ -10,8 +10,9 @@ export default function Page() {
   return <IntentTourPage
     eyebrow="Before your cruise · Port of New Orleans"
     title="Things to do in New Orleans before a cruise"
-    intro="New Orleans is a strong pre-cruise city because the French Quarter and riverfront sit minutes from the Erato Street and Julia Street cruise terminals. Use the Port NOLA timing calculator below to verify safe buffers around hotel checkout, luggage storage, and final boarding before choosing an operator."
+    intro="Port NOLA lists Erato Street and Julia Street cruise terminals near the French Quarter. Use the calculator below to explore planning margins around hotel checkout, luggage and boarding, then confirm your actual terminal and all-aboard time with your cruise line."
     topSlot={<NolaCruiseTurnaroundDesk />}
+    showPortNolaSource
     decisionTitle="Choose based on the time you truly have"
     decisionPoints={[
       "If you have only part of a day, favor city or river experiences over long regional day trips.",

@@ -132,6 +132,54 @@
       "status": "verified",
       "limitationsNote": "The official shows page lists 2026 dates; do not extend that schedule into 2027 without a new source check.",
       "sites": ["blue-hills-outpost"]
+    },
+    {
+      "claimId": "vacaya-caribbean-2027-charter",
+      "category": "schedule_access",
+      "claimText": "VACAYA advertises its Caribbean Cruise aboard Celebrity Beyond for February 14–21, 2027 as a full-ship charter.",
+      "authorityName": "VACAYA official 2027 Caribbean Cruise",
+      "authorityUrl": "https://www.myvacaya.com/trip/caribbean-cruise-2027/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2026-12-06",
+      "status": "verified",
+      "limitationsNote": "The organizer currently marks the cruise sold out. Itinerary, ports, booking access and onboard programming may change; check the current official trip and Get Ready pages before making plans.",
+      "sites": ["cruisepromenade"]
+    },
+    {
+      "claimId": "temsco-juneau-weight-surcharge",
+      "category": "price_refund",
+      "claimText": "TEMSCO's Juneau Mendenhall Glacier tour lists a $150 surcharge for passengers weighing 250 pounds or more including shoes and clothing.",
+      "authorityName": "TEMSCO Helicopters official Mendenhall Glacier tour",
+      "authorityUrl": "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2026-12-06",
+      "status": "verified",
+      "limitationsNote": "This is a TEMSCO Juneau product policy, not a rule for Coastal, NorthStar, other TEMSCO products or all flights. Recheck the booking page and operator before purchase.",
+      "sites": ["juneauflightdeck"]
+    },
+    {
+      "claimId": "ward-cove-2026-downtown-shuttle",
+      "category": "safety_navigation",
+      "claimText": "The Mill at Ward Cove publishes a complimentary shuttle to Berth IV in downtown Ketchikan, an approximately 20-minute drive each way, and asks visitors with appointments to allow at least 30 minutes to reach downtown.",
+      "authorityName": "The Mill at Ward Cove official schedules",
+      "authorityUrl": "https://wardcoveak.com/schedules/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2026-12-15",
+      "status": "verified",
+      "limitationsNote": "The displayed ship schedule is for 2026. Shuttle departure cutoffs vary by ship and date; the published drive time excludes queues, walking and embarkation. Recheck the applicable season and call before promising a tour fit.",
+      "sites": ["last-frontier-shore-excursions"]
+    },
+    {
+      "claimId": "port-nola-cruise-terminal-locations",
+      "category": "schedule_access",
+      "claimText": "Port NOLA lists Carnival at Erato Street Cruise Terminal, 1100 Port of New Orleans Place, and Norwegian and Royal Caribbean at Julia Street Cruise Terminal, 920 Port of New Orleans Place.",
+      "authorityName": "Port of New Orleans official cruise directions",
+      "authorityUrl": "https://portnola.com/cruise/parking-directions/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2026-12-22",
+      "status": "verified",
+      "limitationsNote": "Verify your particular ship and terminal on the cruise line's travel documents. This source does not establish baggage time, airport transfer time, flight check-in cutoff or any guaranteed tour-to-flight connection.",
+      "sites": ["welcometoneworleanstours"]
     }
   ]
 }

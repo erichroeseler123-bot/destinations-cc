@@ -75,7 +75,7 @@ export const DOCK_TRANSFERS: Record<string, DockTransferInfo> = {
     portSlug: "ketchikan",
     transferMinutesEachWay: 35,
     transferType: "port_shuttle",
-    logisticsNote: "7 miles north of town. Complimentary shuttle takes 20-30 mins each way plus loading queue.",
+    logisticsNote: "Ward Cove says its complimentary shuttle to Berth IV takes about 20 minutes each way and asks visitors with appointments to allow at least 30 minutes to reach downtown. This calculator uses a 35-minute planning allowance per direction for the shuttle and queue; check the date-specific last shuttle and allow extra walking time.",
   },
 
   // Sitka
