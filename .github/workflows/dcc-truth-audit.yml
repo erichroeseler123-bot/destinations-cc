@@ -18,6 +18,10 @@ on:
       - "data/claims/dcc.claim-ledger.v1.json"
       - "scripts/dcc/report-claim-freshness.mjs"
       - "tests/dcc/claim-freshness.test.mjs"
+      - "tests/dcc/hosted-catalog-truth.test.ts"
+      - "lib/dcc/cruise/hostedCatalogRegistry.ts"
+      - "lib/dcc/cruise/foundingOrganizerPilotCohort.ts"
+      - "scripts/dcc/export-hosted-catalog-snapshot.ts"
       - "apps/**/data/dcc.claim-snapshot.v1.json"
   workflow_dispatch:
 
@@ -38,6 +42,7 @@ jobs:
           npx --yes tsx --test
           tests/dcc/site-truth.test.ts
           tests/dcc/satellite-truth-linkage.test.ts
+          tests/dcc/hosted-catalog-truth.test.ts
       - name: Check dated claim sources
         run: |
           node --test tests/dcc/claim-freshness.test.mjs
