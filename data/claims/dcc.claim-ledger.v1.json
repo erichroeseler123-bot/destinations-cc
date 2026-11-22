@@ -1,0 +1,137 @@
+{
+  "schemaVersion": "dcc.claim-ledger.v1",
+  "claims": [
+    {
+      "claimId": "wi-boating-no-wake-docks",
+      "category": "safety_navigation",
+      "claimText": "Wisconsin DNR says slow-no-wake speed is required within 100 feet of docks, rafts and piers on lakes; local ordinances may be more restrictive.",
+      "authorityName": "Wisconsin Department of Natural Resources",
+      "authorityUrl": "https://dnr.wisconsin.gov/sites/default/files/topic/ShorelandZoning/ChoosingWaterfront_FINAL_Spreads.pdf",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-02-22",
+      "status": "verified",
+      "limitationsNote": "Statewide summary; posted local ordinances, markers and current conditions control at each landing.",
+      "sites": ["blue-hills-outpost"]
+    },
+    {
+      "claimId": "wi-boating-local-ordinances",
+      "category": "safety_navigation",
+      "claimText": "Wisconsin DNR advises checking signs at public landings for local boating rules, which can be more restrictive than state rules.",
+      "authorityName": "Wisconsin Department of Natural Resources",
+      "authorityUrl": "https://dnr.wisconsin.gov/Topic/Boat/ordinances",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-02-22",
+      "status": "verified",
+      "limitationsNote": "This does not certify bridge clearance, water depth, channel passability or individual dock access.",
+      "sites": ["blue-hills-outpost"]
+    },
+    {
+      "claimId": "chetek-city-boat-landing",
+      "category": "price_refund",
+      "claimText": "The City of Chetek lists its public boat landing at 726 Lakeview Drive with a $5 daily or $25 annual launch fee.",
+      "authorityName": "City of Chetek Parks and Recreation",
+      "authorityUrl": "https://cityofchetekwi.us/parks-and-recreation/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "Verify current fee, ramp condition and access with the city before travel; the City Beach at 228 Lakeview Drive is listed separately.",
+      "sites": ["blue-hills-outpost"]
+    },
+    {
+      "claimId": "barron-veterans-park-landing-2026",
+      "category": "price_refund",
+      "claimText": "Barron County's Veterans Memorial Park landing on Prairie Lake lists a $5 daily or $20 seasonal boat launch permit for the 2026 boating season.",
+      "authorityName": "Barron County Parks",
+      "authorityUrl": "https://parks.co.barron.wi.us/parks/shelters/veterans_memorial_shelter/",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2026-12-31",
+      "status": "verified",
+      "limitationsNote": "2026 seasonal price only. Do not present it as a 2027 fee without a fresh county check.",
+      "sites": ["blue-hills-outpost"]
+    },
+    {
+      "claimId": "chetek-chain-public-landings-2026",
+      "category": "operational_status",
+      "claimText": "The Wisconsin DNR's 2026 fishing report identifies 11 public boat landings throughout the Chetek Chain.",
+      "authorityName": "Wisconsin Department of Natural Resources",
+      "authorityUrl": "https://dnr.wisconsin.gov/topic/Fishing/outreach/wifishingreport",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "DNR fisheries reporting groups five named lakes; the City of Chetek describes a chain of six lakes. Neither count verifies individual ramp facilities or present operating conditions.",
+      "sites": ["blue-hills-outpost"]
+    },
+    {
+      "claimId": "wi-boater-safety-certificate",
+      "category": "safety_navigation",
+      "claimText": "Wisconsin DNR requires boating safety certification or an accepted equivalent for motorboat operators born on or after January 1, 1989, subject to the DNR's age and supervision rules.",
+      "authorityName": "Wisconsin Department of Natural Resources",
+      "authorityUrl": "https://dnr.wisconsin.gov/Education/OutdoorSkills/safetyEducation",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-02-22",
+      "status": "verified",
+      "limitationsNote": "See the DNR page for the full exceptions and rental requirements; a simplified age rule is not sufficient.",
+      "sites": ["blue-hills-outpost"]
+    },
+    {
+      "claimId": "lake-country-marina-rentals",
+      "category": "price_refund",
+      "claimText": "Lake Country Marina lists 20-foot pontoons at $200 per day and 24- and 25-foot pontoons at $250 per day, plus gas.",
+      "authorityName": "Lake Country Marina",
+      "authorityUrl": "https://www.lakecountrymarina.com/rentals",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2026-12-31",
+      "status": "verified",
+      "limitationsNote": "Listed rates are a dated snapshot, not a guarantee of 2027 prices or available boats.",
+      "sites": ["blue-hills-outpost"]
+    },
+    {
+      "claimId": "lake-country-marina-delivery",
+      "category": "operational_status",
+      "claimText": "Lake Country Marina says delivery is subject to availability, handled by its staff for a fee, and requires a minimum four-day rental.",
+      "authorityName": "Lake Country Marina",
+      "authorityUrl": "https://www.lakecountrymarina.com/rentals",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "The operator's listed delivery areas and fees should be confirmed before booking; do not promise delivery to a particular private dock.",
+      "sites": ["blue-hills-outpost"]
+    },
+    {
+      "claimId": "gilligans-chetek-address",
+      "category": "operational_status",
+      "claimText": "Gilligans identifies its tiki bar and restaurant at 2542 8 1/4 Avenue, Chetek, Wisconsin.",
+      "authorityName": "Gilligans Chetek",
+      "authorityUrl": "https://www.gilliganschetek.com/store",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "Its lodging page includes a dock slip for lodging guests; that is not proof of drop-in restaurant docking, slip counts or water approach.",
+      "sites": ["blue-hills-outpost"]
+    },
+    {
+      "claimId": "gilligans-lodging-dock-slip",
+      "category": "operational_status",
+      "claimText": "Gilligans says a dock slip is included with its lodging accommodations.",
+      "authorityName": "Gilligans Chetek",
+      "authorityUrl": "https://www.gilliganschetek.com/lodging",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "A lodging guest slip is not an offer of dock access for drop-in restaurant guests.",
+      "sites": ["blue-hills-outpost"]
+    },
+    {
+      "claimId": "hydroflites-aqua-theater",
+      "category": "schedule_access",
+      "claimText": "Chetek Hydroflites locates its Aqua Theater at 728 Lakeview Drive across from the Chetek airport.",
+      "authorityName": "Chetek Hydroflites",
+      "authorityUrl": "https://www.hydroflites.com/location",
+      "checkedAt": "2026-11-22",
+      "nextCheckAt": "2027-03-01",
+      "status": "verified",
+      "limitationsNote": "The official shows page lists 2026 dates; do not extend that schedule into 2027 without a new source check.",
+      "sites": ["blue-hills-outpost"]
+    }
+  ]
+}
