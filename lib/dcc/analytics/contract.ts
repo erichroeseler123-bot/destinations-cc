@@ -228,10 +228,11 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     ],
     commercialModel: "owned_storefront_external_checkout",
     inActive12Portfolio: true,
-    instrumentationTier: "v2_server_adapter",
+    instrumentationTier: "v2_end_to_end",
     pageviewCollectionWired: true,
-    residency: "destinations-cc (root host rewrites to /new-orleans/*)",
-    redirectAndSourceNotes: "Host-rewritten inside DCC root layout (DccAnalyticsBridge + /api/internal/corridor-events + /go/commerce/handoff).",
+    residency: "destinations-cc (apps/welcometoneworleanstours + root host rewrites)",
+    redirectAndSourceNotes:
+      "Standalone apps/welcometoneworleanstours deployment (WnoAnalyticsBridge + /api/telemetry -> /api/v2/analytics/collect) plus legacy WnoFunnelTracker during shadow window.",
     externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "click_level_only",
   },
@@ -585,6 +586,14 @@ export function resolveCanonicalAnalyticsSite(rawSiteOrHost?: string | null): {
     if (prefix.startsWith("juneauflightdeck") || prefix.startsWith("juneau-flight-deck") || prefix.startsWith("jfd")) {
       const jfd = SITE_ALIAS_LOOKUP.get("juneauflightdeck")!;
       return { siteId: jfd.siteId, entry: jfd };
+    }
+    if (
+      prefix.startsWith("welcometoneworleanstours") ||
+      prefix.startsWith("wtno-") ||
+      prefix.startsWith("wno-")
+    ) {
+      const wno = SITE_ALIAS_LOOKUP.get("welcometoneworleanstours")!;
+      return { siteId: wno.siteId, entry: wno };
     }
     if (prefix.startsWith("destinations-cc") || prefix.startsWith("destinationcommandcenter") || prefix.startsWith("dcc-")) {
       const dcc = SITE_ALIAS_LOOKUP.get("destinationcommandcenter")!;
