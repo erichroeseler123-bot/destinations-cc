@@ -15,6 +15,7 @@
  */
 
 import crypto from "node:crypto";
+import { findJuneauFareHarborReferral } from "../cruise/juneauCheckoutComparison";
 import { Pool } from "@neondatabase/serverless";
 import {
   getV03CandidateUniverseWithFallback,
@@ -1286,6 +1287,16 @@ export function buildProviderAffiliateHandoffUrl(params: {
   }
 
   if (params.provider === "fareharbor") {
+    const referral = findJuneauFareHarborReferral(siteKey, params.productDestinationUrl);
+    if (referral) {
+      return {
+        outboundAffiliateUrl: params.productDestinationUrl,
+        providerAccount: referral.account,
+        attributionParameterName: "ref",
+        attributionParameterValue: referral.reference,
+        clickId,
+      };
+    }
     const asn =
       params.providerAccount?.trim() ||
       url.searchParams.get("asn") ||
@@ -1717,12 +1728,16 @@ export async function createCommercialHandoff(
     input.viatorProductCode?.trim() ||
     versionedCandidate?.viatorProductCode ||
     null;
+  const cpReferral = input.provider === "fareharbor"
+    ? findJuneauFareHarborReferral(originatingSite, input.productDestinationUrl)
+    : undefined;
   const fareharborShortname =
+    cpReferral?.operator ||
     input.fareharborShortname?.trim() ||
     versionedCandidate?.fareharborShortname ||
     (input.provider === "fareharbor" ? input.providerAccount?.trim() ?? null : null);
   const fareharborItemId =
-    input.fareharborItemId?.trim() || versionedCandidate?.fareharborItemId || null;
+    cpReferral?.item || input.fareharborItemId?.trim() || versionedCandidate?.fareharborItemId || null;
 
   const intendedDepartureId =
     input.intendedDepartureId?.trim() ||
