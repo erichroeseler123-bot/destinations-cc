@@ -96,12 +96,27 @@ export function listDccSitemapPaths(): string[] {
   return listIndexablePublicationEntries().map((entry) => entry.route);
 }
 
+const FALLBACK_NETWORK_LASTMOD = "2026-11-17";
+
+export function resolveDefaultDccSitemapLastmod(): string {
+  let latest = FALLBACK_NETWORK_LASTMOD;
+  for (const entry of listIndexablePublicationEntries()) {
+    if (entry.materialChangeDate && entry.materialChangeDate > latest) {
+      latest = entry.materialChangeDate;
+    }
+  }
+  return latest;
+}
+
 export function buildDccSitemapXml(
   paths: readonly string[] = listDccSitemapPaths(),
   origin: string = SITE_IDENTITY.siteUrl,
   includeLastmod: boolean = true,
+  fallbackLastmod?: string,
 ): string {
-  const defaultLastmod = includeLastmod ? new Date().toISOString() : null;
+  const defaultLastmod = includeLastmod
+    ? fallbackLastmod || resolveDefaultDccSitemapLastmod()
+    : null;
   const entries = [...paths]
     .map((pathname) => {
       const manifestEntry =
@@ -193,10 +208,15 @@ export async function GET() {
   const isJfdHost = host === "juneauflightdeck.com" || host === "www.juneauflightdeck.com";
   const isDellsHost = host === "welcometothedells.com" || host === "www.welcometothedells.com";
 
-  if (isJfdHost) return new Response(buildDccSitemapXml(["/", "/helicopter"], "https://juneauflightdeck.com", false), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
-  if (isDellsHost) return new Response(buildDccSitemapXml(["/"], "https://welcometothedells.com", false), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
-  if (isLfseHost) return new Response(buildDccSitemapXml(["/", "/tours", "/ports", "/ports/juneau", "/ports/skagway", "/ports/ketchikan"], "https://www.lastfrontiershoreexcursions.com"), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
-  if (isWtonotHost) return new Response(buildDccSitemapXml(buildWtonotSitemapPaths(), WTONOT_ORIGIN, false), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
+  const sitemapHeaders = {
+    "Content-Type": "application/xml; charset=utf-8",
+    "Cache-Control": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
+  };
+
+  if (isJfdHost) return new Response(buildDccSitemapXml(["/", "/helicopter"], "https://juneauflightdeck.com", true, "2026-11-18"), { headers: sitemapHeaders });
+  if (isDellsHost) return new Response(buildDccSitemapXml(["/"], "https://welcometothedells.com", true, FALLBACK_NETWORK_LASTMOD), { headers: sitemapHeaders });
+  if (isLfseHost) return new Response(buildDccSitemapXml(["/", "/tours", "/ports", "/ports/juneau", "/ports/skagway", "/ports/ketchikan"], "https://www.lastfrontiershoreexcursions.com", true, "2026-11-19"), { headers: sitemapHeaders });
+  if (isWtonotHost) return new Response(buildDccSitemapXml(buildWtonotSitemapPaths(), WTONOT_ORIGIN, true, FALLBACK_NETWORK_LASTMOD), { headers: sitemapHeaders });
   if (isSomersetHost) {
     const somersetPaths = [
       "/",
@@ -205,16 +225,11 @@ export async function GET() {
       "/somerset-amphitheater-parking-and-transportation",
     ];
     return new Response(
-      buildDccSitemapXml(somersetPaths, "https://www.shuttletosomersetamphitheater.com", true),
-      {
-        headers: {
-          "Content-Type": "application/xml; charset=utf-8",
-          "Cache-Control": "public, max-age=3600, s-maxage=3600",
-        },
-      }
+      buildDccSitemapXml(somersetPaths, "https://www.shuttletosomersetamphitheater.com", true, FALLBACK_NETWORK_LASTMOD),
+      { headers: sitemapHeaders },
     );
   }
 
   const body = buildDccSitemapXml(listDccSitemapPaths());
-  return new Response(body, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
+  return new Response(body, { headers: sitemapHeaders });
 }

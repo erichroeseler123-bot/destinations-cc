@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  buildParasiteBotBlockedResponse,
+  isAutomatedCrawlerRequest,
+  isBlockedParasiteBot,
+} from "@/lib/dcc/botPolicy";
 import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
 import { isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
 import { readLocationIntelligence, runWithUpstreamFetchCounter } from "@/lib/dcc/locationIntelligence";
@@ -24,6 +29,7 @@ const NATURAL_EVENT_RELEVANCE_KM = 500;
 type Scope = "core" | "extended" | "full";
 
 type CachedTelemetryBundle = {
+  storedAtMs: number;
   expiresAt: number;
   intelligence: Awaited<ReturnType<typeof readLocationIntelligence>>;
   enrichment: readonly [any, any, any];
@@ -31,7 +37,28 @@ type CachedTelemetryBundle = {
   octoDiscovery: Awaited<ReturnType<typeof DccLocationProductService.findProductsForLocation>>;
 };
 
+const MAX_TELEMETRY_CACHE_ENTRIES = 500;
+const CORE_CACHE_TTL_SECONDS = 900; // 15 minutes
+const BOT_SNAPSHOT_TTL_SECONDS = 1800; // 30 minutes for automated crawlers
+const FULL_CACHE_TTL_SECONDS = 300; // 5 minutes
 const TELEMETRY_BUNDLE_CACHE = new Map<string, CachedTelemetryBundle>();
+
+function setBoundedTelemetryCache(key: string, entry: CachedTelemetryBundle) {
+  if (TELEMETRY_BUNDLE_CACHE.size >= MAX_TELEMETRY_CACHE_ENTRIES && !TELEMETRY_BUNDLE_CACHE.has(key)) {
+    const nowMs = Date.now();
+    for (const [k, v] of TELEMETRY_BUNDLE_CACHE) {
+      if (v.expiresAt <= nowMs) {
+        TELEMETRY_BUNDLE_CACHE.delete(k);
+      }
+      if (TELEMETRY_BUNDLE_CACHE.size < MAX_TELEMETRY_CACHE_ENTRIES) break;
+    }
+    if (TELEMETRY_BUNDLE_CACHE.size >= MAX_TELEMETRY_CACHE_ENTRIES) {
+      const oldestKey = TELEMETRY_BUNDLE_CACHE.keys().next().value;
+      if (oldestKey) TELEMETRY_BUNDLE_CACHE.delete(oldestKey);
+    }
+  }
+  TELEMETRY_BUNDLE_CACHE.set(key, entry);
+}
 
 function parseCoordinate(value: string, min: number, max: number) {
   const decoded = decodeURIComponent(value);
@@ -44,11 +71,13 @@ function canonical(value: number) {
   return value.toFixed(5);
 }
 
-function requestedScope(request: NextRequest): Scope {
+export function requestedScope(request: NextRequest): Scope {
   const explicit = request.nextUrl.searchParams.get("scope");
   if (explicit === "core" || explicit === "extended" || explicit === "full") return explicit;
   const sameOriginBrowserFetch = request.headers.get("sec-fetch-site") === "same-origin";
-  return sameOriginBrowserFetch ? "core" : "full";
+  if (sameOriginBrowserFetch) return "core";
+  if (isAutomatedCrawlerRequest(request.headers.get("user-agent"))) return "core";
+  return "full";
 }
 
 async function readOptionalLegacy(origin: string, lat: number, lng: number, timezone: string) {
@@ -77,6 +106,11 @@ async function readOptionalLegacy(origin: string, lat: number, lng: number, time
 type RouteContext = { params: Promise<{ lat: string; lng: string }> };
 
 export async function GET(request: NextRequest, context: RouteContext) {
+  const userAgent = request.headers.get("user-agent");
+  if (isBlockedParasiteBot(userAgent)) {
+    return buildParasiteBotBlockedResponse();
+  }
+
   const startedAt = Date.now();
   const raw = await context.params;
   const lat = parseCoordinate(raw.lat, -90, 90);
@@ -116,11 +150,22 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }));
 
   try {
-    const cacheTtlSeconds = scope === "core" ? 120 : 60;
+    const isCrawler = isAutomatedCrawlerRequest(userAgent);
+    const cacheTtlSeconds =
+      scope === "core"
+        ? isCrawler
+          ? BOT_SNAPSHOT_TTL_SECONDS
+          : CORE_CACHE_TTL_SECONDS
+        : FULL_CACHE_TTL_SECONDS;
     const cacheKey = `${canonicalLat},${canonicalLng}:${scope}:${request.nextUrl.searchParams.get("timezone") || "auto"}`;
     const nowMs = Date.now();
     const existingCacheEntry = TELEMETRY_BUNDLE_CACHE.get(cacheKey);
-    const hasValidCacheEntry = Boolean(existingCacheEntry && existingCacheEntry.expiresAt > nowMs);
+    const effectiveMaxAgeMs = cacheTtlSeconds * 1000;
+    const hasValidCacheEntry = Boolean(
+      existingCacheEntry &&
+        (existingCacheEntry.expiresAt > nowMs ||
+          (isCrawler && nowMs - existingCacheEntry.storedAtMs < effectiveMaxAgeMs)),
+    );
     const telemetryCacheStatus: "MISS" | "HIT" | "EXPIRED" = hasValidCacheEntry
       ? "HIT"
       : existingCacheEntry
@@ -131,7 +176,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
       if (hasValidCacheEntry && existingCacheEntry) {
         return existingCacheEntry;
       }
-      const intelligencePromise = readLocationIntelligence({ lat, lng });
+      const minRevalidateSeconds = isCrawler ? BOT_SNAPSHOT_TTL_SECONDS : CORE_CACHE_TTL_SECONDS;
+      const intelligencePromise = readLocationIntelligence(
+        { lat, lng },
+        { minRevalidateSeconds },
+      );
       const dccEndpointsPromise = readApplicableDccEndpoints({ lat, lng });
       const octoDiscoveryPromise = DccLocationProductService.findProductsForLocation({ lat, lng });
       const enrichmentPromise = scope === "core"
@@ -142,7 +191,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
           ] as const)
         : Promise.all([
             readHydroMarine({ lat, lng }),
-            readExtendedCoordinateFeeds({ lat, lng }),
+            readExtendedCoordinateFeeds({ lat, lng }, { minRevalidateSeconds: FULL_CACHE_TTL_SECONDS }),
             readOptionalLegacy(origin, lat, lng, request.nextUrl.searchParams.get("timezone") || "auto"),
           ]);
 
@@ -153,14 +202,16 @@ export async function GET(request: NextRequest, context: RouteContext) {
         octoDiscoveryPromise,
       ]);
 
+      const storedAtMs = Date.now();
       const freshEntry: CachedTelemetryBundle = {
-        expiresAt: Date.now() + cacheTtlSeconds * 1000,
+        storedAtMs,
+        expiresAt: storedAtMs + (scope === "core" ? CORE_CACHE_TTL_SECONDS : FULL_CACHE_TTL_SECONDS) * 1000,
         intelligence,
         enrichment,
         dccEndpoints,
         octoDiscovery,
       };
-      TELEMETRY_BUNDLE_CACHE.set(cacheKey, freshEntry);
+      setBoundedTelemetryCache(cacheKey, freshEntry);
       return freshEntry;
     });
 
@@ -380,8 +431,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
         responseCacheSeconds: claimFreshness?.hasWithdrawnOrConflictedClaims
           ? 0
           : scope === "core"
-          ? 120
-          : 60,
+          ? CORE_CACHE_TTL_SECONDS
+          : FULL_CACHE_TTL_SECONDS,
         machineApiReverseGeocoding: false,
         marineRequiresLocalNonNullModelData: true,
         naturalEventRelevanceKm: NATURAL_EVENT_RELEVANCE_KM,
@@ -417,8 +468,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
         "Cache-Control": claimFreshness?.hasWithdrawnOrConflictedClaims
           ? "no-store, no-cache, must-revalidate"
           : scope === "core"
-          ? "public, max-age=30, s-maxage=120, stale-while-revalidate=300"
-          : "public, max-age=15, s-maxage=60, stale-while-revalidate=240",
+          ? "public, max-age=60, s-maxage=900, stale-while-revalidate=3600"
+          : "public, max-age=30, s-maxage=300, stale-while-revalidate=1800",
         "Access-Control-Allow-Origin": "*",
         "X-DCC-Schema": "dcc-location-v2",
         "X-DCC-Scope": scope,

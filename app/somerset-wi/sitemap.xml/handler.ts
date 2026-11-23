@@ -18,8 +18,10 @@ const SOMERSET_CANONICAL_ROUTES = [
   "/somerset-amphitheater-parking-and-transportation",
 ];
 
+const SOMERSET_CANONICAL_LASTMOD = "2026-11-17";
+
 export function buildSomersetSitemapXml(origin = "https://www.shuttletosomersetamphitheater.com") {
-  const lastmod = new Date().toISOString();
+  const lastmod = SOMERSET_CANONICAL_LASTMOD;
   const cleanOrigin = origin.includes("shuttletosomersetamphitheater")
     ? "https://www.shuttletosomersetamphitheater.com"
     : origin;
@@ -47,7 +49,7 @@ export async function GET() {
   return new Response(buildSomersetSitemapXml(origin), {
     headers: {
       "Content-Type": "application/xml; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      "Cache-Control": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
     },
   });
 }

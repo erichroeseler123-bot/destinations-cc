@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  buildParasiteBotBlockedResponse,
+  isBlockedParasiteBot,
+} from "@/lib/dcc/botPolicy";
 import { resolveCentralizedWeatherSummary } from "@/lib/dcc/weatherGateway";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
+  if (isBlockedParasiteBot(request.headers.get("user-agent"))) {
+    return buildParasiteBotBlockedResponse();
+  }
   const searchParams = request.nextUrl.searchParams;
   const lat = Number(searchParams.get("lat"));
   const lng = Number(searchParams.get("lng"));

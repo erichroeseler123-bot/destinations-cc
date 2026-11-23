@@ -16,6 +16,10 @@ import {
 } from "./lib/adminAccess";
 import { resolveDccInternalSecret } from "./lib/dcc/shared/envCompat";
 import {
+  buildParasiteBotBlockedResponse,
+  isBlockedParasiteBot,
+} from "./lib/dcc/botPolicy";
+import {
   BRECKENRIDGE_SHARED_GO_PATH,
   JUNEAU_HELICOPTER_GO_PATH,
   JUNEAU_HELICOPTER_SIGNAL_SUBJECT_IDS,
@@ -836,7 +840,14 @@ function queueHandoffEvent(request: NextRequest, resolved: NonNullable<ReturnTyp
 }
 
 // Ensure destinationcommandcenter.com/ falls through to standard Next.js routing (app/page.tsx)
-export async function proxy(request: NextRequest, event: NextFetchEvent) {
+export async function proxy(request: NextRequest, event?: NextFetchEvent) {
+  if (
+    request.nextUrl.pathname !== "/robots.txt" &&
+    isBlockedParasiteBot(request.headers.get("user-agent"))
+  ) {
+    return buildParasiteBotBlockedResponse();
+  }
+
   const hostHeader = request.headers.get("x-forwarded-host") || request.nextUrl.hostname;
   const host = hostHeader.split(":")[0];
 
@@ -1143,6 +1154,17 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     const robotsTag = getGovernedRobotsTag(request.nextUrl.pathname);
     if (robotsTag) {
       response.headers.set("x-robots-tag", robotsTag);
+      if (
+        robotsTag === "index, follow" &&
+        request.method === "GET" &&
+        request.nextUrl.searchParams.size === 0 &&
+        process.env.VERCEL_ENV !== "preview"
+      ) {
+        response.headers.set(
+          "Vercel-CDN-Cache-Control",
+          "public, s-maxage=3600, stale-while-revalidate=86400",
+        );
+      }
     }
     return response;
   }
@@ -1271,11 +1293,22 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     const robotsTag = getGovernedRobotsTag(request.nextUrl.pathname);
     if (robotsTag) {
       response.headers.set("x-robots-tag", robotsTag);
+      if (
+        robotsTag === "index, follow" &&
+        request.method === "GET" &&
+        request.nextUrl.searchParams.size === 0 &&
+        process.env.VERCEL_ENV !== "preview"
+      ) {
+        response.headers.set(
+          "Vercel-CDN-Cache-Control",
+          "public, s-maxage=3600, stale-while-revalidate=86400",
+        );
+      }
     }
     return response;
   }
 
-  if (request.nextUrl.pathname !== BRECKENRIDGE_SHARED_GO_PATH) {
+  if (request.nextUrl.pathname !== BRECKENRIDGE_SHARED_GO_PATH && event) {
     event.waitUntil(queueHandoffEvent(request, resolved));
   }
 
@@ -1297,5 +1330,9 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
 }
 
 export const config = {
-  matcher: ["/location/:path*", "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
+  matcher: [
+    "/location/:path*",
+    "/api/location/:path*",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)",
+  ],
 };

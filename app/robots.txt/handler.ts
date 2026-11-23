@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { BLOCKED_PARASITE_CRAWLERS } from "@/lib/dcc/botPolicy";
 import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,10 @@ function crawlerGroup(userAgent: string) {
   return [`User-agent: ${userAgent}`, ...PUBLIC_CRAWL_RULES].join("\n");
 }
 
+function blockedCrawlerGroup(userAgent: string) {
+  return [`User-agent: ${userAgent}`, "Disallow: /"].join("\n");
+}
+
 export function buildRobotsTxt(host: string) {
   const isWno = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
   const isDcc = host === "destinationcommandcenter.com" || host === "www.destinationcommandcenter.com";
@@ -59,6 +64,12 @@ export function buildRobotsTxt(host: string) {
     groups.push(crawlerGroup("Claude-SearchBot"));
     groups.push(crawlerGroup("Claude-User"));
     groups.push(crawlerGroup("Googlebot"));
+    groups.push(crawlerGroup("Bingbot"));
+    groups.push(crawlerGroup("Applebot"));
+  }
+
+  for (const bot of BLOCKED_PARASITE_CRAWLERS) {
+    groups.push(blockedCrawlerGroup(bot));
   }
 
   const sitemaps = [`Sitemap: ${sitemapUrl}`];
@@ -81,7 +92,7 @@ export async function GET() {
   return new Response(buildRobotsTxt(host), {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      "Cache-Control": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
     },
   });
 }
