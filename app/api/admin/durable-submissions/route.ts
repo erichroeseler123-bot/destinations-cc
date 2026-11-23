@@ -6,6 +6,7 @@ import {
 } from "@/lib/adminAccess";
 import { listDccFactVerificationQueue } from "@/lib/dcc/cruise/canonicalLocationsAndRoutePatterns";
 import { ensureFoundingPilotVerificationQueueSeeded } from "@/lib/dcc/cruise/foundingOrganizerPilotCohort";
+import { syncStaleOrChangedHostedRecordsToVerificationQueue } from "@/lib/dcc/cruise/hostedSourceStalenessMonitor";
 import { resolveCruisePromenadeAdminTarget } from "@/lib/dcc/hostedCruisesAdminBridge";
 
 export const runtime = "nodejs";
@@ -46,6 +47,7 @@ export async function GET(request: Request) {
     cpBaseUrlOverride: cpPreviewUrl,
   });
   ensureFoundingPilotVerificationQueueSeeded();
+  const stalenessSync = syncStaleOrChangedHostedRecordsToVerificationQueue();
   const serviceSecret = (process.env.DCC_CP_SERVICE_SECRET || "").trim();
   const dccVerificationQueue = listDccFactVerificationQueue({
     includeSyntheticTest: includeTest,
@@ -66,9 +68,11 @@ export async function GET(request: Request) {
           scheduleCorrectionsNeedsReviewCount: dccVerificationQueue.filter(
             (q) => q.state === "needs_review",
           ).length,
+          staleSourceAlertCount: stalenessSync.evaluation.counts.totalAlerts,
         },
         submissions: [],
         scheduleCorrections: [],
+        sourceStalenessMonitor: stalenessSync.evaluation,
         dccVerificationQueue,
       },
       { status: 200, headers: PRIVATE_NO_STORE_HEADERS },
@@ -113,9 +117,11 @@ export async function GET(request: Request) {
             scheduleCorrectionsNeedsReviewCount: dccVerificationQueue.filter(
               (q) => q.state === "needs_review",
             ).length,
+            staleSourceAlertCount: stalenessSync.evaluation.counts.totalAlerts,
           },
           submissions: [],
           scheduleCorrections: [],
+          sourceStalenessMonitor: stalenessSync.evaluation,
           dccVerificationQueue,
         },
         { status: 200, headers: PRIVATE_NO_STORE_HEADERS },
@@ -139,10 +145,12 @@ export async function GET(request: Request) {
           needsAttentionCount: (body.counts?.needsAttentionCount ?? 0) + dccNeedsReviewCount,
           scheduleCorrectionsNeedsReviewCount:
             (body.counts?.scheduleCorrectionsNeedsReviewCount ?? 0) + dccNeedsReviewCount,
+          staleSourceAlertCount: stalenessSync.evaluation.counts.totalAlerts,
         },
         submissions: body.submissions ?? [],
         scheduleCorrections: body.scheduleCorrections ?? [],
         pilotMonitoring: body.pilotMonitoring ?? null,
+        sourceStalenessMonitor: stalenessSync.evaluation,
         dccVerificationQueue,
       },
       { status: 200, headers: PRIVATE_NO_STORE_HEADERS },
@@ -162,9 +170,11 @@ export async function GET(request: Request) {
           scheduleCorrectionsNeedsReviewCount: dccVerificationQueue.filter(
             (q) => q.state === "needs_review",
           ).length,
+          staleSourceAlertCount: stalenessSync.evaluation.counts.totalAlerts,
         },
         submissions: [],
         scheduleCorrections: [],
+        sourceStalenessMonitor: stalenessSync.evaluation,
         dccVerificationQueue,
       },
       { status: 200, headers: PRIVATE_NO_STORE_HEADERS },

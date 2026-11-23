@@ -44,32 +44,35 @@ for (const sailing of snapshot.hostedSailings) {
 }
 
 const serialized = JSON.stringify(snapshot, null, 2) + "\n";
-if (mode === "--write") {
-  await writeFile(path, serialized, "utf8");
-  console.log(`Wrote ${snapshot.snapshotId} (${snapshot.hostedSailings.length} sailings) to ${path}`);
-} else {
-  const actual = JSON.parse(await readFile(path, "utf8")) as typeof snapshot;
-  const expected = JSON.parse(serialized) as typeof snapshot;
-  if (!isDeepStrictEqual(actual, expected)) {
-    const actualById = new Map(actual.hostedSailings.map((s) => [s.hostedSailingId, s]));
-    const mismatched = expected.hostedSailings
-      .filter((s) => !isDeepStrictEqual(actualById.get(s.hostedSailingId), s))
-      .map((s) => s.hostedSailingId);
-    const missing = actual.hostedSailings
-      .filter((s) => !expected.hostedSailings.some((canonical) => canonical.hostedSailingId === s.hostedSailingId))
-      .map((s) => s.hostedSailingId);
-    console.error(JSON.stringify({
-      error: "Consumer snapshot differs from DCC",
-      expectedSnapshotId: expected.snapshotId,
-      consumerSnapshotId: actual.snapshotId,
-      expectedGeneratedAt: expected.generatedAt,
-      consumerGeneratedAt: actual.generatedAt,
-      differingSailingIds: mismatched.slice(0, 20),
-      extraConsumerSailingIds: missing.slice(0, 20),
-      differentMetadataOrOtherEntities: mismatched.length === 0 && missing.length === 0,
-    }, null, 2));
-    process.exitCode = 1;
+async function main() {
+  if (mode === "--write") {
+    await writeFile(path, serialized, "utf8");
+    console.log(`Wrote ${snapshot.snapshotId} (${snapshot.hostedSailings.length} sailings) to ${path}`);
   } else {
-    console.log(`Consumer snapshot matches ${snapshot.snapshotId} (${snapshot.hostedSailings.length} sailings)`);
+    const actual = JSON.parse(await readFile(path, "utf8")) as typeof snapshot;
+    const expected = JSON.parse(serialized) as typeof snapshot;
+    if (!isDeepStrictEqual(actual, expected)) {
+      const actualById = new Map(actual.hostedSailings.map((s) => [s.hostedSailingId, s]));
+      const mismatched = expected.hostedSailings
+        .filter((s) => !isDeepStrictEqual(actualById.get(s.hostedSailingId), s))
+        .map((s) => s.hostedSailingId);
+      const missing = actual.hostedSailings
+        .filter((s) => !expected.hostedSailings.some((canonical) => canonical.hostedSailingId === s.hostedSailingId))
+        .map((s) => s.hostedSailingId);
+      console.error(JSON.stringify({
+        error: "Consumer snapshot differs from DCC",
+        expectedSnapshotId: expected.snapshotId,
+        consumerSnapshotId: actual.snapshotId,
+        expectedGeneratedAt: expected.generatedAt,
+        consumerGeneratedAt: actual.generatedAt,
+        differingSailingIds: mismatched.slice(0, 20),
+        extraConsumerSailingIds: missing.slice(0, 20),
+        differentMetadataOrOtherEntities: mismatched.length === 0 && missing.length === 0,
+      }, null, 2));
+      process.exitCode = 1;
+    } else {
+      console.log(`Consumer snapshot matches ${snapshot.snapshotId} (${snapshot.hostedSailings.length} sailings)`);
+    }
   }
 }
+void main();
