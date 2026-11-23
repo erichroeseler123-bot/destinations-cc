@@ -15,7 +15,7 @@
  */
 
 import crypto from "node:crypto";
-import { findJuneauFareHarborReferral } from "../cruise/juneauCheckoutComparison";
+import { findCpFareHarborReferral } from "../cruise/reviewedCheckoutComparisons";
 import { Pool } from "@neondatabase/serverless";
 import {
   getV03CandidateUniverseWithFallback,
@@ -1287,7 +1287,7 @@ export function buildProviderAffiliateHandoffUrl(params: {
   }
 
   if (params.provider === "fareharbor") {
-    const referral = findJuneauFareHarborReferral(siteKey, params.productDestinationUrl);
+    const referral = findCpFareHarborReferral(siteKey, params.productDestinationUrl);
     if (referral) {
       return {
         outboundAffiliateUrl: params.productDestinationUrl,
@@ -1729,7 +1729,7 @@ export async function createCommercialHandoff(
     versionedCandidate?.viatorProductCode ||
     null;
   const cpReferral = input.provider === "fareharbor"
-    ? findJuneauFareHarborReferral(originatingSite, input.productDestinationUrl)
+    ? findCpFareHarborReferral(originatingSite, input.productDestinationUrl)
     : undefined;
   const fareharborShortname =
     cpReferral?.operator ||

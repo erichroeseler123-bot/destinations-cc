@@ -5068,6 +5068,7 @@ export type DurableCatalogQueryFilter = DurableCatalogProjectionOptions & {
   commissionAuthorizedOnly?: boolean;
   freeCancellationOnly?: boolean;
   approvedTourIds?: string[];
+  excludeTourIds?: string[];
   includeDiscoveryOnly?: boolean;
   requireVerifiedCruiseLogistics?: boolean;
   verifiedTimingOnly?: boolean;
@@ -5655,6 +5656,10 @@ export async function queryDurableTourCatalog(
         `(title ILIKE ${pSearch} OR COALESCE(summary, '') ILIKE ${pSearch} OR category ILIKE ${pSearch} OR provider_product_code ILIKE ${pSearch} OR COALESCE(operator_name, '') ILIKE ${pSearch})`,
       );
     }
+    if (filter.excludeTourIds?.length) {
+      const excluded = addParam(filter.excludeTourIds);
+      whereClauses.push(`NOT (tour_id = ANY(${excluded}::text[]))`);
+    }
     if (approvedList && approvedList.length > 0) {
       const pApproved = addParam(approvedList);
       whereClauses.push(
@@ -5757,10 +5762,11 @@ export async function queryDurableTourCatalog(
 
   const allRecords = loadOfflineSnapshotRecordsForLocalTestsOnly();
   const approvedSet = approvedList ? new Set(approvedList) : null;
+  const excludedSet = new Set(filter.excludeTourIds);
   const searchLower = filter.searchQuery?.trim().toLowerCase() || "";
 
   const filtered = allRecords.filter((rec) => {
-    if (!rec.active || isQuarantinedTourRecord(rec)) return false;
+    if (!rec.active || isQuarantinedTourRecord(rec) || excludedSet.has(rec.tourId)) return false;
     if (filter.includeDiscoveryOnly === false && rec.capabilityTier === "discovery_only") {
       return false;
     }

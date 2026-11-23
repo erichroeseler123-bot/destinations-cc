@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import { buildProviderAffiliateHandoffUrl } from "../../lib/dcc/commerce";
-import { getJuneauCheckoutComparison, type JuneauCheckoutComparison } from "../../lib/dcc/cruise/juneauCheckoutComparison";
+import { getCheckoutComparison, getAlternateCheckoutIds, type CheckoutComparison } from "../../lib/dcc/cruise/reviewedCheckoutComparisons";
 import { buildExactExcursionHandoffLinks, resolveCruisePortExcursionProfile } from "../../lib/dcc/cruisePortExcursionCatalogEngine";
 import type { DurableTourRecord } from "../../lib/dcc/catalog/durableCatalogStore";
 
@@ -16,36 +16,36 @@ const terms = {
   sourceUrl: viatorUrl, priceText: null, cancellationText: null, fullRefundCutoffHours: 24,
   pickupText: null, checkInText: null, departureText: null,
 };
-const comparison: JuneauCheckoutComparison = {
+const comparison: CheckoutComparison = {
   operatorName: "iRide Alaska Adventures", verifiedAt: "2026-11-23",
   fareharbor: { ...terms, url: operatorUrl, sourceUrl: operatorUrl },
   viator: terms,
 };
 const reviewed = {
-  fareharborProductCode: "segwayalaska:433263", viatorProductCode: "217546P4",
+  port: "juneau", alternateTourId: "dcc:tour:fh:segwayalaska:433263", fareharborProductCode: "segwayalaska:433263", viatorProductCode: "217546P4",
   travelerTerms: "equal" as const, comparison,
 };
 const pilot = {
-  dashboardReferenceVerifiedAt: "2026-11-23",
+  dashboardVerifiedRefs: { "cruisepromenade-juneau": "2026-11-23" },
   matches: { [tour.tourId]: reviewed },
 };
 
 test("pending pilot publishes nothing, including when only one review passes", () => {
-  assert.equal(getJuneauCheckoutComparison(tour, site), undefined);
-  assert.equal(getJuneauCheckoutComparison(tour, site, { ...pilot, dashboardReferenceVerifiedAt: null }), undefined);
-  assert.equal(getJuneauCheckoutComparison(tour, site, {
+  assert.equal(getCheckoutComparison(tour, site), undefined);
+  assert.equal(getCheckoutComparison(tour, site, { ...pilot, dashboardVerifiedRefs: {} }), undefined);
+  assert.equal(getCheckoutComparison(tour, site, {
     ...pilot, matches: { [tour.tourId]: { ...reviewed, travelerTerms: "pending" } },
   }), undefined);
 });
 
 test("approved comparison applies to one exact CP Juneau tour in either canonical direction", () => {
-  assert.deepEqual(getJuneauCheckoutComparison(tour, site, pilot), comparison);
-  assert.equal(getJuneauCheckoutComparison({ ...tour, destinationSlug: "skagway" }, site, pilot), undefined);
-  assert.equal(getJuneauCheckoutComparison(tour, "cruisepromenade.com.example.org", pilot), undefined);
-  assert.equal(getJuneauCheckoutComparison({ ...tour, providerProductCode: "MISMATCH" }, site, pilot), undefined);
+  assert.deepEqual(getCheckoutComparison(tour, site, pilot), comparison);
+  assert.equal(getCheckoutComparison({ ...tour, destinationSlug: "skagway" }, site, pilot), undefined);
+  assert.equal(getCheckoutComparison(tour, "cruisepromenade.com.example.org", pilot), undefined);
+  assert.equal(getCheckoutComparison({ ...tour, providerProductCode: "MISMATCH" }, site, pilot), undefined);
   const fhPrimary = { ...tour, tourId: "dcc:tour:fh:segwayalaska:433263",
     primaryProvider: "fareharbor", providerProductCode: reviewed.fareharborProductCode };
-  const alt = getJuneauCheckoutComparison(fhPrimary, site, { ...pilot, matches: { [fhPrimary.tourId]: reviewed } });
+  const alt = getCheckoutComparison(fhPrimary, site, { ...pilot, matches: { [fhPrimary.tourId]: reviewed } });
   assert.equal(alt?.viator.url, viatorUrl);
   assert.equal(alt?.viator.productCode, tour.providerProductCode);
 });
@@ -58,7 +58,7 @@ test("wrong item, altered tracking, or a worse documented refund window cannot a
     { ...comparison.fareharbor, fullRefundCutoffHours: 72 },
   ]) {
     const match = { ...reviewed, comparison: { ...comparison, fareharbor } };
-    assert.equal(getJuneauCheckoutComparison(tour, site, { ...pilot, matches: { [tour.tourId]: match } }), undefined);
+    assert.equal(getCheckoutComparison(tour, site, { ...pilot, matches: { [tour.tourId]: match } }), undefined);
   }
 });
 
@@ -87,4 +87,21 @@ test("existing Juneau FareHarbor-only checkout keeps its destination and has acc
   assert.equal(handoff.provider, "fareharbor");
   assert.equal(handoff.approvedAffiliateAccount, undefined);
   assert.equal(handoff.referralCreditStatus, "unverified_affiliate_attribution");
+});
+
+test("other ports use the port-specific CP reference and Viator destination", () => {
+  const reference = "cruisepromenade-skagway";
+  const port = "skagway";
+  const target = { ...tour, destinationSlug: port };
+  const tagged = operatorUrl.replace("ref=cruisepromenade-juneau", "ref=" + reference);
+  const otherPort = { ...reviewed, port, comparison: { ...comparison,
+    fareharbor: { ...comparison.fareharbor, url: tagged },
+    viator: { ...comparison.viator, sourceUrl: viatorUrl.replace("/d941-", "/d943-") } } };
+  const reviews = { dashboardVerifiedRefs: { [reference]: "2026-11-23" }, matches: { [tour.tourId]: otherPort } };
+  assert.ok(getCheckoutComparison(target, site, reviews));
+  assert.equal(getCheckoutComparison(target, site, { ...reviews, dashboardVerifiedRefs: {} }), undefined);
+  assert.deepEqual(getAlternateCheckoutIds(port, site, "", reviews), [reviewed.alternateTourId]);
+  assert.deepEqual(getAlternateCheckoutIds(port, site, reviewed.alternateTourId, reviews), []);
+  assert.deepEqual(getAlternateCheckoutIds(port, site, "433263", reviews), []);
+  assert.deepEqual(getAlternateCheckoutIds(port, "elsewhere.example", "", reviews), []);
 });

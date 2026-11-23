@@ -1,5 +1,5 @@
 import { getPortClockLedger, hasPublishedPortClockEvidence } from "./cruise/portClockLedger";
-import { getJuneauCheckoutComparison, isExactFareHarborItem, type JuneauCheckoutComparison } from "./cruise/juneauCheckoutComparison";
+import { getAlternateCheckoutIds, getCheckoutComparison, isExactFareHarborItem, type CheckoutComparison } from "./cruise/reviewedCheckoutComparisons";
 import { createHash } from "node:crypto";
 import { getViatorClient } from "@/lib/viator/client";
 import { getViatorPublicConfig } from "@/lib/viator/config";
@@ -348,7 +348,7 @@ export interface PortDayExcursionHandoffLinks {
 
 export interface PortDayExcursionCard {
   tourId: string;
-  checkoutComparison?: JuneauCheckoutComparison;
+  checkoutComparison?: CheckoutComparison;
   productCode: string | null;
   optionCode: string | null;
   title: string;
@@ -2448,8 +2448,7 @@ export function buildExactExcursionHandoffLinks(params: {
           mcid: "42383",
         })
       : rawUrl;
-  const juneauFareHarbor = params.originatingSite === "cruisepromenade.com" &&
-    profile.portSlug === "juneau" && rec.primaryProvider === "fareharbor" &&
+  const cpFareHarbor = params.originatingSite === "cruisepromenade.com" && rec.primaryProvider === "fareharbor" &&
     isExactFareHarborItem(rawUrl, code);
 
   const dccTrackedHref = `/go/out?u=${encodeURIComponent(
@@ -2486,15 +2485,15 @@ export function buildExactExcursionHandoffLinks(params: {
     exactProductUrl: attributedUrl,
     dccTrackedHref,
     cruisePromenadeTrackedHref,
-    provider: juneauFareHarbor ? "fareharbor" : rec.primaryProvider === "operator_direct" ? "operator_direct" : "viator",
+    provider: cpFareHarbor ? "fareharbor" : rec.primaryProvider === "operator_direct" ? "operator_direct" : "viator",
     productCode: rec.providerProductCode || null,
     optionCode,
     handoffTrackingTag: handoffTag,
     originatingSite: resolvedOriginatingSite,
-    approvedAffiliateAccount: juneauFareHarbor ? undefined :
+    approvedAffiliateAccount: cpFareHarbor ? undefined :
       rec.primaryProvider === "operator_direct" ? "operator_direct" : "P00306962",
     bookingConfirmationStatus: "tracked_handoff_only",
-    referralCreditStatus: juneauFareHarbor ? "unverified_affiliate_attribution" : isJuneau466119P3
+    referralCreditStatus: cpFareHarbor ? "unverified_affiliate_attribution" : isJuneau466119P3
       ? "pending_operator_match_confirmation"
       : "active",
   };
@@ -3204,6 +3203,7 @@ export async function queryPortDayExcursionCatalog(params: {
   const isShortlist2hMode = viewMode === "shortlist_2h";
   const isFitsSailingMode = viewMode === "fits_sailing" || isShortlist2hMode;
 
+  const excludeTourIds = getAlternateCheckoutIds(profile.destinationSlug, params.originatingSite, params.search);
   const [sqlRes, liveProviderCounts, sharedHandoffLedgerSummary, juneauSupplierFeed] = await Promise.all([
     isFitsSailingMode
       ? paginateAllDurableTourCatalogPages(
@@ -3213,6 +3213,7 @@ export async function queryPortDayExcursionCatalog(params: {
             searchQuery: params.search,
             requireVerifiedCruiseLogistics: true,
             verifiedTimingOnly: true,
+            excludeTourIds,
             includeProductOptions: true,
             includeConstraints: true,
             includeServiceDetails: true,
@@ -3237,6 +3238,7 @@ export async function queryPortDayExcursionCatalog(params: {
         }))
       : queryDurableTourCatalog({
           destinationSlug: profile.destinationSlug,
+          excludeTourIds,
           category: category === "all" ? undefined : category,
           searchQuery: params.search,
           includeProductOptions: true,
@@ -3325,7 +3327,7 @@ export async function queryPortDayExcursionCatalog(params: {
 
     return {
       tourId: rec.tourId,
-      checkoutComparison: getJuneauCheckoutComparison(rec, params.originatingSite),
+      checkoutComparison: getCheckoutComparison(rec, params.originatingSite),
       productCode: rec.providerProductCode || null,
       optionCode: chosenOptionCode,
       title: rec.title,

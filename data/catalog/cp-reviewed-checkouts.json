@@ -1,0 +1,97 @@
+{
+  "dashboardVerifiedRefs": {},
+  "matches": {
+    "dcc:tour:viator:217546P4": {
+      "port": "juneau",
+      "viatorProductCode": "217546P4",
+      "fareharborProductCode": "segwayalaska:433263",
+      "evidenceUrl": "https://iridealaska.com/e-bike-excursions/",
+      "travelerTerms": "pending",
+      "comparison": {
+        "operatorName": "iRide Alaska Adventures",
+        "verifiedAt": "2026-11-23",
+        "fareharbor": {
+          "url": "https://fareharbor.com/embeds/book/segwayalaska/items/433263/?asn=fhdn&asn-ref=aktourcenter&full-items=yes&flow=no&branding=yes&bookable-only=yes&ref=cruisepromenade-juneau&back=https://cruisepromenade.com/ports/juneau",
+          "sourceUrl": "https://fareharbor.com/embeds/book/segwayalaska/items/433263/?asn=fhdn&asn-ref=aktourcenter&full-items=yes&flow=no&branding=yes&bookable-only=yes&ref=cruisepromenade-juneau&back=https://cruisepromenade.com/ports/juneau",
+          "priceText": null,
+          "cancellationText": "Call at least 24 hours in advance for a full refund or credit. No-shows are charged.",
+          "fullRefundCutoffHours": null,
+          "pickupText": "490 South Franklin Street, Juneau",
+          "checkInText": null,
+          "departureText": null
+        },
+        "viator": {
+          "sourceUrl": "https://www.viator.com/tours/Juneau/Rainforest-eBike-Adventure/d941-217546P4",
+          "priceText": null,
+          "cancellationText": "Full refund with at least 24 hours' notice.",
+          "fullRefundCutoffHours": 24,
+          "pickupText": "Roadside of the Mount Roberts Tramway, 490 South Franklin Street, Juneau",
+          "checkInText": "Arrive 10-15 minutes before the start.",
+          "departureText": null
+        }
+      }
+    },
+    "dcc:tour:viator:6251SHOREXICEWALK": {
+      "port": "juneau",
+      "viatorProductCode": "6251SHOREXICEWALK",
+      "fareharborProductCode": "coastalhelicopters:413056",
+      "alternateTourId": "dcc:tour:fh:coastalhelicopters:413056",
+      "evidenceUrl": "https://coastalhelicopters.com/tours/icefield-excursion/",
+      "travelerTerms": "worse",
+      "comparison": {
+        "operatorName": "Coastal Helicopters",
+        "verifiedAt": "2026-11-23",
+        "fareharbor": {
+          "sourceUrl": "https://coastalhelicopters.com/faq/",
+          "priceText": "From USD 459 per person (standard rate)",
+          "cancellationText": "Full refund at least 7 days in advance.",
+          "pickupText": null,
+          "checkInText": null,
+          "departureText": null,
+          "fullRefundCutoffHours": 168,
+          "url": null
+        },
+        "viator": {
+          "sourceUrl": "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK",
+          "priceText": "From USD 470.77 per person",
+          "cancellationText": "Full refund at least 3 days in advance.",
+          "pickupText": null,
+          "checkInText": null,
+          "departureText": null,
+          "fullRefundCutoffHours": 72
+        }
+      }
+    },
+    "dcc:tour:viator:6251P7": {
+      "port": "juneau",
+      "viatorProductCode": "6251P7",
+      "fareharborProductCode": "coastalhelicopters:413073",
+      "alternateTourId": "dcc:tour:fh:coastalhelicopters:413073",
+      "evidenceUrl": "https://coastalhelicopters.com/tours/dog-sled-tours/",
+      "travelerTerms": "worse",
+      "comparison": {
+        "operatorName": "Coastal Helicopters",
+        "verifiedAt": "2026-11-23",
+        "fareharbor": {
+          "sourceUrl": "https://coastalhelicopters.com/faq/",
+          "priceText": "From USD 769 per person (standard rate)",
+          "cancellationText": "Full refund at least 7 days in advance.",
+          "pickupText": null,
+          "checkInText": null,
+          "departureText": null,
+          "fullRefundCutoffHours": 168,
+          "url": null
+        },
+        "viator": {
+          "sourceUrl": "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursions-Juneau-Helicopter-Tour-and-Dogsledding-Experience/d941-6251P7",
+          "priceText": "From USD 788.72 per person",
+          "cancellationText": "Full refund at least 3 days in advance.",
+          "pickupText": null,
+          "checkInText": null,
+          "departureText": null,
+          "fullRefundCutoffHours": 72
+        }
+      }
+    }
+  }
+}
