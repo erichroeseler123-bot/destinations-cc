@@ -187,7 +187,7 @@ export default async function HomePage({
       priceSub: "sightseeing · optional Creole dinner seating",
       scheduleFit: "✓ Signature New Orleans evening with live jazz quintet",
       checkoutProcessor: "Checkout via FareHarbor (New Orleans Steamboat Company)",
-      imageSrc: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
+      imageSrc: "/images/travel-markets/new-orleans/steamboat-natchez-card.webp",
       imageAlt: "Steamboat Natchez paddlewheeler on the Mississippi River in New Orleans",
       ctaLabel: "Choose seating →",
       ctaHref: "/tours/evening-jazz-cruise?src=wtonot-home",
