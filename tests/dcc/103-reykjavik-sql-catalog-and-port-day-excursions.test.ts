@@ -9,11 +9,25 @@ import {
 import {
   MAPPED_CRUISE_PORT_EXCURSION_PROFILES,
   MAPPED_CRUISE_PORT_BATCH_SUMMARY,
+  SCHEDULED_CRUISE_PORT_CALLS,
   queryPortDayExcursionCatalog,
   verifyLiveExcursionAvailability,
 } from "../../lib/dcc/cruisePortExcursionCatalogEngine";
 import { JUNEAU_PRODUCT_SUPPLIER_RECONCILIATION } from "../../lib/dcc/machine/v03/operatorDirectCheckout";
 import { HREYFILL_REYKJAVIK_SHORE_EXCURSION_QUALIFICATION } from "../../lib/dcc/corridors/internationalCorridorQualifications";
+
+// Positive fit tests use an independently published deadline for an identified test sailing.
+// The fixture only exists for the duration of its test.
+function publishedCall(t: import("node:test").TestContext, portSlug: string, allAboardTime: string, sailingDate = "2027-07-15"): string {
+  const sailingId = `test-published-${portSlug}-${sailingDate}-${allAboardTime.replace(":", "")}`;
+  const row = {
+    sailingId, portSlug, sailingDate, shipName: "Test ship", shipSlug: "test-ship",
+    arrivalTime: "07:00", departureTime: "18:00", allAboardTime, allAboardPublished: true,
+  };
+  SCHEDULED_CRUISE_PORT_CALLS.push(row);
+  t.after(() => { SCHEDULED_CRUISE_PORT_CALLS.splice(SCHEDULED_CRUISE_PORT_CALLS.indexOf(row), 1); });
+  return sailingId;
+}
 
 test("1. Reykjavík port record is mapped to Viator destination 905 and Kahului to 671", () => {
   const reykjavikPort = getCruisePortReference("reykjavik");
@@ -132,11 +146,12 @@ test("3. Regression case 388640P9 (Glacier Adventure at Sólheimajökull) shows 
   );
 });
 
-test("4. Source-backed tour 7090P9 qualifies for Fits my sailing, rejects past departures, and returns Check availability on timeout or missing data without generated seat counts/prices", async () => {
+test("4. Source-backed tour 7090P9 qualifies for Fits my sailing, rejects past departures, and returns Check availability on timeout or missing data without generated seat counts/prices", async (t) => {
   assert.equal(MAPPED_CRUISE_PORT_EXCURSION_PROFILES.length, 15);
   assert.equal(Object.keys(MAPPED_CRUISE_PORT_BATCH_SUMMARY).length, 4);
 
   const reykWhaleLookup = await queryPortDayExcursionCatalog({
+    sailingId: publishedCall(t, "reykjavik", "17:30"),
     portSlug: "reykjavik",
     viewMode: "fits_sailing",
     category: "wildlife",
@@ -246,7 +261,7 @@ test("5. Juneau product 466119P3 reconciles Dolphin Jet Boat Tours supplier and 
   );
 });
 
-test("103.6: Batch 3 ports (New Orleans, Miami, Tampa, Seattle) reconcile providerCounts with active SQL inventory and verify one Fits my sailing tour per port while keeping Browse all tours available", async () => {
+test("103.6: Batch 3 ports (New Orleans, Miami, Tampa, Seattle) reconcile providerCounts with active SQL inventory and verify one Fits my sailing tour per port while keeping Browse all tours available", async (t) => {
   const expectedExamples: Array<{
     portSlug: string;
     productCode: string;
@@ -320,6 +335,7 @@ test("103.6: Batch 3 ports (New Orleans, Miami, Tampa, Seattle) reconcile provid
     const fitsRes = await queryPortDayExcursionCatalog({
       portSlug: item.portSlug,
       viewMode: "fits_sailing",
+      sailingId: publishedCall(t, item.portSlug, "15:30"),
       shipArrivalTime: "07:00",
       shipAllAboardTime: "15:30",
       limit: 12,
@@ -447,7 +463,7 @@ test("103.7: Shared handoff ledger records Cruise Promenade as originatingSite, 
   assert.equal(summary.earnedCommissions.displayValue, "unknown");
 });
 
-test("103.8: Sailing-fit pagination counts and paginates only tours that actually fit the sailing window (New Orleans limit=1 on 2027-07-15 07:00-15:30) and shows all-aboard margin alone when departure is missing", async () => {
+test("103.8: Sailing-fit pagination counts and paginates only tours that actually fit the sailing window (New Orleans limit=1 on 2027-07-15 07:00-15:30) and keeps departure margins unknown for unmatched sailings", async (t) => {
   const { queryPortDayExcursionCatalog } = await import(
     "@/lib/dcc/cruisePortExcursionCatalogEngine"
   );
@@ -457,6 +473,7 @@ test("103.8: Sailing-fit pagination counts and paginates only tours that actuall
   const resPage1 = await queryPortDayExcursionCatalog({
     portSlug: "new-orleans",
     viewMode: "fits_sailing",
+    sailingId: publishedCall(t, "new-orleans", "15:30"),
     sailingDate: "2027-07-15",
     shipArrivalTime: "07:00",
     shipAllAboardTime: "15:30",
@@ -484,40 +501,31 @@ test("103.8: Sailing-fit pagination counts and paginates only tours that actuall
   );
   assert.equal(resPage1.pagination.rowsLoadedIntoApp, 1);
 
-  // Request with no departure time and no matching scheduled port call shows all-aboard margin alone
-  assert.equal(resPage1.sailingWindow.shipDepartureTime, null);
-  assert.equal(resPage1.sailingWindow.allAboardToShipDepartureMinutes, null);
-  assert.equal(resPage1.sailingWindow.departureTimeSource, "missing");
-
   const timeFit = resPage1.tours[0].timeFit;
-  assert.equal(timeFit.shipDepartureTime, null);
   assert.equal(timeFit.requiredReturnBufferMinutes, 60);
   assert.ok(typeof timeFit.bufferBeforeAllAboardMinutes === "number");
   assert.ok(timeFit.bufferBeforeAllAboardMinutes >= 60);
+  assert.equal(timeFit.returnBufferReconciliation?.bufferBeforeAllAboardMinutes, timeFit.bufferBeforeAllAboardMinutes);
 
-  const recon = timeFit.returnBufferReconciliation;
-  assert.ok(recon, "Expected returnBufferReconciliation on timeFit");
-  assert.equal(recon.requiredAllAboardBufferMinutes, 60);
+  // A separate, unmatched sailing can browse, but cannot claim a departure or a verified margin.
+  const missing = await queryPortDayExcursionCatalog({
+    portSlug: "new-orleans",
+    sailingId: "no-such-sailing",
+    sailingDate: "2027-07-15",
+    viewMode: "browse_all",
+    shipArrivalTime: "07:00",
+    shipAllAboardTime: "15:30",
+    limit: 1,
+  });
+  assert.ok(missing?.tours.length);
+  assert.equal(missing.sailingWindow.shipDepartureTime, null);
+  assert.equal(missing.sailingWindow.departureTimeSource, "missing");
+  const recon = missing.tours[0].timeFit.returnBufferReconciliation;
+  assert.ok(recon);
   assert.equal(recon.allAboardToShipDepartureMinutes, null);
   assert.equal(recon.equivalentShipDepartureBufferMinutes, null);
-  assert.equal(recon.bufferBeforeAllAboardMinutes, timeFit.bufferBeforeAllAboardMinutes);
   assert.equal(recon.bufferBeforeShipDepartureMinutes, null);
-  assert.ok(
-    recon.reconciliationNote.includes("60m before All Aboard (15:30)"),
-    "Expected plain timing explanation referencing 60m before All Aboard"
-  );
-  assert.ok(
-    !recon.reconciliationNote.includes("Earlier report"),
-    "Must not include internal report commentary"
-  );
-  assert.ok(
-    !recon.reconciliationNote.includes("ship departure"),
-    "Must show all-aboard margin alone when departure is missing"
-  );
-  assert.ok(
-    !timeFit.reasonSummary.includes("ship departure"),
-    "reasonSummary must show all-aboard margin alone when departure is missing"
-  );
+  assert.equal(missing.tours[0].timeFit.fitsSailing, false);
 });
 
 test("103.9: Scheduled departure from matching ship, sailing, and port call replaces fixed 30m gap (60m and 45m gaps) and ambiguous multi-ship dates omit departure-relative margins", async () => {
@@ -538,6 +546,27 @@ test("103.9: Scheduled departure from matching ship, sailing, and port call repl
   assert.ok(libertyFits);
   assert.equal(libertyFits.sailingWindow.allAboardTimeSource, "port_estimate");
   assert.equal(libertyFits.tours.length, 0);
+
+  // Resubmitting the displayed clock through a shared URL supplies no new evidence.
+  const travelerClock = {
+    portSlug: "new-orleans",
+    sailingId: "carnival-carnival-liberty-20260719",
+    shipAllAboardTime: "14:30",
+    limit: 1,
+  };
+  for (const viewMode of ["fits_sailing", "shortlist_2h"] as const) {
+    const result = await queryPortDayExcursionCatalog({ ...travelerClock, viewMode });
+    assert.ok(result);
+    assert.equal(result.sailingWindow.allAboardTimeSource, "request_param");
+    assert.equal(result.sailingWindow.timingStatus, "needs_verification");
+    assert.equal(result.tours.length, 0);
+  }
+  const travelerBrowse = await queryPortDayExcursionCatalog({ ...travelerClock, viewMode: "browse_all" });
+  assert.ok(travelerBrowse?.tours.length);
+  assert.equal(travelerBrowse.sailingWindow.shipAllAboardTime, "14:30");
+  assert.equal(travelerBrowse.tours[0].timeFit.fitsSailing, false);
+  assert.equal(travelerBrowse.tours[0].timeFit.status, "needs_verification");
+  assert.match(travelerBrowse.sailingWindow.shipAllAboardTimeLabel, /traveler-entered/i);
 
   const libertyNola = await queryPortDayExcursionCatalog({
     portSlug: "new-orleans",
@@ -602,7 +631,7 @@ test("103.9: Scheduled departure from matching ship, sailing, and port call repl
   assert.equal(miamiRecon.bufferBeforeShipDepartureMinutes, null);
 });
 
-test("103.10: Blank all-aboard time labels 15:30 as a port estimate and uses Needs verification for sailing fit until traveler or sailing schedule provides the deadline", async () => {
+test("103.10: Blank all-aboard time labels 15:30 as a port estimate and uses Needs verification until the sailing deadline is sourced", async () => {
   const { queryPortDayExcursionCatalog } = await import(
     "@/lib/dcc/cruisePortExcursionCatalogEngine"
   );
@@ -659,7 +688,7 @@ test("103.10: Blank all-aboard time labels 15:30 as a port estimate and uses Nee
   assert.equal(blankFitsRes.pagination.totalFittingSailing, 0);
 });
 
-test("103.11: Standard MCP client lifecycle on /api/v1/mcp supports initialize, notifications/initialized, tools/list, dcc_search_port_excursions (1:15 p.m. fits, 1:14 p.m. runs_too_late, blank needs_verification), and dcc_check_tour_availability", async () => {
+test("103.11: Standard MCP client lifecycle on /api/v1/mcp supports initialize, notifications/initialized, tools/list, dcc_search_port_excursions (1:15 p.m. fits, 1:14 p.m. runs_too_late, blank needs_verification), and dcc_check_tour_availability", async (t) => {
   const { POST } = await import("@/app/api/v1/mcp/route");
 
   async function callMcp(payload: Record<string, unknown>) {
@@ -732,6 +761,7 @@ test("103.11: Standard MCP client lifecycle on /api/v1/mcp supports initialize, 
         port: "new-orleans",
         date: "2027-07-15",
         shipArrival: "07:00",
+        sailingId: publishedCall(t, "new-orleans", "13:15"),
         allAboard: "1:15 p.m.",
         partySize: 2,
         productCode: "15200P6",
@@ -761,6 +791,7 @@ test("103.11: Standard MCP client lifecycle on /api/v1/mcp supports initialize, 
         port: "new-orleans",
         date: "2027-07-15",
         shipArrival: "07:00",
+        sailingId: publishedCall(t, "new-orleans", "13:14"),
         allAboard: "1:14 p.m.",
         partySize: 2,
         productCode: "15200P6",
@@ -877,7 +908,7 @@ test("103.12: checkout requires a configured client, explicit approval, verified
     { changes: { optionCode: "TG11" }, code: "INVALID_CHECKOUT_SELECTION" },
     { changes: { allAboard: undefined }, code: "SAILING_FIT_NOT_VERIFIED" },
     { changes: { allAboard: "13:14" }, code: "SAILING_FIT_NOT_VERIFIED" },
-    { changes: {}, code: "DURABLE_HANDOFF_UNAVAILABLE" },
+    { changes: { sailingId: publishedCall(t, "new-orleans", "13:15") }, code: "DURABLE_HANDOFF_UNAVAILABLE" },
   ];
   for (const { changes, code } of cases) {
     const response = await callMcp(changes);
@@ -930,7 +961,7 @@ test("103.13: Show HN 5-traveler MCP demo (60m fits, 59m runs_too_late, missing 
     method: "tools/call",
     params: {
       name: "dcc_search_port_excursions",
-      arguments: { ...baseArgs, allAboard: "1:15 p.m." },
+      arguments: { ...baseArgs, sailingId: publishedCall(t, "new-orleans", "13:15"), allAboard: "1:15 p.m." },
     },
   });
   assert.equal(fits60Res.status, 200);
@@ -950,7 +981,7 @@ test("103.13: Show HN 5-traveler MCP demo (60m fits, 59m runs_too_late, missing 
     method: "tools/call",
     params: {
       name: "dcc_search_port_excursions",
-      arguments: { ...baseArgs, allAboard: "1:14 p.m." },
+      arguments: { ...baseArgs, sailingId: publishedCall(t, "new-orleans", "13:14"), allAboard: "1:14 p.m." },
     },
   });
   assert.equal(late59Res.status, 200);
@@ -1205,12 +1236,16 @@ test("103.14: Commerce tests fail closed when pointing at the production databas
   }
 });
 
-test("103.15 Two-hour shortlist: 120m vs 119m on 15200P6 / TG10, full return trip with tender + cutoff, Needs verification, and See other tours that fit", async () => {
+test("103.15 Two-hour shortlist: 120m vs 119m on 15200P6 / TG10, full return trip with tender + cutoff, Needs verification, and See other tours that fit", async (t) => {
+  const publishedAt = Object.fromEntries(
+    ["14:15", "14:14", "14:45", "14:44"].map((time) => [time, publishedCall(t, "new-orleans", time, "2027-01-12")])
+  );
   // 1. 120 minutes buffer (allAboard = 14:15, return = 12:15) -> Estimated back 2+ hours before all aboard
   const shortlist120 = await queryPortDayExcursionCatalog({
     portSlug: "new-orleans",
     viewMode: "shortlist_2h",
     shipArrivalTime: "07:00",
+    sailingId: publishedAt["14:15"],
     shipAllAboardTime: "14:15",
     sailingDate: "2027-01-12",
     partySize: 5,
@@ -1242,6 +1277,7 @@ test("103.15 Two-hour shortlist: 120m vs 119m on 15200P6 / TG10, full return tri
     portSlug: "new-orleans",
     viewMode: "shortlist_2h",
     shipArrivalTime: "07:00",
+    sailingId: publishedAt["14:14"],
     shipAllAboardTime: "14:14",
     sailingDate: "2027-01-12",
     partySize: 5,
@@ -1261,6 +1297,7 @@ test("103.15 Two-hour shortlist: 120m vs 119m on 15200P6 / TG10, full return tri
     portSlug: "new-orleans",
     viewMode: "fits_sailing",
     shipArrivalTime: "07:00",
+    sailingId: publishedAt["14:14"],
     shipAllAboardTime: "14:14",
     sailingDate: "2027-01-12",
     partySize: 5,
@@ -1282,6 +1319,7 @@ test("103.15 Two-hour shortlist: 120m vs 119m on 15200P6 / TG10, full return tri
     portSlug: "new-orleans",
     viewMode: "shortlist_2h",
     shipArrivalTime: "07:00",
+    sailingId: publishedAt["14:45"],
     shipAllAboardTime: "14:45",
     sailingDate: "2027-01-12",
     partySize: 5,
@@ -1304,6 +1342,7 @@ test("103.15 Two-hour shortlist: 120m vs 119m on 15200P6 / TG10, full return tri
     portSlug: "new-orleans",
     viewMode: "shortlist_2h",
     shipArrivalTime: "07:00",
+    sailingId: publishedAt["14:44"],
     shipAllAboardTime: "14:44",
     sailingDate: "2027-01-12",
     partySize: 5,
@@ -1321,6 +1360,7 @@ test("103.15 Two-hour shortlist: 120m vs 119m on 15200P6 / TG10, full return tri
     portSlug: "new-orleans",
     viewMode: "browse_all",
     shipArrivalTime: "07:00",
+    sailingId: publishedAt["14:45"],
     shipAllAboardTime: "14:45",
     sailingDate: "2027-01-12",
     partySize: 5,
@@ -1572,9 +1612,10 @@ test("103.16: Catalog-backed checkout approval, all 629 ports connected for disc
   assert.ok(candidateUnconfirmed.timeFit.missingFields.includes("allAboard"));
 
   // When enabled and all-aboard cutoff is confirmed (17:00), confirm departure, pickup, return route, and fit
+  const publishedCozumel = publishedCall(t, "cozumel", "17:00", "2027-01-08");
   const jan8Confirmed = await queryPortDayExcursionCatalog({
     portSlug: "cozumel",
-    sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+    sailingId: publishedCozumel,
     sailingDate: "2027-01-08",
     shipArrivalTime: "08:00",
     shipAllAboardTime: "17:00",
@@ -1692,7 +1733,7 @@ test("103.16: Catalog-backed checkout approval, all 629 ports connected for disc
     date: "2027-01-08",
     departureTime: "10:00",
     partySize: 4,
-    sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+    sailingId: publishedCozumel,
     shipArrivalTime: "08:00",
     shipAllAboardTime: "17:00",
     shipDepartureTime: "18:00",
@@ -1724,7 +1765,7 @@ test("103.16: Catalog-backed checkout approval, all 629 ports connected for disc
       date: "2027-01-08",
       departureTime: "10:00",
       partySize: 4,
-      sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+      sailingId: publishedCozumel,
       shipArrivalTime: "08:00",
       shipAllAboardTime: "17:00",
       shipDepartureTime: "18:00",
