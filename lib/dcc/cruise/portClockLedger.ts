@@ -66,14 +66,64 @@ export const PUBLISHED_ALL_ABOARD_SOURCE_KINDS: ReadonlySet<PortClockSourceKind>
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
+function isValidDate(value: string): boolean {
+  if (!ISO_DATE.test(value)) return false;
+  const date = new Date(value + "T00:00:00Z");
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
+function hasCheckedSource(source: PortClockSource | null | undefined): boolean {
+  if (!source || !isValidDate(source.checkedAt)) return false;
+  try {
+    const url = new URL(source.url);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+export type MissingPortClockEvidence =
+  | "schedule_unverified"
+  | "no_published_all_aboard"
+  | "time_basis_unknown"
+  | "return_point_unknown"
+  | "call_window_ambiguous";
+
+/** Both the planner and the return checker use the same evidence before confirming a clock. */
+export function missingPortClockEvidence(r: PortClockRecord): MissingPortClockEvidence[] {
+  const missing: MissingPortClockEvidence[] = [];
+  const { publishedAllAboardTime: deadline, arrivalTime, departureTime } = r;
+  if (!isValidDate(r.callDate) || !hasCheckedSource(r.scheduleSource)
+      || !HHMM.test(arrivalTime ?? "") || !HHMM.test(departureTime ?? "")) {
+    missing.push("schedule_unverified");
+  }
+  if (!HHMM.test(deadline ?? "") || !r.publishedAllAboardSource
+      || !PUBLISHED_ALL_ABOARD_SOURCE_KINDS.has(r.publishedAllAboardSource.kind)
+      || !hasCheckedSource(r.publishedAllAboardSource)) {
+    missing.push("no_published_all_aboard");
+  }
+  if (r.timeBasis !== "ship_time" && r.timeBasis !== "local_port_time") missing.push("time_basis_unknown");
+  if (!r.returnPoint?.name.trim() || !hasCheckedSource(r.returnPoint.source)) missing.push("return_point_unknown");
+  // HH:MM alone cannot place an overnight departure or deadline on a particular day.
+  if (arrivalTime && departureTime && deadline
+      && (arrivalTime >= departureTime || deadline < arrivalTime || deadline > departureTime)) {
+    missing.push("call_window_ambiguous");
+  }
+  return missing;
+}
+
+export function hasPublishedPortClockEvidence(r: PortClockRecord): boolean {
+  return missingPortClockEvidence(r).length === 0;
+}
+
 export function getPortClockLedger(): PortClockLedger {
   return ledgerData as PortClockLedger;
 }
 
 export function derivePortClockStatus(r: PortClockRecord): PortClockStatus {
-  const scheduleOk = Boolean(r.scheduleSource && r.timeBasis !== "unknown" && r.arrivalTime && r.departureTime);
-  const fullOk = scheduleOk && Boolean(r.publishedAllAboardTime && r.publishedAllAboardSource && r.returnPoint);
-  if (fullOk) return "verified";
+  const missing = missingPortClockEvidence(r);
+  if (missing.length === 0) return "verified";
+  const scheduleOk = !missing.includes("schedule_unverified") && !missing.includes("time_basis_unknown");
   if (scheduleOk || r.publishedAllAboardTime) return "partial";
   return "unverified";
 }
@@ -86,7 +136,7 @@ export function validatePortClockLedger(ledger: PortClockLedger = getPortClockLe
     const key = `${r.sailingId}|${r.portSlug}|${r.callDate}`;
     if (seen.has(key)) errors.push(`${id} duplicate port call`);
     seen.add(key);
-    if (!ISO_DATE.test(r.callDate)) errors.push(`${id} bad callDate`);
+    if (!isValidDate(r.callDate)) errors.push(`${id} bad callDate`);
     for (const f of ["arrivalTime", "departureTime", "publishedAllAboardTime", "modeledAllAboardTime"] as const) {
       const v = r[f];
       if (v !== null && !HHMM.test(v)) errors.push(`${id} bad ${f} "${v}"`);
@@ -97,7 +147,7 @@ export function validatePortClockLedger(ledger: PortClockLedger = getPortClockLe
       errors.push(`${id} all-aboard source kind "${r.publishedAllAboardSource.kind}" is not a line-issued document`);
     if (r.modeledAllAboardTime && !r.modelRule) errors.push(`${id} modeled all-aboard without a model rule`);
     for (const s of [r.scheduleSource, r.publishedAllAboardSource, r.returnPoint?.source]) {
-      if (s && (!s.url || !ISO_DATE.test(s.checkedAt))) errors.push(`${id} source missing url or check date`);
+      if (s && !hasCheckedSource(s)) errors.push(`${id} source missing url or check date`);
     }
     if (r.status !== derivePortClockStatus(r))
       errors.push(`${id} status "${r.status}" should be "${derivePortClockStatus(r)}"`);
