@@ -589,6 +589,68 @@ export default function HostedCruisesAdminClient({
             </ul>
           )}
         </div>
+
+        {/* Stale or Changed Source Review Queue Alert */}
+        {bridge.sourceStalenessMonitor && (
+          <div
+            data-testid="dcc-stale-source-alerts-box"
+            className={`rounded-xl border p-3.5 ${
+              bridge.sourceStalenessMonitor.counts.overdueCheckCount > 0 ||
+              bridge.sourceStalenessMonitor.counts.materialChangedCount > 0
+                ? "border-amber-400/45 bg-amber-500/10"
+                : "border-white/10 bg-black/35"
+            }`}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-xs font-bold uppercase tracking-wider text-amber-200">
+                Stale / Changed Source Review Queue (
+                {bridge.sourceStalenessMonitor.counts.totalAlerts})
+              </div>
+              <div className="text-[11px] text-zinc-300">
+                Overdue: {bridge.sourceStalenessMonitor.counts.overdueCheckCount} ·
+                Changed: {bridge.sourceStalenessMonitor.counts.materialChangedCount} ·
+                WAF/Probe Manual Queue:{" "}
+                {bridge.sourceStalenessMonitor.counts.probeBlockedCount}
+              </div>
+            </div>
+            {bridge.sourceStalenessMonitor.alerts.length === 0 ? (
+              <p className="mt-1 text-xs text-emerald-200">
+                ✓ All hosted sailings, organizers, and release-watch sources are
+                within their verification freshness window.
+              </p>
+            ) : (
+              <ul className="mt-2 space-y-2 text-xs">
+                {bridge.sourceStalenessMonitor.alerts.slice(0, 10).map((alert) => (
+                  <li
+                    key={alert.alertId}
+                    className="flex flex-wrap items-baseline justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2"
+                  >
+                    <div>
+                      <span className="mr-2 rounded bg-amber-500/25 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-amber-200">
+                        {alert.reasons.join(", ")}
+                      </span>
+                      <strong className="text-white">{alert.title}</strong>
+                      <span className="ml-2 text-zinc-400">
+                        (checked {alert.checkedAt.slice(0, 10)})
+                      </span>
+                      <p className="mt-0.5 text-[11px] text-zinc-300">
+                        {alert.summary}
+                      </p>
+                    </div>
+                    <a
+                      href={alert.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-[11px] underline text-teal-200"
+                    >
+                      Verify Source ↗
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </section>
 
       {/* 2. Pending Organizer Claims */}

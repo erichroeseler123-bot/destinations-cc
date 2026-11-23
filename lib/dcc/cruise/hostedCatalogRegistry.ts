@@ -24,10 +24,11 @@ import {
   FOUNDING_PILOT_SAILINGS,
 } from "./foundingOrganizerPilotCohort";
 
-export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-22T18:30:59Z" as const;
-export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-22.v7-source-reconciled" as const;
+export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-23T12:00:00Z" as const;
+export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-23.v8-master-refresh" as const;
 
 export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrganizerFactRecord> = [
+
   {
     "organizerId": "hosted-organizer:arnos-bear-cruises",
     "organizerSlug": "arnos-bear-cruises",
@@ -64,7 +65,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.arnoscruises.com/contact-us/",
     "nonAffiliationNotice": "Cruise Promenade is an independent group-planning and shore-coordination tool. Unless claimed and verified by the organizer, this page is an independent itinerary companion and is not affiliated with or endorsed by Arno’s Bear Cruises, Royal Caribbean International, or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Book your stateroom directly through Arno’s Bear Cruises so your reservation is inside the official hosted group block. Cruise Promenade never sells cabins or competes for your cruise fare.",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bearcruise",
       "adventure-bears",
@@ -141,7 +142,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://atlantisevents.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning platform and is not affiliated with or endorsed by Atlantis Events, Virgin Voyages, or Royal Caribbean International.",
     "cabinBookingPolicyNote": "All Atlantis ocean voyages are private full-ship charters. Reserve your cabin directly through Atlantis Events.",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "vacaya",
       "the-cruise-la-demence",
@@ -219,7 +220,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.myvacaya.com/contact/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning platform and is not affiliated with or endorsed by VACAYA or Celebrity Cruises.",
     "cabinBookingPolicyNote": "All VACAYA voyages are private full-ship charters. Reserve your stateroom directly through VACAYA.",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "atlantis-events",
       "olivia-travel",
@@ -300,7 +301,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.olivia.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning platform and is not affiliated with or endorsed by Olivia Travel or Holland America Line.",
     "cabinBookingPolicyNote": "All Olivia ocean cruises are private full-ship charters. Reserve your stateroom directly through Olivia Travel.",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "lesbians-aboard",
       "vacaya",
@@ -385,7 +386,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://bondandbeyondnetwork.com/connect/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Bond & Beyond Network or Norwegian Cruise Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Bond & Beyond Network so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "hr-conference-cruise",
       "national-reia",
@@ -444,7 +445,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://aspect-marketing.com/contact.htm",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by HR Conference Cruise (Aspect Marketing & Communications) or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through HR Conference Cruise (Aspect Marketing & Communications) so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "national-reia",
@@ -514,7 +515,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://nationalreiacruise.com/faq/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by National REIA or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through National REIA so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
@@ -576,7 +577,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://clecruise.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Sea Day CLE (Kirton McConkie) or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Sea Day CLE (Kirton McConkie) so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
@@ -633,7 +634,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.debusktravels.com/ContactUs",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by DeBusk Travels or MSC Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through DeBusk Travels so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "travel-partners-in-dublin",
       "krouse-travel"
@@ -779,7 +780,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.financialconnextioncruise.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Financial ConNEXTion Cruise or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Financial ConNEXTion Cruise so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
@@ -839,7 +840,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://dancefun.com/contact-us-2/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Dance Fun Cruises or Princess Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Dance Fun Cruises so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "quick-quick-slow-travel"
     ],
@@ -899,7 +900,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.winemasterscruises.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Wine Masters Cruises or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Wine Masters Cruises so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [],
     "reputationEntityId": "rep:hosted-organizer:wine-masters-cruises",
     "knownBrandAliases": [
@@ -951,7 +952,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://stitchinheaven.com/pages/contact-us",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Stitchin' Heaven or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Stitchin' Heaven so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "pickleball-at-sea",
       "cruise-and-crop",
@@ -1019,7 +1020,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://cmmcatsea.com/cmmc-at-sea-101/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by CMMC at Sea or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through CMMC at Sea so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
@@ -1078,7 +1079,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://vettechlife.com/reach-us%2Fsubmit-anything",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Vet Tech Life or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Vet Tech Life so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
@@ -1139,7 +1140,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.wda.org/contact-us",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Michigan & Wisconsin Dental Associations or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Michigan & Wisconsin Dental Associations so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
@@ -1206,7 +1207,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.cuconferences.com/about-us/faqs",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by CU Conferences or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through CU Conferences so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
@@ -1277,7 +1278,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.travelpartnersindublin.com/about/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Travel Partners in Dublin or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Travel Partners in Dublin so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "singlescruise",
       "krouse-travel",
@@ -1352,7 +1353,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.singlescruise.com/all-cruises/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by SinglesCruise.com or Norwegian Cruise Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through SinglesCruise.com so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "travel-partners-in-dublin",
       "krouse-travel",
@@ -1414,7 +1415,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.pickleballatseagroupcruise.com/pages/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Pickleball At Sea (Escape Group Cruises) or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Pickleball At Sea (Escape Group Cruises) so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [],
     "reputationEntityId": "rep:hosted-organizer:pickleball-at-sea",
     "knownBrandAliases": [
@@ -1476,7 +1477,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.cruiseandcrop.com/AboutUs.html",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Cruise & Crop or Holland America Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Cruise & Crop so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "stitchin-heaven",
       "pickleball-at-sea",
@@ -1540,7 +1541,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://krousetravel.com/contact/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Krouse Travel or Norwegian Cruise Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Krouse Travel so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "travel-partners-in-dublin",
       "singlescruise",
@@ -1601,7 +1602,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.bribecktravel.com/ContactUs",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by BriBeck Travel or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through BriBeck Travel so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "moody-radio",
       "templeton-tours",
@@ -1666,7 +1667,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://welcomehomergv.com/contact-travel-tours/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Welcome Home Travel & Tours or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Welcome Home Travel & Tours so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "travel-partners-in-dublin",
       "singlescruise",
@@ -1729,7 +1730,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.quickquickslowtravel.com/aboutus",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Quick Quick Slow Travel or Norwegian Cruise Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Quick Quick Slow Travel so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "dance-fun"
     ],
@@ -1788,7 +1789,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://alicetravelbridgecruises.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Alice Travel Bridge Cruises or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Alice Travel Bridge Cruises so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "stitchin-heaven",
       "pickleball-at-sea",
@@ -1846,7 +1847,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.travelwithdonna.vip/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Travel with Donna LLC or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Travel with Donna LLC so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "travel-partners-in-dublin",
       "singlescruise",
@@ -1926,7 +1927,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.moodyradio.org/contact/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Moody Radio or Holland America Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Moody Radio so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bribeck-travel",
       "templeton-tours",
@@ -1988,7 +1989,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://templetontours.com/contactus.shtml",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Templeton Tours or Carnival Cruise Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Templeton Tours so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bribeck-travel",
       "moody-radio",
@@ -2045,7 +2046,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.craftcruises.com/contact_us.php",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Craft Cruises or Holland America Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Craft Cruises so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "stitchin-heaven",
       "pickleball-at-sea",
@@ -2107,7 +2108,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://aquafestcruises.com/contact/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Aquafest Cruises or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Aquafest Cruises so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "pied-piper-travel",
       "traveling-gays-getaways",
@@ -2179,7 +2180,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://livingpassages.com/contact-us/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Living Passages or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Living Passages so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bribeck-travel",
       "moody-radio",
@@ -2249,7 +2250,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://lesbiansaboard.com/contact-us",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Lesbians Aboard or Virgin Voyages.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Lesbians Aboard so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "olivia-travel",
       "vacaya",
@@ -2329,7 +2330,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://www.amberlygrant.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by FinTalks (Amberly Grant) or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through FinTalks (Amberly Grant) so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
@@ -2392,7 +2393,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://acquisitionlab.com/contact",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Acquisition Lab or Virgin Voyages.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Acquisition Lab so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
@@ -2461,7 +2462,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicContactPageUrl": "https://marketerscruise.com/",
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, review, and shore-planning tool and is not affiliated with or endorsed by Marketers Cruise (Special Events at Sea) or Carnival Cruise Line.",
     "cabinBookingPolicyNote": "Register and book your stateroom or conference pass directly through Marketers Cruise (Special Events at Sea) so your reservation stays inside the official group.",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "comparableOrganizerSlugs": [
       "bond-and-beyond-network",
       "hr-conference-cruise",
@@ -2570,7 +2571,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Brand g Vacations, Amadeus River Cruises, or Atlas Ocean Voyages.",
     "cabinBookingPolicyNote": "All Brand g departures are private full-vessel charters. Reserve your suite or stateroom directly with Brand g Vacations.",
     "primarySourceUrl": "https://www.brandgvacations.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "source-journeys",
@@ -2658,7 +2659,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by BV SPLASH, La Démence, or Celebrity Cruises.",
     "cabinBookingPolicyNote": "The Cruise is a private full-ship charter. Reserve your cabin directly on the-cruise.eu.",
     "primarySourceUrl": "https://the-cruise.eu/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "atlantis-events",
@@ -2738,7 +2739,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Source Journeys, Windstar Cruises, or Abercrombie & Kent.",
     "cabinBookingPolicyNote": "Reserve suites directly through Source Journeys on sourcejourneys.com.",
     "primarySourceUrl": "https://sourcejourneys.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "brand-g-vacations",
@@ -2915,7 +2916,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Tryst Cruises, Tryst Hospitality, Celebrity Cruises, or Royal Caribbean International.",
     "cabinBookingPolicyNote": "All Tryst Cruises sailings are private full-ship charters. Book directly on trystcruises.com.",
     "primarySourceUrl": "https://trystcruises.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "atlantis-events",
@@ -2992,7 +2993,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Big Gay Cruise, CruiseHelp, or Royal Caribbean International.",
     "cabinBookingPolicyNote": "Book directly on biggaycruise.com so your cabin includes official group eligibility for the BGC All Access Pass.",
     "primarySourceUrl": "https://biggaycruise.com/bgc-events/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "traveling-gays-getaways",
@@ -3070,7 +3071,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by BearCruise.com, Dan Howell Travel, Norwegian Cruise Line, or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Book directly through BearCruise.com so your reservation includes official BearCruise Extras and group dining.",
     "primarySourceUrl": "https://www.bearcruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "arnos-bear-cruises",
@@ -3147,7 +3148,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Adventure Bears, LLC, Princess Cruises, or Virgin Voyages.",
     "cabinBookingPolicyNote": "Book directly on adventurebears.com so your stateroom includes private Adventure Bears events and group perks.",
     "primarySourceUrl": "https://www.adventurebears.com/cruises",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "arnos-bear-cruises",
@@ -3234,7 +3235,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Daddy Cruises®, Working Solutions, Inc., or Norwegian Cruise Line.",
     "cabinBookingPolicyNote": "Reserve directly through Daddy Cruises (daddycruises.com) so your stateroom is linked to the official hosted group.",
     "primarySourceUrl": "https://www.daddycruises.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "silver-fox-cruisers",
@@ -3310,7 +3311,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Silver Fox Cruisers, PrimeTimers of the Desert, or Celebrity Cruises.",
     "cabinBookingPolicyNote": "Reserve directly through Silver Fox Cruisers to receive group private cocktail reception access and Palm Springs coach transfers.",
     "primarySourceUrl": "https://silverfoxcruisers.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "daddy-cruises",
@@ -3397,7 +3398,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Traveling Gays Getaways, Royal Caribbean International, or Virgin Voyages.",
     "cabinBookingPolicyNote": "Reserve via the official booking links on travelinggays.com so your cabin receives TGG group perks and event access.",
     "primarySourceUrl": "https://www.travelinggays.com/gay-group-cruises-lesbian-charters-cruises",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "big-gay-cruise",
@@ -3498,7 +3499,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by KelliGregg Travel, R Family Vacations, Celebrity Cruises, or Uniworld.",
     "cabinBookingPolicyNote": "Book directly on kelligreggtravel.com so your family or party is registered inside the official KelliGregg / R Family group.",
     "primarySourceUrl": "https://www.kelligreggtravel.com/vacations",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "vacaya",
@@ -3582,7 +3583,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by TUI Cruises GmbH or Mein Schiff®.",
     "cabinBookingPolicyNote": "Rainbow Cruise is produced and sold directly by TUI Cruises (meinschiff.com), not an independent third-party charter host.",
     "primarySourceUrl": "https://www.meinschiff.com/en/event-travel/rainbow-cruise",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "the-cruise-la-demence",
@@ -3662,7 +3663,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent discovery, comparison, and shore-planning platform and is not affiliated with or endorsed by Uniworld Boutique River Cruises.",
     "cabinBookingPolicyNote": "No currently announced departure. Cruise Promenade never invents dates or availability—monitor uniworld.com/us/themed-cruises/out-on-the-rivers for official future announcements.",
     "primarySourceUrl": "https://www.uniworld.com/us/themed-cruises/out-on-the-rivers",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "no_announced_departure",
     "comparableOrganizerSlugs": [
       "brand-g-vacations",
@@ -3745,7 +3746,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent directory and shore-planning platform and is not affiliated with or endorsed by Sixthman.",
     "cabinBookingPolicyNote": "All staterooms and festival credentials must be booked directly through Sixthman or the official franchise booking portal. Cruise Promenade never sells cabins or collects charter fares.",
     "primarySourceUrl": "https://www.sixthman.net/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "starvista-live",
@@ -3827,7 +3828,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent directory and shore-planning platform and is not affiliated with or endorsed by StarVista LIVE.",
     "cabinBookingPolicyNote": "All staterooms and festival credentials must be booked directly through StarVista LIVE or the official franchise booking portal. Cruise Promenade never sells cabins or collects charter fares.",
     "primarySourceUrl": "https://starvistalive.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "signature-cruise-experiences",
@@ -3910,7 +3911,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent directory and shore-planning platform and is not affiliated with or endorsed by Signature Cruise Experiences.",
     "cabinBookingPolicyNote": "All staterooms and festival credentials must be booked directly through Signature Cruise Experiences or the official franchise booking portal. Cruise Promenade never sells cabins or collects charter fares.",
     "primarySourceUrl": "https://scecruises.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "starvista-live",
@@ -3970,7 +3971,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
       "Themed concert charters"
     ],
     "heroVisualKey": "ship-mariner-of-the-seas",
-    "officialWebsiteUrl": "https://ecpcruises.com/",
+    "officialWebsiteUrl": "https://www.ecpcruises.com/",
     "officialDomain": "ecpcruises.com",
     "reservationPortalDomain": "rezmagic.com",
     "publicContactPageUrl": "https://www.the80scruise.com/contact/",
@@ -3985,7 +3986,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "publicReviewProfileLinks": [],
     "nonAffiliationNotice": "Cruise Promenade is an independent directory and shore-planning platform and is not affiliated with or endorsed by Entertainment Cruise Productions.",
     "cabinBookingPolicyNote": "All staterooms and festival credentials must be booked directly through Entertainment Cruise Productions or the official franchise booking portal. Cruise Promenade never sells cabins or collects charter fares.",
-    "primarySourceUrl": "https://ecpcruises.com/",
+    "primarySourceUrl": "https://www.ecpcruises.com/",
     "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
@@ -4063,7 +4064,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent directory and shore-planning platform and is not affiliated with or endorsed by Cloud 9 Adventures.",
     "cabinBookingPolicyNote": "All staterooms and festival credentials must be booked directly through Cloud 9 Adventures or the official franchise booking portal. Cruise Promenade never sells cabins or collects charter fares.",
     "primarySourceUrl": "https://cloud9adventures.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "sixthman",
@@ -4141,7 +4142,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent directory and shore-planning platform and is not affiliated with or endorsed by On the Blue Cruises.",
     "cabinBookingPolicyNote": "All staterooms and festival credentials must be booked directly through On the Blue Cruises or the official franchise booking portal. Cruise Promenade never sells cabins or collects charter fares.",
     "primarySourceUrl": "https://onthebluecruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "sixthman",
@@ -4297,7 +4298,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent directory and shore-planning platform and is not affiliated with or endorsed by ASK4 Entertainment.",
     "cabinBookingPolicyNote": "All staterooms and festival credentials must be booked directly through ASK4 Entertainment or the official franchise booking portal. Cruise Promenade never sells cabins or collects charter fares.",
     "primarySourceUrl": "https://www.ask4ent.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "ultimate-music-cruises",
@@ -4375,7 +4376,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent directory and shore-planning platform and is not affiliated with or endorsed by Whet Travel.",
     "cabinBookingPolicyNote": "All staterooms and festival credentials must be booked directly through Whet Travel or the official franchise booking portal. Cruise Promenade never sells cabins or collects charter fares.",
     "primarySourceUrl": "https://whettravel.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "cloud-9-adventures",
@@ -4453,7 +4454,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "nonAffiliationNotice": "Cruise Promenade is an independent directory and shore-planning platform and is not affiliated with or endorsed by Monteli Productions.",
     "cabinBookingPolicyNote": "All staterooms and festival credentials must be booked directly through Monteli Productions or the official franchise booking portal. Cruise Promenade never sells cabins or collects charter fares.",
     "primarySourceUrl": "https://www.salsacruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "comparableOrganizerSlugs": [
       "sixthman",
@@ -4465,6 +4466,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
 ];
 
 export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranchiseFactRecord> = [
+
   {
     "franchiseId": "hosted-franchise:arnos-bear-cruises",
     "reputationFranchiseEntityId": "rep:hosted-franchise:arnos-bear-cruises",
@@ -4490,7 +4492,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "arnoscruises.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.arnoscruises.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4516,7 +4518,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "atlantisevents.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://atlantisevents.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4542,7 +4544,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "myvacaya.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.myvacaya.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4568,7 +4570,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "olivia.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.olivia.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4594,7 +4596,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "bondandbeyondnetwork.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://bondandbeyondnetwork.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4620,7 +4622,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "hrcruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://hrcruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4646,7 +4648,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "nationalreiacruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://nationalreiacruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4672,7 +4674,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "clecruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://clecruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4698,7 +4700,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "debusktravels.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.debusktravels.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4750,7 +4752,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "financialconnextioncruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.financialconnextioncruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4776,7 +4778,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "dancefun.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://dancefun.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4802,7 +4804,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "winemasterscruises.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.winemasterscruises.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4828,7 +4830,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "stitchinheaven.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://stitchinheaven.com/collections/quilting-cruises",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4854,7 +4856,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "cmmcatsea.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://cmmcatsea.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4880,7 +4882,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "vettechlife.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://vettechlife.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4906,7 +4908,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "dentalcruiseadventure.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.dentalcruiseadventure.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4932,7 +4934,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "cuconferences.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.cuconferences.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4960,7 +4962,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "travelpartnersindublin.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.travelpartnersindublin.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -4986,7 +4988,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "singlescruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.singlescruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5014,7 +5016,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "pickleballatseagroupcruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.pickleballatseagroupcruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5040,7 +5042,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "cruiseandcrop.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.cruiseandcrop.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5068,7 +5070,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "krousetravel.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://krousetravel.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5094,7 +5096,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "bribecktravel.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.bribecktravel.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5120,7 +5122,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "welcomehomergv.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://welcomehomergv.com/tours-travel/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5146,7 +5148,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "quickquickslowtravel.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.quickquickslowtravel.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5172,7 +5174,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "alicetravelbridgecruises.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://alicetravelbridgecruises.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5198,7 +5200,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "travelwithdonna.vip",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.travelwithdonna.vip/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5226,7 +5228,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "moodyradio.org",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.moodyradio.org/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5254,7 +5256,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "templetontours.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://templetontours.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5280,7 +5282,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "craftcruises.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.craftcruises.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5308,7 +5310,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "aquafestcruises.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://aquafestcruises.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5334,7 +5336,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "livingpassages.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://livingpassages.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5360,7 +5362,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "lesbiansaboard.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://lesbiansaboard.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5386,7 +5388,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "amberlygrant.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.amberlygrant.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5412,7 +5414,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "acquisitionlab.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://acquisitionlab.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5438,7 +5440,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "marketerscruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://marketerscruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5464,7 +5466,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "brandgvacations.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.brandgvacations.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5492,7 +5494,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "the-cruise.eu",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://the-cruise.eu/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5518,7 +5520,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "sourcejourneys.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://sourcejourneys.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5602,7 +5604,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "trystcruises.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://trystcruises.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5628,7 +5630,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "biggaycruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://biggaycruise.com/bgc-events/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5656,7 +5658,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "bearcruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.bearcruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5684,7 +5686,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "adventurebears.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.adventurebears.com/cruises",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5712,7 +5714,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "daddycruises.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.daddycruises.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5740,7 +5742,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "silverfoxcruisers.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://silverfoxcruisers.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5768,7 +5770,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "travelinggays.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.travelinggays.com/gay-group-cruises-lesbian-charters-cruises",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5796,7 +5798,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "kelligreggtravel.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.kelligreggtravel.com/vacations",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5824,7 +5826,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "kelligreggtravel.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.kelligreggtravel.com/summer-beach-adventure-cruise",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5852,7 +5854,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "meinschiff.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.meinschiff.com/en/event-travel/rainbow-cruise",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5880,7 +5882,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "uniworld.com",
     "departureAnnouncementStatus": "no_currently_announced_departure",
     "primarySourceUrl": "https://www.uniworld.com/us/themed-cruises/out-on-the-rivers",
-    "verifiedSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "no_announced_departure"
   },
   {
@@ -5909,7 +5911,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "cayamo.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.cayamo.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5939,7 +5941,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "therockboat.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.therockboat.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -5969,7 +5971,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "outlawcountrycruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.outlawcountrycruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6001,7 +6003,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "bluesaliveatsea.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.bluesaliveatsea.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6030,7 +6032,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "headbangersboat.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.headbangersboat.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6058,7 +6060,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "summerof99cruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.summerof99cruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6087,7 +6089,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "endcruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.endcruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6115,7 +6117,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "thebroadwaycruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.thebroadwaycruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6144,7 +6146,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "sailacrossthesun.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.sailacrossthesun.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6173,7 +6175,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "311cruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.311cruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6202,7 +6204,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "ssneverender.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.ssneverender.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6290,7 +6292,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "undergroundgaragecruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.undergroundgaragecruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6319,7 +6321,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "maltshopcruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://maltshopcruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6349,7 +6351,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "soultraincruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://soultraincruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6379,7 +6381,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "rockandromancecruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://rockandromancecruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6405,7 +6407,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "flowerpowercruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://flowerpowercruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6434,7 +6436,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "ultimatediscocruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://ultimatediscocruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6462,7 +6464,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "bigeasycruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://bigeasycruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6488,7 +6490,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "countrymusiccruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://countrymusiccruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6517,7 +6519,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "sandybeachescruises.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://sandybeachescruises.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6546,7 +6548,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "thejazzcruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://thejazzcruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6574,7 +6576,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "thesmoothjazzcruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://thesmoothjazzcruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6603,7 +6605,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "scecruises.com",
     "departureAnnouncementStatus": "not_yet_verified",
     "primarySourceUrl": "https://scecruises.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "held_insufficient_evidence"
   },
   {
@@ -6632,7 +6634,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "journeyofjazz.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://journeyofjazz.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6661,7 +6663,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "bottiatsea.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://bottiatsea.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6689,7 +6691,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "the80scruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://the80scruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6717,7 +6719,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "the90scruise.com",
     "departureAnnouncementStatus": "no_currently_announced_departure",
     "primarySourceUrl": "https://the90scruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "no_announced_departure"
   },
   {
@@ -6745,7 +6747,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "davidfosteratsea.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://davidfosteratsea.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6774,7 +6776,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "topshelfcountrycruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://topshelfcountrycruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6803,7 +6805,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "theyachtrockcruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://theyachtrockcruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6829,7 +6831,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "jamcruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://jamcruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6855,7 +6857,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "cloud9adventures.com",
     "departureAnnouncementStatus": "not_yet_verified",
     "primarySourceUrl": "https://cloud9adventures.com/adventures/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "held_insufficient_evidence"
   },
   {
@@ -6881,7 +6883,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "monstersofrockcruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://monstersofrockcruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6907,7 +6909,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "cruisetotheedge.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://cruisetotheedge.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -6933,7 +6935,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "onthebluecruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://onthebluecruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -7011,7 +7013,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "shiprocked.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://shiprocked.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   {
@@ -7065,13 +7067,14 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "salsacruise.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://www.salsacruise.com/",
-    "verifiedSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
   ...FOUNDING_PILOT_FRANCHISES
 ];
 
 export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailingFactRecord> = [
+
   {
     "hostedSailingId": "hosted-sailing:arnos-bear-cruises:rccl:symphony-of-the-seas:2027-01-31",
     "reputationSailingEntityId": "rep:hosted-sailing:arnos-bear-cruises:symphony-of-the-seas-2027-01-31",
@@ -7117,7 +7120,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Couples & friends"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-20T22:25:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "vesselType": "Oasis-class ocean ship",
@@ -7180,7 +7183,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Bucket-list ports"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "vesselType": "Vision-class ocean ship",
@@ -7242,7 +7245,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Puerto Vallarta & Cabo"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "vesselType": "Voyager-class ocean ship",
@@ -7304,7 +7307,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Celebrity Edge"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "vesselType": "Edge-class contemporary ocean ship",
@@ -7363,7 +7366,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Southern Caribbean"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "independent_charter_operator",
     "experienceClassification": "full_ship_charter",
     "vesselType": "Lady-class 18+ ocean ship",
@@ -7422,7 +7425,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Oasis-class ship"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-20T22:25:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "independent_charter_operator",
     "experienceClassification": "full_ship_charter",
     "vesselType": "Oasis-class mega ocean ship",
@@ -7481,7 +7484,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Mediterranean"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "independent_charter_operator",
     "experienceClassification": "full_ship_charter",
     "vesselType": "Lady-class 18+ ocean ship",
@@ -7540,7 +7543,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Solo travelers"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "independent_charter_operator",
     "experienceClassification": "full_ship_charter",
     "vesselType": "Lady-class 18+ ocean ship",
@@ -7600,7 +7603,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "First-timers"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-20T22:25:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "independent_charter_operator",
     "experienceClassification": "full_ship_charter",
     "vesselType": "Edge-class luxury ocean ship",
@@ -7660,7 +7663,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Full-ship charter"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "independent_charter_operator",
     "experienceClassification": "full_ship_charter",
     "vesselType": "Signature-class premium ocean ship",
@@ -7719,7 +7722,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Solo travelers"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "independent_charter_operator",
     "experienceClassification": "full_ship_charter",
     "vesselType": "Signature-class premium ocean ship",
@@ -7731,7 +7734,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "all_lgbtq",
       "solo_friendly"
     ],
-    "primarySourceUrl": "https://www.olivia.com/",
+    "primarySourceUrl": "https://www.olivia.com/explore-trips/2028-olivia-vol-55-anniversary-cruise",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -7776,7 +7779,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://bondandbeyondnetwork.com/events/",
@@ -7824,7 +7827,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://hrcruise.com/2027/cruise2/index.cfm",
@@ -7872,7 +7875,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://nationalreiacruise.com/itinerary/",
@@ -7920,7 +7923,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Alaska & Inside Passage"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://clecruise.com/cruises/summer-2027",
@@ -7950,32 +7953,32 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "officialReservationFormUrl": "https://www.debusktravels.com/GroupRegistrations/passengers/142382",
     "cabinSellerLabel": "DeBusk Travels",
     "cabinBookingCtaLabel": "Book with DeBusk Travels ↗",
-    "cabinAvailabilityStatus": "available",
-    "cabinAvailabilityNote": "Reserve directly through DeBusk Travels to ensure inclusion in the hosted group.",
-    "verifiedStartingPriceUsd": null,
-    "verifiedPriceNote": null,
-    "approximateGroupSizeLabel": null,
+    "cabinAvailabilityStatus": "limited",
+    "cabinAvailabilityNote": "16 group cabins reserved (10 Deluxe Interior + 6 Deluxe Balcony; limited Infinite Ocean View & Deluxe Balcony inventory) via debusktravels.com/GroupRegistrations/view/142382 ($199/pp deposit refundable through Apr 11, 2027).",
+    "verifiedStartingPriceUsd": 1673,
+    "verifiedPriceNote": "Verified on debusktravels.com/GroupRegistrations/view/142382 on 2026-11-23 ($2,924.26 Solo Interior / $3,644.26 Solo Balcony).",
+    "approximateGroupSizeLabel": "16+ reserved group staterooms",
     "fullShipCharter": false,
     "typicalAudience": "Hosted friends, family & repeat agency clients (16+ cabins reserved out of Miami)",
-    "announcedHostedProgramming": "Group activities and time together",
+    "announcedHostedProgramming": "Group sail-away meetup from Miami, optional shared group dinners, group photo, Ocean Cay MSC Marine Reserve beach meetup, and pre-cruise WhatsApp coordination group.",
     "programmingSourceUrl": "https://www.debusktravels.com/GroupRegistrations/view/142382",
-    "soloSupport": null,
-    "soloFriendly": null,
-    "familyPolicy": "not_verified",
+    "soloSupport": "Single occupancy published ($2,924.26 Interior / $3,644.26 Balcony incl. taxes) plus advisor-assisted roommate matching ($398 refundable deposit through Apr 11, 2027 if unmatched).",
+    "soloFriendly": true,
+    "familyPolicy": "family_friendly",
     "communityAtmosphereSummary": "Hosted friends, family & repeat agency clients (16+ cabins reserved out of Miami)",
     "goodForTags": [
       "MSC World America",
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
-    "scheduleHoldReason": "Re-checked 2026-11-22: debusktravels.com/GroupRegistrations/view/142382 publishes route summary only (Miami, Dominican Republic, San Juan, Ocean Cay) without port clock hours, msccruisesusa.com blocks automated schedule verification, and official July 2027 port-authority berth clocks are not yet published.",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.debusktravels.com/GroupRegistrations/view/142382",
-    "verificationState": "schedule_hold",
+    "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows",
-    "scheduleHoldReasonCode": "UNVERIFIED_PORT_CLOCK_WINDOWS"
+    "publishedPriceDisplay": "From $1,673.26 pp Deluxe Interior / $2,033.26 pp Deluxe Balcony double occupancy (incl. taxes/fees, $119 gratuities, MSC Premium Extra Drink Package & 1-device Wi-Fi)",
+    "inclusionsSummary": "MSC World America stateroom, government taxes & port fees, $119 prepaid gratuities pp, MSC Premium Extra Drink Package & 1-device Wi-Fi for Guests 1 & 2, and hosted group sail-away, dinners, and Ocean Cay meetup."
   },
   {
     "hostedSailingId": "hosted-sailing:pied-piper-travel:vv:brilliant-lady:2027-08-24",
@@ -8074,7 +8077,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.financialconnextioncruise.com/cruise",
@@ -8122,7 +8125,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Alaska & Inside Passage"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://dancefun.com/west-coast-swing-dance-cruise-alaska-2020/",
@@ -8170,7 +8173,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.winemasterscruises.com/2027-01-tipsy-ascent",
@@ -8218,7 +8221,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://stitchinheaven.com/products/2027-riley-blake-quilting-cruise",
@@ -8266,7 +8269,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://cmmcatsea.com/registration/",
@@ -8314,7 +8317,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Mexican Riviera & Baja"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://vettechlife.com/ce-on-the-sea-mexico-2027",
@@ -8362,7 +8365,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.dentalcruiseadventure.com/",
@@ -8410,7 +8413,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Alaska & Inside Passage"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.cuconferences.com/alaskan-cruise",
@@ -8460,7 +8463,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Alaska & Inside Passage"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.travelpartnersindublin.com/travel-with-us/alaskan-wonders/",
@@ -8508,7 +8511,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.singlescruise.com/cruises/caribbean-valentines-day/",
@@ -8541,7 +8544,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "cabinSellerLabel": "Pickleball At Sea (Escape Group Cruises)",
     "cabinBookingCtaLabel": "Book with Pickleball At Sea ↗",
     "cabinAvailabilityStatus": "sold_out",
-    "cabinAvailabilityNote": "Published as sold out on Pickleball at Sea’s official page; check the official waitlist or contact Pickleball at Sea directly for cancellations.",
+    "cabinAvailabilityNote": "Sold out; checked 2026-11-23: /pages/february-21st-27th-2027 now redirects to /pages/pickleball-cruises where active 2027–2028 group dates are listed.",
     "verifiedStartingPriceUsd": null,
     "verifiedPriceNote": null,
     "approximateGroupSizeLabel": null,
@@ -8558,10 +8561,10 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
-    "primarySourceUrl": "https://www.pickleballatseagroupcruise.com/pages/february-21st-27th-2027",
+    "primarySourceUrl": "https://www.pickleballatseagroupcruise.com/pages/pickleball-cruises",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -8606,7 +8609,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.cruiseandcrop.com/StampinAtSea2027.html",
@@ -8656,7 +8659,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Bermuda"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://krousetravel.com/groups/view/?groupid=190",
@@ -8704,7 +8707,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.bribecktravel.com/GroupRegistrations/view/139004",
@@ -8752,7 +8755,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://welcomehomergv.com/tours-travel/cruise-vacations/cruisewithkristi/",
@@ -8800,7 +8803,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Mediterranean & Aegean"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.quickquickslowtravel.com/dancecruises",
@@ -8848,7 +8851,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://alicetravelbridgecruises.com/bridge-cruises/cruise-the-caribbean-from-texas-play-bridge-all-week",
@@ -8896,7 +8899,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Northern Europe & Baltic"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.travelwithdonna.vip/hosted-cruises",
@@ -8946,7 +8949,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Alaska & Inside Passage"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.moodyradio.org/landing-pages/cruise/",
@@ -8974,8 +8977,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "visualKey": "fleet-hero",
     "regionLabel": "Caribbean & Bahamas",
-    "officialSailingPageUrl": "https://templetontours.com/singingatsea/",
-    "officialReservationFormUrl": "https://templetontours.com/singingatsea/register.shtml",
+    "officialSailingPageUrl": "https://www.templetontours.com/singingatsea/",
+    "officialReservationFormUrl": "https://www.templetontours.com/singingatsea/register.shtml",
     "cabinSellerLabel": "Templeton Tours",
     "cabinBookingCtaLabel": "Book with Templeton Tours ↗",
     "cabinAvailabilityStatus": "available",
@@ -8986,7 +8989,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "fullShipCharter": true,
     "typicalAudience": "Southern Gospel church groups, choirs & families on the 53rd annual Singing at Sea charter/group",
     "announcedHostedProgramming": "Group activities and time together",
-    "programmingSourceUrl": "https://templetontours.com/singingatsea/",
+    "programmingSourceUrl": "https://www.templetontours.com/singingatsea/",
     "soloSupport": null,
     "soloFriendly": null,
     "familyPolicy": "not_verified",
@@ -8996,11 +8999,11 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
-    "scheduleHoldReason": "Re-checked 2026-11-22: private full-ship charter omitted from Carnival retail schedule; templetontours.com/singingatsea/ prose still names Princess Cays on Wednesday while templetontours.com/singingatsea/itinerary.shtml lists Half Moon Cay (7:30 AM–3:30 PM) and Grand Turk (11:30 AM–6:00 PM)—held until organizer reconciles the Day 3 Bahamas island.",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
+    "scheduleHoldReason": "Re-checked 2026-11-23 (HTTP 200): private full-ship charter omitted from Carnival retail schedule; templetontours.com/singingatsea/ landing prose still names Princess Cays on Wednesday while /singingatsea/itinerary.shtml lists Half Moon Cay (7:30 AM–3:30 PM) and Grand Turk (11:30 AM–6:00 PM)—held until organizer reconciles the Day 3 Bahamas island.",
     "organizerType": "independent_charter_operator",
     "experienceClassification": "full_ship_charter",
-    "primarySourceUrl": "https://templetontours.com/singingatsea/",
+    "primarySourceUrl": "https://www.templetontours.com/singingatsea/",
     "verificationState": "schedule_hold",
     "portScheduleVerificationMode": "clocked_port_windows",
     "scheduleHoldReasonCode": "UNVERIFIED_PORT_CLOCK_WINDOWS"
@@ -9046,7 +9049,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Asia & Pacific"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.craftcruises.com/cruise.php?brand=Knitting%20Cruises&cruise_name=Circle%20Japan&cruise_line=Holland%20America%20Line&cruise_ship=ms%20Westerdam&dep_date=2027-04-11&cruise=231",
@@ -9096,7 +9099,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Transatlantic (Mediterranean & Morocco to Florida)"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "vesselType": "Millennium-class premium ocean ship",
@@ -9154,7 +9157,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Mediterranean & Aegean"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://livingpassages.com/cruise/malta-greece-turkey-italy-footsteps-of-paul-cruise/",
@@ -9202,7 +9205,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "vesselType": "Lady-class 18+ ocean ship",
@@ -9259,7 +9262,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://www.amberlygrant.com/caribbean-cruise-icon",
@@ -9307,7 +9310,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://acquisitionlab.com/events/annual-summit-2027",
@@ -9355,7 +9358,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Caribbean & Bahamas"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-15T17:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "organizerType": "hosted_group_organizer",
     "experienceClassification": "hosted_group_sailing",
     "primarySourceUrl": "https://marketerscruise.com/",
@@ -9422,7 +9425,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.brandgvacations.com/trip/2027-castles-of-the-rhine-river-cruise/",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   },
@@ -9484,7 +9487,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.brandgvacations.com/trip/2027-luxury-greek-isles-cruise/",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   },
@@ -9546,7 +9549,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.brandgvacations.com/trip/2028-dubrovnik-to-venice-luxury-cruise/",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   },
@@ -9608,7 +9611,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://the-cruise.eu/destinations/2027-western-med/itinerary",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -9669,7 +9672,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://sourcejourneys.com/dreams-of-tahiti-cruise-2027/",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -9701,8 +9704,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "officialCruiseId": "5545",
     "cabinSellerLabel": "Source Journeys",
     "cabinBookingCtaLabel": "Reserve with Source Journeys ↗",
-    "cabinAvailabilityStatus": "limited",
-    "cabinAvailabilityNote": "1 dedicated $0-supplement Single Cabin open on Mar 31/Apr 1 departure (companion Mar 24 departure also open on sourcejourneys.com).",
+    "cabinAvailabilityStatus": "waitlist",
+    "cabinAvailabilityNote": "Checked 2026-11-23 on sourcejourneys.com/spirit-of-the-amazon/: departure now displays 'Amazon March 31, 2028 Waitlist' form.",
     "verifiedStartingPriceUsd": 13995,
     "publishedPriceDisplay": "From $13,995 USD pp (Double Suites & $0-supplement Single Cabins) + $375 tips",
     "verifiedPriceNote": "Published $13,995 pp for both Double Suites and dedicated 215 sq ft Single Cabins + $375 gratuities & internal Lima–Iquitos flight.",
@@ -9730,7 +9733,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://sourcejourneys.com/spirit-of-the-amazon/",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   },
@@ -9791,7 +9794,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://sourcejourneys.com/mediterranean-nights-lisbon-to-barcelona-cruise/",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   },
@@ -10041,7 +10044,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://trystcruises.com/itinerary/",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   },
@@ -10103,7 +10106,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://trystcruises.com/",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   },
@@ -10164,7 +10167,71 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://biggaycruise.com/9-nights-southern-caribbean/",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "clocked_port_windows"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:bearcruise:vv:valiant-lady:2027-05-06",
+    "reputationSailingEntityId": "rep:hosted-sailing:bearcruise:valiant-lady-2027-05-06",
+    "organizerSlug": "bearcruise",
+    "franchiseId": "hosted-franchise:bearcruise",
+    "franchiseSlug": "bearcruise",
+    "sailingSlug": "valiant-lady-2027-05-06",
+    "organizerType": "travel_agency_hosted_brand",
+    "experienceClassification": "hosted_group_sailing",
+    "physicalSailingId": "sailing:vv:valiant-lady:2027-05-06",
+    "canonicalLineCode": "vv",
+    "canonicalShipSlug": "valiant-lady",
+    "canonicalSailDate": "2027-05-06",
+    "sailingTitle": "MayDaze 2027 BearCruise — Fire & Sunset Soirees (Valiant Lady)",
+    "shortHeadline": "4-Night Adults-Only Miami, Key West & Beach Club at Bimini Bear Group Getaway",
+    "editionSubtitle": "Valiant Lady · May 6–10, 2027 (4N RT Miami)",
+    "anticipationHook": "Kick off May aboard Virgin Voyages’ adults-only Valiant Lady with BearCruise’s Key West pool party, Scarlet Night at sea, and Beach Club at Bimini takeover.",
+    "primaryTheme": "bear-cruises",
+    "secondaryThemes": [
+      "lgbtq-cruises"
+    ],
+    "visualKey": "port-key-west-harbor",
+    "regionLabel": "Florida & Bahamas",
+    "vesselType": "Adults-only Lady-class ocean ship (Virgin Voyages Valiant Lady)",
+    "approximateVesselScale": "Hosted BearCruise group block aboard ~2,770-guest 18+ ship",
+    "officialSailingPageUrl": "https://www.bearcruise.com/maydaze-2025/",
+    "officialReservationFormUrl": "https://www.virginvoyages.com/book/voyage-planner/pre-checkout?agencyId=231&agentId=113592&bookingChannel=FMLINK&cabins=1&currencyCode=USD&dateFrom=2027-05-01&dateTo=2027-05-31&packageCode=4NKW&selectedRegions=CARIBBEAN&voyageId=VL2705064NKW",
+    "officialCruiseId": "VL2705064NKW",
+    "cabinSellerLabel": "BearCruise.com (Dan Howell Travel via Virgin Voyages First Mate Link)",
+    "cabinBookingCtaLabel": "Book MayDaze 2027 via BearCruise ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Save 10% on Central Sea Terrace or Sea Terrace (excluding Lock-It-In rates) when moved into the BearCruise group via Virgin Voyages First Mate link VL2705064NKW.",
+    "verifiedStartingPriceUsd": null,
+    "publishedPriceDisplay": "Live Virgin Voyages per-cabin pricing via BearCruise link (10% group savings on Sea Terrace & Central Sea Terrace)",
+    "verifiedPriceNote": "Live dynamic per-cabin fares quoted on Virgin Voyages voyage VL2705064NKW; Wi-Fi, gratuities, 20+ eateries & essential drinks included.",
+    "inclusionsSummary": "All 20+ Virgin Voyages eateries, basic Wi-Fi, gratuities, essential drinks, Beach Club at Bimini access, and BearCruise Extras (nightly cocktail hours, group dining, private Key West party & host-hotel transfer option).",
+    "approximateGroupSizeLabel": "Hosted BearCruise group cohort",
+    "fullShipCharter": false,
+    "typicalAudience": "Gay bears, cubs, admirers, LGBTQ+ sailors (18+), solo travelers & allies.",
+    "audienceFocusTags": [
+      "bears_cubs",
+      "gay_men",
+      "all_lgbtq",
+      "solo_friendly"
+    ],
+    "announcedHostedProgramming": "Fort Lauderdale host-hotel pre-cruise meetup, first-night pajama party, private clothing-optional Key West afternoon party, Scarlet Night group celebration, Beach Club at Bimini day, and nightly BearCruise cocktail hours.",
+    "programmingSourceUrl": "https://www.bearcruise.com/maydaze-2025/",
+    "soloSupport": "Virgin Voyages Solo Insider/Sea View cabins plus BearCruise Singles Share Program via the BearCruise Solo Travelers community.",
+    "soloFriendly": true,
+    "familyPolicy": "adults_only",
+    "accessibilitySummary": null,
+    "communityAtmosphereSummary": "Relaxed, sociable 4-night adults-only bear getaway to Key West and Bimini.",
+    "goodForTags": [
+      "18+ adults only",
+      "Key West & Bimini",
+      "Wi-Fi & tips included",
+      "10% Sea Terrace group discount"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.bearcruise.com/maydaze-2025/",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -10226,7 +10293,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.bearcruise.com/british_isles_2027/",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -10288,7 +10355,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.bearcruise.com/boston2sanjuan2027/",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -10351,7 +10418,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.adventurebears.com/alaska-denali-explorer-2027",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -10414,7 +10481,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.adventurebears.com/greek-isles-odyssey-2027",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -10477,7 +10544,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.daddycruises.com/",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -10539,7 +10606,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://silverfoxcruisers.com/cruises/pacific-coastal-2027",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -10603,7 +10670,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.travelinggays.com/2027-tgg-waterslide-adventure-gay-cruise-group-caribbean",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -10635,8 +10702,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "officialCruiseId": "SC2704177NPD",
     "cabinSellerLabel": "Traveling Gays Getaways (Virgin First Mate Link)",
     "cabinBookingCtaLabel": "Book via Official TGG Virgin Link ↗",
-    "cabinAvailabilityStatus": "available",
-    "cabinAvailabilityNote": "Sea Terrace & Rockstar group blocks open with $100 Bar Tab / up to $400 Loot + 2 reserved group dinners (Insider group perks block sold out; standard Virgin Insiders bookable).",
+    "cabinAvailabilityStatus": "limited",
+    "cabinAvailabilityNote": "Checked 2026-11-23 on travelinggays.com/2027-tgg-gays-for-days-cruise: Solo Insider, Insider, Solo Sea View, and Sea View group categories sold out; Sea Terrace and Rockstar categories remain open with $100 Bar Tab + 2 reserved dinners.",
     "verifiedStartingPriceUsd": 903,
     "publishedPriceDisplay": "From $903–$963 USD pp Insider ($1,363 Sea Terrace / $1,333 Solo)",
     "verifiedPriceNote": "Published from $903–$963 pp Insider double ($1,333 solo; $1,363 pp Sea Terrace Balcony w/ $100 Bar Tab).",
@@ -10664,7 +10731,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.travelinggays.com/2027-tgg-gays-for-days-cruise",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -10730,7 +10797,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.kelligreggtravel.com/summer-beach-adventure-cruise",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -10793,7 +10860,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.kelligreggtravel.com/rhine-castles-overview",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   },
@@ -10857,7 +10924,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.meinschiff.com/en/trips/5-nights-rainbow-cruise-the-next-chapter-fromto-palma-ZWO2732SEE",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -10920,7 +10987,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.endcruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -10983,7 +11050,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.therockboat.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11046,7 +11113,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.sailacrossthesun.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11109,7 +11176,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.cayamo.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11172,7 +11239,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.outlawcountrycruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11235,7 +11302,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.311cruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11298,7 +11365,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.bluesaliveatsea.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11361,7 +11428,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.thebroadwaycruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11424,7 +11491,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.summerof99cruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11487,7 +11554,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.undergroundgaragecruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11550,7 +11617,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.bluesaliveatseaalaska.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11613,7 +11680,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.ssneverender.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11676,7 +11743,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.rtbineedluvcruise.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11739,7 +11806,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.headbangersboat.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11802,7 +11869,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://sandybeachescruises.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11865,7 +11932,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://davidfosteratsea.com/",
-    "organizerSourceCheckedAt": "2026-11-20T22:25:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11928,7 +11995,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://bigeasycruise.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11991,7 +12058,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://thejazzcruise.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12054,7 +12121,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://journeyofjazz.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12117,7 +12184,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://thesmoothjazzcruise.com/27-1/home/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12180,7 +12247,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://countrymusiccruise.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12214,8 +12281,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "officialReservationFormUrl": "https://reservations.scecruises.com/Booking/Reservation/Start?tripID=8871",
     "cabinSellerLabel": "The Smooth Jazz Cruise / Signature Cruise Experiences",
     "cabinBookingCtaLabel": "Join Official The Smooth Jazz Cruise Waitlist ↗",
-    "cabinAvailabilityStatus": "waitlist",
-    "cabinAvailabilityNote": "The Smooth Jazz Cruise '27.2 staterooms on Celebrity Summit (2027-02-07) are currently in waitlist/sold-out status on thesmoothjazzcruise.com; register on the official waitlist through Signature Cruise Experiences.",
+    "cabinAvailabilityStatus": "limited",
+    "cabinAvailabilityNote": "Checked 2026-11-23: scecruises.com notes initial full reservation while thesmoothjazzcruise.com/27-2/home/ currently displays 'Open Booking' / 'Book Now' for remaining inventory.",
     "verifiedStartingPriceUsd": 2975,
     "publishedPriceDisplay": "$2,975 per person double occupancy (Inside I1–I3, Join Waitlist) + $400/pp Pass-Through Charges | $5,300 Veranda Plus (VP4, Available Book Now) + $425/pp Pass-Through Charges | $4,750 Inside Single (IS, Waitlist) + $400/pp",
     "verifiedPriceNote": "Per person double occupancy before port taxes/fees; verify live category availability on official portal",
@@ -12243,7 +12310,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://thesmoothjazzcruise.com/27-2/home/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12306,7 +12373,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://soultraincruise.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12369,7 +12436,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://ultimatediscocruise.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12432,7 +12499,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://the80scruise.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12495,7 +12562,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://topshelfcountrycruise.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12558,7 +12625,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://rockandromancecruise.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12621,7 +12688,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://flowerpowercruise.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12684,7 +12751,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://theyachtrockcruise.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12747,7 +12814,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://bottiatsea.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12810,7 +12877,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://thesmoothjazzcruise.com/27-3/home/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12844,8 +12911,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "officialReservationFormUrl": "https://maltshopcruise.com/2027-waitlist/",
     "cabinSellerLabel": "Malt Shop Memories Cruise / StarVista LIVE",
     "cabinBookingCtaLabel": "Book Official Malt Shop Memories Cruise Cabin ↗",
-    "cabinAvailabilityStatus": "available",
-    "cabinAvailabilityNote": "Book your Malt Shop Memories Cruise 2027 stateroom directly through StarVista LIVE (maltshopcruise.com) to receive official Malt Shop Memories Cruise festival credentials aboard Eurodam.",
+    "cabinAvailabilityStatus": "limited",
+    "cabinAvailabilityNote": "Checked 2026-11-23 on maltshopcruise.com: public booking open, over 85% sold out with fewer than 60 cabins remaining.",
     "verifiedStartingPriceUsd": 2980,
     "publishedPriceDisplay": "$2,980 New Guest / $2,760 Past Guest per person double occupancy (Categories I, IQ, J, K, L Interior) | $3,815 New Guest / $3,595 Past Guest Interior Singles (Categories M, MM, N), inclusive of port taxes, fees, and gratuities (public on-sale opens November 19, 2026)",
     "verifiedPriceNote": "Per person double occupancy before port taxes/fees; verify live category availability on official portal",
@@ -12873,7 +12940,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://maltshopcruise.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12936,7 +13003,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://fall.soultraincruise.com/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -12999,7 +13066,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://thesmoothjazzcruise.com/28/home/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -13062,7 +13129,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://thesmoothjazzcruise.com/28/home/",
-    "organizerSourceCheckedAt": "2026-11-22T17:45:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -13188,7 +13255,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.groovecruise.com/itinerary-2027",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   },
@@ -13251,7 +13318,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://shiprocked.com/pages/destinations",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -13287,8 +13354,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "officialReservationFormUrl": "https://salsacruise.rezmagic.com/booking",
     "cabinSellerLabel": "Salsa Cruise / Monteli Productions",
     "cabinBookingCtaLabel": "Join Official Salsa Cruise Waitlist ↗",
-    "cabinAvailabilityStatus": "sold_out",
-    "cabinAvailabilityNote": "2027 Salsa Cruise — 28th Anniversary (\"Tropical Pirate Adventure\") staterooms on Norwegian Jewel (2027-01-25) are currently in waitlist/sold-out status on salsacruise.com; register on the official waitlist through Monteli Productions.",
+    "cabinAvailabilityStatus": "limited",
+    "cabinAvailabilityNote": "Official Captain's Alert on salsacruise.com (checked 2026-11-23): '95% SOLD OUT' with final remaining stateroom inventory open.",
     "verifiedStartingPriceUsd": 899,
     "publishedPriceDisplay": "From $899 USD pp double occupancy (View to the Sea; $1,040 Interior; $1,580 Balcony; $1,799 Club Balcony Suite; $1,899 Penthouse; $3,059 The Haven) + $300 USD pp taxes, fees & tips ($361 on suites/Haven); 95% sold out",
     "verifiedPriceNote": "Per person double occupancy before port taxes/fees; verify live category availability on official portal",
@@ -13316,7 +13383,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://www.salsacruise.com/itinerary/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -13379,7 +13446,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://jamcruise.com/experience/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   },
@@ -13442,7 +13509,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://cruisetotheedge.com/itinerary/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -13505,7 +13572,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://onthebluecruise.com/itinerary/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -13568,7 +13635,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://monstersofrockcruise.com/itinerary/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -13647,6 +13714,22 @@ export const DCC_RECENT_CATALOG_CHANGE_EVENTS: ReadonlyArray<CanonicalHostedCata
     "entityId": "hosted-sailing:starvista-live:hal:eurodam:2027-01-09",
     "summary": "Reconciled newer first-party organizer checks, corrected hosted programming text on 21 sailings, and updated held-sailing reasons from Cruise Promenade's reviewed November 22 catalog changes.",
     "preservesCommunityIdentity": true
+  },
+  {
+    "eventId": "dcc-hc-evt-2026-11-23-009",
+    "occurredAt": "2026-11-23T12:00:00Z",
+    "entityType": "hosted_sailing",
+    "entityId": "hosted-sailing:debusk-travels:msc:msc-world-america:2027-07-10",
+    "summary": "Resolved schedule_hold on DeBusk Travels MSC World America (Jul 10, 2027) and The Fan Cruise FamAlly Mariner of the Seas (Apr 3, 2027) against verified organizer/GDS port schedules, and added BearCruise MayDaze 2027 aboard Valiant Lady (May 6, 2027).",
+    "preservesCommunityIdentity": true
+  },
+  {
+    "eventId": "dcc-hc-evt-2026-11-23-010",
+    "occurredAt": "2026-11-23T12:00:00Z",
+    "entityType": "hosted_organizer",
+    "entityId": "hosted-organizer:the-fan-cruise",
+    "summary": "Completed 2026-11-23 live master-catalog source verification across 64 organizers, 100 franchises, 117 structured sailings (114 verified, 3 schedule_hold), and 52 release-watch candidates, updating cabin availability states and activating stale/changed-source review-queue alerts.",
+    "preservesCommunityIdentity": true
   }
 ];
 
@@ -13661,8 +13744,8 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Future 2027/2028 OUT on the Rivers Departure",
     "candidateDatesOrVessel": "TBA (\"to be announced soon\" following Dec 8, 2025 River Duchess sailing)",
     "checkedSourceUrl": "https://www.uniworld.com/us/themed-cruises/out-on-the-rivers",
-    "checkedAt": "2026-11-16T08:30:00Z",
-    "holdReason": "Organizer profile published with \"No currently announced departure\" because Uniworld has not yet published a verifiable future departure date on or after 2026-11-16."
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Re-checked 2026-11-23 (HTTP 200): Uniworld's official OUT on the Rivers page still states 'New \"OUT on the Rivers\" sailings to be announced soon' with no published 2027 or 2028 departure date."
   },
   {
     "holdId": "dcc-hold-brandg-mekong-2027",
@@ -13670,12 +13753,12 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "organizerName": "Brand g Vacations",
     "franchiseId": "hosted-franchise:brand-g-vacations",
     "franchiseSlug": "brand-g-vacations",
-    "reasonCode": "COMING_SOON_UNRELEASED",
-    "candidateTitle": "Coming Soon: 2027 Vietnam & Cambodia Mekong Symphony River Cruise II",
-    "candidateDatesOrVessel": "2027 Mekong River (coming-soon URL slug)",
-    "checkedSourceUrl": "https://www.brandgvacations.com/trip/coming-soon-2027-vietnam-cambodia-mekong-symphony-river-cruise-ii/",
-    "checkedAt": "2026-11-16T08:30:00Z",
-    "holdReason": "Held from sailing-page generation: official URL remains marked \"coming-soon\" without finalized live booking release."
+    "reasonCode": "CONFLICTING_OFFICIAL_ITINERARY_COPY",
+    "candidateTitle": "2027 Cambodia, Vietnam and Mekong Symphony River Cruise II",
+    "candidateDatesOrVessel": "Nov 30 – Dec 12, 2027 (7N Dec 3–10 cruise) · Mekong Symphony",
+    "checkedSourceUrl": "https://www.brandgvacations.com/trip/2027-vietnam-cambodia-mekong-symphony-river-cruise-ii/",
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Re-checked 2026-11-23: old /coming-soon- URL now 301-redirects to live trip page ($6,899–$8,899 pp), but header still shows 'Checking Availability...' without a direct RezMagic tripID, Day 8 prose references 'Mekong Jewel' instead of Mekong Symphony, Optional Add-ons list 'Dec 02, 2025', and Lotus Cruises / Mekong Symphony is not yet onboarded in DCC's canonical ship registry."
   },
   {
     "holdId": "dcc-hold-lademence-2028",
@@ -13687,8 +13770,8 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "The Cruise 2028 Edition",
     "candidateDatesOrVessel": "Summer 2028 (Unannounced)",
     "checkedSourceUrl": "https://the-cruise.eu/",
-    "checkedAt": "2026-11-16T08:30:00Z",
-    "holdReason": "Held: no 2028 vessel, dates, or itinerary published on the-cruise.eu as of 2026-11-16."
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Held: no 2028 vessel, dates, or itinerary published on the-cruise.eu as of 2026-11-23."
   },
   {
     "holdId": "dcc-hold-bgc-voyager-2027-04-09",
@@ -13700,7 +13783,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Big Gay Cruise — Los Angeles / Mexico (Voyager of the Seas)",
     "candidateDatesOrVessel": "Apr 9–15, 2027 · Voyager of the Seas",
     "checkedSourceUrl": "https://biggaycruise.com/bgc-events/",
-    "checkedAt": "2026-11-16T08:30:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Held: navigation links (/5-nights-mexico/ and /6-night-mexico/) have conflicting durations and both return HTTP 404 Not Found on biggaycruise.com."
   },
   {
@@ -13713,7 +13796,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "4 Nights Bahamas Wonder 2027 (Pre-Pride Cruise)",
     "candidateDatesOrVessel": "May 3–7, 2027 · Wonder of the Seas",
     "checkedSourceUrl": "https://biggaycruise.com/4-nights-bahamas-wonder-2027/",
-    "checkedAt": "2026-11-16T08:30:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Held: top itinerary header lists Miami > Nassau, while lower page body retains pasted Costa Maya & Cozumel port copy."
   },
   {
@@ -13726,7 +13809,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "5 Nights Western Caribbean Halloween Cruise 2027",
     "candidateDatesOrVessel": "Oct 30 – Nov 4, 2027 · Liberty of the Seas",
     "checkedSourceUrl": "https://biggaycruise.com/5-nights-western-caribbean-2027/",
-    "checkedAt": "2026-11-16T08:30:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Held: organizer page lists Costa Maya -> Cozumel port sequence whereas Royal Caribbean schedule lists Cozumel (Day 3) -> Costa Maya (Day 4); held pending port-order reconciliation."
   },
   {
@@ -13739,7 +13822,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Valiant New Year’s Bear Cruise Ahoy 2027/28",
     "candidateDatesOrVessel": "Dec 30, 2027 – Jan 3, 2028 · Valiant Lady",
     "checkedSourceUrl": "https://www.bearcruise.com/valiant-new-years-bear-cruise-ahoy/",
-    "checkedAt": "2026-11-16T08:30:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Held: page header states 4 nights Dec 30, 2027 – Jan 3, 2028 (Key West & Bimini), while lower port list retains 2025/26 5-night Cozumel copy."
   },
   {
@@ -13752,7 +13835,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "2027 TGG Exclusive Singles Gay Luxury Cruise",
     "candidateDatesOrVessel": "Sep 6–13, 2027 · Explora I (Barcelona to Rome)",
     "checkedSourceUrl": "https://www.travelinggays.com/2027-singles-gay-luxury-cruise",
-    "checkedAt": "2026-11-16T08:30:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Held: unlinked draft page contains cloned 2026 Holland America Alaska/Juneau text and points booking buttons to an Alaska package."
   },
   {
@@ -13765,7 +13848,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Out in Italy: Kelli & Gregg’s 60th Birthday Celebration",
     "candidateDatesOrVessel": "May 16–27, 2027 · Azamara Onward",
     "checkedSourceUrl": "https://www.kelligreggtravel.com/italy-60th-itinerary",
-    "checkedAt": "2026-11-16T08:30:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Held: organizer uploaded route map graphic depicts earlier Ravenna/Ancona Days 2–3 calls whereas Azamara’s updated published schedule calls at Piran & Šibenik; held until route graphic is reconciled."
   },
   {
@@ -13778,7 +13861,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Iceland & Norway 2027 / Annual Gay Singles Cruise 2027",
     "candidateDatesOrVessel": "Jun 26 – Jul 10, 2027 & Dec 5–12, 2027 · Sky Princess",
     "checkedSourceUrl": "https://www.daddycruises.com/",
-    "checkedAt": "2026-11-16T08:30:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Held from standalone sailing-page indexation: /trips/*.php subpages block automated schedule verification (HTTP 406 WAF) and homepage summary cards omit daily port arrival/departure clock windows."
   },
   {
@@ -13791,7 +13874,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Panama Canal Adventure (May 2027) & Christmas/NYE 2027–28",
     "candidateDatesOrVessel": "May 24, 2027 (Azamara Quest) & Dec 23/30, 2027 (MS Koningsdam)",
     "checkedSourceUrl": "https://silverfoxcruisers.com/",
-    "checkedAt": "2026-11-16T08:30:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Held from standalone sailing-page indexation: official pages publish summary dates/fares without day-by-day port dates and arrival/departure clock windows."
   },
   {
@@ -13804,7 +13887,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Chris Jericho's Rock 'N' Wrestling Rager at Sea: The Ocho (2027)",
     "candidateDatesOrVessel": "2027-10-25 to 2027-10-29 aboard Norwegian Jewel (Miami to Great Stirrup Cay, Bahamas)",
     "checkedSourceUrl": "https://www.chrisjerichocruise.com/booknow/",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Although dates (October 25–29, 2027), vessel (Norwegian Jewel), and Great Stirrup Cay port call hours (Wednesday, October 27, 2027, 8:00 AM–4:30 PM) are posted on chrisjerichocruise.com/ports/, reservations are not open ('You Can't Book Just Yet! More Info Coming Soon!' at /booknow/), no stateroom fares are published on /prices/, and no musical or wrestling lineup beyond host Chris Jericho has been announced on /lineup/ (presale registration only at /presale/)."
   },
   {
@@ -13817,7 +13900,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "5th Annual Rock The Bells Cruise: A Hip-Hop Experience (2027)",
     "candidateDatesOrVessel": "2027-10-27 to 2027-11-01 aboard Norwegian Joy (Miami to Harvest Caye, Belize & Cozumel, Mexico)",
     "checkedSourceUrl": "https://www.rockthebellscruise.com/booknow/",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "While dates (October 27–November 1, 2027), vessel (Norwegian Joy), port hours (Harvest Caye 12:30 PM–5:00 PM on Oct 29; Cozumel 1:00 PM–8:30 PM on Oct 30), and presale stateroom pricing (Interior starting at $1,780 per person including $345 taxes/fees) are posted on rockthebellscruise.com, cabin booking is not yet open ('You Can't Book Just Yet!' at /booknow/; presale sign-up only at /presale/) and zero 2027 performing artists have been announced ('Be the first to know about the lineup release!' on /lineup/)."
   },
   {
@@ -13830,7 +13913,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Keeping the Blues Alive at Sea: Mediterranean (Future European Edition)",
     "candidateDatesOrVessel": "Unannounced future Mediterranean / European voyage (last sailed Mediterranean III in 2023)",
     "checkedSourceUrl": "https://www.bluesaliveatseaeurope.com/",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Official Mediterranean sister domain (bluesaliveatseaeurope.com, HTTP 200) displays a post-voyage mailing-list page stating 'Keeping The Blues Alive at Sea and Sixthman are working together on another European vacation in the future', with no 2027 or 2028 dates, vessel, ports, pricing, or booking portal announced."
   },
   {
@@ -13843,7 +13926,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Outlaw Country West (Future West Coast Edition)",
     "candidateDatesOrVessel": "Unannounced future West Coast / Mexican Riviera voyage (last sailed 2022)",
     "checkedSourceUrl": "https://www.outlawcountrywest.com/",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Official West Coast sister domain (outlawcountrywest.com, HTTP 200) displays a mailing-list teaser stating 'Renegade Circus and Sixthman are working together on future events. Please join the mailing list to stay informed on what is to come!', with no 2027 or 2028 dates, vessel, itinerary, pricing, or booking portal published."
   },
   {
@@ -13856,7 +13939,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "The 32nd Annual Sandy Beaches Cruise (2028)",
     "candidateDatesOrVessel": "2028-01-11 to 2028-01-18 | Celebrity Summit (Fort Lauderdale to St. Croix & Tortola)",
     "checkedSourceUrl": "https://sandybeachescruises.com/news/save-the-date-for-2028-aboard-the-celebrity-summit",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Save-the-date news announcement published Oct 5, 2026 confirms Jan 11–18, 2028 dates aboard Celebrity Summit visiting St. Croix and Tortola with public booking opening Jan 28, 2027, but official day-by-day port dates, arrival/departure clock windows, cabin pricing, and 2028 artist lineup have not yet been published."
   },
   {
@@ -13869,7 +13952,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Big Easy Cruise 2028 (5th Anniversary)",
     "candidateDatesOrVessel": "2028-01-18 to 2028-01-25 | Celebrity Summit (Fort Lauderdale to Dominican Republic & St. Thomas)",
     "checkedSourceUrl": "https://bigeasycruise.com/news/save-the-date-for-2028-aboard-the-celebrity-summit",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Save-the-date news announcement published Oct 13, 2026 confirms Jan 18–25, 2028 dates aboard Celebrity Summit visiting the Dominican Republic and St. Thomas with public booking opening Feb 4, 2027, but official day-by-day port dates, port arrival/departure clock times, cabin pricing, and 2028 lineup are not yet published."
   },
   {
@@ -13882,7 +13965,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "The Country Music Cruise 2028",
     "candidateDatesOrVessel": "2028-02-05 to 2028-02-12 | Celebrity Silhouette (Fort Lauderdale to St. Croix & St. Kitts and Nevis)",
     "checkedSourceUrl": "https://countrymusiccruise.com/news/join-us-in-2028-for-real-country-music-and-a-real-good-time",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Save-the-date news announcement published Nov 5, 2026 confirms Feb 5–12, 2028 dates aboard Celebrity Silhouette visiting St. Croix and St. Kitts & Nevis, but official day-by-day port dates, arrival/departure clock windows, cabin pricing, booking form, and 2028 lineup have not yet been released."
   },
   {
@@ -13895,8 +13978,8 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Soul Train Cruise 2028",
     "candidateDatesOrVessel": "2028 dates and vessel unannounced",
     "checkedSourceUrl": "https://soultraincruise.com/",
-    "checkedAt": "2026-11-16T14:00:00Z",
-    "holdReason": "Official domains soultraincruise.com and fall.soultraincruise.com currently market only the February 2027 and November 2027 sailings; no 2028 sailing dates, ship, or itinerary have been announced as of 2026-11-16."
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Official domains soultraincruise.com and fall.soultraincruise.com currently market only the February 2027 and November 2027 sailings; no 2028 sailing dates, ship, or itinerary have been announced as of 2026-11-23."
   },
   {
     "holdId": "hold-sv-ultimate-disco-2028",
@@ -13908,8 +13991,8 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Ultimate Disco Cruise 2028",
     "candidateDatesOrVessel": "2028 dates and vessel unannounced",
     "checkedSourceUrl": "https://ultimatediscocruise.com/",
-    "checkedAt": "2026-11-16T14:00:00Z",
-    "holdReason": "Official domain ultimatediscocruise.com currently lists only the Feb 21–26, 2027 sailing; no 2028 dates, vessel, or itinerary have been announced as of 2026-11-16."
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Official domain ultimatediscocruise.com currently lists only the Feb 21–26, 2027 sailing; no 2028 dates, vessel, or itinerary have been announced as of 2026-11-23."
   },
   {
     "holdId": "hold-sv-rock-and-romance-2028",
@@ -13921,8 +14004,8 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "The '70s Rock & Romance Cruise 2028",
     "candidateDatesOrVessel": "2028 dates and vessel unannounced",
     "checkedSourceUrl": "https://rockandromancecruise.com/",
-    "checkedAt": "2026-11-16T14:00:00Z",
-    "holdReason": "Official domain rockandromancecruise.com currently lists only the Mar 13–20, 2027 10th Anniversary sailing; no 2028 dates, vessel, or itinerary have been announced as of 2026-11-16."
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Official domain rockandromancecruise.com currently lists only the Mar 13–20, 2027 10th Anniversary sailing; no 2028 dates, vessel, or itinerary have been announced as of 2026-11-23."
   },
   {
     "holdId": "hold-sv-flower-power-2028",
@@ -13934,8 +14017,8 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "The Flower Power Cruise 2028",
     "candidateDatesOrVessel": "2028 dates and vessel unannounced",
     "checkedSourceUrl": "https://flowerpowercruise.com/",
-    "checkedAt": "2026-11-16T14:00:00Z",
-    "holdReason": "Official domain flowerpowercruise.com currently lists only the Mar 20–27, 2027 10th Anniversary sailing; no 2028 dates, vessel, or itinerary have been announced as of 2026-11-16."
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Official domain flowerpowercruise.com currently lists only the Mar 20–27, 2027 10th Anniversary sailing; no 2028 dates, vessel, or itinerary have been announced as of 2026-11-23."
   },
   {
     "holdId": "hold-sv-malt-shop-2028",
@@ -13947,8 +14030,8 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Malt Shop Memories Cruise 2028",
     "candidateDatesOrVessel": "2028 dates and vessel unannounced",
     "checkedSourceUrl": "https://maltshopcruise.com/",
-    "checkedAt": "2026-11-16T14:00:00Z",
-    "holdReason": "Official domain maltshopcruise.com is currently launching public booking (Nov 19, 2026) for the Oct 30–Nov 6, 2027 sailing; no 2028 dates, vessel, or itinerary have been announced as of 2026-11-16."
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Re-checked 2026-11-23 (HTTP 200): maltshopcruise.com has opened public booking for the Oct 30–Nov 6, 2027 sailing (already >85% sold out with <60 cabins remaining), while 2028 dates, vessel, and itinerary remain unannounced."
   },
   {
     "holdId": "hold-ecp-the-90s-cruise-2027-2028",
@@ -13960,7 +14043,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "The 90s Cruise (2027 Pause / Future Edition)",
     "candidateDatesOrVessel": "Paused for 2027; future dates and vessel unannounced",
     "checkedSourceUrl": "https://the90scruise.com/",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Official notice on https://the90scruise.com/ states: 'Following the 2026 sailing, The 90s Cruise will be taking a pause... While we are pausing for 2027, we are also planning a return down the road.' No 2027 or 2028 sail dates, vessel, or itinerary are published."
   },
   {
@@ -13973,8 +14056,8 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "The 80s Cruise 2028",
     "candidateDatesOrVessel": "2028 dates and vessel unannounced",
     "checkedSourceUrl": "https://the80scruise.com/",
-    "checkedAt": "2026-11-16T14:00:00Z",
-    "holdReason": "Official domains the80scruise.com and ecpcruises.com currently list only the Feb 27–Mar 6, 2027 sailing; no 2028 dates, vessel, or itinerary have been announced as of 2026-11-16."
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Official domains the80scruise.com and ecpcruises.com currently list only the Feb 27–Mar 6, 2027 sailing; no 2028 dates, vessel, or itinerary have been announced as of 2026-11-23."
   },
   {
     "holdId": "hold-sce-blue-note-at-sea-2027-2028",
@@ -13986,7 +14069,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Blue Note at Sea (Inactive / Retired Franchise)",
     "candidateDatesOrVessel": "No 2027 or 2028 sailings scheduled (domain bluenoteatsea.com offline)",
     "checkedSourceUrl": "https://scecruises.com/",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Primary historical domain https://bluenoteatsea.com/ (and www.bluenoteatsea.com) fails to connect (TCP/TLS port 443 timeout), and Signature Cruise Experiences' official Nov 14, 2026 25-year retrospective on scecruises.com references Blue Note Cruise strictly as a historical past franchise, with SCE's active contemporary/crossover jazz charters now operating as Journey of Jazz and Chris Botti at Sea."
   },
   {
@@ -13999,7 +14082,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "The Smooth Jazz Cruise '28.3 (Mexican Riviera)",
     "candidateDatesOrVessel": "2028-10-06 to 2028-10-13 | Celebrity Equinox (Los Angeles -> Cabo San Lucas -> Mazatlán -> Puerto Vallarta)",
     "checkedSourceUrl": "https://thesmoothjazzcruise.com/",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Listed in the sailings drawer on https://thesmoothjazzcruise.com/ as Oct 6–13, 2028 Mexican Riviera (Los Angeles, Cabo San Lucas, Mazatlán, Puerto Vallarta) marked 'COMING SOON' (and confirmed aboard Celebrity Equinox in SCE's Oct 15, 2026 news release), but /28-3/home/ redirects to the main hub and day-by-day port dates, arrival/departure clock windows, pricing, and lineup are not yet published."
   },
   {
@@ -14012,7 +14095,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "The Jazz Cruise '28",
     "candidateDatesOrVessel": "Winter 2028 (exact dates TBA) | Celebrity Reflection",
     "checkedSourceUrl": "https://scecruises.com/2026/10/15/news-signature-cruise-experiences-to-debut-new-celebrity-ships-in-28/",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Confirmed in Signature Cruise Experiences' Oct 15, 2026 official news release to move to Celebrity Reflection in winter 2028, but exact sail dates, ports, day-by-day clock times, pricing, and lineup have not yet been published on thejazzcruise.com."
   },
   {
@@ -14025,7 +14108,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Journey of Jazz '28",
     "candidateDatesOrVessel": "Winter 2028 (exact dates TBA) | Celebrity Reflection",
     "checkedSourceUrl": "https://scecruises.com/2026/10/15/news-signature-cruise-experiences-to-debut-new-celebrity-ships-in-28/",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Confirmed in Signature Cruise Experiences' Oct 15, 2026 official news release to move to Celebrity Reflection in winter 2028, but exact sail dates, ports, day-by-day clock times, pricing, and lineup have not yet been published on journeyofjazz.com."
   },
   {
@@ -14038,7 +14121,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Chris Botti at Sea V ('28)",
     "candidateDatesOrVessel": "Fall 2028 (exact dates TBA) | Celebrity Equinox (capped at 1,120 staterooms)",
     "checkedSourceUrl": "https://scecruises.com/2026/10/15/news-signature-cruise-experiences-to-debut-new-celebrity-ships-in-28/",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Confirmed in Signature Cruise Experiences' Oct 15, 2026 official news release to move to Celebrity Equinox in fall 2028, but exact sail dates, ports, day-by-day clock times, pricing, and lineup have not yet been published on bottiatsea.com."
   },
   {
@@ -14051,7 +14134,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Top Shelf Country Cruise '28",
     "candidateDatesOrVessel": "Winter/Spring 2028 (exact dates TBA) | Celebrity Reflection",
     "checkedSourceUrl": "https://scecruises.com/2026/10/15/news-signature-cruise-experiences-to-debut-new-celebrity-ships-in-28/",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Confirmed in Signature Cruise Experiences' Oct 15, 2026 official news release to move to Celebrity Reflection in 2028, but exact sail dates, ports, day-by-day clock times, pricing, and lineup have not yet been published on topshelfcountrycruise.com."
   },
   {
@@ -14064,7 +14147,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "The Yacht Rock Cruise '28",
     "candidateDatesOrVessel": "Fall 2028 (exact dates TBA) | Celebrity Equinox",
     "checkedSourceUrl": "https://scecruises.com/2026/10/15/news-signature-cruise-experiences-to-debut-new-celebrity-ships-in-28/",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Confirmed in Signature Cruise Experiences' Oct 15, 2026 official news release to move to Celebrity Equinox in fall 2028, but exact sail dates, ports, day-by-day clock times, pricing, and lineup have not yet been published on theyachtrockcruise.com."
   },
   {
@@ -14077,7 +14160,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "David Foster: The Hitman Cruise 2028",
     "candidateDatesOrVessel": "2028 dates and vessel unannounced",
     "checkedSourceUrl": "https://davidfosteratsea.com/",
-    "checkedAt": "2026-11-16T14:00:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Official domain davidfosteratsea.com currently lists only the Jan 12–17, 2027 sailing, and David Foster at Sea was not yet listed in SCE's Oct 15, 2026 2028 ship transition announcement."
   },
   {
@@ -14090,7 +14173,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Cloud 9 Land Resort Concert Vacations (High Tide Getaway Dec 4–8, 2026; Strings & Sol Dec 9–13, 2026; Closer to the Sun Jan 9–13, 2027; One Big Holiday Jan 14–18, 2027; Panic En La Playa Catorce Jan 19–23, 2027)",
     "candidateDatesOrVessel": "Dec 2026 – Jan 2027 · All-Inclusive Land Resorts (Mexico)",
     "checkedSourceUrl": "https://cloud9adventures.com/adventures/",
-    "checkedAt": "2026-11-16T13:25:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Excluded from cruise sailing generation: these five upcoming Cloud 9 Adventures events are land-based all-inclusive resort music festivals in Mexico, not ocean or river cruises."
   },
   {
@@ -14103,7 +14186,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Holy Ship! Future Ocean Cruise Edition",
     "candidateDatesOrVessel": "Dormant (Last ocean sailing Jan 2019; last resort edition Dec 2022)",
     "checkedSourceUrl": "https://cloud9adventures.com/adventures/",
-    "checkedAt": "2026-11-16T13:25:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Held: Holy Ship! last sailed as an ocean cruise in January 2019 (Holy Ship! 12.0 & 13.0), operated as land resort Holy Ship! Wrecked from 2020–2022, holyship.com fails DNS/connection, and Cloud 9 publishes no upcoming 2026/2027/2028 cruise."
   },
   {
@@ -14116,7 +14199,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "The FriendShip 2027 / 2028 (Gary Richards / DESTRUCTO / AMFAMFAMF)",
     "candidateDatesOrVessel": "Unannounced (Completed Jan 2026 farewell voyage)",
     "checkedSourceUrl": "https://thefriendship.com/",
-    "checkedAt": "2026-11-16T13:25:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Held & clarified as separate from Cloud 9 Adventures: The FriendShip (thefriendship.com, curated by Gary Richards / DESTRUCTO) completed its Jan 2026 farewell voyage and currently displays \"GONE TO OUTER SPACE! SIGN UP FOR FUTURE TRANSMISSIONS\" with HTTP 404 on /ticketing-terms-conditions/ and zero announced 2027/2028 dates."
   },
   {
@@ -14129,8 +14212,8 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Jam Cruise 24 (2028)",
     "candidateDatesOrVessel": "Early 2028 (Unannounced)",
     "checkedSourceUrl": "https://jamcruise.com/",
-    "checkedAt": "2026-11-16T13:25:00Z",
-    "holdReason": "Held: no 2028 Jam Cruise 24 dates, ship, or itinerary published on jamcruise.com or cloud9adventures.com as of 2026-11-16."
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Held: no 2028 Jam Cruise 24 dates, ship, or itinerary published on jamcruise.com or cloud9adventures.com as of 2026-11-23."
   },
   {
     "holdId": "music-hold:monsters-of-rock-cruise-2028",
@@ -14142,8 +14225,8 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Monsters of Rock Cruise 2028",
     "candidateDatesOrVessel": "2028 (Unannounced)",
     "checkedSourceUrl": "https://monstersofrockcruise.com/",
-    "checkedAt": "2026-11-16T13:25:00Z",
-    "holdReason": "Held: Day 7 disembarkation copy mentions Monsters of Rock Cruise 2028 in passing, but no 2028 dates, vessel, or route have been announced as of 2026-11-16."
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Held: Day 7 disembarkation copy mentions Monsters of Rock Cruise 2028 in passing, but no 2028 dates, vessel, or route have been announced as of 2026-11-23."
   },
   {
     "holdId": "music-hold:cruise-to-the-edge-2028",
@@ -14155,8 +14238,8 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Cruise to the Edge 2028",
     "candidateDatesOrVessel": "2028 (Unannounced)",
     "checkedSourceUrl": "https://cruisetotheedge.com/",
-    "checkedAt": "2026-11-16T13:25:00Z",
-    "holdReason": "Held: no 2028 dates, vessel, or itinerary published on cruisetotheedge.com as of 2026-11-16."
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Held: no 2028 dates, vessel, or itinerary published on cruisetotheedge.com as of 2026-11-23."
   },
   {
     "holdId": "music-hold:on-the-blue-cruise-2028",
@@ -14168,8 +14251,8 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "On the Blue Cruise 2028",
     "candidateDatesOrVessel": "2028 (Unannounced)",
     "checkedSourceUrl": "https://onthebluecruise.com/",
-    "checkedAt": "2026-11-16T13:25:00Z",
-    "holdReason": "Held: no 2028 dates, vessel, or itinerary published on onthebluecruise.com as of 2026-11-16."
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Held: no 2028 dates, vessel, or itinerary published on onthebluecruise.com as of 2026-11-23."
   },
   {
     "holdId": "music-hold:barge-to-hell-dormant",
@@ -14181,7 +14264,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Barge to Hell Future Edition",
     "candidateDatesOrVessel": "Dormant (Single voyage Dec 2012)",
     "checkedSourceUrl": "https://umcruises.com/",
-    "checkedAt": "2026-11-16T13:25:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Held: although listed under \"Our Products\" on umcruises.com, Barge to Hell sailed once in December 2012 and has no upcoming 2026/2027/2028 departure."
   },
   {
@@ -14193,9 +14276,9 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "reasonCode": "UNANNOUNCED_FUTURE_DEPARTURE",
     "candidateTitle": "70000TONS OF METAL 2028",
     "candidateDatesOrVessel": "January 2028 (Unannounced)",
-    "checkedSourceUrl": "https://70000tons.com/",
-    "checkedAt": "2026-11-16T13:25:00Z",
-    "holdReason": "Held: no 2028 dates, vessel, or destination published by UMCruises International Ltd. as of 2026-11-16."
+    "checkedSourceUrl": "https://umcruises.com/",
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Re-checked 2026-11-23 (umcruises.com HTTP 200; 70000tons.com Cloudflare 403 challenge): no 2028 dates, vessel, or destination published by UMCruises International Ltd."
   },
   {
     "holdId": "music-hold:ask4-legacy-franchises",
@@ -14207,7 +14290,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "ASK4 Legacy Franchises (Ship-Hop, Motörhead’s Motörboat, Vince Neil’s Mötley Cruise, Crimson Tide Cruise)",
     "candidateDatesOrVessel": "Dormant / Historical (2014–2018)",
     "checkedSourceUrl": "https://www.ask4ent.com/",
-    "checkedAt": "2026-11-16T13:25:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Held: shiphop.com states no immediate future sailing since Jan 2018; motorheadcruise.com is a 2015 memorial archive; motleycruise.com and crimsontidecruise.com fail network resolution."
   },
   {
@@ -14220,8 +14303,8 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "ShipRocked 2028",
     "candidateDatesOrVessel": "January 2028 (Unannounced)",
     "checkedSourceUrl": "https://shiprocked.com/",
-    "checkedAt": "2026-11-16T13:25:00Z",
-    "holdReason": "Held: no 2028 dates, ship, or itinerary published on shiprocked.com as of 2026-11-16."
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Held: no 2028 dates, ship, or itinerary published on shiprocked.com as of 2026-11-23."
   },
   {
     "holdId": "music-hold:whet-non-music-and-dormant-2027-2028",
@@ -14233,7 +14316,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "Groove Cruise 2028 / Groove Cruise Cabo / Zen Cruise / The Farm Cruise / Dice Tower Cruise 2027",
     "candidateDatesOrVessel": "2027–2028 (Unannounced or Non-Music)",
     "checkedSourceUrl": "https://whettravel.com/experiences",
-    "checkedAt": "2026-11-16T13:25:00Z",
+    "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Held: Groove Cruise 2028, Groove Cruise Cabo, Zen Cruise, and The Farm Cruise have no published >= 2026-11-17 dates, while Dice Tower Cruise (Jan 9–16 & Sep 20–27, 2027) is a tabletop board-gaming convention rather than a music cruise."
   },
   {
@@ -14246,8 +14329,86 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateTitle": "2028 Salsa Cruise (29th Anniversary)",
     "candidateDatesOrVessel": "January 2028 (Unannounced)",
     "checkedSourceUrl": "https://www.salsacruise.com/",
-    "checkedAt": "2026-11-16T13:25:00Z",
-    "holdReason": "Held: no 2028 dates, vessel, or itinerary published on salsacruise.com as of 2026-11-16."
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Held: no 2028 dates, vessel, or itinerary published on salsacruise.com as of 2026-11-23."
+  },
+  {
+    "holdId": "dcc-hold-fancruise-astros-2028",
+    "organizerSlug": "the-fan-cruise",
+    "organizerName": "The Fan Cruise (Fan Cruise Vacations)",
+    "franchiseId": "hosted-franchise:astros-fan-cruise",
+    "franchiseSlug": "astros-fan-cruise",
+    "reasonCode": "UNVERIFIED_PORT_CLOCK_WINDOWS",
+    "candidateTitle": "2028 Astros Fan Cruise (7th Houston Baseball Fan Cruise)",
+    "candidateDatesOrVessel": "Jan 28 – Feb 4, 2028 · Margaritaville at Sea Beachcomber (Galveston to Cozumel, Grand Cayman & Montego Bay)",
+    "checkedSourceUrl": "https://www.fan-cruise.com/astros2028",
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Discovered 2026-11-23 on fan-cruise.com/astros2028 (from $720 pp double incl. taxes & prepaid gratuities): held from standalone sailing-page publication because day-by-day port arrival/departure clock windows are not yet published and Margaritaville at Sea Beachcomber is not yet onboarded in DCC's canonical ship/line registry."
+  },
+  {
+    "holdId": "dcc-hold-bgc-symphony-2028-02-06",
+    "organizerSlug": "big-gay-cruise",
+    "organizerName": "Big Gay Cruise",
+    "franchiseId": "hosted-franchise:big-gay-cruise",
+    "franchiseSlug": "big-gay-cruise",
+    "reasonCode": "CONFLICTING_OFFICIAL_ITINERARY_COPY",
+    "candidateTitle": "Big Gay Cruise 5-Year Anniversary — Symphony 4-Night Bahamas 2028",
+    "candidateDatesOrVessel": "Feb 6–10, 2028 · Symphony of the Seas (Fort Lauderdale)",
+    "checkedSourceUrl": "https://biggaycruise.com/symphony-4-night-bahamas/",
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Discovered 2026-11-23 on biggaycruise.com/symphony-4-night-bahamas/: top itinerary lists Fort Lauderdale > Nassau > Perfect Day at CocoCay with blank per-person rate placeholders, while lower page body pastes Puerto Costa Maya, Cozumel, and Quantum-class North Star copy."
+  },
+  {
+    "holdId": "dcc-hold-bearcruise-valiant-europe-2028",
+    "organizerSlug": "bearcruise",
+    "organizerName": "BearCruise",
+    "franchiseId": "hosted-franchise:bearcruise",
+    "franchiseSlug": "bearcruise",
+    "reasonCode": "CONFLICTING_OFFICIAL_ITINERARY_COPY",
+    "candidateTitle": "BearCruise Western Europe 2028 — Barcelona to Amsterdam",
+    "candidateDatesOrVessel": "Jul 9–19, 2028 · Valiant Lady (10N Barcelona to Amsterdam)",
+    "checkedSourceUrl": "https://www.bearcruise.com/westerneurope2028/",
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Discovered 2026-11-23 on bearcruise.com/westerneurope2028/: page header states July 9–19, 2028 (10 nights), whereas the day-by-day schedule prints duplicate 'July 17' on Days 9 & 10 and labels Amsterdam disembarkation as 'DAY 8 | WEDNESDAY, JULY 18'; held until date table is corrected."
+  },
+  {
+    "holdId": "dcc-hold-tgg-explora-iv-2028-02-19",
+    "organizerSlug": "traveling-gays-getaways",
+    "organizerName": "Traveling Gays Getaways",
+    "franchiseId": "hosted-franchise:traveling-gays-getaways",
+    "franchiseSlug": "traveling-gays-getaways",
+    "reasonCode": "UNVERIFIED_PORT_CLOCK_WINDOWS",
+    "candidateTitle": "2028 Explora Journeys Luxury Executives Gay Cruise Group",
+    "candidateDatesOrVessel": "Feb 19–26, 2028 · Explora IV (San Juan to Miami)",
+    "checkedSourceUrl": "https://www.travelinggays.com/explora-journeys-luxury-lgbt-executives-cruise",
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Discovered 2026-11-23 on travelinggays.com (from $4,020 pp): organizer page and port blog list San Juan, St. Maarten, Terre-de-Haut, Road Bay, Ocean Cay, and Miami without static arrival/departure clock windows, and Explora IV is not yet onboarded in DCC's canonical ship registry."
+  },
+  {
+    "holdId": "dcc-hold-olivia-star-legend-2028",
+    "organizerSlug": "olivia-travel",
+    "organizerName": "Olivia Travel",
+    "franchiseId": "hosted-franchise:olivia-travel",
+    "franchiseSlug": "olivia-travel",
+    "reasonCode": "UNVERIFIED_PORT_CLOCK_WINDOWS",
+    "candidateTitle": "2028 Spain & Italy Luxury Cruise (Barcelona to Rome)",
+    "candidateDatesOrVessel": "Mar 21–28, 2028 · Windstar Star Legend (tripID=37792)",
+    "checkedSourceUrl": "https://www.olivia.com/explore-trips/2028-spain-and-italy-luxury-cruise",
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Discovered 2026-11-23 on olivia.com/explore-trips/2028-spain-and-italy-luxury-cruise (from $3,899 pp + $499 NDA): full itinerary published, held in release-watch pending onboarding of Windstar Star Legend into DCC/CP canonical 74-vessel ship specification registry."
+  },
+  {
+    "holdId": "dcc-hold-vacaya-eclipse-allura-2027",
+    "organizerSlug": "vacaya",
+    "organizerName": "VACAYA",
+    "franchiseId": "hosted-franchise:vacaya",
+    "franchiseSlug": "vacaya",
+    "reasonCode": "UNVERIFIED_PORT_CLOCK_WINDOWS",
+    "candidateTitle": "VACAYA 2027 Total Eclipse Med Cruise (Sold Out / Waitlist)",
+    "candidateDatesOrVessel": "Jul 27 – Aug 6, 2027 · Oceania Allura (Trieste to Barcelona)",
+    "checkedSourceUrl": "https://www.myvacaya.com/trip/total-eclipse-med-cruise-2027/",
+    "checkedAt": "2026-11-23T11:30:17Z",
+    "holdReason": "Checked 2026-11-23 on myvacaya.com/trip/total-eclipse-med-cruise-2027/ (charter sold out; waitlist only): held in release-watch pending Oceania Cruises / Oceania Allura onboarding in DCC's canonical cruise-line and vessel registries."
   }
 ];
 

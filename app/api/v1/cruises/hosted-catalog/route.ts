@@ -27,6 +27,7 @@ import {
   ensureFoundingPilotVerificationQueueSeeded,
   getFoundingOrganizerPilotSummary,
 } from "@/lib/dcc/cruise/foundingOrganizerPilotCohort";
+import { syncStaleOrChangedHostedRecordsToVerificationQueue } from "@/lib/dcc/cruise/hostedSourceStalenessMonitor";
 import {
   buildHostedCatalogFieldProvenance,
   computeStrongRfc8785Etag,
@@ -166,6 +167,10 @@ async function handleCatalogRequest(request: NextRequest, headOnly: boolean) {
 
   const integrity = validateDccHostedCatalogIntegrity();
   const provenanceBundle = buildHostedCatalogFieldProvenance(snapshot, ledger);
+  ensureFoundingPilotVerificationQueueSeeded();
+  const stalenessSync = syncStaleOrChangedHostedRecordsToVerificationQueue({
+    snapshot,
+  });
 
   let signedSnapshot: unknown = undefined;
   let signingError: string | undefined;
@@ -246,10 +251,13 @@ async function handleCatalogRequest(request: NextRequest, headOnly: boolean) {
       canonicalLocationsSummary: getCanonicalLocationsSummary(),
       canonicalLocations: CANONICAL_PORT_LOCATIONS,
       canonicalRoutePatterns: CANONICAL_ROUTE_PATTERNS,
-      foundingOrganizerPilot: (() => {
-        ensureFoundingPilotVerificationQueueSeeded();
-        return getFoundingOrganizerPilotSummary();
-      })(),
+      foundingOrganizerPilot: getFoundingOrganizerPilotSummary(),
+      sourceStalenessMonitor: {
+        evaluatedAt: stalenessSync.evaluation.evaluatedAt,
+        policy: stalenessSync.evaluation.policy,
+        counts: stalenessSync.evaluation.counts,
+        alerts: stalenessSync.evaluation.alerts,
+      },
       dccVerificationQueue: listDccFactVerificationQueue({ includeSyntheticTest: false }),
       counts: {
         themes: snapshot.themes.length,
@@ -263,6 +271,7 @@ async function handleCatalogRequest(request: NextRequest, headOnly: boolean) {
         heldPendingScheduleVerification: snapshot.hostedSailings.filter((s) =>
           Boolean(s.scheduleHoldReason),
         ).length,
+        staleOrChangedSourceAlerts: stalenessSync.evaluation.counts.totalAlerts,
       },
       snapshot,
     },

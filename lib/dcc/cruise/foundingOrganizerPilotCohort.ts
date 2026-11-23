@@ -133,7 +133,7 @@ export const FOUNDING_PILOT_ORGANIZERS: readonly CanonicalHostedOrganizerFactRec
     cabinBookingPolicyNote:
       "All conference registrations and group cabins are handled directly by The Online Itinerant. Cruise Promenade never sells cabins or collects conference fees.",
     primarySourceUrl: "https://www.theonlineitinerant.com/cruise-2027",
-    verifiedSourceCheckedAt: "2026-11-16T18:11:55Z",
+    verifiedSourceCheckedAt: "2026-11-23T11:30:17Z",
     verificationState: "schedule_hold",
     comparableOrganizerSlugs: ["cmmc-at-sea", "acquisition-lab"],
   },
@@ -202,7 +202,7 @@ export const FOUNDING_PILOT_ORGANIZERS: readonly CanonicalHostedOrganizerFactRec
     cabinBookingPolicyNote:
       "All convention badges and group staterooms must be purchased through King Con Cruise and Academy Travel. Cruise Promenade never sells badges or cabins.",
     primarySourceUrl: "https://kingconcruise.com/",
-    verifiedSourceCheckedAt: "2026-11-16T18:20:08Z",
+    verifiedSourceCheckedAt: "2026-11-23T11:30:17Z",
     verificationState: "schedule_hold",
     comparableOrganizerSlugs: ["the-fan-cruise", "stitchin-heaven"],
   },
@@ -282,8 +282,8 @@ export const FOUNDING_PILOT_ORGANIZERS: readonly CanonicalHostedOrganizerFactRec
     cabinBookingPolicyNote:
       "All group staterooms and Experience Passes are arranged directly through The Fan Cruise (fan-cruise.com). Cruise Promenade never sells cabins.",
     primarySourceUrl: "https://www.fan-cruise.com/",
-    verifiedSourceCheckedAt: "2026-11-16T18:13:38Z",
-    verificationState: "schedule_hold",
+    verifiedSourceCheckedAt: "2026-11-23T11:30:17Z",
+    verificationState: "verified",
     comparableOrganizerSlugs: ["king-con-cruise", "stitchin-heaven"],
   },
 ];
@@ -316,7 +316,7 @@ export const FOUNDING_PILOT_FRANCHISES: readonly CanonicalHostedFranchiseFactRec
     officialDomain: "theonlineitinerant.com",
     departureAnnouncementStatus: "active_upcoming_departures",
     primarySourceUrl: "https://www.theonlineitinerant.com/cruise-2027",
-    verifiedSourceCheckedAt: "2026-11-16T18:11:55Z",
+    verifiedSourceCheckedAt: "2026-11-23T11:30:17Z",
     verificationState: "schedule_hold",
   },
   {
@@ -344,7 +344,7 @@ export const FOUNDING_PILOT_FRANCHISES: readonly CanonicalHostedFranchiseFactRec
     officialDomain: "kingconcruise.com",
     departureAnnouncementStatus: "active_upcoming_departures",
     primarySourceUrl: "https://kingconcruise.com/",
-    verifiedSourceCheckedAt: "2026-11-16T18:20:08Z",
+    verifiedSourceCheckedAt: "2026-11-23T11:30:17Z",
     verificationState: "schedule_hold",
   },
   {
@@ -373,8 +373,8 @@ export const FOUNDING_PILOT_FRANCHISES: readonly CanonicalHostedFranchiseFactRec
     officialDomain: "fan-cruise.com",
     departureAnnouncementStatus: "active_upcoming_departures",
     primarySourceUrl: "https://www.fan-cruise.com/astros2027",
-    verifiedSourceCheckedAt: "2026-11-16T18:13:38Z",
-    verificationState: "schedule_hold",
+    verifiedSourceCheckedAt: "2026-11-23T11:30:17Z",
+    verificationState: "verified",
   },
   {
     franchiseId: "hosted-franchise:texans-fan-cruise",
@@ -402,8 +402,8 @@ export const FOUNDING_PILOT_FRANCHISES: readonly CanonicalHostedFranchiseFactRec
     officialDomain: "fan-cruise.com",
     departureAnnouncementStatus: "active_upcoming_departures",
     primarySourceUrl: "https://www.fan-cruise.com/texans2027",
-    verifiedSourceCheckedAt: "2026-11-16T18:13:38Z",
-    verificationState: "schedule_hold",
+    verifiedSourceCheckedAt: "2026-11-23T11:30:17Z",
+    verificationState: "verified",
   },
   {
     franchiseId: "hosted-franchise:famally-cruise",
@@ -433,8 +433,8 @@ export const FOUNDING_PILOT_FRANCHISES: readonly CanonicalHostedFranchiseFactRec
     officialDomain: "fan-cruise.com",
     departureAnnouncementStatus: "active_upcoming_departures",
     primarySourceUrl: "https://www.fan-cruise.com/famally2027",
-    verifiedSourceCheckedAt: "2026-11-16T18:13:38Z",
-    verificationState: "schedule_hold",
+    verifiedSourceCheckedAt: "2026-11-23T11:30:17Z",
+    verificationState: "verified",
   },
 ];
 
@@ -499,11 +499,11 @@ export const FOUNDING_PILOT_SAILINGS: readonly CanonicalHostedSailingFactRecord[
     goodForTags: ["Continuing education (CEUs)", "New Orleans departures"],
     lifecycleStatus: "upcoming",
     primarySourceUrl: "https://www.theonlineitinerant.com/cruise-2027",
-    organizerSourceCheckedAt: "2026-11-22T17:45:00Z",
+    organizerSourceCheckedAt: "2026-11-23T11:30:17Z",
     verificationState: "schedule_hold",
     portScheduleVerificationMode: "clocked_port_windows",
     scheduleHoldReason:
-      "Re-checked 2026-11-22: theonlineitinerant.com/cruise-2027 registration remains closed ('*REGISTRATION IS NOW CLOSED*') and official PDF Page 3 FAQ still references the Royal Caribbean app vs. Carnival Valor on Pages 1/3.",
+      "Re-checked 2026-11-23 (HTTP 200): theonlineitinerant.com/cruise-2027 registration remains closed ('*REGISTRATION IS NOW CLOSED*') and official Kajabi FAQ PDF Page 3 still references the Royal Caribbean app vs. Carnival Valor on Pages 1/3.",
   },
   {
     hostedSailingId: "hosted-sailing:king-con-cruise:ncl:norwegian-joy:2027-02-22",
@@ -560,12 +560,12 @@ export const FOUNDING_PILOT_SAILINGS: readonly CanonicalHostedSailingFactRecord[
     officialReviewSources: [],
     goodForTags: ["Tabletop & D&D gamers", "Bahamas getaways from Miami"],
     lifecycleStatus: "upcoming",
-    primarySourceUrl: "https://kingconcruise.com/",
-    organizerSourceCheckedAt: "2026-11-22T17:45:00Z",
+    primarySourceUrl: "https://kingconcruise.com/morestuff/",
+    organizerSourceCheckedAt: "2026-11-23T11:30:17Z",
     verificationState: "schedule_hold",
     portScheduleVerificationMode: "official_day_by_day_route",
     scheduleHoldReason:
-      "Re-checked 2026-11-22: kingconcruise.com returns HTTP 406 Mod_Security to automated verification and the Day 2 vs. Day 3 Great Stirrup Cay / At Sea conflict between /morestuff/ and Academy Travel Travefy (plus /faq/ stale Royal Caribbean 5-night text) remains unresolved.",
+      "Re-checked 2026-11-23 (HTTP 200 on /, /morestuff/, /registration/; /faq/ timeout): kingconcruise.com/morestuff/ still lists Day 2 Great Stirrup Cay & Day 3 Sailing (swapped vs. Academy Travel Travefy Day 2 At Sea / Day 3 Great Stirrup Cay), and /registration/ still states 'SeaPass holder' and '5 night cruise' on a 4-night Norwegian Joy departure.",
   },
   {
     hostedSailingId: "hosted-sailing:the-fan-cruise:rccl:mariner-of-the-seas:2027-04-03",
@@ -603,7 +603,7 @@ export const FOUNDING_PILOT_SAILINGS: readonly CanonicalHostedSailingFactRecord[
     verifiedStartingPriceUsd: 810,
     publishedPriceDisplay:
       "From $810 pp Interior / $950 Ocean View / $1,340 Balcony double occupancy (taxes included; $129.50 gratuities excluded)",
-    verifiedPriceNote: "Verified from fan-cruise.com/famally2027 on 2026-11-16.",
+    verifiedPriceNote: "Verified from fan-cruise.com/famally2027 on 2026-11-23.",
     inclusionsSummary:
       "Mariner of the Seas stateroom, taxes/port fees, and all private Texas Allies / FamAlly Ally Meetup, game night, and rally activities.",
     approximateGroupSizeLabel: "Capped at 75 Alliance RV enthusiasts ('Allies')",
@@ -621,12 +621,10 @@ export const FOUNDING_PILOT_SAILINGS: readonly CanonicalHostedSailingFactRecord[
     officialReviewSources: [],
     goodForTags: ["Alliance RV owners", "New Orleans departures"],
     lifecycleStatus: "upcoming",
-    primarySourceUrl: "https://www.fan-cruise.com/famally2027",
-    organizerSourceCheckedAt: "2026-11-22T17:45:00Z",
-    verificationState: "schedule_hold",
+    primarySourceUrl: "https://www.fan-cruise.com/famally2027/ally-event-schedule",
+    organizerSourceCheckedAt: "2026-11-23T11:30:17Z",
+    verificationState: "verified",
     portScheduleVerificationMode: "official_day_by_day_route",
-    scheduleHoldReason:
-      "Re-checked 2026-11-22: fan-cruise.com/famally2027 lists port order (New Orleans, Cozumel, Grand Cayman, Falmouth) without clock hours, and royalcaribbean.com (MA07MSY-1227888471) renders 2027-04-03 port times client-side only; held pending static first-party Royal Caribbean or Port NOLA berth clock publication.",
   },
   {
     hostedSailingId: "hosted-sailing:the-fan-cruise:ccl:carnival-jubilee:2027-04-11",
@@ -684,7 +682,7 @@ export const FOUNDING_PILOT_SAILINGS: readonly CanonicalHostedSailingFactRecord[
     goodForTags: ["Baseball fans", "Galveston departures"],
     lifecycleStatus: "upcoming",
     primarySourceUrl: "https://www.fan-cruise.com/astros2027",
-    organizerSourceCheckedAt: "2026-11-22T17:45:00Z",
+    organizerSourceCheckedAt: "2026-11-23T11:30:17Z",
     verificationState: "verified",
     portScheduleVerificationMode: "clocked_port_windows",
   },
@@ -744,7 +742,7 @@ export const FOUNDING_PILOT_SAILINGS: readonly CanonicalHostedSailingFactRecord[
     goodForTags: ["Football fans", "Galveston departures"],
     lifecycleStatus: "upcoming",
     primarySourceUrl: "https://www.fan-cruise.com/texans2027",
-    organizerSourceCheckedAt: "2026-11-22T17:45:00Z",
+    organizerSourceCheckedAt: "2026-11-23T11:30:17Z",
     verificationState: "verified",
     portScheduleVerificationMode: "clocked_port_windows",
   },
@@ -898,7 +896,7 @@ export const FOUNDING_PILOT_DRAFT_INVITATIONS: readonly FoundingPilotDraftInvita
     organizerName: "The Fan Cruise (Astros, Texans & FamAlly)",
     franchiseSlugs: ["astros-fan-cruise", "texans-fan-cruise", "famally-cruise"],
     primarySailingSlug: "astros-fan-cruise-carnival-jubilee-2027-04-11",
-    outreachEligibility: "blocked_disputed_source_hold_noindex",
+    outreachEligibility: "safe_pilot_ready_hold_send",
     outreachDispatchState: "draft_do_not_send",
     sentAt: null,
     zeroOutreachSentGuarantee: true,

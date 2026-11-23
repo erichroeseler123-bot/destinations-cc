@@ -89,7 +89,7 @@ test("Stage 1 Hosted-Cruise Structured Data Policy: automatic Event/EventSeries/
   assert.equal(EXPLICIT_FRANCHISE_EVENT_SERIES_ALLOWLIST.length, 0);
 
   const snapshot = getDccCanonicalHostedCatalogSnapshot({ includeHeld: true });
-  assert.equal(snapshot.hostedSailings.length, 116);
+  assert.equal(snapshot.hostedSailings.length, 117);
   assert.equal((snapshot.franchises ?? []).length, 100);
 
   for (const s of snapshot.hostedSailings) {
@@ -231,9 +231,9 @@ test("DCC hosted-catalog API exposes cacheIsolationVersion and structuredDataPol
   assert.equal(body.structuredDataPolicy.richResultsTestValidationAloneSufficient, false);
   assert.equal(body.counts.organizers, 64);
   assert.equal(body.counts.franchises, 100);
-  assert.equal(body.counts.hostedSailings, 116);
+  assert.equal(body.counts.hostedSailings, 117);
   assert.equal(body.counts.canonicalShips, 74);
-  assert.equal(body.counts.heldInsufficientEvidence, 46);
+  assert.equal(body.counts.heldInsufficientEvidence, 52);
   assert.deepEqual(body.canonicalShipsSummary, {
     totalCanonicalShips: 74,
     curatedFleetIndexableCount: 18,

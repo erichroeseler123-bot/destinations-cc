@@ -2,6 +2,10 @@ import {
   getOrganizerActivationCohort,
   type OrganizerActivationPackage,
 } from "./cruise/organizerActivationCohort";
+import {
+  syncStaleOrChangedHostedRecordsToVerificationQueue,
+  type HostedCatalogStalenessEvaluation,
+} from "./cruise/hostedSourceStalenessMonitor";
 
 export interface HostedCruisesAdminBridgeSnapshot {
   generatedAt: string;
@@ -197,6 +201,7 @@ export interface HostedCruisesBridgeResponse {
   dccServiceSecretPresent: boolean;
   snapshot: HostedCruisesAdminBridgeSnapshot | null;
   activationCohort?: OrganizerActivationPackage[];
+  sourceStalenessMonitor?: HostedCatalogStalenessEvaluation;
   error?: string;
   actionResult?: Record<string, unknown>;
 }
@@ -319,6 +324,8 @@ export async function fetchHostedCruisesAdminSnapshotFromCp(options: {
   const { headers, dccServiceSecretPresent } = buildBridgeHeaders();
 
   const activationCohort = await getOrganizerActivationCohort();
+  const sourceStalenessMonitor =
+    syncStaleOrChangedHostedRecordsToVerificationQueue().evaluation;
 
   if (!headers["x-dcc-cp-service-secret"]) {
     return {
@@ -327,6 +334,7 @@ export async function fetchHostedCruisesAdminSnapshotFromCp(options: {
       dccServiceSecretPresent,
       snapshot: null,
       activationCohort,
+      sourceStalenessMonitor,
       error:
         "DCC_CP_SERVICE_SECRET is not configured in this environment. Set DCC_CP_SERVICE_SECRET on both DCC and Cruise Promenade.",
     };
@@ -356,6 +364,7 @@ export async function fetchHostedCruisesAdminSnapshotFromCp(options: {
         dccServiceSecretPresent,
         snapshot: null,
         activationCohort,
+        sourceStalenessMonitor,
         error:
           (typeof payload?.error === "string" && payload.error) ||
           `Cruise Promenade returned HTTP ${res.status}`,
@@ -368,6 +377,7 @@ export async function fetchHostedCruisesAdminSnapshotFromCp(options: {
       dccServiceSecretPresent,
       snapshot: payload.snapshot as HostedCruisesAdminBridgeSnapshot,
       activationCohort,
+      sourceStalenessMonitor,
     };
   } catch (err) {
     return {
@@ -376,6 +386,7 @@ export async function fetchHostedCruisesAdminSnapshotFromCp(options: {
       dccServiceSecretPresent,
       snapshot: null,
       activationCohort,
+      sourceStalenessMonitor,
       error:
         err instanceof Error
           ? err.message
