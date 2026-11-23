@@ -1,4 +1,4 @@
-import type { PortClockRecord, PortClockSource } from "./portClockLedger";
+import { missingPortClockEvidence, type MissingPortClockEvidence, type PortClockRecord, type PortClockSource } from "./portClockLedger";
 
 /** Recommended cushion between tour return and the published all-aboard deadline. */
 export const RECOMMENDED_RETURN_BUFFER_MINUTES = 120;
@@ -7,9 +7,10 @@ export type ReturnBufferVerdict = "meets_recommended_120" | "below_recommended_1
 
 export type CannotVerifyReason =
   | "port_call_not_found"
-  | "no_published_all_aboard"
-  | "time_basis_unknown"
-  | "return_point_unknown"
+  | MissingPortClockEvidence
+  | "tour_clock_unconfirmed"
+  | "tour_date_unconfirmed"
+  | "tour_return_before_arrival"
   | "tour_return_time_missing"
   | "tour_return_point_missing"
   | "tour_return_point_differs";
@@ -42,29 +43,37 @@ function toMinutes(hhmm: string): number | null {
 }
 
 function normalizePlace(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  return s.normalize("NFC").toLowerCase().replace(/[^\p{L}\p{M}\p{N}]+/gu, " ").trim();
 }
 
 export function evaluateReturnBuffer(params: {
   portCall: PortClockRecord | null;
-  /** Tour return time, HH:MM, in the same clock as the port call's time basis. */
+  /** Tour return time and service date in the explicitly identified clock. */
+  tourReturnDate?: string | null;
+  tourTimeBasis?: PortClockRecord["timeBasis"] | null;
   tourReturnTime?: string | null;
   /** Where the tour returns guests; must match the port call's return point. */
   tourReturnPoint?: string | null;
 }): ReturnBufferResult {
   const { portCall } = params;
-  const reasons: CannotVerifyReason[] = [];
-  if (!portCall) reasons.push("port_call_not_found");
-  else {
-    if (!portCall.publishedAllAboardTime || !portCall.publishedAllAboardSource) reasons.push("no_published_all_aboard");
-    if (portCall.timeBasis === "unknown") reasons.push("time_basis_unknown");
-    if (!portCall.returnPoint) reasons.push("return_point_unknown");
-  }
+  const reasons: CannotVerifyReason[] = portCall ? missingPortClockEvidence(portCall) : ["port_call_not_found"];
   const tourMin = params.tourReturnTime ? toMinutes(params.tourReturnTime) : null;
+  const deadlineMin = portCall?.publishedAllAboardTime ? toMinutes(portCall.publishedAllAboardTime) : null;
   if (tourMin === null) reasons.push("tour_return_time_missing");
-  if (!params.tourReturnPoint?.trim()) reasons.push("tour_return_point_missing");
-  else if (portCall?.returnPoint && normalizePlace(params.tourReturnPoint) !== normalizePlace(portCall.returnPoint.name))
+
+  const tourPoint = normalizePlace(params.tourReturnPoint ?? "");
+  if (!tourPoint) reasons.push("tour_return_point_missing");
+  else if (portCall?.returnPoint && tourPoint !== normalizePlace(portCall.returnPoint.name)) {
     reasons.push("tour_return_point_differs");
+  }
+  if (portCall) {
+    if (!params.tourTimeBasis || params.tourTimeBasis === "unknown" || params.tourTimeBasis !== portCall.timeBasis) {
+      reasons.push("tour_clock_unconfirmed");
+    }
+    if (!params.tourReturnDate || params.tourReturnDate !== portCall.callDate) reasons.push("tour_date_unconfirmed");
+    const arrivalMin = portCall.arrivalTime ? toMinutes(portCall.arrivalTime) : null;
+    if (arrivalMin !== null && tourMin !== null && tourMin < arrivalMin) reasons.push("tour_return_before_arrival");
+  }
 
   const planningNote =
     portCall && !portCall.publishedAllAboardTime && portCall.modeledAllAboardTime
@@ -79,11 +88,10 @@ export function evaluateReturnBuffer(params: {
     planningNote,
   };
 
-  if (reasons.length > 0) {
+  if (reasons.length > 0 || deadlineMin === null || tourMin === null) {
     return { verdict: "cannot_verify", label: RETURN_BUFFER_VERDICT_LABELS.cannot_verify, reasons, bufferMinutes: null, ...base };
   }
-  const allAboardMin = toMinutes(portCall!.publishedAllAboardTime!)!;
-  const bufferMinutes = allAboardMin - tourMin!;
+  const bufferMinutes = deadlineMin - tourMin;
   const verdict: ReturnBufferVerdict =
     bufferMinutes >= RECOMMENDED_RETURN_BUFFER_MINUTES ? "meets_recommended_120" : "below_recommended_120";
   return { verdict, label: RETURN_BUFFER_VERDICT_LABELS[verdict], reasons: [], bufferMinutes, ...base };
