@@ -526,9 +526,22 @@ test("103.9: Scheduled departure from matching ship, sailing, and port call repl
   );
 
   // 1. Carnival Liberty in New Orleans on 2026-07-19 (07:00 arrival, 14:30 all-aboard, 15:30 departure -> 60m gap)
-  const libertyNola = await queryPortDayExcursionCatalog({
+  // The 14:30 all-aboard has no published line source in the port-clock ledger, so it is a
+  // planning estimate: fits_sailing must not certify any tour against it.
+  const libertyFits = await queryPortDayExcursionCatalog({
     portSlug: "new-orleans",
     viewMode: "fits_sailing",
+    sailingId: "carnival-carnival-liberty-20260719",
+    limit: 1,
+    offset: 0,
+  });
+  assert.ok(libertyFits);
+  assert.equal(libertyFits.sailingWindow.allAboardTimeSource, "port_estimate");
+  assert.equal(libertyFits.tours.length, 0);
+
+  const libertyNola = await queryPortDayExcursionCatalog({
+    portSlug: "new-orleans",
+    viewMode: "browse_all",
     sailingId: "carnival-carnival-liberty-20260719",
     limit: 1,
     offset: 0,
@@ -550,12 +563,10 @@ test("103.9: Scheduled departure from matching ship, sailing, and port call repl
   assert.equal(libertyRecon.requiredAllAboardBufferMinutes, 60);
   assert.equal(libertyRecon.allAboardToShipDepartureMinutes, 60);
   assert.equal(libertyRecon.equivalentShipDepartureBufferMinutes, 120);
-  assert.equal(
-    libertyRecon.bufferBeforeShipDepartureMinutes,
-    (libertyTour.timeFit.bufferBeforeAllAboardMinutes ?? 0) + 60
-  );
-  assert.ok(libertyRecon.reconciliationNote.includes("15:30 (60m after All Aboard)"));
-  assert.ok(!libertyRecon.reconciliationNote.includes("Earlier report"));
+  // All-aboard is a modeled estimate, so no tour-to-departure buffer is certified.
+  assert.equal(libertyRecon.bufferBeforeShipDepartureMinutes, null);
+  assert.ok(libertyRecon.reconciliationNote.includes("14:30) is a port estimate"));
+  assert.ok(libertyRecon.reconciliationNote.includes("Sailing fit is unverified"));
 
   // 2. Independence of the Seas in Nassau on 2027-01-25 (07:00 arrival, 15:15 all-aboard, 16:00 departure -> 45m gap)
   const indyNassau = await queryPortDayExcursionCatalog({

@@ -1,0 +1,587 @@
+{
+  "version": "2026-11-23.v1",
+  "generatedAt": "2026-11-23T16:15:00Z",
+  "note": "Migrated from SCHEDULED_CRUISE_PORT_CALLS. No source was recorded for any legacy row; all-aboard values are modeled until a published line source is attached.",
+  "portCalls": [
+    {
+      "sailingId": "INDY-2027-01-24",
+      "sailingAliases": [
+        "ID07MIA-1982128855",
+        "independence-of-the-seas-20270124"
+      ],
+      "shipName": "Independence of the Seas",
+      "shipSlug": "independence-of-the-seas",
+      "portSlug": "miami",
+      "callDate": "2027-01-24",
+      "arrivalTime": "07:00",
+      "departureTime": "16:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "15:00",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "INDY-2027-01-24",
+      "sailingAliases": [
+        "ID07MIA-1982128855",
+        "independence-of-the-seas-20270124"
+      ],
+      "shipName": "Independence of the Seas",
+      "shipSlug": "independence-of-the-seas",
+      "portSlug": "nassau",
+      "callDate": "2027-01-25",
+      "arrivalTime": "07:00",
+      "departureTime": "16:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "15:15",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "INDY-2027-01-24",
+      "sailingAliases": [
+        "ID07MIA-1982128855",
+        "independence-of-the-seas-20270124"
+      ],
+      "shipName": "Independence of the Seas",
+      "shipSlug": "independence-of-the-seas",
+      "portSlug": "st-thomas",
+      "callDate": "2027-01-28",
+      "arrivalTime": "08:00",
+      "departureTime": "18:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "17:15",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "WESTERN-2027-01-24",
+      "sailingAliases": [
+        "WC07MIA-20270124",
+        "symphony-of-the-seas-20270124"
+      ],
+      "shipName": "Symphony of the Seas",
+      "shipSlug": "symphony-of-the-seas",
+      "portSlug": "miami",
+      "callDate": "2027-01-24",
+      "arrivalTime": "07:00",
+      "departureTime": "16:30",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "15:30",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "WESTERN-2027-01-24",
+      "sailingAliases": [
+        "WC07MIA-20270124",
+        "symphony-of-the-seas-20270124"
+      ],
+      "shipName": "Symphony of the Seas",
+      "shipSlug": "symphony-of-the-seas",
+      "portSlug": "cozumel",
+      "callDate": "2027-01-26",
+      "arrivalTime": "07:00",
+      "departureTime": "17:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "16:15",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "WESTERN-2027-01-24",
+      "sailingAliases": [
+        "WC07MIA-20270124",
+        "symphony-of-the-seas-20270124"
+      ],
+      "shipName": "Symphony of the Seas",
+      "shipSlug": "symphony-of-the-seas",
+      "portSlug": "roatan",
+      "callDate": "2027-01-27",
+      "arrivalTime": "08:00",
+      "departureTime": "17:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "16:15",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "WESTERN-2027-01-24",
+      "sailingAliases": [
+        "WC07MIA-20270124",
+        "symphony-of-the-seas-20270124"
+      ],
+      "shipName": "Symphony of the Seas",
+      "shipSlug": "symphony-of-the-seas",
+      "portSlug": "grand-cayman",
+      "callDate": "2027-01-28",
+      "arrivalTime": "07:30",
+      "departureTime": "16:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "15:00",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "carnival-carnival-liberty-20260719",
+      "sailingAliases": [
+        "carnival-liberty-20260719",
+        "CCL-LIBERTY-2026-07-19"
+      ],
+      "shipName": "Carnival Liberty",
+      "shipSlug": "carnival-liberty",
+      "portSlug": "new-orleans",
+      "callDate": "2026-07-19",
+      "arrivalTime": "07:00",
+      "departureTime": "15:30",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "14:30",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "carnival-carnival-liberty-20260719",
+      "sailingAliases": [
+        "carnival-liberty-20260719",
+        "CCL-LIBERTY-2026-07-19"
+      ],
+      "shipName": "Carnival Liberty",
+      "shipSlug": "carnival-liberty",
+      "portSlug": "cozumel",
+      "callDate": "2026-07-23",
+      "arrivalTime": "08:00",
+      "departureTime": "16:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "15:30",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "carnival-liberty-20270516",
+      "sailingAliases": [
+        "carnival-carnival-liberty-20270516",
+        "CCL-LIBERTY-2027-05-16"
+      ],
+      "shipName": "Carnival Liberty",
+      "shipSlug": "carnival-liberty",
+      "portSlug": "new-orleans",
+      "callDate": "2027-05-16",
+      "arrivalTime": "07:00",
+      "departureTime": "15:30",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "14:30",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "carnival-breeze-20260725",
+      "sailingAliases": [
+        "carnival-carnival-breeze-20260725"
+      ],
+      "shipName": "Carnival Breeze",
+      "shipSlug": "carnival-breeze",
+      "portSlug": "new-orleans",
+      "callDate": "2026-07-25",
+      "arrivalTime": "08:00",
+      "departureTime": "16:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "15:00",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "carnival-paradise-20260806",
+      "sailingAliases": [
+        "carnival-carnival-paradise-20260806"
+      ],
+      "shipName": "Carnival Paradise",
+      "shipSlug": "carnival-paradise",
+      "portSlug": "tampa",
+      "callDate": "2026-08-06",
+      "arrivalTime": "08:00",
+      "departureTime": "16:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "15:00",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "widgety-celebeg07a396-240726",
+      "sailingAliases": [
+        "celebrity-edge-20260724",
+        "celebrity-celebrity-edge-20260724"
+      ],
+      "shipName": "Celebrity Edge",
+      "shipSlug": "celebrity-edge",
+      "portSlug": "seattle",
+      "callDate": "2026-07-24",
+      "arrivalTime": "07:00",
+      "departureTime": "16:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "15:00",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "widgety-celebeg07a396-240726",
+      "sailingAliases": [
+        "celebrity-edge-20260724",
+        "celebrity-celebrity-edge-20260724"
+      ],
+      "shipName": "Celebrity Edge",
+      "shipSlug": "celebrity-edge",
+      "portSlug": "ketchikan",
+      "callDate": "2026-07-26",
+      "arrivalTime": "07:00",
+      "departureTime": "16:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "15:15",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "widgety-celebeg07a396-240726",
+      "sailingAliases": [
+        "celebrity-edge-20260724",
+        "celebrity-celebrity-edge-20260724"
+      ],
+      "shipName": "Celebrity Edge",
+      "shipSlug": "celebrity-edge",
+      "portSlug": "juneau",
+      "callDate": "2026-07-27",
+      "arrivalTime": "13:30",
+      "departureTime": "22:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "21:30",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "widgety-celebeg07a396-240726",
+      "sailingAliases": [
+        "celebrity-edge-20260724",
+        "celebrity-celebrity-edge-20260724"
+      ],
+      "shipName": "Celebrity Edge",
+      "shipSlug": "celebrity-edge",
+      "portSlug": "skagway",
+      "callDate": "2026-07-28",
+      "arrivalTime": "07:00",
+      "departureTime": "18:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "17:15",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "ncl-norwegian-encore-20260510",
+      "sailingAliases": [
+        "norwegian-encore-20260510"
+      ],
+      "shipName": "Norwegian Encore",
+      "shipSlug": "norwegian-encore",
+      "portSlug": "seattle",
+      "callDate": "2026-05-10",
+      "arrivalTime": "06:00",
+      "departureTime": "16:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "15:00",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "ncl-norwegian-encore-20260510",
+      "sailingAliases": [
+        "norwegian-encore-20260510"
+      ],
+      "shipName": "Norwegian Encore",
+      "shipSlug": "norwegian-encore",
+      "portSlug": "juneau",
+      "callDate": "2026-05-12",
+      "arrivalTime": "14:30",
+      "departureTime": "23:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "22:30",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "ncl-norwegian-encore-20260510",
+      "sailingAliases": [
+        "norwegian-encore-20260510"
+      ],
+      "shipName": "Norwegian Encore",
+      "shipSlug": "norwegian-encore",
+      "portSlug": "skagway",
+      "callDate": "2026-05-13",
+      "arrivalTime": "07:00",
+      "departureTime": "20:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "19:30",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "ncl-norwegian-encore-20260510",
+      "sailingAliases": [
+        "norwegian-encore-20260510"
+      ],
+      "shipName": "Norwegian Encore",
+      "shipSlug": "norwegian-encore",
+      "portSlug": "ketchikan",
+      "callDate": "2026-05-15",
+      "arrivalTime": "07:00",
+      "departureTime": "13:15",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "12:45",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "princess-discovery-princess-20260510",
+      "sailingAliases": [
+        "discovery-princess-20260510"
+      ],
+      "shipName": "Discovery Princess",
+      "shipSlug": "discovery-princess",
+      "portSlug": "seattle",
+      "callDate": "2026-05-10",
+      "arrivalTime": "07:00",
+      "departureTime": "15:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "14:00",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "princess-discovery-princess-20260510",
+      "sailingAliases": [
+        "discovery-princess-20260510"
+      ],
+      "shipName": "Discovery Princess",
+      "shipSlug": "discovery-princess",
+      "portSlug": "ketchikan",
+      "callDate": "2026-05-12",
+      "arrivalTime": "06:30",
+      "departureTime": "15:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "14:30",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "princess-discovery-princess-20260510",
+      "sailingAliases": [
+        "discovery-princess-20260510"
+      ],
+      "shipName": "Discovery Princess",
+      "shipSlug": "discovery-princess",
+      "portSlug": "juneau",
+      "callDate": "2026-05-13",
+      "arrivalTime": "12:30",
+      "departureTime": "22:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "21:30",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "princess-discovery-princess-20260510",
+      "sailingAliases": [
+        "discovery-princess-20260510"
+      ],
+      "shipName": "Discovery Princess",
+      "shipSlug": "discovery-princess",
+      "portSlug": "skagway",
+      "callDate": "2026-05-14",
+      "arrivalTime": "06:00",
+      "departureTime": "17:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "16:30",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "rccl-icon-of-the-seas-20260509",
+      "sailingAliases": [
+        "icon-of-the-seas-20260509",
+        "royal-caribbean-icon-of-the-seas-20260509"
+      ],
+      "shipName": "Icon of the Seas",
+      "shipSlug": "icon-of-the-seas",
+      "portSlug": "miami",
+      "callDate": "2026-05-09",
+      "arrivalTime": "06:00",
+      "departureTime": "16:30",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "15:30",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "rccl-icon-of-the-seas-20260509",
+      "sailingAliases": [
+        "icon-of-the-seas-20260509",
+        "royal-caribbean-icon-of-the-seas-20260509"
+      ],
+      "shipName": "Icon of the Seas",
+      "shipSlug": "icon-of-the-seas",
+      "portSlug": "cozumel",
+      "callDate": "2026-05-11",
+      "arrivalTime": "07:00",
+      "departureTime": "17:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "16:30",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "rccl-icon-of-the-seas-20260509",
+      "sailingAliases": [
+        "icon-of-the-seas-20260509",
+        "royal-caribbean-icon-of-the-seas-20260509"
+      ],
+      "shipName": "Icon of the Seas",
+      "shipSlug": "icon-of-the-seas",
+      "portSlug": "roatan",
+      "callDate": "2026-05-12",
+      "arrivalTime": "08:00",
+      "departureTime": "17:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "16:30",
+      "modelRule": "legacy_unsourced_value",
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    },
+    {
+      "sailingId": "royal-caribbean-symphony-of-the-seas-2027-01-03",
+      "sailingAliases": [
+        "SYMPHONY-2027-01-03",
+        "symphony-of-the-seas-2027-01-03",
+        "symphony-of-the-seas-2027-01-08",
+        "symphony-of-the-seas-20270103"
+      ],
+      "shipName": "Symphony of the Seas",
+      "shipSlug": "symphony-of-the-seas",
+      "portSlug": "cozumel",
+      "callDate": "2027-01-08",
+      "arrivalTime": "08:00",
+      "departureTime": "18:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": null,
+      "modelRule": null,
+      "returnPoint": null,
+      "scheduleSource": null,
+      "status": "unverified"
+    }
+  ]
+}

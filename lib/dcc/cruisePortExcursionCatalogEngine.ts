@@ -1,3 +1,4 @@
+import { getPortClockLedger } from "./cruise/portClockLedger";
 import { createHash } from "node:crypto";
 import { getViatorClient } from "@/lib/viator/client";
 import { getViatorPublicConfig } from "@/lib/viator/config";
@@ -186,6 +187,8 @@ export interface ScheduledCruisePortCall {
   arrivalTime: string;
   allAboardTime: string;
   departureTime: string;
+  /** True only when allAboardTime comes from a published line source. */
+  allAboardPublished?: boolean;
 }
 
 export interface PortDayTimeFitEvaluation {
@@ -1413,331 +1416,23 @@ export function evaluateEvidenceReviewPriority(params: {
   };
 }
 
-export const SCHEDULED_CRUISE_PORT_CALLS: ScheduledCruisePortCall[] = [
-  // Independence of the Seas — 7-Night Eastern Caribbean & Perfect Day (INDY-2027-01-24 / ID07MIA-1982128855)
-  {
-    sailingId: "INDY-2027-01-24",
-    sailingAliases: ["ID07MIA-1982128855", "independence-of-the-seas-20270124"],
-    shipName: "Independence of the Seas",
-    shipSlug: "independence-of-the-seas",
-    portSlug: "miami",
-    sailingDate: "2027-01-24",
-    arrivalTime: "07:00",
-    allAboardTime: "15:00",
-    departureTime: "16:00",
-  },
-  {
-    sailingId: "INDY-2027-01-24",
-    sailingAliases: ["ID07MIA-1982128855", "independence-of-the-seas-20270124"],
-    shipName: "Independence of the Seas",
-    shipSlug: "independence-of-the-seas",
-    portSlug: "nassau",
-    sailingDate: "2027-01-25",
-    arrivalTime: "07:00",
-    allAboardTime: "15:15",
-    departureTime: "16:00",
-  },
-  {
-    sailingId: "INDY-2027-01-24",
-    sailingAliases: ["ID07MIA-1982128855", "independence-of-the-seas-20270124"],
-    shipName: "Independence of the Seas",
-    shipSlug: "independence-of-the-seas",
-    portSlug: "st-thomas",
-    sailingDate: "2027-01-28",
-    arrivalTime: "08:00",
-    allAboardTime: "17:15",
-    departureTime: "18:00",
-  },
-  // Symphony of the Seas — 7-Night Western Caribbean (WESTERN-2027-01-24 / WC07MIA-20270124)
-  {
-    sailingId: "WESTERN-2027-01-24",
-    sailingAliases: ["WC07MIA-20270124", "symphony-of-the-seas-20270124"],
-    shipName: "Symphony of the Seas",
-    shipSlug: "symphony-of-the-seas",
-    portSlug: "miami",
-    sailingDate: "2027-01-24",
-    arrivalTime: "07:00",
-    allAboardTime: "15:30",
-    departureTime: "16:30",
-  },
-  {
-    sailingId: "WESTERN-2027-01-24",
-    sailingAliases: ["WC07MIA-20270124", "symphony-of-the-seas-20270124"],
-    shipName: "Symphony of the Seas",
-    shipSlug: "symphony-of-the-seas",
-    portSlug: "cozumel",
-    sailingDate: "2027-01-26",
-    arrivalTime: "07:00",
-    allAboardTime: "16:15",
-    departureTime: "17:00",
-  },
-  {
-    sailingId: "WESTERN-2027-01-24",
-    sailingAliases: ["WC07MIA-20270124", "symphony-of-the-seas-20270124"],
-    shipName: "Symphony of the Seas",
-    shipSlug: "symphony-of-the-seas",
-    portSlug: "roatan",
-    sailingDate: "2027-01-27",
-    arrivalTime: "08:00",
-    allAboardTime: "16:15",
-    departureTime: "17:00",
-  },
-  {
-    sailingId: "WESTERN-2027-01-24",
-    sailingAliases: ["WC07MIA-20270124", "symphony-of-the-seas-20270124"],
-    shipName: "Symphony of the Seas",
-    shipSlug: "symphony-of-the-seas",
-    portSlug: "grand-cayman",
-    sailingDate: "2027-01-28",
-    arrivalTime: "07:30",
-    allAboardTime: "15:00",
-    departureTime: "16:00",
-  },
-  // Carnival Liberty — New Orleans 7-Night Western Caribbean
-  {
-    sailingId: "carnival-carnival-liberty-20260719",
-    sailingAliases: ["carnival-liberty-20260719", "CCL-LIBERTY-2026-07-19"],
-    shipName: "Carnival Liberty",
-    shipSlug: "carnival-liberty",
-    portSlug: "new-orleans",
-    sailingDate: "2026-07-19",
-    arrivalTime: "07:00",
-    allAboardTime: "14:30",
-    departureTime: "15:30",
-  },
-  {
-    sailingId: "carnival-carnival-liberty-20260719",
-    sailingAliases: ["carnival-liberty-20260719", "CCL-LIBERTY-2026-07-19"],
-    shipName: "Carnival Liberty",
-    shipSlug: "carnival-liberty",
-    portSlug: "cozumel",
-    sailingDate: "2026-07-23",
-    arrivalTime: "08:00",
-    allAboardTime: "15:30",
-    departureTime: "16:00",
-  },
-  {
-    sailingId: "carnival-liberty-20270516",
-    sailingAliases: ["carnival-carnival-liberty-20270516", "CCL-LIBERTY-2027-05-16"],
-    shipName: "Carnival Liberty",
-    shipSlug: "carnival-liberty",
-    portSlug: "new-orleans",
-    sailingDate: "2027-05-16",
-    arrivalTime: "07:00",
-    allAboardTime: "14:30",
-    departureTime: "15:30",
-  },
-  // Carnival Breeze — New Orleans 5-Night Western Caribbean
-  {
-    sailingId: "carnival-breeze-20260725",
-    sailingAliases: ["carnival-carnival-breeze-20260725"],
-    shipName: "Carnival Breeze",
-    shipSlug: "carnival-breeze",
-    portSlug: "new-orleans",
-    sailingDate: "2026-07-25",
-    arrivalTime: "08:00",
-    allAboardTime: "15:00",
-    departureTime: "16:00",
-  },
-  // Carnival Paradise — Tampa 5-Night Western Caribbean
-  {
-    sailingId: "carnival-paradise-20260806",
-    sailingAliases: ["carnival-carnival-paradise-20260806"],
-    shipName: "Carnival Paradise",
-    shipSlug: "carnival-paradise",
-    portSlug: "tampa",
-    sailingDate: "2026-08-06",
-    arrivalTime: "08:00",
-    allAboardTime: "15:00",
-    departureTime: "16:00",
-  },
-  // Celebrity Edge — Seattle 7-Night Dawes Glacier
-  {
-    sailingId: "widgety-celebeg07a396-240726",
-    sailingAliases: ["celebrity-edge-20260724", "celebrity-celebrity-edge-20260724"],
-    shipName: "Celebrity Edge",
-    shipSlug: "celebrity-edge",
-    portSlug: "seattle",
-    sailingDate: "2026-07-24",
-    arrivalTime: "07:00",
-    allAboardTime: "15:00",
-    departureTime: "16:00",
-  },
-  {
-    sailingId: "widgety-celebeg07a396-240726",
-    sailingAliases: ["celebrity-edge-20260724", "celebrity-celebrity-edge-20260724"],
-    shipName: "Celebrity Edge",
-    shipSlug: "celebrity-edge",
-    portSlug: "ketchikan",
-    sailingDate: "2026-07-26",
-    arrivalTime: "07:00",
-    allAboardTime: "15:15",
-    departureTime: "16:00",
-  },
-  {
-    sailingId: "widgety-celebeg07a396-240726",
-    sailingAliases: ["celebrity-edge-20260724", "celebrity-celebrity-edge-20260724"],
-    shipName: "Celebrity Edge",
-    shipSlug: "celebrity-edge",
-    portSlug: "juneau",
-    sailingDate: "2026-07-27",
-    arrivalTime: "13:30",
-    allAboardTime: "21:30",
-    departureTime: "22:00",
-  },
-  {
-    sailingId: "widgety-celebeg07a396-240726",
-    sailingAliases: ["celebrity-edge-20260724", "celebrity-celebrity-edge-20260724"],
-    shipName: "Celebrity Edge",
-    shipSlug: "celebrity-edge",
-    portSlug: "skagway",
-    sailingDate: "2026-07-28",
-    arrivalTime: "07:00",
-    allAboardTime: "17:15",
-    departureTime: "18:00",
-  },
-  // Norwegian Encore — Seattle 7-Night Alaska
-  {
-    sailingId: "ncl-norwegian-encore-20260510",
-    sailingAliases: ["norwegian-encore-20260510"],
-    shipName: "Norwegian Encore",
-    shipSlug: "norwegian-encore",
-    portSlug: "seattle",
-    sailingDate: "2026-05-10",
-    arrivalTime: "06:00",
-    allAboardTime: "15:00",
-    departureTime: "16:00",
-  },
-  {
-    sailingId: "ncl-norwegian-encore-20260510",
-    sailingAliases: ["norwegian-encore-20260510"],
-    shipName: "Norwegian Encore",
-    shipSlug: "norwegian-encore",
-    portSlug: "juneau",
-    sailingDate: "2026-05-12",
-    arrivalTime: "14:30",
-    allAboardTime: "22:30",
-    departureTime: "23:00",
-  },
-  {
-    sailingId: "ncl-norwegian-encore-20260510",
-    sailingAliases: ["norwegian-encore-20260510"],
-    shipName: "Norwegian Encore",
-    shipSlug: "norwegian-encore",
-    portSlug: "skagway",
-    sailingDate: "2026-05-13",
-    arrivalTime: "07:00",
-    allAboardTime: "19:30",
-    departureTime: "20:00",
-  },
-  {
-    sailingId: "ncl-norwegian-encore-20260510",
-    sailingAliases: ["norwegian-encore-20260510"],
-    shipName: "Norwegian Encore",
-    shipSlug: "norwegian-encore",
-    portSlug: "ketchikan",
-    sailingDate: "2026-05-15",
-    arrivalTime: "07:00",
-    allAboardTime: "12:45",
-    departureTime: "13:15",
-  },
-  // Discovery Princess — Seattle 7-Night Inside Passage
-  {
-    sailingId: "princess-discovery-princess-20260510",
-    sailingAliases: ["discovery-princess-20260510"],
-    shipName: "Discovery Princess",
-    shipSlug: "discovery-princess",
-    portSlug: "seattle",
-    sailingDate: "2026-05-10",
-    arrivalTime: "07:00",
-    allAboardTime: "14:00",
-    departureTime: "15:00",
-  },
-  {
-    sailingId: "princess-discovery-princess-20260510",
-    sailingAliases: ["discovery-princess-20260510"],
-    shipName: "Discovery Princess",
-    shipSlug: "discovery-princess",
-    portSlug: "ketchikan",
-    sailingDate: "2026-05-12",
-    arrivalTime: "06:30",
-    allAboardTime: "14:30",
-    departureTime: "15:00",
-  },
-  {
-    sailingId: "princess-discovery-princess-20260510",
-    sailingAliases: ["discovery-princess-20260510"],
-    shipName: "Discovery Princess",
-    shipSlug: "discovery-princess",
-    portSlug: "juneau",
-    sailingDate: "2026-05-13",
-    arrivalTime: "12:30",
-    allAboardTime: "21:30",
-    departureTime: "22:00",
-  },
-  {
-    sailingId: "princess-discovery-princess-20260510",
-    sailingAliases: ["discovery-princess-20260510"],
-    shipName: "Discovery Princess",
-    shipSlug: "discovery-princess",
-    portSlug: "skagway",
-    sailingDate: "2026-05-14",
-    arrivalTime: "06:00",
-    allAboardTime: "16:30",
-    departureTime: "17:00",
-  },
-  // Icon of the Seas — Miami 7-Night Western Caribbean
-  {
-    sailingId: "rccl-icon-of-the-seas-20260509",
-    sailingAliases: ["icon-of-the-seas-20260509", "royal-caribbean-icon-of-the-seas-20260509"],
-    shipName: "Icon of the Seas",
-    shipSlug: "icon-of-the-seas",
-    portSlug: "miami",
-    sailingDate: "2026-05-09",
-    arrivalTime: "06:00",
-    allAboardTime: "15:30",
-    departureTime: "16:30",
-  },
-  {
-    sailingId: "rccl-icon-of-the-seas-20260509",
-    sailingAliases: ["icon-of-the-seas-20260509", "royal-caribbean-icon-of-the-seas-20260509"],
-    shipName: "Icon of the Seas",
-    shipSlug: "icon-of-the-seas",
-    portSlug: "cozumel",
-    sailingDate: "2026-05-11",
-    arrivalTime: "07:00",
-    allAboardTime: "16:30",
-    departureTime: "17:00",
-  },
-  {
-    sailingId: "rccl-icon-of-the-seas-20260509",
-    sailingAliases: ["icon-of-the-seas-20260509", "royal-caribbean-icon-of-the-seas-20260509"],
-    shipName: "Icon of the Seas",
-    shipSlug: "icon-of-the-seas",
-    portSlug: "roatan",
-    sailingDate: "2026-05-12",
-    arrivalTime: "08:00",
-    allAboardTime: "16:30",
-    departureTime: "17:00",
-  },
-  // Symphony of the Seas — 7-Night Western Caribbean (Jan 3, 2027 sailing, Day 6 Cozumel on Jan 8, 2027; arrival 08:00, departure 18:00, all-aboard cutoff requires confirmation)
-  {
-    sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
-    sailingAliases: [
-      "SYMPHONY-2027-01-03",
-      "symphony-of-the-seas-2027-01-03",
-      "symphony-of-the-seas-2027-01-08",
-      "symphony-of-the-seas-20270103",
-    ],
-    shipName: "Symphony of the Seas",
-    shipSlug: "symphony-of-the-seas",
-    portSlug: "cozumel",
-    sailingDate: "2027-01-08",
-    arrivalTime: "08:00",
-    allAboardTime: "",
-    departureTime: "18:00",
-  },
-];
+/**
+ * Derived from the sourced port-clock ledger (lib/dcc/cruise/portClockLedger.ts).
+ * allAboardTime is the published deadline when one exists, otherwise the modeled estimate;
+ * allAboardPublished tells callers which one it is.
+ */
+export const SCHEDULED_CRUISE_PORT_CALLS: ScheduledCruisePortCall[] = getPortClockLedger().portCalls.map((r) => ({
+  sailingId: r.sailingId,
+  ...(r.sailingAliases ? { sailingAliases: r.sailingAliases } : {}),
+  shipName: r.shipName,
+  shipSlug: r.shipSlug,
+  portSlug: r.portSlug,
+  sailingDate: r.callDate,
+  arrivalTime: r.arrivalTime ?? "",
+  allAboardTime: r.publishedAllAboardTime ?? r.modeledAllAboardTime ?? "",
+  departureTime: r.departureTime ?? "",
+  allAboardPublished: Boolean(r.publishedAllAboardTime && r.publishedAllAboardSource),
+}));
 
 function normalizeShipSlug(input: string | undefined | null): string {
   return String(input || "")
@@ -1863,7 +1558,7 @@ export function resolveScheduledPortCall(params: {
     ? "port_estimate"
     : explicitAllAboardMin !== null
       ? "request_param"
-      : matchedPortCall?.allAboardTime
+      : matchedPortCall?.allAboardTime && matchedPortCall.allAboardPublished
         ? "scheduled_port_call"
         : "port_estimate";
 
