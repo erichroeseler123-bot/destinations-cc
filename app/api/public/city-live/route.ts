@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  buildParasiteBotBlockedResponse,
+  isBlockedParasiteBot,
+} from "@/lib/dcc/botPolicy";
 import { getOfficialLiveSources, getProviderSlotStatus } from "@/lib/dcc/liveCity/officialSources";
 import { readMachineFeeds } from "@/lib/dcc/liveCity/machineFeeds";
 import { readNoaaWaterLevel } from "@/lib/dcc/liveCity/coastalFeeds";
@@ -24,13 +28,13 @@ type ProviderSlotStatus = {
   liveItemCount?: number;
 };
 
-async function fetchJson(url: string, init?: RequestInit) {
+async function fetchJson(url: string, init?: RequestInit, revalidateSeconds = 900) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 7000);
   try {
     const response = await fetch(url, {
       ...init,
-      cache: "no-store",
+      next: { revalidate: revalidateSeconds },
       signal: controller.signal,
       headers: { "User-Agent": USER_AGENT, ...(init?.headers || {}) },
     });
@@ -241,8 +245,8 @@ export async function GET(request: NextRequest) {
       checkedAt,
       policy: {
         dynamicDataStored: false,
-        cache: "no-store",
-        note: "Dynamic observations are fetched for this request and are not persisted as destination content.",
+        cache: "snapshot-900s",
+        note: "Dynamic observations are edge-cached as short-lived snapshots (15m) and are not persisted as destination content.",
       },
       cityNow,
       districtNow,
@@ -254,6 +258,12 @@ export async function GET(request: NextRequest) {
       providerSlots,
       officialLiveLinks,
     },
-    { status: 200, headers: { "Cache-Control": "no-store, max-age=0", "X-Robots-Tag": "noindex" } }
+    {
+      status: 200,
+      headers: {
+        "Cache-Control": "public, max-age=60, s-maxage=900, stale-while-revalidate=3600",
+        "X-Robots-Tag": "noindex",
+      },
+    }
   );
 }

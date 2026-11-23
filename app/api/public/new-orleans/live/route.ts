@@ -1,4 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import {
+  buildParasiteBotBlockedResponse,
+  isBlockedParasiteBot,
+} from "@/lib/dcc/botPolicy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,13 +14,13 @@ const NWS_HEADERS = {
   "User-Agent": "DestinationCommandCenter/1.0 (https://destinationcommandcenter.com)",
 };
 
-async function fetchJson(url: string, init?: RequestInit) {
+async function fetchJson(url: string, init?: RequestInit, revalidateSeconds = 900) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 7000);
   try {
     const response = await fetch(url, {
       ...init,
-      cache: "no-store",
+      next: { revalidate: revalidateSeconds },
       signal: controller.signal,
       headers: { ...(init?.headers || {}) },
     });
@@ -29,12 +33,12 @@ async function fetchJson(url: string, init?: RequestInit) {
 
 async function readWeather() {
   try {
-    const point = await fetchJson(`https://api.weather.gov/points/${LAT},${LNG}`, { headers: NWS_HEADERS });
+    const point = await fetchJson(`https://api.weather.gov/points/${LAT},${LNG}`, { headers: NWS_HEADERS }, 86400);
     const props = point?.properties || {};
     const [hourly, stations, alerts] = await Promise.all([
-      props.forecastHourly ? fetchJson(props.forecastHourly, { headers: NWS_HEADERS }).catch(() => null) : null,
-      props.observationStations ? fetchJson(props.observationStations, { headers: NWS_HEADERS }).catch(() => null) : null,
-      fetchJson(`https://api.weather.gov/alerts/active?point=${LAT},${LNG}`, { headers: NWS_HEADERS }).catch(() => null),
+      props.forecastHourly ? fetchJson(props.forecastHourly, { headers: NWS_HEADERS }, 900).catch(() => null) : null,
+      props.observationStations ? fetchJson(props.observationStations, { headers: NWS_HEADERS }, 86400).catch(() => null) : null,
+      fetchJson(`https://api.weather.gov/alerts/active?point=${LAT},${LNG}`, { headers: NWS_HEADERS }, 900).catch(() => null),
     ]);
 
     const stationId = stations?.features?.[0]?.properties?.stationIdentifier;
@@ -143,7 +147,10 @@ async function readTraffic() {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (isBlockedParasiteBot(request.headers.get("user-agent"))) {
+    return buildParasiteBotBlockedResponse();
+  }
   const checkedAt = new Date().toISOString();
   const [weather, ticketmaster, traffic] = await Promise.all([readWeather(), readTicketmaster(), readTraffic()]);
 
@@ -154,8 +161,8 @@ export async function GET() {
       checkedAt,
       policy: {
         dynamicDataStored: false,
-        cache: "no-store",
-        note: "Dynamic observations are fetched for this request and are not persisted as destination content.",
+        cache: "snapshot-900s",
+        note: "Dynamic observations are edge-cached as short-lived snapshots (15m) and are not persisted as destination content.",
       },
       weather,
       ticketmaster,
@@ -184,7 +191,8 @@ export async function GET() {
     {
       status: 200,
       headers: {
-        "Cache-Control": "no-store, max-age=0",
+        "Cache-Control": "public, max-age=60, s-maxage=900, stale-while-revalidate=3600",
+        "X-Robots-Tag": "noindex",
       },
     }
   );
