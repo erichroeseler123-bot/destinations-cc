@@ -61,12 +61,14 @@ test("validation rejects published deadline without source, wrong source kind, a
   assert.match(errors, /status "unverified" should be "verified"/);
 });
 
+const TOUR_CLOCK = { tourTimeBasis: "local_port_time" as const, tourReturnDate: "2027-01-25" };
+
 test("verdict passes and fails only with full evidence", () => {
-  const meets = evaluateReturnBuffer({ portCall: verifiedCall(), tourReturnTime: "13:30", tourReturnPoint: "Prince George Wharf" });
+  const meets = evaluateReturnBuffer({ ...TOUR_CLOCK, portCall: verifiedCall(), tourReturnTime: "13:30", tourReturnPoint: "Prince George Wharf" });
   assert.equal(meets.verdict, "meets_recommended_120");
   assert.equal(meets.bufferMinutes, 120);
   assert.equal(meets.scheduleSource?.checkedAt, "2026-11-23");
-  const below = evaluateReturnBuffer({ portCall: verifiedCall(), tourReturnTime: "13:31", tourReturnPoint: "prince george wharf" });
+  const below = evaluateReturnBuffer({ ...TOUR_CLOCK, portCall: verifiedCall(), tourReturnTime: "13:31", tourReturnPoint: "prince george wharf" });
   assert.equal(below.verdict, "below_recommended_120");
 });
 
@@ -85,6 +87,34 @@ test("each missing fact yields Cannot verify with its reason", () => {
   assert.ok(evaluateReturnBuffer({ portCall: verifiedCall(), tourReturnPoint: "Prince George Wharf" }).reasons.includes("tour_return_time_missing"));
   assert.ok(evaluateReturnBuffer({ portCall: verifiedCall(), tourReturnTime: "12:00" }).reasons.includes("tour_return_point_missing"));
   assert.ok(evaluateReturnBuffer({ portCall: verifiedCall(), tourReturnTime: "12:00", tourReturnPoint: "Downtown" }).reasons.includes("tour_return_point_differs"));
+});
+
+test("verdict requires a common service date and clock, a checked schedule, a line-issued deadline and a sourced return point", () => {
+  const valid = { ...TOUR_CLOCK, portCall: verifiedCall(), tourReturnTime: "13:30", tourReturnPoint: "Prince George Wharf" };
+  for (const input of [
+    { ...valid, tourTimeBasis: undefined },
+    { ...valid, tourTimeBasis: "ship_time" as const },
+    { ...valid, tourReturnDate: "2027-01-26" },
+    { ...valid, tourReturnDate: undefined },
+    { ...valid, tourReturnTime: "04:30" },
+    { ...valid, portCall: verifiedCall({ publishedAllAboardTime: "25:00" }) },
+    { ...valid, portCall: verifiedCall({ publishedAllAboardSource: ITIN }) },
+    { ...valid, portCall: verifiedCall({ scheduleSource: null }) },
+    { ...valid, portCall: verifiedCall({ scheduleSource: { ...ITIN, checkedAt: "2026-02-30" } }) },
+    { ...valid, portCall: verifiedCall({ returnPoint: { name: "Prince George Wharf", dockOrTender: "dock", source: { ...ITIN, url: "" } } }) },
+    { ...valid, portCall: verifiedCall({ arrivalTime: "21:00", departureTime: "03:00", publishedAllAboardTime: "02:30" }) },
+  ]) {
+    const result = evaluateReturnBuffer(input);
+    assert.equal(result.verdict, "cannot_verify");
+    assert.equal(result.bufferMinutes, null);
+  }
+});
+
+test("different non-Latin pier names remain distinct", () => {
+  const portCall = verifiedCall({ returnPoint: { name: "東桟橋", dockOrTender: "dock", source: ITIN } });
+  const input = { ...TOUR_CLOCK, portCall, tourReturnTime: "13:00" };
+  assert.equal(evaluateReturnBuffer({ ...input, tourReturnPoint: "西桟橋" }).verdict, "cannot_verify");
+  assert.equal(evaluateReturnBuffer({ ...input, tourReturnPoint: "東桟橋" }).verdict, "meets_recommended_120");
 });
 
 test("a modeled estimate never passes, even with a huge cushion", () => {
