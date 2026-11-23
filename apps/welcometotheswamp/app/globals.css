@@ -70,7 +70,8 @@ body.dcc-guided-mode .site-footer {
 
 .site-header {
   display: grid;
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
   padding: 18px 20px;
 }
 
@@ -2045,11 +2046,6 @@ body.dcc-guided-mode .site-footer {
 }
 
 @media (min-width: 760px) {
-  .site-header {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-  }
-
   .card-grid,
   .trust-grid,
   .cluster-grid,
@@ -2264,7 +2260,9 @@ body {
 .brand-name {
   color: #0f172a !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: clamp(1.35rem, 3.5vw, 1.75rem);
   font-weight: 800 !important;
+  line-height: 1.15;
 }
 
 .brand-kicker {
@@ -2276,12 +2274,14 @@ body {
   background: #ffffff !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
   border-radius: 24px !important;
+  padding: 12px 18px;
 }
 
 .nav-pill {
   border: 1px solid #e2e8f0 !important;
   background: #f1f5f9 !important;
   color: #475569 !important;
+  padding: 7px 10px;
 }
 
 .nav-pill.is-active {
@@ -2382,6 +2382,49 @@ body {
   color: rgba(255, 255, 255, 0.85) !important;
   padding: 6px 12px !important;
   font-size: 11px !important;
+}
+
+.wts-tour-detail-page .wts-hero {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas: "copy photo";
+  gap: 0;
+  min-height: 0 !important;
+}
+
+.wts-tour-detail-page .wts-hero-copy {
+  grid-area: copy;
+  align-content: center !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: clamp(20px, 3vw, 36px) !important;
+  gap: 10px !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.wts-tour-detail-page .wts-hero-copy .wts-eyebrow {
+  margin: 0;
+}
+
+.wts-tour-detail-page .wts-hero-copy h1 {
+  font-size: clamp(1.75rem, 3.5vw, 2.7rem) !important;
+  text-wrap: balance;
+}
+
+.wts-tour-detail-page .wts-hero-media {
+  grid-area: photo;
+  position: relative !important;
+  display: block !important;
+  height: auto !important;
+}
+
+.wts-tour-detail-page .wts-hero-media img {
+  position: absolute;
+  inset: 0;
+  object-position: center 57%;
 }
 
 /* Trust Strip Section */
@@ -2612,6 +2655,13 @@ body {
     border: none !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
+  }
+  .wts-tour-detail-page .wts-hero {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "copy" "photo";
+  }
+  .wts-tour-detail-page .wts-hero-media {
+    aspect-ratio: 2 / 1;
   }
 }
 
