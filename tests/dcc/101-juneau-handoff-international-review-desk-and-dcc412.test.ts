@@ -1897,7 +1897,7 @@ test("101.10 — Reykjavík: Neon catalog filtering & pagination, crawlable /por
   );
 });
 
-test("101.11 — WNO Booking Link Agreement & Louisiana Tour Company Viator 15200P1 (8 Guests, America/Chicago, Unavailable Case, Single-Boat Verification & QA Handoff Retry)", async () => {
+test("101.11 — WNO Booking Link Agreement & Louisiana Tour Company Viator 15200P1 (8 Guests, America/Chicago, Unavailable Case, Single-Boat Verification & QA Handoff Retry)", async (t) => {
   const {
     STOREFRONT_PRODUCTS,
     getProductPrimaryBookingHref,
@@ -1907,6 +1907,7 @@ test("101.11 — WNO Booking Link Agreement & Louisiana Tour Company Viator 1520
   const {
     verifyLiveExcursionAvailability,
     preparePortDayTourCheckout,
+    SCHEDULED_CRUISE_PORT_CALLS,
   } = await import("@/lib/dcc/cruisePortExcursionCatalogEngine");
 
   // 1. WNO booking link agreement: Viator 15200P1 link must point to Viator d675-15200P1, never FareHarbor 228561
@@ -1994,7 +1995,7 @@ test("101.11 — WNO Booking Link Agreement & Louisiana Tour Company Viator 1520
 
   // 4. QA checkout handoff + retry with same idempotencyKey creates 1 QA record when Viator API is configured, or safely gates when unconfirmed
   const qaKey = `qa-test-15200P1-tg9-8pax-${Date.now()}`;
-  const firstHandoff = await preparePortDayTourCheckout({
+  const checkout = {
     portSlug: "new-orleans",
     productCode: "15200P1",
     optionCode: "TG9",
@@ -2008,27 +2009,37 @@ test("101.11 — WNO Booking Link Agreement & Louisiana Tour Company Viator 1520
     isQaTraffic: true,
     originatingSite: "welcometoneworleanstours.com",
     surface: "wno_large_airboat_15200p1",
+  };
+  const provisional = await preparePortDayTourCheckout(checkout);
+  assert.equal(provisional.errorCode, "SAILING_FIT_NOT_VERIFIED");
+  assert.equal(provisional.timeFit?.fitsSailing, false);
+
+  // Exercise the provider and idempotency gates with a test-only published call.
+  const publishedCall = {
+    sailingId: "test-101-11-published-new-orleans",
+    portSlug: "new-orleans",
+    shipSlug: "test-vessel",
+    shipName: "Test Vessel",
+    sailingDate: checkout.date,
+    arrivalTime: checkout.shipArrivalTime,
+    allAboardTime: checkout.shipAllAboardTime,
+    departureTime: "16:30",
+    allAboardPublished: true,
+  };
+  SCHEDULED_CRUISE_PORT_CALLS.push(publishedCall);
+  t.after(() => {
+    const index = SCHEDULED_CRUISE_PORT_CALLS.indexOf(publishedCall);
+    if (index >= 0) SCHEDULED_CRUISE_PORT_CALLS.splice(index, 1);
   });
+  const publishedCheckout = { ...checkout, sailingId: publishedCall.sailingId };
+  const firstHandoff = await preparePortDayTourCheckout(publishedCheckout);
+  assert.equal(firstHandoff.timeFit?.fitsSailing, true);
   assert.equal(firstHandoff.timeFit?.estimatedBackAtPierTime, "11:55");
   if (firstHandoff.ok) {
     assert.equal(firstHandoff.duplicateSubmission, false);
     assert.ok(firstHandoff.outboundAffiliateUrl?.includes("d675-15200P1"));
 
-    const retryHandoff = await preparePortDayTourCheckout({
-      portSlug: "new-orleans",
-      productCode: "15200P1",
-      optionCode: "TG9",
-      date: "2027-01-12",
-      departureTime: "09:40",
-      partySize: 8,
-      shipArrivalTime: "07:00",
-      shipAllAboardTime: "15:30",
-      idempotencyKey: qaKey,
-      travelerApprovedCheckout: true,
-      isQaTraffic: true,
-      originatingSite: "welcometoneworleanstours.com",
-      surface: "wno_large_airboat_15200p1",
-    });
+    const retryHandoff = await preparePortDayTourCheckout(publishedCheckout);
     assert.equal(retryHandoff.ok, true);
     assert.equal(retryHandoff.duplicateSubmission, true);
     assert.equal(retryHandoff.handoffId, firstHandoff.handoffId);

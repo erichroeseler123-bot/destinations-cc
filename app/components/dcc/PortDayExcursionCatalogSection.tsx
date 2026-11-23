@@ -333,7 +333,7 @@ export default function PortDayExcursionCatalogSection({
             </strong>{" "}
             ({portProfile?.defaultPierAddress || "Port arrival berth"}). Evaluates departure
             times, check-in cutoffs, meeting points, and round-trip pier transfers against
-            your confirmed ship all-aboard time while keeping{" "}
+            the cruise line’s published all-aboard deadline while keeping{" "}
             <strong className="text-cyan-300">Time Fit</strong> and{" "}
             <strong className="text-emerald-300">Seat Availability</strong> separate.
           </p>
@@ -450,7 +450,7 @@ export default function PortDayExcursionCatalogSection({
             </div>
             <div>
               <label className="block text-[11px] font-semibold text-slate-400">
-                All-Aboard
+                All-Aboard (planning time)
               </label>
               <input
                 type="time"
@@ -650,7 +650,7 @@ export default function PortDayExcursionCatalogSection({
           >
             Browse all tours
           </button>{" "}
-          or adjust your ship arrival and all-aboard times.
+          to see options while sailing or tour timing needs verification.
         </div>
       ) : (
         <div className="grid gap-5 md:grid-cols-2">
@@ -678,12 +678,13 @@ export default function PortDayExcursionCatalogSection({
                 ? tour.timeFit.statusLabel
                 : "Sailing fit unverified";
 
-            const isAllAboardEstimate =
-              tour.timeFit.allAboardTimeSource === "port_estimate" ||
+            const hasUnverifiedBuffer =
+              tour.timeFit.allAboardTimeSource !== "scheduled_port_call" ||
               tour.timeFit.bufferBeforeAllAboardMinutes === null;
 
             const bufferMins = tour.timeFit.bufferBeforeAllAboardMinutes;
             const isPreferred2hBuffer =
+              !hasUnverifiedBuffer &&
               tour.timeFit.status === "fits" &&
               (tour.timeFit.twoHourShortlist?.qualifies === true ||
                 (bufferMins !== null && bufferMins >= 120));
@@ -721,8 +722,8 @@ export default function PortDayExcursionCatalogSection({
                       {isReducedBuffer
                         ? `Reduced return buffer (${bufferMins}m vs DCC's 120m standard). Verify pier/tender queue margin before selecting.`
                         : tour.timeFit.status === "runs_too_late"
-                          ? "Departure returns after your ship's safe all-aboard cutoff."
-                          : "Timing needs verification: enter your ship's confirmed arrival & all-aboard times above to verify the 120-minute buffer."}
+                          ? "This departure leaves less than the required return buffer."
+                          : "The 120-minute buffer requires a published ship deadline and verified tour and transfer times. Times you enter are for planning."}
                     </div>
                   ) : null}
                   {/* Provider + Product Code + Categories */}
@@ -849,7 +850,7 @@ export default function PortDayExcursionCatalogSection({
                               : "text-amber-300"
                         }`}
                       >
-                        {tour.timeFit.estimatedBackAtPierTime && !isAllAboardEstimate
+                        {tour.timeFit.estimatedBackAtPierTime && !hasUnverifiedBuffer
                           ? `Back at pier ${tour.timeFit.estimatedBackAtPierTime} (${
                               (tour.timeFit.bufferBeforeAllAboardMinutes ?? 0) >= 0
                                 ? `+${tour.timeFit.bufferBeforeAllAboardMinutes}m buffer`
@@ -864,7 +865,7 @@ export default function PortDayExcursionCatalogSection({
                                 : ""
                             })`
                           : tour.timeFit.estimatedBackAtPierTime
-                            ? `Back at pier ~${tour.timeFit.estimatedBackAtPierTime} · Sailing fit unverified (confirm ship all-aboard time)`
+                            ? `Back at pier ~${tour.timeFit.estimatedBackAtPierTime} · Sailing fit unverified`
                             : "Sailing fit unverified (confirm ship window and operator return timing)"}
                       </span>
                     </div>

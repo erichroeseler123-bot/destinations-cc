@@ -385,7 +385,10 @@ describe("North Star Slice 3: Canonical Fit/Ledger/Partner Modules, Travel-Graph
     assert.equal(getBody.commissionNeutral, true);
     assert.equal(getBody.context.port.slug, "juneau");
     assert.equal(getBody.context.partySize, 4);
-    assert.ok(typeof getBody.context.safeReturnCutoffTime === "string");
+    assert.equal(getBody.context.portWindow.allAboardTimeSource, "request_param");
+    assert.equal(getBody.context.portWindow.timingStatus, "needs_verification");
+    assert.equal(getBody.context.safeReturnCutoffTime, null);
+    assert.equal(getBody.summary.fitsCount, 0);
     assert.ok(Array.isArray(getBody.options) && getBody.options.length > 0);
 
     const validCanonicalStates = new Set<CanonicalFitStatus>([

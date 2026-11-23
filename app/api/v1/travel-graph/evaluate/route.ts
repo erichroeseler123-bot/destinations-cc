@@ -283,10 +283,10 @@ async function runEvaluation(input: NormalizedEvaluateInput) {
   const oneWayPierTransferMinutes =
     catalog?.port.defaultOneWayPierTransferMinutes ?? 20;
   const checkInCutoffMinutes = catalog?.port.defaultCheckInCutoffMinutes ?? 15;
-  const safeReturnCutoffTime = subtractMinutesFromTime(
-    resolvedAllAboardTime,
-    requiredReturnBufferMinutes,
-  );
+  const timingStatus = catalog?.sailingWindow.timingStatus ?? "needs_verification";
+  const safeReturnCutoffTime = timingStatus === "verified"
+    ? subtractMinutesFromTime(resolvedAllAboardTime, requiredReturnBufferMinutes)
+    : null;
   const resolvedShipLabel =
     catalog?.sailingWindow.shipName ||
     catalog?.sailingWindow.shipSlug ||
@@ -408,7 +408,7 @@ async function runEvaluation(input: NormalizedEvaluateInput) {
           arrivalTimeSource: catalog?.sailingWindow.arrivalTimeSource || (input.arrivalTime ? "request_param" : "missing"),
           allAboardTime: resolvedAllAboardTime,
           allAboardTimeSource: catalog?.sailingWindow.allAboardTimeSource || (input.allAboardTime ? "request_param" : "missing"),
-          timingStatus: catalog?.sailingWindow.timingStatus || (input.arrivalTime && input.allAboardTime ? "verified" : "needs_verification"),
+          timingStatus,
         },
         bufferAssumptions: {
           requiredReturnBufferMinutes,
