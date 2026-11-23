@@ -1,4 +1,4 @@
-import { getPortClockLedger } from "./cruise/portClockLedger";
+import { getPortClockLedger, hasPublishedPortClockEvidence } from "./cruise/portClockLedger";
 import { createHash } from "node:crypto";
 import { getViatorClient } from "@/lib/viator/client";
 import { getViatorPublicConfig } from "@/lib/viator/config";
@@ -1431,7 +1431,7 @@ export const SCHEDULED_CRUISE_PORT_CALLS: ScheduledCruisePortCall[] = getPortClo
   arrivalTime: r.arrivalTime ?? "",
   allAboardTime: r.publishedAllAboardTime ?? r.modeledAllAboardTime ?? "",
   departureTime: r.departureTime ?? "",
-  allAboardPublished: Boolean(r.publishedAllAboardTime && r.publishedAllAboardSource),
+  allAboardPublished: hasPublishedPortClockEvidence(r),
 }));
 
 function normalizeShipSlug(input: string | undefined | null): string {
@@ -1452,6 +1452,12 @@ function isExplicitMissingToken(value: string | undefined | null): boolean {
     norm === "pending_confirmation" ||
     norm === "none"
   );
+}
+
+function allAboardLabel(time: string, source: PortDayWindowTimeSource): string {
+  if (source === "port_estimate") return `${time} (port estimate)`;
+  if (source === "request_param") return `${time} (traveler-entered, unverified)`;
+  return time;
 }
 
 export function resolveScheduledPortCall(params: {
@@ -1554,13 +1560,16 @@ export function resolveScheduledPortCall(params: {
       : matchedPortCall?.arrivalTime
         ? "scheduled_port_call"
         : "port_estimate";
-  const allAboardTimeSource: PortDayWindowTimeSource = explicitAllAboardMissing
-    ? "port_estimate"
-    : explicitAllAboardMin !== null
-      ? "request_param"
-      : matchedPortCall?.allAboardTime && matchedPortCall.allAboardPublished
-        ? "scheduled_port_call"
-        : "port_estimate";
+  const hasPublishedDeadline =
+    candidates.length === 1 &&
+    Boolean(rawSailingId || (rawShipSlug && rawDate)) &&
+    matchedPortCall?.allAboardPublished === true &&
+    (explicitAllAboardMin === null || explicitAllAboardMin === parseHhMm(matchedPortCall.allAboardTime));
+  let allAboardTimeSource: PortDayWindowTimeSource = "port_estimate";
+  if (!explicitAllAboardMissing) {
+    if (hasPublishedDeadline) allAboardTimeSource = "scheduled_port_call";
+    else if (explicitAllAboardMin !== null) allAboardTimeSource = "request_param";
+  }
 
   const resolvedArrivalTime =
     explicitArrivalMin !== null
@@ -1575,10 +1584,7 @@ export function resolveScheduledPortCall(params: {
     arrivalTimeSource === "port_estimate"
       ? `${resolvedArrivalTime} (port estimate)`
       : resolvedArrivalTime;
-  const shipAllAboardTimeLabel =
-    allAboardTimeSource === "port_estimate"
-      ? `${resolvedAllAboardTime} (port estimate)`
-      : resolvedAllAboardTime;
+  const shipAllAboardTimeLabel = allAboardLabel(resolvedAllAboardTime, allAboardTimeSource);
   const resolvedSailingDate =
     rawDate || matchedPortCall?.sailingDate || profile.defaultSailingDate || "2027-07-15";
 
@@ -1690,11 +1696,11 @@ export function evaluateTourPortDayTimeFit(params: {
     arrivalTimeSource === "port_estimate"
       ? `${arrivalTime} (port estimate)`
       : arrivalTime;
-  const shipAllAboardTimeLabel =
-    allAboardTimeSource === "port_estimate"
-      ? `${allAboardTime} (port estimate)`
-      : allAboardTime;
-  const isAllAboardPortEstimate = allAboardTimeSource === "port_estimate";
+  const shipAllAboardTimeLabel = allAboardLabel(allAboardTime, allAboardTimeSource);
+  const deadlineUnverified = allAboardTimeSource !== "scheduled_port_call";
+  const deadlineDescription = allAboardTimeSource === "request_param"
+    ? "a traveler-entered planning time"
+    : "a port estimate";
   const arrivalMin = parseHhMm(arrivalTime) ?? 480;
   const allAboardMin = parseHhMm(allAboardTime) ?? 1050;
   const earliestDisembarkMin = arrivalMin + 25;
@@ -1980,7 +1986,7 @@ export function evaluateTourPortDayTimeFit(params: {
     meetingToPierMinutes === null ||
     fullReturnTripMinutes === null
   ) {
-    const effectiveMissingFields = isAllAboardPortEstimate
+    const effectiveMissingFields = deadlineUnverified
       ? [...missingFields, "allAboard"]
       : missingFields;
     const meetingContext = meetingPointName
@@ -2000,8 +2006,8 @@ export function evaluateTourPortDayTimeFit(params: {
       evaluatedAfterDccFitChecks: true,
       exactOptionCode: selectedOptionCode,
       exactDepartureTime: candidateDep,
-      confirmedAllAboardTime: isAllAboardPortEstimate ? null : allAboardTime,
-      isConfirmedAllAboard: !isAllAboardPortEstimate,
+      confirmedAllAboardTime: deadlineUnverified ? null : allAboardTime,
+      isConfirmedAllAboard: !deadlineUnverified,
       dockOrTender,
       meetingToPierMinutes,
       tenderTravelMinutes: dockOrTender === "tender" ? tenderTravelMinutes : 0,
@@ -2082,10 +2088,10 @@ export function evaluateTourPortDayTimeFit(params: {
         equivalentShipDepartureBufferMinutes,
         bufferBeforeAllAboardMinutes: null,
         bufferBeforeShipDepartureMinutes: null,
-        reconciliationNote: isAllAboardPortEstimate
-          ? recCodeUpper === "103974P5"
+        reconciliationNote: deadlineUnverified
+          ? recCodeUpper === "103974P5" && allAboardTimeSource === "port_estimate"
             ? `Royal Caribbean publishes 8:00 a.m.–6:00 p.m. (08:00–18:00) as the dock window and advises guests to verify all-aboard onboard. The 5:00 p.m. (${allAboardTime}) cutoff and 175-minute margin are test assumptions; record the actual cutoff and whether it is in ship time (America/Chicago) or Cozumel local time (America/Cancun). Once the berth (APIQROO lists Symphony of the Seas at SSA International Pier on Nov. 6; Jan. 8, 2027 terminal assignment pending), cutoff, and office pin are confirmed, calculate both transfers including taxi pickup and the walk back to the gangway, then rerun timing fit and live availability for eight.`
-            : `All Aboard time (${allAboardTime}) is a port estimate because no traveler all-aboard deadline or matching sailing schedule was provided. Tour fit requires returning to the pier at least ${profile.requiredReturnBufferMinutes}m before All Aboard and remains Needs verification until the all-aboard deadline and tour logistics are confirmed.`
+            : `All Aboard time (${allAboardTime}) is ${deadlineDescription} without a corroborating published sailing deadline. Tour fit requires returning to the pier at least ${profile.requiredReturnBufferMinutes}m before All Aboard and remains Needs verification until the all-aboard deadline and tour logistics are confirmed.`
           : validShipDepartureTime !== null &&
               allAboardToShipDepartureMinutes !== null &&
               equivalentShipDepartureBufferMinutes !== null
@@ -2100,7 +2106,7 @@ export function evaluateTourPortDayTimeFit(params: {
           : `Needs verification: missing verified ${effectiveMissingFields.join(
               ", "
             )}${
-              isAllAboardPortEstimate ? ` (All Aboard ${allAboardTime} is a port estimate)` : ""
+              deadlineUnverified ? ` (All Aboard ${allAboardTime} is ${deadlineDescription})` : ""
             }. ${meetingContext} Confirm exact product/option departure, check-in, pier transfers, and return buffer before booking for your sailing.`,
       evidenceReviewPriority,
       twoHourShortlist,
@@ -2149,7 +2155,7 @@ export function evaluateTourPortDayTimeFit(params: {
       ? bufferBeforeAllAboard + allAboardToShipDepartureMinutes
       : null;
 
-  if (isAllAboardPortEstimate) {
+  if (deadlineUnverified) {
     const twoHourShortlist: PortDayTwoHourShortlistEvaluation = {
       qualifies: false,
       status: "needs_verification",
@@ -2174,7 +2180,7 @@ export function evaluateTourPortDayTimeFit(params: {
       missingFields: ["allAboard"],
       offerSeeOtherToursThatFit: true,
       seeOtherToursThatFitLabel: "See other tours that fit",
-      summaryText: `Sailing fit unverified: All Aboard (${allAboardTime}) is a port estimate. Return estimate ${returnEstimateTime}. Confirm your ship's all-aboard deadline to verify the 2+ hour buffer.`,
+      summaryText: `Sailing fit unverified: All Aboard (${allAboardTime}) is ${deadlineDescription}. Return estimate ${returnEstimateTime}. A published sailing deadline is required to verify the 2+ hour buffer.`,
     };
     return {
       status: "needs_verification",
@@ -2235,17 +2241,17 @@ export function evaluateTourPortDayTimeFit(params: {
         equivalentShipDepartureBufferMinutes,
         bufferBeforeAllAboardMinutes: null,
         bufferBeforeShipDepartureMinutes: null,
-        reconciliationNote: `All Aboard time (${allAboardTime}) is a port estimate because no traveler all-aboard deadline or matching sailing schedule was provided. This tour returns to the pier at ${returnEstimateTime} (port requires ${
+        reconciliationNote: `All Aboard time (${allAboardTime}) is ${deadlineDescription} without a corroborating published sailing deadline. This tour returns to the pier at ${returnEstimateTime} (port requires ${
           profile.requiredReturnBufferMinutes
-        }m before All Aboard). Sailing fit is unverified until the traveler supplies the all-aboard deadline or the sailing schedule provides it.`,
+        }m before All Aboard). Sailing fit is unverified until a published sailing deadline is available.`,
       },
-      hasVerifiedReturnBuffer: true,
+      hasVerifiedReturnBuffer: false,
       missingFields: ["allAboard"],
-      reasonSummary: `Sailing fit unverified: All Aboard time (${allAboardTime}) is a port estimate. Departs ${selectedDep} (option ${
+      reasonSummary: `Sailing fit unverified: All Aboard time (${allAboardTime}) is ${deadlineDescription}. Departs ${selectedDep} (option ${
         selectedOptionCode || "default"
       }, check in by ${formatHhMm(
         checkInMin
-      )} at ${meetingPointName}), ${roundTripTransferMinutes}m round-trip transfer, returns to pier at ${returnEstimateTime}. Supply your all-aboard deadline or select a sailing schedule to confirm sailing fit.`,
+      )} at ${meetingPointName}), ${roundTripTransferMinutes}m round-trip transfer, returns to pier at ${returnEstimateTime}. A published sailing deadline is required to confirm sailing fit.`,
       evidenceReviewPriority,
       twoHourShortlist,
     };
@@ -3247,8 +3253,8 @@ export async function queryPortDayExcursionCatalog(params: {
           shipArrivalTime:
             portCallResolution.arrivalTimeSource !== "port_estimate" ? shipArrivalTime : null,
           shipAllAboardTime:
-            portCallResolution.allAboardTimeSource !== "port_estimate" ? shipAllAboardTime : null,
-          allAboardConfirmed: portCallResolution.allAboardTimeSource !== "port_estimate",
+            portCallResolution.allAboardTimeSource === "scheduled_port_call" ? shipAllAboardTime : null,
+          allAboardConfirmed: portCallResolution.allAboardTimeSource === "scheduled_port_call",
         }).catch(() => null)
       : Promise.resolve(null),
   ]);
@@ -3506,7 +3512,7 @@ export async function queryPortDayExcursionCatalog(params: {
     profile.destinationSlug === profile.portSlug &&
     !isExplicitMissingToken(params.transfers);
   const portHasConfirmedAllAboard =
-    portCallResolution.allAboardTimeSource !== "port_estimate" &&
+    portCallResolution.allAboardTimeSource === "scheduled_port_call" &&
     !isExplicitMissingToken(params.shipAllAboardTime);
   const portMissingTimingEvidence: string[] = [];
   if (!portHasDatedBerth) portMissingTimingEvidence.push("datedBerth");
@@ -3948,7 +3954,7 @@ export async function preparePortDayTourCheckout(
     parseHhMm(params.shipAllAboardTime) !== null &&
     !isExplicitMissingToken(params.shipAllAboardTime);
   const hasConfirmedAllAboardCutoff =
-    window.allAboardTimeSource !== "port_estimate" &&
+    window.allAboardTimeSource === "scheduled_port_call" &&
     !isExplicitMissingToken(params.shipAllAboardTime);
   if (!approvedSpec.preparedCheckoutEnabled) {
     return reject(
