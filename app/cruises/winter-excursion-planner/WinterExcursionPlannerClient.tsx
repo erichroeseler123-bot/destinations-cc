@@ -67,6 +67,9 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
   const [loading, setLoading] = useState(false);
   const [copiedBanner, setCopiedBanner] = useState<string | null>(null);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
+  const matchesPreset = (ship: string, date: string) =>
+    ship.trim().toLowerCase() === data.plan.shipName.toLowerCase() && date === data.plan.sailDate;
+  const showSchedule = matchesPreset(shipName, sailDate) && matchesPreset(data.shipName, data.sailDate);
 
   async function refreshPlan(
     nextSaved = savedByPort,
@@ -136,7 +139,7 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
   return (
     <div className="space-y-8">
       {/* Off-Itinerary Tour Blocked Banner (when a saved link or direct request attempted to add an off-itinerary tour) */}
-      {data.offItineraryBlocked && data.rejectedOffItineraryRequests.length > 0 ? (
+      {showSchedule && data.offItineraryBlocked && data.rejectedOffItineraryRequests.length > 0 ? (
         <div
           data-testid="off-itinerary-blocked-banner"
           className="rounded-2xl border border-rose-500/50 bg-rose-950/60 p-5 text-sm text-rose-100 shadow-lg"
@@ -185,16 +188,16 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
               <span className="rounded-full bg-cyan-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-cyan-300 border border-cyan-500/40">
                 Planning Preview · Shareable Whole-Sailing Plan · {data.plan.planCode}
               </span>
-              <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 border border-emerald-500/40">
+              {showSchedule && <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 border border-emerald-500/40">
                 Ports on this sailing · {data.sailingPortCallSlugs.join(" · ")}
-              </span>
+              </span>}
             </div>
             <h1 className="mt-3 text-2xl sm:text-3xl font-bold text-white">
-              {data.shipName} · {data.plan.itineraryTitle} (Planning Preview)
+              {data.plan.shipName} · {data.plan.itineraryTitle} (Planning Preview)
             </h1>
             <p className="mt-1 text-sm text-slate-300">
               Sailing Date:{" "}
-              <span className="font-semibold text-white">{data.sailDate}</span> (Return{" "}
+              <span className="font-semibold text-white">{data.plan.sailDate}</span> (Return{" "}
               {data.plan.returnDate}) · Royal Caribbean Sailing ID{" "}
               <code className="text-cyan-300">{data.plan.sailingId}</code> · Party:{" "}
               <span className="font-semibold text-white">
@@ -207,7 +210,7 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          {showSchedule && <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() =>
@@ -237,7 +240,7 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
             >
               Royal Caribbean Itinerary ↗
             </a>
-          </div>
+          </div>}
         </div>
 
         {copiedBanner ? (
@@ -317,7 +320,12 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
         </div>
       </div>
 
-      {/* Verified 8-Day Sailing Itinerary Schedule (including San Juan on Day 4) */}
+      {!showSchedule ? (
+        <div role="status" className="rounded-xl border border-amber-500/40 p-5 text-sm text-amber-100">
+          This plan covers {data.plan.shipName} departing {data.plan.sailDate}.
+          {" "}Check the ship and sailing date above or <Link href="/ports" className="underline">browse port guides</Link>.
+        </div>
+      ) : <>
       <div
         data-testid="verified-sailing-itinerary-schedule"
         className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6"
@@ -511,7 +519,7 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-white">
-            Excursions by port ({data.shipName} · {data.plan.planCode})
+            Excursions by port ({data.plan.shipName} · {data.plan.planCode})
           </h2>
         </div>
 
@@ -767,7 +775,7 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
               </h2>
               <p className="mt-1 text-xs text-slate-300">
                 {data.otherWinterPortGuides.map((g) => g.portName).join(", ")} are not port
-                calls on the January 24, 2027 <em>{data.shipName}</em> {data.plan.itineraryTitle}{" "}
+                calls on the January 24, 2027 <em>{data.plan.shipName}</em> {data.plan.itineraryTitle}{" "}
                 sailing and cannot be added to <code className="text-cyan-300">{data.plan.planCode}</code>.
                 Explore them through their dedicated port guides or switch to the sailing plan that
                 actually calls there:
@@ -827,6 +835,7 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
           </div>
         </div>
       ) : null}
+      </>}
     </div>
   );
 }

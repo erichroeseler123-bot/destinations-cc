@@ -537,6 +537,15 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
   assert.notEqual(indyDefault.fivePortsBySlug.nassau.allAboardStatus, "confirmed");
   const plannerHtml = renderToStaticMarkup(React.createElement(WinterExcursionPlannerClient, { initialData: indyDefault }));
   assert.doesNotMatch(plannerHtml, /Fits All-Aboard|meets (?:the )?recommended 120-minute (?:return )?buffer/i);
+  assert.match(plannerHtml, /verified-sailing-itinerary-schedule/);
+  for (const selection of [{ shipName: "Another ship" }, { sailDate: "2027-02-02" }]) {
+    const mismatch = renderToStaticMarkup(React.createElement(WinterExcursionPlannerClient, {
+      initialData: { ...indyDefault, ...selection },
+    }));
+    assert.match(mismatch, /This plan covers Independence of the Seas departing 2027-01-24/);
+    assert.match(mismatch, /browse port guides/);
+    assert.doesNotMatch(mismatch, /verified-sailing-itinerary-schedule|saved-checkout-cta|Copy DCC Plan Link/);
+  }
   assert.equal(indyDefault.offItineraryBlocked, false);
 
   const sanJuanCall = indyDefault.sailingPortCalls.find(
