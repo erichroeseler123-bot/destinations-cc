@@ -46,7 +46,7 @@ export default async function OperatorInboxAdminPage({
   }
 
   const sp = searchParams ? await searchParams : {};
-  const view = firstParam(sp.view) || "genuine";
+  const view = firstParam(sp.view) || "customer_replies";
   const site = firstParam(sp.site);
   const status = firstParam(sp.status);
   const rawCpPreviewUrl = firstParam(sp.cpPreviewUrl);
@@ -79,22 +79,24 @@ export default async function OperatorInboxAdminPage({
               Unified Operator Inbox
             </h1>
             <p className="mt-1.5 max-w-3xl text-sm text-zinc-300">
-              Aggregates durable web submissions across Destination Command
-              Center, Cruise Promenade, Juneau Flight Deck, Welcome to New
-              Orleans Tours, Last Frontier Shore Excursions, Mighty Argo,
-              Somerset, Welcome to the Dells, and Save On The Strip with
-              non-PII attribution, outbound alert audits, and non-destructive
-              triage overlays.
+              Reply to customers across your sites and check delivery of staff alerts.
             </p>
           </div>
         </header>
-
-        <DurableSubmissionsOwnerPanel cpPreviewUrl={panelCpUrl} />
 
         <OperatorInboxClient
           initialData={initialData}
           initialCpPreviewUrl={validCpPreviewUrl}
         />
+
+        <details className="mt-6 rounded-2xl border border-white/10 bg-zinc-900/60 p-4">
+          <summary className="cursor-pointer text-sm font-semibold text-zinc-200">
+            Founding pilot and submission recovery
+          </summary>
+          <div className="mt-4">
+            <DurableSubmissionsOwnerPanel cpPreviewUrl={panelCpUrl} />
+          </div>
+        </details>
       </div>
     </main>
   );

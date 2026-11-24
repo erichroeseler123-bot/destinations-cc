@@ -100,7 +100,7 @@ export default async function OwnerControlCenterPage() {
               href={q4.inboxHref}
               className="rounded-xl border border-amber-400/40 bg-amber-500/15 px-3.5 py-2 font-bold text-[#f5c66c] hover:bg-amber-500/25"
             >
-              Genuine Inbox ({q4.untriagedGenuineCount}) →
+              Customer replies ({q4.customerRepliesNeededCount}) →
             </Link>
             <Link
               href="/admin/portfolio"
@@ -262,7 +262,7 @@ export default async function OwnerControlCenterPage() {
             <article
               data-testid="daily-q3-automation"
               className={`rounded-2xl border p-5 space-y-3 ${
-                q3.totalAutomationFailures > 0
+                q3.statusBadge === "Action Needed"
                   ? "border-rose-400/45 bg-rose-500/10"
                   : "border-white/15 bg-white/[0.04]"
               }`}
@@ -273,13 +273,14 @@ export default async function OwnerControlCenterPage() {
                 </h2>
                 <span
                   className={`rounded-full px-2.5 py-0.5 font-mono text-[11px] font-bold ${
-                    q3.totalAutomationFailures > 0
+                    q3.statusBadge === "Action Needed"
                       ? "bg-rose-500/25 text-rose-200"
                       : "bg-emerald-500/20 text-emerald-200"
                   }`}
                 >
-                  {q3.statusBadge} ({q3.totalAutomationFailures} failure
-                  {q3.totalAutomationFailures === 1 ? "" : "s"})
+                  {q3.statusBadge}
+                  {q3.totalAutomationFailures > 0 &&
+                    ` (${q3.totalAutomationFailures} ${q3.totalAutomationFailures === 1 ? "failure" : "failures"})`}
                 </span>
               </div>
               <ul className="space-y-1.5 text-xs text-zinc-200">
@@ -304,8 +305,14 @@ export default async function OwnerControlCenterPage() {
                   <code>{triageQueue.parrOps.status}</code>)
                 </li>
                 <li>
-                  • <strong>Customer Notification Alerts:</strong>{" "}
-                  <code>{q3.genuineFailedNotificationsCount}</code> genuine failed delivery alert(s) (all web submissions still saved durably in Postgres)
+                  <Link href={q3.deliveryFailuresHref} className="font-bold underline underline-offset-2">
+                    Failed alerts
+                  </Link>{" "}affected {q3.deliveryFailureCount} saved {q3.deliveryFailureCount === 1 ? "record" : "records"}.
+                </li>
+                <li>
+                  <Link href={q3.notificationConfigurationHref} className="font-bold underline underline-offset-2">
+                    Missing alert setup
+                  </Link>{" "}affected {q3.notificationConfigurationCount} saved {q3.notificationConfigurationCount === 1 ? "record" : "records"}.
                 </li>
               </ul>
             </article>
@@ -314,7 +321,7 @@ export default async function OwnerControlCenterPage() {
             <article
               data-testid="daily-q4-inquiries"
               className={`rounded-2xl border p-5 space-y-3 ${
-                q4.untriagedGenuineCount > 0
+                q4.customerRepliesNeededCount > 0
                   ? "border-amber-400/45 bg-amber-500/10"
                   : "border-white/15 bg-white/[0.04]"
               }`}
@@ -324,21 +331,20 @@ export default async function OwnerControlCenterPage() {
                   {q4.question}
                 </h2>
                 <span className="rounded-full border border-white/20 bg-black/40 px-2.5 py-0.5 font-mono text-[11px] font-bold text-amber-200">
-                  {q4.untriagedGenuineCount} untriaged
+                  {q4.customerRepliesNeededCount} awaiting reply
                 </span>
               </div>
               <p className="text-xs leading-relaxed text-zinc-200">
-                <strong>{q4.untriagedGenuineCount}</strong> untriaged genuine customer inquiry item(s) ({q4.actionableGenuineCount} open actionable across specialist desks &amp; Cruise Promenade group concierge).
-              </p>
-              <p className="text-[11px] text-zinc-400">
-                {q4.closedJfdPolicyNote}
+                {q4.nextReply ? (
+                  <>Next up · <strong>{q4.nextReply.name || "Customer inquiry"}</strong> · {q4.nextReply.source}</>
+                ) : "No customer replies are queued in the available records."}
               </p>
               <div>
                 <Link
                   href={q4.inboxHref}
                   className="inline-flex items-center rounded-lg border border-amber-400/40 bg-amber-500/15 px-3.5 py-1.5 text-xs font-bold text-[#f5c66c] hover:bg-amber-500/25"
                 >
-                  Open Genuine Operator Inbox →
+                  Open customer reply queue →
                 </Link>
               </div>
             </article>
@@ -797,8 +803,7 @@ export default async function OwnerControlCenterPage() {
             {/* Exception Triage Detail Cards */}
             <section aria-labelledby="needs-erich-heading" className="space-y-4">
               <h2 id="needs-erich-heading" className="text-xl font-black">
-                System Triage Detail ({triageQueue.totalAttentionCount} live exception
-                {triageQueue.totalAttentionCount === 1 ? "" : "s"})
+                System Triage Detail ({triageQueue.totalAttentionCount} action{triageQueue.totalAttentionCount === 1 ? "" : "s"})
               </h2>
               <div className="grid gap-4 md:grid-cols-2">
                 {triageQueue.items.map((item) => (

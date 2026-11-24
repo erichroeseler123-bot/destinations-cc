@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   buildGenericJfdConciergeTemplate,
   buildHydratedConciergePreset,
@@ -15,15 +15,22 @@ import type {
   UnifiedOperatorInboxResult,
 } from "@/lib/dcc/operatorInbox";
 
-const VIEW_TABS: Array<{
+const QUEUES = [
+  { key: "customer_replies", label: "Customers needing a reply", count: "customerRepliesNeededCount", hint: "Booking blockers appear first." },
+  { key: "notification_failures", label: "Failed deliveries", count: "deliveryFailureCount", hint: "A staff alert failed for a saved submission." },
+  { key: "notification_configuration", label: "Missing alert setup", count: "notificationConfigurationCount", hint: "Staff notifications need configuration." },
+  { key: "skipped_notifications", label: "Intentionally skipped", count: "intentionallySkippedCount", hint: "Notifications were explicitly turned off." },
+] as const;
+
+const AUDIT_VIEWS: Array<{
   key: OperatorInboxViewFilter;
   label: string;
 }> = [
-  { key: "genuine", label: "Genuine Inquiries" },
-  { key: "failed_notifications", label: "Failed Notifications" },
-  { key: "needs_triage", label: "Needs Triage" },
-  { key: "test", label: "Test / QA Probes" },
-  { key: "all", label: "All Stored" },
+  { key: "genuine", label: "Genuine submissions" },
+  { key: "failed_notifications", label: "Undelivered alerts (historical view)" },
+  { key: "needs_triage", label: "Open genuine submissions" },
+  { key: "test", label: "Test submissions" },
+  { key: "all", label: "All saved records" },
 ];
 
 const SITE_OPTIONS = [
@@ -48,6 +55,7 @@ const TRIAGE_STATUS_OPTIONS: Array<{
 }> = [
   { value: "new", label: "New" },
   { value: "in_review", label: "In Review" },
+  { value: "booking_blocked", label: "Booking blocked · needs reply" },
   { value: "contacted", label: "Contacted" },
   { value: "resolved", label: "Resolved" },
   { value: "archived", label: "Archived" },
@@ -84,6 +92,8 @@ function notificationBadgeLabel(status: OperatorInboxItem["notificationStatus"])
       return "Alert Failed";
     case "not_configured":
       return "Alert Unconfigured";
+    case "intentionally_skipped":
+      return "Intentionally skipped";
     case "durable_storage_only":
       return "Durable Storage Only";
     case "unknown":
@@ -92,8 +102,46 @@ function notificationBadgeLabel(status: OperatorInboxItem["notificationStatus"])
   }
 }
 
+function AlertAudit({ item }: { item: OperatorInboxItem }) {
+  return (
+    <div className="min-w-0 space-y-1.5 text-xs">
+      <span
+        data-testid="notification-status-badge"
+        className={`inline-flex rounded-lg border px-2.5 py-1 font-bold ${notificationBadgeClasses(item.notificationStatus)}`}
+      >
+        {notificationBadgeLabel(item.notificationStatus)}
+      </span>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-zinc-300">
+        <dt className="text-zinc-400">Channel</dt><dd>{item.notificationChannel}</dd>
+        <dt className="text-zinc-400">Destination</dt><dd className="break-all">{item.intendedDestination}</dd>
+      </dl>
+      {item.failureReason && <p className="break-words text-zinc-300">{item.failureReason}</p>}
+    </div>
+  );
+}
+
+function DiagnosticCard({ item, cpPreviewUrl }: { item: OperatorInboxItem; cpPreviewUrl?: string | null }) {
+  const params = new URLSearchParams({ view: "all", site: item.sourceSite });
+  if (cpPreviewUrl) params.set("cpPreviewUrl", cpPreviewUrl);
+  return (
+    <article data-testid="operator-notification-record" className="space-y-3 rounded-2xl border border-white/10 bg-zinc-900/75 p-4 sm:p-5">
+      <header className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-base font-semibold">{item.sourceSiteLabel} · {item.channelLabel}</h3>
+        <time dateTime={item.submittedAt} className="text-xs text-zinc-400">{formatUtcTimestamp(item.submittedAt)}</time>
+      </header>
+      <AlertAudit item={item} />
+      <footer className="flex flex-wrap items-center gap-3 border-t border-white/10 pt-2 text-xs text-zinc-400">
+        <span>{item.classification === "test" ? "Test submission" : "Saved submission"} · {item.sourceId}</span>
+        <a className="text-[#f5c66c] underline" href={`/admin/inbox?${params}#${encodeURIComponent(item.itemKey)}`}>Open saved record</a>
+      </footer>
+    </article>
+  );
+}
+
 function triageBadgeClasses(status: OperatorTriageStatus): string {
   switch (status) {
+    case "booking_blocked":
+      return "border-amber-300/60 bg-amber-500/20 text-amber-100";
     case "new":
       return "border-amber-400/40 bg-amber-500/15 text-amber-200";
     case "in_review":
@@ -200,13 +248,17 @@ export default function OperatorInboxClient({
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, DraftRowState>>({});
   const [replies, setReplies] = useState<Record<string, ReplyComposerState>>({});
+  const selected = useRef({ view: activeView, site: siteFilter, status: statusFilter });
+  const latestRequest = useRef(0);
 
   const fetchInbox = useCallback(
     async (
-      nextView: OperatorInboxViewFilter,
-      nextSite: string,
-      nextStatus: string,
+      nextView = selected.current.view,
+      nextSite = selected.current.site,
+      nextStatus = selected.current.status,
     ) => {
+      selected.current = { view: nextView, site: nextSite, status: nextStatus };
+      const requestNumber = ++latestRequest.current;
       setLoading(true);
       setFetchError(null);
       try {
@@ -235,15 +287,20 @@ export default function OperatorInboxClient({
         if (!res.ok || !json.ok) {
           throw new Error(json.error || `HTTP ${res.status}`);
         }
+        if (requestNumber !== latestRequest.current) return;
         setData(json);
+        const url = new URL(window.location.href);
+        url.search = params.toString();
+        window.history.replaceState(window.history.state, "", url);
       } catch (err) {
+        if (requestNumber !== latestRequest.current) return;
         setFetchError(
           err instanceof Error
             ? err.message
             : "Failed to refresh operator inbox.",
         );
       } finally {
-        setLoading(false);
+        if (requestNumber === latestRequest.current) setLoading(false);
       }
     },
     [initialCpPreviewUrl],
@@ -344,7 +401,7 @@ export default function OperatorInboxClient({
       });
 
       // Refresh inbox to update KPI badges & persisted row state cleanly
-      await fetchInbox(activeView, siteFilter, statusFilter);
+      await fetchInbox();
     } catch (err) {
       updateDraftField(item, {
         saving: false,
@@ -480,7 +537,7 @@ export default function OperatorInboxClient({
       });
 
       if (!payload.dryRunSandbox) {
-        await fetchInbox(activeView, siteFilter, statusFilter);
+        await fetchInbox();
       }
     } catch (err) {
       updateReplyComposer(item, {
@@ -494,193 +551,49 @@ export default function OperatorInboxClient({
 
   const { kpis, channelHealth, items } = data;
   const cpStatus = channelHealth.cpConnectorStatus;
+  const filtersMatch = activeView === data.appliedFilters.view
+    && siteFilter === (data.appliedFilters.site || "all")
+    && statusFilter === (data.appliedFilters.status || "all");
+  const diagnosticView = activeView === "notification_failures" || activeView === "notification_configuration"
+    || activeView === "skipped_notifications" || activeView === "failed_notifications";
+  const viewLabel = QUEUES.find((queue) => queue.key === activeView)?.label
+    ?? AUDIT_VIEWS.find((option) => option.key === activeView)?.label;
 
   return (
     <div className="space-y-6">
-      {/* KPI Summary Cards */}
-      <section
-        aria-label="Operator Inbox KPI Summary"
-        className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5"
-      >
-        <div
-          data-testid="kpi-genuine-inquiries"
-          className="rounded-2xl border border-emerald-400/25 bg-zinc-900/80 p-4"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wider text-emerald-300">
-            Genuine Actionable Inquiries
-          </p>
-          <p className="mt-2 text-3xl font-black text-white">
-            {kpis.genuineActionableCount}
-          </p>
-          <p className="mt-1 text-xs text-zinc-400">
-            {kpis.genuineTotalCount} total genuine leads stored
-          </p>
-        </div>
-
-        <div
-          data-testid="kpi-needs-triage"
-          className="rounded-2xl border border-amber-400/25 bg-zinc-900/80 p-4"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wider text-amber-300">
-            Needs Triage
-          </p>
-          <p className="mt-2 text-3xl font-black text-white">
-            {kpis.needsTriageCount}
-          </p>
-          <p className="mt-1 text-xs text-zinc-400">
-            Genuine inquiries in &ldquo;new&rdquo; state
-          </p>
-        </div>
-
-        <div
-          data-testid="kpi-failed-notifications"
-          className="rounded-2xl border border-rose-400/30 bg-zinc-900/80 p-4"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wider text-rose-300">
-            Failed / Undelivered Notifications
-          </p>
-          <p className="mt-2 text-3xl font-black text-white">
-            {kpis.failedNotificationsCount}
-          </p>
-          <p className="mt-1 text-xs text-zinc-400">
-            {kpis.genuineFailedNotificationsCount} genuine inquiries affected
-          </p>
-        </div>
-
-        <div
-          data-testid="kpi-test-probes"
-          className="rounded-2xl border border-white/10 bg-zinc-900/80 p-4"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-            Filtered Test / QA Probes (Preserved)
-          </p>
-          <p className="mt-2 text-3xl font-black text-white">
-            {kpis.testProbesPreservedCount}
-          </p>
-          <p className="mt-1 text-xs text-zinc-400">
-            100% preserved ({kpis.totalStoredCount} total records)
-          </p>
-        </div>
-
-        <div
-          data-testid="kpi-connected-sources"
-          className="rounded-2xl border border-cyan-400/25 bg-zinc-900/80 p-4 sm:col-span-2 xl:col-span-1"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wider text-cyan-300">
-            Connected Sources Status
-          </p>
-          <p className="mt-2 text-3xl font-black text-white">
-            {kpis.connectedSourcesCount} / {kpis.expectedSourcesCount}
-          </p>
-          <p className="mt-1 text-xs text-zinc-400">
-            DCC Postgres {channelHealth.postgresConnected ? "Live" : "Local"} •
-            CP {cpStatus.connected ? "Connected" : "Needs Key"}
-          </p>
-        </div>
-      </section>
-
-      {/* Channel Health Banner */}
-      <section
-        aria-label="Channel Health Strip"
-        data-testid="channel-health-strip"
-        className="rounded-2xl border border-white/10 bg-zinc-900/70 p-4 text-xs text-zinc-200"
-      >
-        <div className="flex flex-wrap items-center gap-2.5">
-          <span className="font-bold uppercase tracking-wider text-zinc-400">
-            Channel Health:
-          </span>
-
-          <span
-            className={`inline-flex items-center rounded-full border px-2.5 py-1 font-semibold ${
-              channelHealth.postgresConnected
-                ? "border-emerald-400/35 bg-emerald-500/15 text-emerald-200"
-                : "border-amber-400/35 bg-amber-500/15 text-amber-200"
-            }`}
+      <nav aria-label="Inbox queues" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {QUEUES.map((queue) => (
+          <button
+            key={queue.key}
+            type="button"
+            aria-pressed={activeView === queue.key}
+            data-testid={"inbox-tab-" + queue.key}
+            onClick={() => handleViewChange(queue.key)}
+            className="rounded-2xl border border-white/15 bg-zinc-900/75 p-4 text-left hover:border-white/40 aria-pressed:border-[#f5c66c] aria-pressed:bg-zinc-900"
           >
-            Neon Postgres:{" "}
-            {channelHealth.postgresConnected ? "Connected" : "Fallback Mode"}
-          </span>
-
-          <span
-            className={`inline-flex items-center rounded-full border px-2.5 py-1 font-semibold ${
-              channelHealth.resendConfigured
-                ? "border-emerald-400/35 bg-emerald-500/15 text-emerald-200"
-                : "border-rose-400/40 bg-rose-500/15 text-rose-200"
-            }`}
-          >
-            Resend Outbound:{" "}
-            {channelHealth.resendConfigured ? "Configured" : "Not Configured"}
-          </span>
-
-          <span
-            className={`inline-flex items-center rounded-full border px-2.5 py-1 font-semibold ${
-              cpStatus.connected
-                ? "border-emerald-400/35 bg-emerald-500/15 text-emerald-200"
-                : "border-amber-400/40 bg-amber-500/15 text-amber-200"
-            }`}
-          >
-            Cruise Promenade:{" "}
-            {cpStatus.connected
-              ? `Connected (${cpStatus.mode}, ${cpStatus.fetchedCount ?? 0} inquiries)`
-              : `Disconnected (${cpStatus.reason || "unconfigured"})`}
-          </span>
-
-          {channelHealth.argoLegacyFileEntriesCount > 0 ? (
-            <span className="inline-flex items-center rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-zinc-300">
-              Legacy Argo JSONL: {channelHealth.argoLegacyFileEntriesCount} merged
+            <span className="block text-sm font-semibold text-white">{queue.label}</span>
+            <span className="mt-1 block text-3xl font-black text-white">
+              {kpis[queue.count]} <span className="text-xs font-normal text-zinc-400">{kpis[queue.count] === 1 ? "record" : "records"}</span>
             </span>
-          ) : null}
-        </div>
-
-        <div className="mt-3 flex flex-col gap-1.5 border-t border-white/10 pt-2.5 text-xs text-amber-200/90">
-          <p>
-            <strong>MX Routing Advisory:</strong> {channelHealth.dccMxWarning}
-          </p>
-          {!cpStatus.connected && cpStatus.setupHint ? (
-            <p className="break-words text-zinc-300">
-              <strong>Cruise Promenade Connector Setup:</strong>{" "}
-              {cpStatus.setupHint}
-            </p>
-          ) : null}
-          {cpStatus.earlyAccessFeedbackSummary ? (
-            <p className="text-zinc-300">
-              <strong>Cruise Promenade Early-Access Feedback:</strong>{" "}
-              {cpStatus.earlyAccessFeedbackSummary.genuineCount} genuine /{" "}
-              {cpStatus.earlyAccessFeedbackSummary.testCount} test (
-              {cpStatus.earlyAccessFeedbackSummary.totalCount} total)
-            </p>
-          ) : null}
-        </div>
-      </section>
+            <span className="mt-1 block text-xs text-zinc-400">{queue.hint}</span>
+          </button>
+        ))}
+      </nav>
 
       {/* Filter Tabs + Site / Status Selectors */}
       <section className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-zinc-900/60 p-4 lg:flex-row lg:items-center lg:justify-between">
-        <div
-          role="tablist"
-          aria-label="Inbox View Filters"
-          className="flex flex-wrap gap-2"
-        >
-          {VIEW_TABS.map((tab) => {
-            const isSelected = activeView === tab.key;
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                role="tab"
-                aria-selected={isSelected}
-                data-testid={`inbox-tab-${tab.key}`}
-                onClick={() => handleViewChange(tab.key)}
-                className={`min-h-10 rounded-xl px-3.5 py-2 text-xs font-semibold transition ${
-                  isSelected
-                    ? "bg-[#f5c66c] text-zinc-950 shadow-sm"
-                    : "border border-white/15 bg-black/40 text-zinc-200 hover:bg-white/10"
-                }`}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
+        <label className="flex flex-wrap items-center gap-2 text-xs font-semibold text-zinc-300">
+          Browse saved records
+          <select
+            aria-label="Browse saved records"
+            value={AUDIT_VIEWS.some((option) => option.key === activeView) ? activeView : ""}
+            onChange={(event) => handleViewChange(event.target.value as OperatorInboxViewFilter)}
+            className="min-h-10 rounded-xl border border-white/15 bg-black/50 px-3 py-2 text-xs text-white"
+          >
+            <option value="" disabled>Choose a view</option>
+            {AUDIT_VIEWS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}
+          </select>
+        </label>
 
         <div className="flex flex-wrap items-center gap-2.5">
           <select
@@ -732,27 +645,30 @@ export default function OperatorInboxClient({
         </div>
       ) : null}
 
-      {/* Inquiry Rows / Cards */}
-      <section aria-label="Operator Inquiries List" className="space-y-4">
-        <div className="flex items-center justify-between text-xs text-zinc-400">
-          <span>
-            Showing <strong className="text-white">{items.length}</strong>{" "}
-            {items.length === 1 ? "inquiry" : "inquiries"} in current view
-          </span>
-          <span>Zero records deleted • Non-destructive triage overlays</span>
-        </div>
-
-        {items.length === 0 ? (
-          <div
-            data-testid="inbox-empty-state"
-            className="rounded-2xl border border-white/10 bg-zinc-900/50 p-8 text-center text-sm text-zinc-300"
-          >
-            No inquiries match the selected view and filters. Switch to{" "}
-            <strong>Test / QA Probes</strong> or <strong>All Stored</strong> to
-            inspect preserved QA submissions.
-          </div>
+      <section aria-label="Inbox results" aria-busy={loading} className="space-y-4">
+        <header className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-xl font-semibold">{viewLabel}</h2>
+          {filtersMatch && <p className="text-xs text-zinc-400">{data.totalMatchingCount} matching {data.totalMatchingCount === 1 ? "record" : "records"}</p>}
+        </header>
+        {activeView === "customer_replies" && (
+          <p className="text-sm text-zinc-300">
+            If a customer calls about a blocked booking, find their submission under <strong>All saved records</strong> and set its reply status to <strong>Booking blocked</strong>.
+            Choose <strong>Contacted</strong> after replying or <strong>Resolved</strong> when the issue is closed.
+          </p>
+        )}
+        {!filtersMatch ? (
+          <p role="status" className="text-sm text-zinc-300">
+            {loading ? "Loading records…" : "Refresh to load the selected queue."}
+          </p>
+        ) : items.length === 0 ? (
+          <p data-testid="inbox-empty-state" className="rounded-2xl border border-white/10 bg-zinc-900/50 p-6 text-sm text-zinc-300">
+            No matching records for this view and its filters.
+          </p>
         ) : (
           items.map((item) => {
+            if (diagnosticView) {
+              return <DiagnosticCard key={item.itemKey} item={item} cpPreviewUrl={initialCpPreviewUrl} />;
+            }
             const draft = getDraft(item);
             const reply = getReplyComposer(item);
             const mailtoHref = item.contact.email
@@ -761,6 +677,7 @@ export default function OperatorInboxClient({
             return (
               <article
                 key={item.itemKey}
+                id={item.itemKey}
                 data-testid="operator-inbox-item"
                 data-item-key={item.itemKey}
                 className="rounded-2xl border border-white/10 bg-zinc-900/75 p-4 sm:p-5"
@@ -791,13 +708,17 @@ export default function OperatorInboxClient({
                           item.triageStatus,
                         )}`}
                       >
-                        {item.triageStatus.replace("_", " ")}
+                        {item.triageStatus === "booking_blocked" ? "Booking blocked" : item.triageStatus.replace("_", " ")}
                       </span>
                     </div>
 
-                    <h2 className="break-words text-base font-bold text-white sm:text-lg">
+                    {item.customerReplyPriority === "booking_blocked" && item.triageStatus !== "booking_blocked" && (
+                      <p className="font-semibold text-amber-200">Booking blocked</p>
+                    )}
+                    <h3 className="break-words text-base font-bold text-white sm:text-lg">
+                      {activeView === "customer_replies" && item.contact.name && <>{item.contact.name} · </>}
                       {item.tripDetails.headline}
-                    </h2>
+                    </h3>
                   </div>
 
                   <div className="shrink-0 text-xs text-zinc-400 sm:text-right">
@@ -957,37 +878,16 @@ export default function OperatorInboxClient({
                     ) : null}
                   </div>
 
-                  {/* Notification Delivery Audit */}
-                  <div className="min-w-0 space-y-1.5 text-xs">
-                    <p className="font-semibold uppercase tracking-wider text-zinc-400">
-                      Outbound Alert Delivery
-                    </p>
-                    <div>
-                      <span
-                        data-testid="notification-status-badge"
-                        className={`inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-bold ${notificationBadgeClasses(
-                          item.notificationStatus,
-                        )}`}
-                      >
-                        {notificationBadgeLabel(item.notificationStatus)}
-                      </span>
-                    </div>
-                    <p className="break-all text-zinc-300">
-                      <strong className="text-zinc-200">Target Inbox:</strong>{" "}
-                      {item.intendedDestination}
-                    </p>
-                    {item.failureReason ? (
-                      <p className="break-words rounded-lg border border-amber-400/25 bg-amber-950/30 p-2 text-amber-200">
-                        {item.failureReason}
-                      </p>
-                    ) : null}
-                  </div>
+                  <details className="self-start text-xs text-zinc-300">
+                    <summary className="cursor-pointer font-semibold text-zinc-300">Staff alert details</summary>
+                    <div className="mt-2"><AlertAudit item={item} /></div>
+                  </details>
                 </div>
 
                 {/* Operator Triage Controls */}
                 <div className="mt-4 flex flex-col gap-2.5 border-t border-white/10 pt-3.5 sm:flex-row sm:items-center">
-                  <label className="sr-only" htmlFor={`status-${item.itemKey}`}>
-                    Triage status for {item.sourceId}
+                  <label className="text-xs font-semibold text-zinc-300" htmlFor={`status-${item.itemKey}`}>
+                    Reply status
                   </label>
                   <select
                     id={`status-${item.itemKey}`}
@@ -1247,6 +1147,76 @@ export default function OperatorInboxClient({
           })
         )}
       </section>
+      <details
+        aria-label="Channel Health Strip"
+        data-testid="channel-health-strip"
+        className="rounded-2xl border border-white/10 bg-zinc-900/70 p-4 text-xs text-zinc-200"
+      >
+        <summary className="cursor-pointer font-semibold">Channel health · {kpis.connectedSourcesCount} of {kpis.expectedSourcesCount} sources connected</summary>
+        <div className="mt-3 flex flex-wrap items-center gap-2.5">
+          <span
+            className={`inline-flex items-center rounded-full border px-2.5 py-1 font-semibold ${
+              channelHealth.postgresConnected
+                ? "border-emerald-400/35 bg-emerald-500/15 text-emerald-200"
+                : "border-amber-400/35 bg-amber-500/15 text-amber-200"
+            }`}
+          >
+            Neon Postgres:{" "}
+            {channelHealth.postgresConnected ? "Connected" : "Fallback Mode"}
+          </span>
+
+          <span
+            className={`inline-flex items-center rounded-full border px-2.5 py-1 font-semibold ${
+              channelHealth.resendConfigured
+                ? "border-emerald-400/35 bg-emerald-500/15 text-emerald-200"
+                : "border-rose-400/40 bg-rose-500/15 text-rose-200"
+            }`}
+          >
+            Resend Outbound:{" "}
+            {channelHealth.resendConfigured ? "Configured" : "Not Configured"}
+          </span>
+
+          <span
+            className={`inline-flex items-center rounded-full border px-2.5 py-1 font-semibold ${
+              cpStatus.connected
+                ? "border-emerald-400/35 bg-emerald-500/15 text-emerald-200"
+                : "border-amber-400/40 bg-amber-500/15 text-amber-200"
+            }`}
+          >
+            Cruise Promenade:{" "}
+            {cpStatus.connected
+              ? `Connected (${cpStatus.mode}, ${cpStatus.fetchedCount ?? 0} inquiries)`
+              : `Disconnected (${cpStatus.reason || "unconfigured"})`}
+          </span>
+
+          {channelHealth.argoLegacyFileEntriesCount > 0 ? (
+            <span className="inline-flex items-center rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-zinc-300">
+              Legacy Argo JSONL: {channelHealth.argoLegacyFileEntriesCount} merged
+            </span>
+          ) : null}
+        </div>
+
+        <div className="mt-3 flex flex-col gap-1.5 border-t border-white/10 pt-2.5 text-xs text-amber-200/90">
+          <p>
+            <strong>MX Routing Advisory:</strong> {channelHealth.dccMxWarning}
+          </p>
+          {!cpStatus.connected && cpStatus.setupHint ? (
+            <p className="break-words text-zinc-300">
+              <strong>Cruise Promenade Connector Setup:</strong>{" "}
+              {cpStatus.setupHint}
+            </p>
+          ) : null}
+          {cpStatus.earlyAccessFeedbackSummary ? (
+            <p className="text-zinc-300">
+              <strong>Cruise Promenade Early-Access Feedback:</strong>{" "}
+              {cpStatus.earlyAccessFeedbackSummary.genuineCount} genuine /{" "}
+              {cpStatus.earlyAccessFeedbackSummary.testCount} test (
+              {cpStatus.earlyAccessFeedbackSummary.totalCount} total)
+            </p>
+          ) : null}
+        </div>
+      </details>
+
     </div>
   );
 }

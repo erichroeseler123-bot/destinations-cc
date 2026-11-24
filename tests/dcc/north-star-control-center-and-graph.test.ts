@@ -32,6 +32,7 @@ import { GET as getDellsOutboundRedirect } from "@/apps/welcometothedells/app/ou
 import { GET as getControlCenterRoute } from "@/app/api/admin/control-center/route";
 import { POST as postAdminUnlock } from "@/app/admin/unlock/route";
 import { ADMIN_SESSION_COOKIE, buildAdminSessionValue } from "@/lib/adminAccess";
+import { getOperatorInboxSnapshot } from "@/lib/dcc/operatorInbox";
 import {
   OWNED_ACTIVE_PRODUCTION_PROJECTS,
   buildOwnerControlCenterSnapshot,
@@ -588,7 +589,38 @@ describe("North Star Slice 3: Canonical Fit/Ledger/Partner Modules, Travel-Graph
       assert.equal(apiPayload.dailyOperatingBudgetMinutes, 15);
 
       // Test buildOwnerControlCenterSnapshot with mocked remote CP, GoSno, and PARR endpoints
+      const inbox = await getOperatorInboxSnapshot({
+        view: "customer_replies",
+        jfdWaitlistOverride: [],
+        wtsWaitlistOverride: [],
+        argoLegacyOverride: [],
+        cpFetchOverride: async () => Response.json({ inquiries: [] }),
+        findingsOverride: [
+          {
+            finding_id: "control-map:transactional-submission:production:saveonthestrip-help-request:trip-1",
+            metadata: {
+              submissionId: "trip-1",
+              channel: "saveonthestrip-help-request",
+              name: "Megan",
+              email: "traveler@guestmail.org",
+              message: "Can you help plan our trip?",
+              notificationStatus: "not_configured",
+            },
+          },
+          {
+            finding_id: "control-map:transactional-submission:production:request-invite:probe-1",
+            metadata: {
+              submissionId: "probe-1",
+              channel: "request-invite",
+              email: "smoke@example.com",
+              isTest: true,
+              sendNotification: false,
+            },
+          },
+        ],
+      });
       const snapshotLive = await buildOwnerControlCenterSnapshot({
+        inboxSnapshotOverride: inbox,
         env: {
           DCC_DISABLE_NEON_COMMERCE: "1",
           DCC_CP_SERVICE_SECRET: "cp-sec",
@@ -627,7 +659,18 @@ describe("North Star Slice 3: Canonical Fit/Ledger/Partner Modules, Travel-Graph
         }) as typeof fetch,
       });
 
-      assert.equal(snapshotLive.triageQueue.inboxHref, "/admin/inbox?view=genuine");
+      const { automationHealth, inquiriesNeedingReply } = snapshotLive.dailyBusinessCockpit;
+      assert.equal(inquiriesNeedingReply.customerRepliesNeededCount, 1);
+      assert.equal(inquiriesNeedingReply.nextReply?.name, "Megan");
+      assert.equal(inquiriesNeedingReply.inboxHref, "/admin/inbox?view=customer_replies");
+      assert.equal(snapshotLive.triageQueue.inboxHref, inquiriesNeedingReply.inboxHref);
+      assert.equal(automationHealth.notificationConfigurationCount, 1);
+      assert.equal(automationHealth.deliveryFailureCount, 0);
+      assert.equal(snapshotLive.triageQueue.failedNotificationDeliveriesCount, 0);
+      assert.equal(snapshotLive.triageQueue.notificationConfigurationCount, 1);
+      assert.equal(automationHealth.totalAutomationFailures, 1); // GoSno provisioning exception only.
+      assert.equal(automationHealth.deliveryFailuresHref, "/admin/inbox?view=notification_failures");
+      assert.equal(automationHealth.notificationConfigurationHref, "/admin/inbox?view=notification_configuration");
       assert.equal(snapshotLive.triageQueue.cruisePromenade.status, "live");
       assert.equal(snapshotLive.triageQueue.cruisePromenade.needsAssistanceGuestsCount, 3);
       assert.equal(snapshotLive.triageQueue.cruisePromenade.plannersWithSplitsCount, 5);

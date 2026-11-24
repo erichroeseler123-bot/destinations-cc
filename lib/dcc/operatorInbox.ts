@@ -21,6 +21,7 @@ export const ALLOWED_CP_BASE_URL_RE =
 export const VALID_OPERATOR_TRIAGE_STATUSES = [
   "new",
   "in_review",
+  "booking_blocked",
   "contacted",
   "resolved",
   "archived",
@@ -35,10 +36,15 @@ export type OperatorNotificationStatus =
   | "delivered"
   | "failed"
   | "not_configured"
+  | "intentionally_skipped"
   | "durable_storage_only"
   | "unknown";
 
 export type OperatorInboxViewFilter =
+  | "customer_replies"
+  | "notification_failures"
+  | "notification_configuration"
+  | "skipped_notifications"
   | "genuine"
   | "failed_notifications"
   | "needs_triage"
@@ -115,6 +121,7 @@ export interface OperatorInboxItem {
   customerName?: string | null;
   customerEmail?: string | null;
   customerPhone?: string | null;
+  customerReplyPriority?: "booking_blocked" | "needs_reply";
   sailing?: string | null;
   eventLabel?: string | null;
   title?: string;
@@ -144,6 +151,10 @@ export interface OperatorInboxItem {
 }
 
 export interface OperatorInboxKpiSummary {
+  customerRepliesNeededCount: number;
+  deliveryFailureCount: number;
+  notificationConfigurationCount: number;
+  intentionallySkippedCount: number;
   totalStoredCount: number;
   genuineTotalCount: number;
   genuineActionableCount: number;
@@ -282,6 +293,7 @@ const FICTIONAL_555_PHONE_RE = /\b555[-.\s]?\d{4}\b/;
 const QA_PROBE_PATTERNS: Array<{ pattern: RegExp; reason: string }> = [
   { pattern: /\[QA-SYNTHETIC/i, reason: "qa_probe_marker" },
   { pattern: /\[PROD-VERIFICATION-TEST\]/i, reason: "qa_probe_marker" },
+  { pattern: /\blive prod verification:|\bend-to-end live production verification\b/i, reason: "qa_probe_marker" },
   { pattern: /\[PREVIEW[-_\s]?TEST\]/i, reason: "qa_probe_marker" },
   { pattern: /\beleanor\s+vance\b/i, reason: "qa_probe_marker" },
   { pattern: /e2e\s+concierge\s+audit\s+test/i, reason: "qa_probe_marker" },
@@ -312,6 +324,10 @@ export function normalizeInboxViewFilter(
 ): OperatorInboxViewFilter {
   const cleaned = (raw || "").trim().toLowerCase();
   if (
+    cleaned === "customer_replies" ||
+    cleaned === "notification_failures" ||
+    cleaned === "notification_configuration" ||
+    cleaned === "skipped_notifications" ||
     cleaned === "genuine" ||
     cleaned === "failed_notifications" ||
     cleaned === "needs_triage" ||
@@ -466,7 +482,7 @@ function defaultIntendedDestinationForChannel(channel: string): string {
 export function normalizeInquiryNotificationStatus(
   channel: string,
   meta: Record<string, unknown>,
-  resendConfigured: boolean,
+  _resendConfigured: boolean,
 ): {
   notificationStatus: OperatorNotificationStatus;
   notificationChannel: string;
@@ -536,7 +552,23 @@ export function normalizeInquiryNotificationStatus(
     };
   }
 
-  // 1b. Durable storage only (e.g. durable_storage_only or legacy kv_audit)
+  // A recorded opt-out is different from a missing sender or a failed dispatch.
+  if (
+    rawStatus === "skipped_disabled" ||
+    rawStatus === "suppressed_test" ||
+    meta.sendNotification === false ||
+    meta.emailReason === "suppressed_test" ||
+    meta.emailReason === "suppressed_test_submission"
+  ) {
+    return {
+      notificationStatus: "intentionally_skipped",
+      notificationChannel,
+      intendedDestination,
+      failureReason: null,
+    };
+  }
+
+  // Durable storage only (e.g. durable_storage_only or legacy kv_audit)
   if (
     rawStatus === "durable_storage_only" ||
     rawStatus === "kv_audit" ||
@@ -572,28 +604,6 @@ export function normalizeInquiryNotificationStatus(
     };
   }
 
-  if (
-    rawStatus === "suppressed_test" ||
-    meta.emailReason === "suppressed_test_submission"
-  ) {
-    return {
-      notificationStatus: "not_configured",
-      notificationChannel,
-      intendedDestination,
-      failureReason:
-        "Outbound email alert intentionally suppressed for test/preview submission.",
-    };
-  }
-
-  if (rawStatus === "skipped_disabled") {
-    return {
-      notificationStatus: "not_configured",
-      notificationChannel,
-      intendedDestination,
-      failureReason: "Outbound notification explicitly disabled on submission.",
-    };
-  }
-
   // 3. Explicit failure signals
   if (
     rawStatus === "failed" ||
@@ -621,35 +631,16 @@ export function normalizeInquiryNotificationStatus(
     meta.emailSent === false ||
     meta.emailDispatched === false
   ) {
-    if (!resendConfigured) {
-      return {
-        notificationStatus: "not_configured",
-        notificationChannel,
-        intendedDestination,
-        failureReason:
-          "RESEND_API_KEY not configured; alert email could not be sent.",
-      };
-    }
     return {
       notificationStatus: "failed",
       notificationChannel,
       intendedDestination,
       failureReason:
-        "Outbound alert returned undelivered (emailSent=false).",
+        "The submission records an undelivered alert without a delivery reason.",
     };
   }
 
-  // 5. Legacy rows stored before delivery status was logged
-  if (!resendConfigured) {
-    return {
-      notificationStatus: "not_configured",
-      notificationChannel,
-      intendedDestination,
-      failureReason:
-        "Durable submission stored; RESEND_API_KEY is not configured in this environment.",
-    };
-  }
-
+  // Today's environment cannot establish delivery for a historical submission.
   return {
     notificationStatus: "unknown",
     notificationChannel,
@@ -1138,7 +1129,8 @@ export function mapFindingRowToInboxItem(
     null;
 
   const baseCls = classifyOperatorInboxSubmission({
-    isTest: meta.isTest,
+    isTest: meta.notificationStatus === "suppressed_test" ||
+      meta.emailReason === "suppressed_test_submission" || meta.isTest,
     trafficClass: meta.trafficClass,
     namespace: typeof meta.namespace === "string" ? meta.namespace : null,
     environment,
@@ -1618,7 +1610,7 @@ async function fetchCruisePromenadeViaUpstashFallback(
           ? {
               ...parsed,
               notification: {
-                delivered: Boolean(audit.delivered === true),
+                delivered: audit.delivered,
                 channel:
                   typeof audit.channel === "string" ? audit.channel : "none",
                 destination:
@@ -2388,7 +2380,8 @@ function mapJfdWaitlistRowToInboxItem(
   const notif = normalizeInquiryNotificationStatus(
     "juneauflightdeck-inquiry",
     {
-      notificationDelivered: Boolean(rawEntry.notificationDispatchedAt),
+      ...rawEntry,
+      ...(rawEntry.notificationDispatchedAt ? { notificationDelivered: true } : {}),
       intendedDestination: "alerts@juneauflightdeck.com",
     },
     resendConfigured,
@@ -2428,7 +2421,9 @@ function mapJfdWaitlistRowToInboxItem(
     classification: finalCls.classification,
     classificationReason: finalCls.classificationReason,
     ...notif,
-    triageStatus: "new",
+    triageStatus: ["booking_confirmed", "cancelled"].includes(String(row.status || rawEntry.status))
+      ? "resolved"
+      : "new",
     operatorNote: null,
     triageUpdatedAt: null,
     triageUpdatedBy: null,
@@ -2606,9 +2601,8 @@ function mapWtsWaitlistRowToInboxItem(
   const notif = normalizeInquiryNotificationStatus(
     "welcometotheswamp-inquiry",
     {
-      notificationStatus: rawEntry.notificationDispatchedAt
-        ? "sent"
-        : "not_configured",
+      ...rawEntry,
+      ...(rawEntry.notificationDispatchedAt ? { notificationStatus: "sent" } : {}),
       intendedDestination: "concierge@welcometotheswamp.com",
     },
     resendConfigured,
@@ -2643,7 +2637,9 @@ function mapWtsWaitlistRowToInboxItem(
     classification: cls.classification,
     classificationReason: cls.classificationReason,
     ...notif,
-    triageStatus: "new",
+    triageStatus: ["expired", "unsubscribed"].includes(String(row.status || rawEntry.status))
+      ? "resolved"
+      : "new",
     operatorNote: null,
     triageUpdatedAt: null,
     triageUpdatedBy: null,
@@ -2661,6 +2657,35 @@ export function clearInMemoryOperatorTriageForTests(): void {
       // ignore
     }
   }
+}
+
+const CUSTOMER_INQUIRY_CHANNELS = new Set([
+  "cp-group-inquiry",
+  "somerset-quote",
+  "welcometothedells-inquiry",
+  "saveonthestrip-help-request",
+  "juneauflightdeck-inquiry",
+  "welcometoneworleanstours-inquiry",
+  "lastfrontiershoreexcursions-inquiry",
+  "welcometotheswamp-inquiry",
+  "gosno-dispatch",
+  "parr-inquiry",
+]);
+
+// Look for a customer's explicit report in their message, never in provider errors.
+const BOOKING_BLOCKER_PATTERNS = [
+  /\b(?:unable to|cannot|can['’]t|couldn['’]t) (?:book(?: online)?|(?:complete|finish) (?:the |my |our )?(?:booking|checkout)|check out)\b/i,
+  /\b(?:booking link|checkout link|checkout page) (?:is (?:broken|not working)|(?:does not|doesn['’]t|won['’]t) (?:work|load|open))\b/i,
+];
+
+function getCustomerReplyPriority(item: OperatorInboxItem): OperatorInboxItem["customerReplyPriority"] {
+  if (item.classification !== "genuine" || !(item.contact.email || item.contact.phone)) return;
+  if (item.triageStatus === "booking_blocked") return "booking_blocked";
+  if (item.triageStatus !== "new" && item.triageStatus !== "in_review") return;
+  if (!CUSTOMER_INQUIRY_CHANNELS.has(item.channel)) return;
+  const message = item.tripDetails.messageOrNotes || "";
+  if (BOOKING_BLOCKER_PATTERNS.some((pattern) => pattern.test(message))) return "booking_blocked";
+  return "needs_reply";
 }
 
 export async function getUnifiedOperatorInbox(
@@ -2702,8 +2727,6 @@ export async function getUnifiedOperatorInbox(
 
   const itemsByKey = new Map<string, OperatorInboxItem>();
   const argoDedupFingerprints = new Set<string>();
-  const seenJfdSourceIds = new Set<string>();
-  const seenWtsSourceIds = new Set<string>();
   const seenCpSourceIds = new Set<string>();
 
   for (const row of dccData.submissionRows) {
@@ -2718,36 +2741,27 @@ export async function getUnifiedOperatorInbox(
       seenCpSourceIds.add(item.sourceId);
     }
     itemsByKey.set(item.itemKey, item);
-    if (item.channel === "juneauflightdeck-inquiry" && item.sourceId) {
-      seenJfdSourceIds.add(item.sourceId);
-    }
-    if (item.channel === "welcometotheswamp-inquiry" && item.sourceId) {
-      seenWtsSourceIds.add(item.sourceId);
-    }
     if (item.channel === "argo-waitlist" && item.contact.email) {
       const minuteBucket = item.submittedAt.slice(0, 16);
       argoDedupFingerprints.add(`${item.contact.email}|${minuteBucket}`);
     }
   }
 
-  for (const jfdRow of jfdWaitlistRows) {
-    const jfdItem = mapJfdWaitlistRowToInboxItem(jfdRow, resendConfigured);
-    if (!jfdItem) continue;
-    if (seenJfdSourceIds.has(jfdItem.sourceId)) continue;
-    seenJfdSourceIds.add(jfdItem.sourceId);
-    if (!itemsByKey.has(jfdItem.itemKey)) {
-      itemsByKey.set(jfdItem.itemKey, jfdItem);
+  function mergeWaitlistItem(item: OperatorInboxItem | null) {
+    if (!item) return;
+    const forwarded = itemsByKey.get(sanitizeItemKey(`dcc:${item.channel}:${item.sourceId}`));
+    if (forwarded) {
+      // Forwarded copies retain the alert audit. The originating waitlist records closure.
+      if (item.triageStatus === "resolved") forwarded.triageStatus = "resolved";
+    } else if (!itemsByKey.has(item.itemKey)) {
+      itemsByKey.set(item.itemKey, item);
     }
   }
-
-  for (const wtsRow of wtsWaitlistRows) {
-    const wtsItem = mapWtsWaitlistRowToInboxItem(wtsRow, resendConfigured);
-    if (!wtsItem) continue;
-    if (seenWtsSourceIds.has(wtsItem.sourceId)) continue;
-    seenWtsSourceIds.add(wtsItem.sourceId);
-    if (!itemsByKey.has(wtsItem.itemKey)) {
-      itemsByKey.set(wtsItem.itemKey, wtsItem);
-    }
+  for (const row of jfdWaitlistRows) {
+    mergeWaitlistItem(mapJfdWaitlistRowToInboxItem(row, resendConfigured));
+  }
+  for (const row of wtsWaitlistRows) {
+    mergeWaitlistItem(mapWtsWaitlistRowToInboxItem(row, resendConfigured));
   }
 
   // Merge/deduplicate legacy readArgoWaitlist() JSONL rows not already in Postgres
@@ -2857,7 +2871,9 @@ export async function getUnifiedOperatorInbox(
               classificationReason: "triage_archived_test",
             }
           : {}),
-        triageStatus: overlay.triageStatus,
+        triageStatus: item.triageStatus === "resolved" && overlay.triageStatus !== "archived"
+          ? "resolved"
+          : overlay.triageStatus,
         operatorNote: overlay.operatorNote,
         triageUpdatedAt: overlay.updatedAt,
         triageUpdatedBy: overlay.updatedBy,
@@ -2877,8 +2893,15 @@ export async function getUnifiedOperatorInbox(
   let failedNotificationsCount = 0;
   let genuineFailedNotificationsCount = 0;
   let testProbesPreservedCount = 0;
+  let customerRepliesNeededCount = 0;
+  let deliveryFailureCount = 0;
+  let notificationConfigurationCount = 0;
+  let intentionallySkippedCount = 0;
 
   for (const item of allItems) {
+    item.customerReplyPriority = getCustomerReplyPriority(item);
+    if (item.customerReplyPriority) customerRepliesNeededCount += 1;
+    if (item.notificationStatus === "intentionally_skipped") intentionallySkippedCount += 1;
     const isUndelivered =
       item.notificationStatus === "failed" ||
       item.notificationStatus === "not_configured";
@@ -2887,6 +2910,8 @@ export async function getUnifiedOperatorInbox(
     }
 
     if (item.classification === "genuine") {
+      if (item.notificationStatus === "failed") deliveryFailureCount += 1;
+      if (item.notificationStatus === "not_configured") notificationConfigurationCount += 1;
       genuineTotalCount += 1;
       if (item.triageStatus !== "archived" && item.triageStatus !== "resolved") {
         genuineActionableCount += 1;
@@ -2907,6 +2932,10 @@ export async function getUnifiedOperatorInbox(
 
   // Apply view + site + status filters
   const filteredItems = allItems.filter((item) => {
+    if (view === "customer_replies" && !item.customerReplyPriority) return false;
+    if (view === "notification_failures" && (item.classification !== "genuine" || item.notificationStatus !== "failed")) return false;
+    if (view === "notification_configuration" && (item.classification !== "genuine" || item.notificationStatus !== "not_configured")) return false;
+    if (view === "skipped_notifications" && item.notificationStatus !== "intentionally_skipped") return false;
     if (view === "genuine" && item.classification !== "genuine") {
       return false;
     }
@@ -2920,7 +2949,7 @@ export async function getUnifiedOperatorInbox(
     if (
       view === "needs_triage" &&
       (item.classification !== "genuine" ||
-        (item.triageStatus !== "new" && item.triageStatus !== "in_review"))
+        (item.triageStatus !== "new" && item.triageStatus !== "in_review" && item.triageStatus !== "booking_blocked"))
     ) {
       return false;
     }
@@ -2944,6 +2973,13 @@ export async function getUnifiedOperatorInbox(
     return true;
   });
 
+  if (view === "customer_replies") {
+    // Stable sort preserves newest-first order among equally urgent inquiries.
+    filteredItems.sort((a, b) =>
+      Number(b.customerReplyPriority === "booking_blocked") - Number(a.customerReplyPriority === "booking_blocked"),
+    );
+  }
+
   return {
     ok: true,
     generatedAt,
@@ -2953,6 +2989,10 @@ export async function getUnifiedOperatorInbox(
       status: statusFilter,
     },
     kpis: {
+      customerRepliesNeededCount,
+      deliveryFailureCount,
+      notificationConfigurationCount,
+      intentionallySkippedCount,
       totalStoredCount: allItems.length,
       genuineTotalCount,
       genuineActionableCount,
