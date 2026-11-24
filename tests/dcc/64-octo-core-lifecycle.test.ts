@@ -706,10 +706,13 @@ test("25. Proof: Vibe remains authorization_pending without credentials or signe
   const vibe = participants.find((p) => p.id === "part_vibe_around_town");
 
   assert.ok(vibe, "Vibe Around Town must be registered in participants");
-  assert.equal(vibe.outreachStatus, "contract_pending");
+  assert.equal(vibe.outreachStatus, "identified");
   assert.equal(vibe.credentialStatus, "none", "Must have no credentials");
-  assert.equal(vibe.productsAvailableCount, 0, "Must have 0 active products");
-  assert.equal(vibe.agreedCommissionPercent, undefined, "Commission is undecided / pending agreement");
+  assert.equal(vibe.inventoryStatus, "unknown", "Unverified inventory must be unknown");
+  assert.equal(vibe.productsAvailableCount, null, "Unverified product count must be null/unknown");
+  assert.equal(vibe.commercialTermsStatus, "unknown", "Unsigned commercial terms must be unknown");
+  assert.equal(vibe.agreementReference, null, "Unsigned operator must have null agreementReference");
+  assert.equal(vibe.agreedCommissionPercent, null, "Commission is unknown / pending agreement");
 
   // Verify connection status
   const connResult = await OctoBookingService.getAdapterForConnection("conn_vibe_around_town");

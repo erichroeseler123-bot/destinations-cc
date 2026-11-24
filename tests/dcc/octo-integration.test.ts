@@ -184,18 +184,33 @@ test("OCTO Failure Modes: Expired hold rejection and error handling", () => {
   );
 });
 
-test("OCTO Participant Registry: Standard ecosystem directory and roles", async () => {
+test("OCTO Participant Registry: Audited ecosystem directory, unknown representations, and FareHarbor boundary", async () => {
   const participants = await OctoRegistryService.getParticipants();
   assert.ok(participants.length >= 6);
 
   const ventrata = participants.find((p) => p.name === "Ventrata");
   assert.ok(ventrata);
   assert.equal(ventrata.role, "booking_system");
-  assert.equal(ventrata.outreachStatus, "technical_onboarding");
+  assert.equal(ventrata.outreachStatus, "identified");
+  assert.equal(ventrata.apiAccessStatus, "unknown");
+  assert.equal(ventrata.inventoryStatus, "unknown");
+  assert.equal(ventrata.productsAvailableCount, null);
+  assert.equal(ventrata.endpoint, null);
+  assert.equal(ventrata.agreedCommissionPercent, null);
+  assert.equal(ventrata.agreementReference, null);
+  assert.equal(ventrata.commercialTermsStatus, "unknown");
 
   const bokun = participants.find((p) => p.name === "Bókun");
   assert.ok(bokun);
   assert.equal(bokun.role, "booking_system");
+  assert.equal(bokun.productsAvailableCount, null);
+  assert.equal(bokun.commercialTermsStatus, "unknown");
+
+  const fareharbor = participants.find((p) => p.id === "part_fareharbor_octo");
+  assert.ok(fareharbor);
+  assert.equal(fareharbor.fareharborOctoAuthorized, false);
+  assert.equal(fareharbor.productsAvailableCount, null);
+  assert.equal(fareharbor.commercialTermsStatus, "unknown");
 
   const suppliers = participants.filter((p) => p.role === "supplier");
   assert.ok(suppliers.length >= 1);
@@ -226,14 +241,21 @@ test("OCTO Machine Manifests: /scope.json and /openapi.json reflect authorized O
   assert.ok(openApiData.paths["/api/octo/confirm"]);
 });
 
-test("OCTO API Endpoints: Route handlers return expected status and schema", async () => {
+test("OCTO API Endpoints: Route handlers return audited participant registry and availability", async () => {
   const { GET: getParticipants } = await import("@/app/api/octo/participants/route");
   const req = new Request("https://www.destinationcommandcenter.com/api/octo/participants");
   const res = await getParticipants(req as any);
   assert.equal(res.status, 200);
   const data = await res.json();
   assert.equal(data.spec, "octo-participant-registry");
-  assert.equal(data.agreedPlatformShare, "5.0%");
+  assert.equal(data.version, "1.1");
+  assert.equal(data.directProductionSalesDisabled, true);
+  assert.equal(data.liveAuthorizedParticipantCount, 0);
+  assert.equal(data.agreedCommissionsCount, 0);
+  assert.equal("agreedPlatformShare" in data, false);
+  assert.equal(data.commercialTermsPolicy.bookingSystemCommercialArrangements, "unknown");
+  assert.equal(data.commercialTermsPolicy.unsignedOperatorTerms, "unknown");
+  assert.ok(data.fareharborPolicy.includes("never marks an operator as OCTO-authorized"));
   assert.ok(data.participants.length >= 6);
 
   const { POST: postAvailability } = await import("@/app/api/octo/availability/route");

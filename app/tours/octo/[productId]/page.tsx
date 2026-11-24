@@ -118,13 +118,14 @@ export default async function OctoProductDetailPage({
               </div>
             )}
 
-            {/* Provider Attribution & Sovereign Protocol */}
+            {/* Provider Attribution & Sandbox Disclosure */}
             <div className="rounded-2xl border border-white/5 bg-black/40 p-6 text-xs text-white/50 space-y-2">
-              <p className="font-bold text-white/80">Direct Connection Disclosure</p>
+              <p className="font-bold text-white/80">Direct Connection &amp; Sandbox Disclosure</p>
               <p>
-                This tour is retrieved and reserved directly against the operator’s authorized OCTO API. DCC facilitates
-                sovereign discovery and reservation routing under a fixed 5% platform share. The operator remains the
-                merchant-of-record and holds sole authority over tour execution.
+                In non-production sandbox testing, this route exercises the OCTO Core v1.2.0 availability, hold, and
+                confirmation flow against an internal reference fixture. Live production holds and confirmations are
+                disabled unless an operator has a documented OCTO authorization; unsigned commercial terms remain{" "}
+                <code className="text-cyan-300">unknown</code>.
               </p>
             </div>
           </div>

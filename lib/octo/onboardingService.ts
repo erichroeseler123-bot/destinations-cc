@@ -551,15 +551,17 @@ export class OctoOnboardingService {
   }
 
   /**
-   * Generates the Pilot Operator Consent & Credential Checklist
-   * For the first live pilot candidate (e.g. Ventrata / Bókun)
+   * Generates the Operator API Verification & Commercial Terms Checklist.
+   * Unverified endpoints and unsigned commercial terms remain unknown until documented.
    */
   static generatePilotChecklist(candidate: "ventrata" | "bokun" = "ventrata") {
     if (candidate === "ventrata") {
       return {
-        candidate: "Ventrata Live Operator Pilot",
+        candidate: "Ventrata Direct Operator Integration Checklist",
         participantId: "part_ventrata",
-        endpointRecommendation: "https://api.ventrata.com/octo",
+        endpointStatus: "unknown (must be supplied by authorized operator)",
+        documentationUrl: "https://docs.octo.travel/",
+        bookingSystemCommercialArrangements: "unknown",
         requiredCredentials: [
           {
             name: "API Key / Bearer Token",
@@ -568,14 +570,17 @@ export class OctoOnboardingService {
           },
           {
             name: "Ventrata Supplier ID / Connection Identifier",
-            purpose: "Identifies the specific licensed operator account in the Ventrata network",
+            purpose: "Identifies the specific operator account",
           },
         ],
         requiredConsent: {
-          agreement: "DCC Sovereign Operator Agreement v1.0",
-          distributionShare: "5.00% platform commission on completed and honored reservations",
+          agreement: "Direct Operator API Agreement (Unsigned)",
+          agreementReference: null,
+          agreedCommissionPercent: null,
+          commercialTermsStatus: "unknown",
+          distributionShare: "unknown (requires signed operator agreementReference)",
           operatorAuthority: "Operator retains complete ownership of inventory, customer relationship, terms, and cancellations",
-          paymentModel: "supplier_hosted (traveler completes checkout via operator-hosted checkout URL)",
+          paymentModel: "unknown (determined per signed operator agreement)",
         },
         technicalVerificationStages: [
           "1. Health check probe to GET /suppliers",
@@ -584,35 +589,40 @@ export class OctoOnboardingService {
           "4. 15-minute reservation hold test to POST /bookings with expirationMinutes: 15",
           "5. Confirmation test to POST /bookings/:uuid/confirm",
           "6. Cancellation test to POST /bookings/:uuid/cancel",
-          "7. Promotion to live bookable status on DCC",
+          "7. Promotion to live bookable status after signed agreementReference",
         ],
       };
     }
 
     return {
-      candidate: "Bókun Live Operator Pilot",
+      candidate: "Bókun Direct Operator Integration Checklist",
       participantId: "part_bokun",
-      endpointRecommendation: "https://api.bokun.io/octo",
+      endpointStatus: "unknown (must be supplied by authorized operator)",
+      documentationUrl: "https://bokun.dev/",
+      bookingSystemCommercialArrangements: "unknown",
       requiredCredentials: [
         {
           name: "Bókun Access Key / Secret",
-          purpose: "OCTO Standard header authentication",
+          purpose: "X-Bokun-Date, X-Bokun-AccessKey, and X-Bokun-Signature or operator-authorized adapter",
         },
       ],
       requiredConsent: {
-        agreement: "DCC Sovereign Operator Agreement v1.0",
-        distributionShare: "5.00% platform commission",
-        operatorAuthority: "Direct booking into Bókun inventory",
-        paymentModel: "supplier_hosted",
+        agreement: "Direct Operator API Agreement (Unsigned)",
+        agreementReference: null,
+        agreedCommissionPercent: null,
+        commercialTermsStatus: "unknown",
+        distributionShare: "unknown (requires signed operator agreementReference)",
+        operatorAuthority: "Operator retains direct fulfillment authority",
+        paymentModel: "unknown (determined per signed operator agreement)",
       },
       technicalVerificationStages: [
-        "1. GET /suppliers",
-        "2. GET /products",
-        "3. POST /availability",
-        "4. POST /bookings (hold)",
-        "5. POST /bookings/:uuid/confirm",
-        "6. POST /bookings/:uuid/cancel",
-        "7. Promotion to bookable",
+        "1. Verify operator-authorized Bókun credentials",
+        "2. Inspect activity catalog and product/option mappings",
+        "3. Verify live availability and pricing responses",
+        "4. Verify reservation hold with expirationMinutes: 15",
+        "5. Verify confirmation and externalBookingReference attribution",
+        "6. Verify cancellation and separate policy disclosure",
+        "7. Promotion to live bookable status after signed agreementReference",
       ],
     };
   }

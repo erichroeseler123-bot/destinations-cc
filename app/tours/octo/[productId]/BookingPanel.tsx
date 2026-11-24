@@ -97,16 +97,16 @@ export default function OctoBookingPanel({ product }: { product: OctoProduct }) 
     <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-6 sm:p-8 backdrop-blur-sm">
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
         <div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
-            Live OCTO Engine
+          <span className="text-[10px] font-black uppercase tracking-widest text-amber-400">
+            OCTO Sandbox Engine
           </span>
           <p className="text-2xl font-black text-white">
             ${(adultPrice / 100).toFixed(2)}{" "}
             <span className="text-xs font-normal text-white/60">/ adult</span>
           </p>
         </div>
-        <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-300">
-          5% DCC Take-Rate
+        <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-300">
+          Production Sales Disabled
         </span>
       </div>
 

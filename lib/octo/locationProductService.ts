@@ -2,7 +2,12 @@ import { getDb } from "@/lib/db/client";
 import { octoNormalizedProducts, octoSupplierConnections } from "@/lib/db/schema";
 import { OctoProduct } from "./types";
 import { MockOctoSupplierEngine } from "./mockServer";
-import { OctoRegistryService, INITIAL_OCTO_PARTICIPANTS } from "./registry";
+import {
+  INITIAL_OCTO_PARTICIPANTS,
+  isConnectionLiveOctoAuthorized,
+  isFareHarborAffiliateOnly,
+  isParticipantLiveAuthorized,
+} from "./registry";
 import { canonicalPlaceService, DccCanonicalPlace } from "@/lib/dcc/canonicalPlaceService";
 import { eq } from "drizzle-orm";
 
@@ -19,6 +24,7 @@ export type LocationProductAssociation = {
     connectionStatus: string;
     onboardingStage: string;
     isAuthorized: boolean;
+    fareharborOctoAuthorized?: boolean;
   };
   distanceKm?: number;
   reason?: string;
@@ -172,10 +178,17 @@ export class DccLocationProductService {
           }
 
           if (matches) {
+            const fareharborBlocked = isFareHarborAffiliateOnly({
+              reservationPlatform: conn?.reservationPlatform,
+              fareharborOctoAuthorized: (conn as any)?.fareharborOctoAuthorized ?? false,
+            });
             const isAuthorized =
-              conn?.connectionStatus === "authorized" &&
-              conn?.healthStatus === "healthy" &&
-              conn?.onboardingStage === "live_authorized";
+              !fareharborBlocked &&
+              (isConnectionLiveOctoAuthorized(conn as any) ||
+                (conn?.connectionStatus === "authorized" &&
+                  conn?.healthStatus === "healthy" &&
+                  conn?.onboardingStage === "live_authorized" &&
+                  !conn?.isSandbox));
 
             const commercialStatus: CommercialStatus = isAuthorized ? "bookable" : "directory_only";
             const reason = isAuthorized
@@ -212,6 +225,9 @@ export class DccLocationProductService {
                 connectionStatus: conn?.connectionStatus || "draft",
                 onboardingStage: conn?.onboardingStage || "technical_onboarding",
                 isAuthorized,
+                ...(conn?.reservationPlatform === "fareharbor"
+                  ? { fareharborOctoAuthorized: Boolean((conn as any)?.fareharborOctoAuthorized) }
+                  : {}),
               },
               distanceKm,
               reason,
@@ -294,6 +310,7 @@ export class DccLocationProductService {
               connectionStatus: "authorized",
               onboardingStage: "technical_onboarding",
               isAuthorized: true,
+              ...(providerType === "fareharbor" ? { fareharborOctoAuthorized: false } : {}),
             },
             distanceKm,
             reason: "Sandbox Test Environment - Reference Supplier",
@@ -304,7 +321,7 @@ export class DccLocationProductService {
 
     // 3. Match Discovery-Only Operators (e.g. Vibe Around Town in USVI)
     for (const participant of INITIAL_OCTO_PARTICIPANTS) {
-      if (participant.outreachStatus !== "live_authorized") {
+      if (!isParticipantLiveAuthorized(participant)) {
         let matches = false;
         if (detectedSlug) {
           const dLower = detectedSlug.toLowerCase();

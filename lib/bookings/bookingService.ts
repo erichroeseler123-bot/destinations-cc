@@ -22,6 +22,7 @@ import {
 import { DccPaymentService } from "@/lib/payments/paymentService";
 import { decryptCredential } from "@/lib/octo/security";
 import { MockOctoSupplierEngine } from "@/lib/octo/mockServer";
+import { isConnectionLiveOctoAuthorized, isFareHarborAffiliateOnly } from "@/lib/octo/registry";
 import {
   DccBookingCancelRequest,
   DccBookingConfirmRequest,
@@ -334,11 +335,16 @@ export class DccBookingService {
     operatorName: string;
     endpoint: string;
     reservationPlatform: "rezdy" | "fareharbor" | "bokun" | "ventrata" | "direct_octo";
-    commissionPercent: number;
+    commissionPercent?: number | null;
     apiKey?: string;
     bearerToken?: string;
     isSandbox?: boolean;
     connectionStatus?: string;
+    onboardingStage?: string;
+    healthStatus?: string;
+    agreementReference?: string | null;
+    fareharborOctoAuthorized?: boolean;
+    fareharborAffiliateOnly?: boolean;
     adapter?: OctoProviderAdapter;
   }): OctoProviderAdapter {
     const connection = {
@@ -347,8 +353,13 @@ export class DccBookingService {
       operatorName: config.operatorName,
       endpoint: config.endpoint,
       reservationPlatform: config.reservationPlatform,
-      commissionPercent: config.commissionPercent,
+      commissionPercent: config.commissionPercent ?? null,
       connectionStatus: config.connectionStatus || "sandbox_verified",
+      onboardingStage: config.onboardingStage,
+      healthStatus: config.healthStatus || "healthy",
+      agreementReference: config.agreementReference ?? null,
+      fareharborOctoAuthorized: config.fareharborOctoAuthorized,
+      fareharborAffiliateOnly: config.fareharborAffiliateOnly,
       isSandbox: config.isSandbox ?? true,
     };
     const adapter =
@@ -606,6 +617,62 @@ export class DccBookingService {
       return "conn_vibe_around_town";
     }
     return productId;
+  }
+
+  private static assertSupplierAuthorizedForBooking(
+    connection: any,
+    isMock: boolean,
+    adapter: OctoProviderAdapter | null,
+    supplierConnectionId: string,
+    operation: "hold" | "confirm"
+  ): void {
+    const operatorLabel = connection?.operatorName || supplierConnectionId;
+
+    if (
+      connection?.connectionStatus === "authorization_pending" ||
+      connection?.connectionStatus === "discovery_only" ||
+      connection?.connectionStatus === "suspended"
+    ) {
+      throw new OctoApiError(
+        403,
+        "UNAUTHORIZED_SUPPLIER",
+        `Supplier ${operatorLabel} is ${connection.connectionStatus} and cannot ${operation} a booking`
+      );
+    }
+
+    if (isFareHarborAffiliateOnly(connection || {})) {
+      throw new OctoApiError(
+        403,
+        "UNAUTHORIZED_SUPPLIER",
+        `Supplier ${operatorLabel} has FareHarbor affiliate or Lightframe access only and is not OCTO-authorized to ${operation} bookings`
+      );
+    }
+
+    // Any live (non-sandbox) connection requires documented live OCTO authorization regardless of NODE_ENV
+    if (!isMock && connection?.isSandbox === false) {
+      const normalizedConn = {
+        ...connection,
+        onboardingStage:
+          connection.onboardingStage ||
+          (connection.connectionStatus === "bookable" ? "bookable" : "discovered"),
+        healthStatus: connection.healthStatus || "healthy",
+      };
+      if (!isConnectionLiveOctoAuthorized(normalizedConn)) {
+        throw new OctoApiError(
+          403,
+          "UNAUTHORIZED_SUPPLIER",
+          `Supplier ${operatorLabel} lacks documented live OCTO authorization and cannot ${operation} a live booking`
+        );
+      }
+    }
+
+    if (!isMock && !adapter) {
+      throw new OctoApiError(
+        403,
+        "UNAUTHORIZED_SUPPLIER",
+        `Supplier ${operatorLabel} has no authorized OCTO adapter and cannot ${operation} a booking`
+      );
+    }
   }
 
   /**
@@ -1173,13 +1240,13 @@ export class DccBookingService {
         isMock = resolved.isMock;
         connection = resolved.connection;
 
-        if (connection?.connectionStatus === "authorization_pending" || (!isMock && !adapter)) {
-          throw new OctoApiError(
-            403,
-            "UNAUTHORIZED_SUPPLIER",
-            `Supplier ${connection?.operatorName || params.supplierConnectionId} is authorization_pending and non-bookable`
-          );
-        }
+        this.assertSupplierAuthorizedForBooking(
+          connection,
+          isMock,
+          adapter,
+          params.supplierConnectionId,
+          "hold"
+        );
 
         // Final availability recheck before creating hold
         if (isMock) {
@@ -1596,6 +1663,13 @@ export class DccBookingService {
       params.supplierConnectionId ||
       "conn_mock_alaska";
     const { adapter, isMock, connection } = await this.getAdapterForConnection(supplierConnectionId);
+    this.assertSupplierAuthorizedForBooking(
+      connection,
+      isMock,
+      adapter,
+      supplierConnectionId,
+      "confirm"
+    );
 
     // 1. Authoritative Provider Hold Expiration Check (utcHoldExpires)
     if (bookingRecord?.utcHoldExpires) {

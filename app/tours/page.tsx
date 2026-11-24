@@ -27,7 +27,8 @@ import LfsTrustStrip from "@/components/LfsTrustStrip";
 import DccNetworkStrip from "@/components/DccNetworkStrip";
 import { getDb } from "@/lib/db/client";
 import { octoNormalizedProducts, octoSupplierConnections } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { OctoRegistryService } from "@/lib/octo/registry";
+import { eq, inArray } from "drizzle-orm";
 import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 
 export const dynamic = "force-dynamic";
@@ -481,10 +482,14 @@ export default async function ToursPage({
     sourceSection,
   });
 
-  // Query verified bookable OCTO products from authorized operators only
+  // Derive live OCTO operator count and bookable products strictly from documented authorizations
+  const octoSummary = await OctoRegistryService.getSummary("supplier");
+  const liveAuthorizedOctoCount = octoSummary.liveAuthorizedOperatorCount;
+  const authorizedConnectionIds = octoSummary.authorizedConnections.map((c) => c.id);
+
   const db = getDb();
   let bookableOctoProducts: any[] = [];
-  if (db) {
+  if (db && authorizedConnectionIds.length > 0) {
     try {
       const rows = await db
         .select({
@@ -503,7 +508,7 @@ export default async function ToursPage({
           octoSupplierConnections,
           eq(octoNormalizedProducts.supplierConnectionId, octoSupplierConnections.id)
         )
-        .where(eq(octoSupplierConnections.onboardingStage, "bookable"));
+        .where(inArray(octoNormalizedProducts.supplierConnectionId, authorizedConnectionIds));
       bookableOctoProducts = rows;
     } catch {
       bookableOctoProducts = [];
@@ -799,24 +804,33 @@ export default async function ToursPage({
       <section className="rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/40 via-black/40 to-emerald-950/20 p-6 sm:p-8 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-300">
-                Direct Operator Authority
+                Audited OCTO Connectivity
               </span>
-              <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
-                5% Platform Share
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                  liveAuthorizedOctoCount > 0
+                    ? "border border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+                    : "border border-amber-400/30 bg-amber-400/10 text-amber-300"
+                }`}
+              >
+                {liveAuthorizedOctoCount === 0
+                  ? "Direct Production Sales Disabled (0 Live Authorized)"
+                  : `${liveAuthorizedOctoCount} Live Authorized Operator${liveAuthorizedOctoCount === 1 ? "" : "s"}`}
               </span>
             </div>
-            <h2 className="mt-2 text-2xl font-black text-white">Direct OCTO Bookable Tours</h2>
+            <h2 className="mt-2 text-2xl font-black text-white">Direct API &amp; OCTO Connectivity Status</h2>
             <p className="mt-1 text-sm text-zinc-300">
-              Reserved directly in authorized operator systems with live availability checks and 15-minute seat holds.
+              Live OCTO booking appears only for operators with verified API credentials and a documented
+              authorization. Unverified inventory and unsigned commercial terms remain unknown.
             </p>
           </div>
           <Link
             href="/octo"
             className="text-xs font-bold text-cyan-300 hover:text-cyan-200 transition"
           >
-            OCTO Registry & Protocol →
+            OCTO Registry &amp; Evidence Audit →
           </Link>
         </div>
 
@@ -852,7 +866,7 @@ export default async function ToursPage({
                     href={`/tours/octo/${prod.id}`}
                     className="rounded-lg bg-cyan-500 px-3.5 py-1.5 text-xs font-black text-black hover:bg-cyan-400 transition"
                   >
-                    Check & Hold Seats →
+                    Check &amp; Hold Seats →
                   </Link>
                 </div>
               </div>
@@ -860,18 +874,21 @@ export default async function ToursPage({
           </div>
         ) : (
           <div className="rounded-2xl border border-white/5 bg-black/30 p-6 text-center space-y-3">
-            <p className="text-sm font-semibold text-cyan-300">
-              Direct OCTO Operator Connectivity Active
+            <p className="text-sm font-semibold text-amber-300">
+              {liveAuthorizedOctoCount} External Operators Live-Authorized for Direct OCTO Sales
             </p>
-            <p className="max-w-xl mx-auto text-xs text-zinc-400 leading-relaxed">
-              DCC connects directly to sovereign tour operator systems (Ventrata, Bókun, Rezdy, TourCMS) via the open OCTO standard. Only fully verified operators with active consent and tested inventory appear in live booking mode.
+            <p className="max-w-2xl mx-auto text-xs text-zinc-400 leading-relaxed">
+              Unverified booking-system endpoints, product inventory counts, and unsigned commercial terms are
+              recorded as <code className="text-cyan-300">unknown</code>. FareHarbor affiliate or Lightframe access
+              never marks an operator as OCTO-authorized. Verified tour listings above book through Viator or their
+              disclosed partner channels.
             </p>
             <div className="pt-2">
               <Link
                 href="/octo"
                 className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-4 py-1.5 text-xs font-bold text-cyan-300 hover:bg-cyan-500/20 transition"
               >
-                View OCTO Operator Network & Onboarding Pipeline →
+                Inspect Audited OCTO Participant Registry →
               </Link>
             </div>
           </div>

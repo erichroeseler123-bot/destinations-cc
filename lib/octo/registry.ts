@@ -4,93 +4,312 @@ import { OctoParticipant, OctoSupplierConnection } from "./types";
 import { eq } from "drizzle-orm";
 import { encryptCredential } from "./security";
 
+/**
+ * FareHarbor affiliate links, External API v1 access, or Lightframe embeds alone
+ * never establish an OCTO-authorized operator connection.
+ */
+export function isFareHarborAffiliateOnly(input: {
+  id?: string | null;
+  reservationPlatform?: string | null;
+  providerType?: string | null;
+  fareharborOctoAuthorized?: boolean | null;
+  fareharborAffiliateOnly?: boolean | null;
+}): boolean {
+  if (input.fareharborAffiliateOnly === true) return true;
+  if (input.id === "part_fareharbor_octo" && input.fareharborOctoAuthorized !== true) {
+    return true;
+  }
+  const platform = (input.reservationPlatform || input.providerType || "").toLowerCase();
+  if (platform === "fareharbor" && input.fareharborOctoAuthorized !== true) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Returns true only when an operator participant has a documented live OCTO authorization:
+ * supplier role, verified OCTO API access & credentials, active operator consent,
+ * a non-empty documented agreementReference, and not FareHarbor affiliate-only.
+ */
+export function isParticipantLiveAuthorized(participant: OctoParticipant): boolean {
+  if (participant.role !== "supplier") return false;
+  if (isFareHarborAffiliateOnly(participant)) return false;
+  if (participant.id === "part_mock_alaska") return false;
+  if (participant.apiAccessStatus !== "verified") return false;
+  if (participant.credentialStatus !== "verified") return false;
+  if (participant.consentStatus !== "consented") return false;
+  if (participant.outreachStatus !== "live_authorized") return false;
+  if (!participant.agreementReference || !participant.agreementReference.trim()) return false;
+  return true;
+}
+
+/**
+ * Returns true only when a supplier connection record has documented live OCTO authorization.
+ * Sandbox/mock connections and FareHarbor affiliate-only connections are never live-authorized.
+ */
+export function isConnectionLiveOctoAuthorized(conn: {
+  id?: string | null;
+  operatorSlug?: string | null;
+  isSandbox?: boolean | null;
+  onboardingStage?: string | null;
+  connectionStatus?: string | null;
+  healthStatus?: string | null;
+  reservationPlatform?: string | null;
+  fareharborOctoAuthorized?: boolean | null;
+  fareharborAffiliateOnly?: boolean | null;
+  consentAgreementVersion?: string | null;
+  consentedAt?: Date | string | null;
+  signatoryEmail?: string | null;
+  agreementReference?: string | null;
+}): boolean {
+  if (!conn) return false;
+  const id = String(conn.id || "");
+  if (conn.isSandbox || id === "conn_mock_alaska" || id.startsWith("mock_")) return false;
+  if (conn.operatorSlug === "alaska-premier-expeditions") return false;
+  if (isFareHarborAffiliateOnly(conn)) return false;
+  if (conn.onboardingStage !== "bookable") return false;
+  if (
+    conn.connectionStatus &&
+    conn.connectionStatus !== "bookable" &&
+    conn.connectionStatus !== "authorized" &&
+    conn.connectionStatus !== "production_verified"
+  ) {
+    return false;
+  }
+  if (conn.healthStatus !== "healthy") return false;
+
+  const hasDocumentedAgreement = Boolean(
+    (typeof conn.agreementReference === "string" && conn.agreementReference.trim()) ||
+      (conn.consentAgreementVersion && conn.consentedAt && conn.signatoryEmail)
+  );
+  return hasDocumentedAgreement;
+}
+
+export function deriveOctoAuthorizationSummary(
+  participants: OctoParticipant[],
+  authorizedConnections: OctoSupplierConnection[] = []
+) {
+  const authorizedSlugs = new Set<string>();
+  for (const p of participants) {
+    if (isParticipantLiveAuthorized(p)) {
+      authorizedSlugs.add(p.id);
+    }
+  }
+  for (const c of authorizedConnections) {
+    if (isConnectionLiveOctoAuthorized(c)) {
+      authorizedSlugs.add(c.operatorSlug || c.id);
+    }
+  }
+
+  const agreedCommissionsCount = participants.filter(
+    (p) =>
+      !isFareHarborAffiliateOnly(p) &&
+      p.commercialTermsStatus === "agreed" &&
+      Boolean(p.agreementReference?.trim()) &&
+      p.agreedCommissionPercent != null
+  ).length;
+
+  return {
+    totalParticipants: participants.length,
+    liveAuthorizedOperatorCount: authorizedSlugs.size,
+    agreedCommissionsCount,
+  };
+}
+
 export const INITIAL_OCTO_PARTICIPANTS: OctoParticipant[] = [
   {
     id: "part_ventrata",
     name: "Ventrata",
     role: "booking_system",
-    website: "https://ventrata.com",
+    website: "https://www.ventrata.com",
     contactEmail: "connectivity@ventrata.com",
     contactName: "Ventrata API & Connectivity Team",
-    destinations: ["Global", "London", "Paris", "Rome", "New York", "Las Vegas"],
-    endpoint: "https://api.ventrata.com/octo",
-    certificationEvidence: "OCTO Core Founding Specification Contributor & Certified Provider",
-    consentStatus: "requested",
+    destinations: [],
+    endpoint: null,
+    apiAccessStatus: "unknown",
+    nativeProtocol: "OCTO Core v1.2.0 (Bearer token required; DCC access unknown)",
+    documentationUrl: "https://docs.octo.travel/",
+    certificationEvidence: null,
+    certificationStatus: "unverified",
+    partnershipStatus: "none",
+    consentStatus: "not_requested",
     credentialStatus: "none",
-    productsAvailableCount: 1420,
-    bookingPaymentModel: "supplier_hosted",
-    outreachStatus: "technical_onboarding",
-    agreedCommissionPercent: 5.0,
-    notes: "Primary candidate for first live external enterprise booking system integration.",
+    productsAvailableCount: null,
+    inventoryStatus: "unknown",
+    bookingPaymentModel: "unknown",
+    outreachStatus: "identified",
+    commercialTermsStatus: "unknown",
+    agreedCommissionPercent: null,
+    agreementReference: null,
+    fareharborOctoAuthorized: false,
+    evidence: [
+      {
+        claim: "Public OCTO specification documents REST JSON endpoints with Bearer authentication",
+        source: "https://docs.octo.travel/",
+        verificationStatus: "verified",
+      },
+      {
+        claim: "DCC API access, synced product inventory count, certification status, and commercial terms",
+        source: "lib/octo/registry.ts (no Ventrata credentials, catalog sync, or signed agreement on file)",
+        verificationStatus: "unknown",
+      },
+    ],
+    notes: "Reference reservation-system profile only. API access, inventory, and commercial terms are unknown.",
   },
   {
     id: "part_bokun",
     name: "Bókun",
     role: "booking_system",
-    website: "https://bokun.io",
+    website: "https://www.bokun.io",
     contactEmail: "partners@bokun.io",
     contactName: "Bókun Distribution Team",
-    destinations: ["Global", "Iceland", "Alaska", "Norway", "North America"],
-    endpoint: "https://api.bokun.io/octo",
-    certificationEvidence: "OCTO Standard Member Implementation",
-    consentStatus: "requested",
+    destinations: [],
+    endpoint: null,
+    apiAccessStatus: "unknown",
+    nativeProtocol: "Bókun REST API / OCTO adapter (operator-issued credentials required; DCC access unknown)",
+    documentationUrl: "https://bokun.dev/",
+    certificationEvidence: null,
+    certificationStatus: "unverified",
+    partnershipStatus: "none",
+    consentStatus: "not_requested",
     credentialStatus: "none",
-    productsAvailableCount: 3800,
-    bookingPaymentModel: "supplier_hosted",
-    outreachStatus: "contract_pending",
-    agreedCommissionPercent: 5.0,
-    notes: "High concentration of independent Nordic, European, and North American adventure suppliers.",
+    productsAvailableCount: null,
+    inventoryStatus: "unknown",
+    bookingPaymentModel: "unknown",
+    outreachStatus: "identified",
+    commercialTermsStatus: "unknown",
+    agreedCommissionPercent: null,
+    agreementReference: null,
+    fareharborOctoAuthorized: false,
+    evidence: [
+      {
+        claim: "Public developer documentation describes Bókun REST authentication and activity endpoints",
+        source: "https://bokun.dev/",
+        verificationStatus: "verified",
+      },
+      {
+        claim: "DCC API access, synced product inventory count, certification status, and commercial terms",
+        source: "lib/octo/registry.ts (no Bókun credentials, catalog sync, or signed agreement on file)",
+        verificationStatus: "unknown",
+      },
+    ],
+    notes: "Reference reservation-system profile only. API access, inventory, and commercial terms are unknown.",
   },
   {
     id: "part_rezdy",
     name: "Rezdy",
     role: "channel_manager",
-    website: "https://rezdy.com",
+    website: "https://www.rezdy.com",
     contactEmail: "api-support@rezdy.com",
     contactName: "Rezdy Channel Management",
-    destinations: ["Australia", "New Zealand", "United States", "Europe"],
-    endpoint: "https://api.rezdy.com/octo",
-    certificationEvidence: "OCTO Compliant Channel Endpoint",
+    destinations: [],
+    endpoint: null,
+    apiAccessStatus: "unknown",
+    nativeProtocol: "Rezdy Supplier API v1 (apiKey authentication; platform-wide OCTO access unknown)",
+    documentationUrl: "https://developers.rezdy.com/",
+    certificationEvidence: null,
+    certificationStatus: "unverified",
+    partnershipStatus: "none",
     consentStatus: "not_requested",
     credentialStatus: "none",
-    productsAvailableCount: 2200,
-    bookingPaymentModel: "supplier_hosted",
+    productsAvailableCount: null,
+    inventoryStatus: "unknown",
+    bookingPaymentModel: "unknown",
     outreachStatus: "identified",
-    agreedCommissionPercent: 5.0,
-    notes: "Significant market share in marine, sailing, and regional tour operators.",
+    commercialTermsStatus: "unknown",
+    agreedCommissionPercent: null,
+    agreementReference: null,
+    fareharborOctoAuthorized: false,
+    evidence: [
+      {
+        claim: "Rezdy publishes Supplier API v1 documentation",
+        source: "https://developers.rezdy.com/",
+        verificationStatus: "verified",
+      },
+      {
+        claim: "Platform-wide OCTO endpoint access, aggregate inventory count, and commercial terms",
+        source: "lib/octo/registry.ts (no Rezdy channel-wide OCTO agreement or synced catalog in DCC)",
+        verificationStatus: "unknown",
+      },
+    ],
+    notes: "Reference channel-manager profile only. Platform-wide inventory and commercial terms are unknown.",
   },
   {
     id: "part_tourcms",
     name: "TourCMS (Palisis)",
     role: "booking_system",
-    website: "https://tourcms.com",
+    website: "https://www.tourcms.com",
     contactEmail: "connectivity@palisis.com",
-    destinations: ["Europe", "UK", "North America"],
-    endpoint: "https://api.tourcms.com/octo",
-    certificationEvidence: "OCTO Core Adapter",
+    destinations: [],
+    endpoint: null,
+    apiAccessStatus: "unknown",
+    nativeProtocol: "TourCMS REST / OCTO profile (operator credentials required; DCC access unknown)",
+    documentationUrl: "https://www.tourcms.com/support/api/",
+    certificationEvidence: null,
+    certificationStatus: "unverified",
+    partnershipStatus: "none",
     consentStatus: "not_requested",
     credentialStatus: "none",
-    productsAvailableCount: 950,
-    bookingPaymentModel: "supplier_hosted",
+    productsAvailableCount: null,
+    inventoryStatus: "unknown",
+    bookingPaymentModel: "unknown",
     outreachStatus: "identified",
-    agreedCommissionPercent: 5.0,
+    commercialTermsStatus: "unknown",
+    agreedCommissionPercent: null,
+    agreementReference: null,
+    fareharborOctoAuthorized: false,
+    evidence: [
+      {
+        claim: "TourCMS publishes public API documentation",
+        source: "https://www.tourcms.com/support/api/",
+        verificationStatus: "verified",
+      },
+      {
+        claim: "DCC API access, synced product inventory count, and commercial terms",
+        source: "lib/octo/registry.ts (no TourCMS credentials, catalog sync, or signed agreement on file)",
+        verificationStatus: "unknown",
+      },
+    ],
+    notes: "Reference reservation-system profile only. API access, inventory, and commercial terms are unknown.",
   },
   {
     id: "part_fareharbor_octo",
-    name: "FareHarbor OCTO Gateway",
+    name: "FareHarbor",
     role: "booking_system",
     website: "https://fareharbor.com",
     contactEmail: "api-support@fareharbor.com",
-    destinations: ["United States", "Hawaii", "Colorado", "Alaska", "Europe"],
-    endpoint: "https://fareharbor.com/api/octo",
-    certificationEvidence: "OCTO Compatibility Layer",
+    destinations: [],
+    endpoint: null,
+    apiAccessStatus: "unknown",
+    nativeProtocol: "FareHarbor External API v1 & Lightframe embeds (proprietary; not OCTO)",
+    documentationUrl: "https://developer.fareharbor.com/",
+    certificationEvidence: null,
+    certificationStatus: "not_applicable",
+    partnershipStatus: "none",
     consentStatus: "not_requested",
     credentialStatus: "none",
-    productsAvailableCount: 4500,
-    bookingPaymentModel: "supplier_hosted",
+    productsAvailableCount: null,
+    inventoryStatus: "unknown",
+    bookingPaymentModel: "unknown",
     outreachStatus: "identified",
-    agreedCommissionPercent: 5.0,
-    notes: "Existing FareHarbor code in DCC can transition to OCTO Core standard.",
+    commercialTermsStatus: "unknown",
+    agreedCommissionPercent: null,
+    agreementReference: null,
+    fareharborOctoAuthorized: false,
+    evidence: [
+      {
+        claim: "FareHarbor uses proprietary External API v1 and Lightframe web embeds; affiliate access alone never marks an operator as OCTO-authorized",
+        source: "https://developer.fareharbor.com/",
+        verificationStatus: "verified",
+      },
+      {
+        claim: "OCTO endpoint availability, synced OCTO inventory count, and OCTO commercial terms",
+        source: "lib/octo/registry.ts (no FareHarbor OCTO connection or booking-system agreement)",
+        verificationStatus: "unknown",
+      },
+    ],
+    notes:
+      "FareHarbor affiliate links, External API v1 reads, or Lightframe embeds on DCC or partner sites never mark an operator as OCTO-authorized.",
   },
   {
     id: "part_vibe_around_town",
@@ -100,15 +319,37 @@ export const INITIAL_OCTO_PARTICIPANTS: OctoParticipant[] = [
     contactEmail: "partners@vibearoundtown.com",
     contactName: "Vibe Around Operations Team",
     destinations: ["USVI", "St. Thomas", "St. John", "Virgin Islands"],
-    endpoint: "https://vibearoundtown.com/api/octo",
-    certificationEvidence: "DCC Portfolio Network Member — Direct Operator Pilot Candidate",
-    consentStatus: "requested",
+    endpoint: null,
+    apiAccessStatus: "unknown",
+    nativeProtocol: "Direct OCTO candidate (no live endpoint or credentials verified)",
+    documentationUrl: null,
+    certificationEvidence: null,
+    certificationStatus: "unverified",
+    partnershipStatus: "pilot_candidate_unverified",
+    consentStatus: "not_requested",
     credentialStatus: "none",
-    productsAvailableCount: 0,
-    bookingPaymentModel: "supplier_hosted",
-    outreachStatus: "contract_pending",
-    agreedCommissionPercent: undefined, // Pending signed commercial contract terms
-    notes: "Pilot operator candidate. Missing live OCTO API endpoint configuration, Bearer credentials, and signed operator agreement. Quarantined in authorization_pending.",
+    productsAvailableCount: null,
+    inventoryStatus: "unknown",
+    bookingPaymentModel: "unknown",
+    outreachStatus: "identified",
+    commercialTermsStatus: "unknown",
+    agreedCommissionPercent: null,
+    agreementReference: null,
+    fareharborOctoAuthorized: false,
+    evidence: [
+      {
+        claim: "Operator domain is listed in DCC portfolio discovery for USVI",
+        source: "lib/dcc/portfolioRegistry.ts",
+        verificationStatus: "verified",
+      },
+      {
+        claim: "Live OCTO endpoint, API credentials, product count, and signed commercial agreement",
+        source: "lib/octo/registry.ts (no verified OCTO credentials or signed agreementReference on file)",
+        verificationStatus: "unknown",
+      },
+    ],
+    notes:
+      "Pilot operator candidate; live OCTO credentials and commercial agreement pending. Quarantined as directory-only.",
   },
   {
     id: "part_mock_alaska",
@@ -116,19 +357,37 @@ export const INITIAL_OCTO_PARTICIPANTS: OctoParticipant[] = [
     role: "supplier",
     website: "https://mock-alaska-expeditions.dcc.internal",
     contactEmail: "reservations@mock-alaska-expeditions.dcc.internal",
-    contactName: "Capt. Tyler Vance",
+    contactName: "Reference Sandbox Fixture",
     destinations: ["Juneau", "Auke Bay", "Inside Passage"],
     endpoint: "/api/mock/octo",
-    certificationEvidence: "Full DCC Reference Mock Suite Conformance (OCTO Core)",
+    apiAccessStatus: "sandbox_mock_only",
+    nativeProtocol: "Internal DCC Mock OCTO Core v1.2.0 Fixture (non-production)",
+    documentationUrl: null,
+    certificationEvidence: "Internal non-production OCTO Core lifecycle test fixture",
+    certificationStatus: "sandbox_reference_only",
+    partnershipStatus: "sandbox_mock_only",
     consentStatus: "consented",
     credentialStatus: "verified",
     productsAvailableCount: 2,
+    inventoryStatus: "sandbox_mock_only",
     bookingPaymentModel: "supplier_hosted",
-    outreachStatus: "technical_onboarding", // Strictly not live_authorized or bookable in production
-    agreedCommissionPercent: 5.0,
-    notes: "Reference testing supplier for end-to-end sandbox booking hold and confirmation lifecycle.",
+    outreachStatus: "technical_onboarding",
+    commercialTermsStatus: "sandbox_only",
+    agreedCommissionPercent: null,
+    agreementReference: null,
+    fareharborOctoAuthorized: false,
+    evidence: [
+      {
+        claim: "Synthetic two-product sandbox fixture used for automated OCTO hold/confirm lifecycle tests",
+        source: "lib/octo/mockServer.ts",
+        verificationStatus: "verified",
+      },
+    ],
+    notes: "Internal sandbox test supplier only; strictly quarantined from live production authorization.",
   },
 ];
+
+const INITIAL_PARTICIPANT_MAP = new Map(INITIAL_OCTO_PARTICIPANTS.map((p) => [p.id, p]));
 
 export class OctoRegistryService {
   /**
@@ -154,10 +413,13 @@ export class OctoRegistryService {
             certificationEvidence: p.certificationEvidence || null,
             consentStatus: p.consentStatus,
             credentialStatus: p.credentialStatus,
-            productsAvailableCount: p.productsAvailableCount,
-            bookingPaymentModel: p.bookingPaymentModel,
+            productsAvailableCount: p.productsAvailableCount ?? 0,
+            bookingPaymentModel: p.bookingPaymentModel === "unknown" ? "supplier_hosted" : p.bookingPaymentModel,
             outreachStatus: p.outreachStatus,
-            agreedCommissionPercent: p.agreedCommissionPercent != null ? p.agreedCommissionPercent.toFixed(2) : null,
+            agreedCommissionPercent:
+              p.agreementReference && p.agreedCommissionPercent != null
+                ? p.agreedCommissionPercent.toFixed(2)
+                : null,
             notes: p.notes || null,
           })
           .onConflictDoNothing();
@@ -178,9 +440,9 @@ export class OctoRegistryService {
           connectionStatus: "sandbox_verified",
           reservationPlatform: "direct_octo",
           onboardingStage: "booking_tested", // NOT bookable
-          consentAgreementVersion: "1.0",
+          consentAgreementVersion: "sandbox-fixture",
           paymentModel: "supplier_hosted",
-          commissionPercent: "5.00",
+          commissionPercent: null,
           healthStatus: "healthy",
           lastSyncAt: new Date(),
         })
@@ -201,13 +463,13 @@ export class OctoRegistryService {
           connectionStatus: "authorization_pending",
           reservationPlatform: "direct_octo",
           octoBaseUrl: "https://vibearoundtown.com/api/octo",
-          onboardingStage: "consented",
-          consentAgreementVersion: "1.0",
+          onboardingStage: "discovered",
+          consentAgreementVersion: "unsigned",
           paymentModel: "supplier_hosted",
-          commissionPercent: null, // Pending signed reseller agreement
+          commissionPercent: null,
           healthStatus: "untested",
           provenance: "DCC Portfolio Network Member (USVI)",
-          lastErrorMessage: "Awaiting live OCTO API Bearer credentials and operator contract signoff",
+          lastErrorMessage: "Awaiting verified OCTO API credentials and signed operator agreement",
         })
         .onConflictDoNothing();
     } catch (err: any) {
@@ -216,7 +478,8 @@ export class OctoRegistryService {
   }
 
   /**
-   * Get all OCTO participants with optional role filter
+   * Get all OCTO participants with optional role filter.
+   * Preserves audited unknown fields for unverified entries even if legacy DB seed rows exist.
    */
   static async getParticipants(role?: string): Promise<OctoParticipant[]> {
     const db = getDb();
@@ -229,38 +492,77 @@ export class OctoRegistryService {
     try {
       await this.seedRegistryIfNeeded();
       const rows = await db.select().from(octoParticipants);
-      if (!rows.length) return INITIAL_OCTO_PARTICIPANTS;
+      if (!rows.length) {
+        return role
+          ? INITIAL_OCTO_PARTICIPANTS.filter((p) => p.role === role)
+          : INITIAL_OCTO_PARTICIPANTS;
+      }
 
-      let participants: OctoParticipant[] = rows.map((r) => ({
-        id: r.id,
-        name: r.name,
-        role: r.role as any,
-        website: r.website,
-        contactEmail: r.contactEmail,
-        contactName: r.contactName || undefined,
-        destinations: (r.destinations as string[]) || [],
-        endpoint: r.endpoint || undefined,
-        certificationEvidence: r.certificationEvidence || undefined,
-        consentStatus: r.consentStatus as any,
-        credentialStatus: r.credentialStatus as any,
-        productsAvailableCount: r.productsAvailableCount,
-        bookingPaymentModel: r.bookingPaymentModel as any,
-        outreachStatus: r.outreachStatus as any,
-        agreedCommissionPercent: r.agreedCommissionPercent != null ? Number(r.agreedCommissionPercent) : undefined,
-        notes: r.notes || undefined,
-      }));
+      let participants: OctoParticipant[] = rows.map((r) => {
+        const baseline = INITIAL_PARTICIPANT_MAP.get(r.id);
+        if (baseline && r.outreachStatus !== "live_authorized") {
+          return baseline;
+        }
+        const agreementReference = (r as any).agreementReference || null;
+        const hasSignedAgreement = Boolean(agreementReference && String(agreementReference).trim());
+        const fareharborBlocked = isFareHarborAffiliateOnly({
+          id: r.id,
+          fareharborOctoAuthorized: baseline?.fareharborOctoAuthorized ?? false,
+        });
+        const isVerifiedLive =
+          !fareharborBlocked &&
+          r.role === "supplier" &&
+          r.outreachStatus === "live_authorized" &&
+          r.credentialStatus === "verified" &&
+          r.consentStatus === "consented" &&
+          hasSignedAgreement;
+
+        return {
+          id: r.id,
+          name: r.name,
+          role: r.role as any,
+          website: r.website,
+          contactEmail: r.contactEmail,
+          contactName: r.contactName || undefined,
+          destinations: (r.destinations as string[]) || [],
+          endpoint: isVerifiedLive ? r.endpoint || null : baseline?.endpoint ?? null,
+          apiAccessStatus: isVerifiedLive ? "verified" : baseline?.apiAccessStatus ?? "unknown",
+          nativeProtocol: baseline?.nativeProtocol || "OCTO Core",
+          documentationUrl: baseline?.documentationUrl ?? null,
+          certificationEvidence: isVerifiedLive ? r.certificationEvidence || null : null,
+          certificationStatus: isVerifiedLive ? "verified" : baseline?.certificationStatus ?? "unverified",
+          partnershipStatus: isVerifiedLive ? "verified" : baseline?.partnershipStatus ?? "none",
+          consentStatus: isVerifiedLive ? (r.consentStatus as any) : baseline?.consentStatus ?? "not_requested",
+          credentialStatus: isVerifiedLive ? (r.credentialStatus as any) : baseline?.credentialStatus ?? "none",
+          productsAvailableCount: isVerifiedLive ? r.productsAvailableCount : baseline?.productsAvailableCount ?? null,
+          inventoryStatus: isVerifiedLive ? "verified" : baseline?.inventoryStatus ?? "unknown",
+          bookingPaymentModel: isVerifiedLive ? (r.bookingPaymentModel as any) : baseline?.bookingPaymentModel ?? "unknown",
+          outreachStatus: isVerifiedLive ? "live_authorized" : baseline?.outreachStatus ?? "identified",
+          commercialTermsStatus:
+            hasSignedAgreement && r.agreedCommissionPercent != null ? "agreed" : baseline?.commercialTermsStatus ?? "unknown",
+          agreedCommissionPercent:
+            hasSignedAgreement && r.agreedCommissionPercent != null ? Number(r.agreedCommissionPercent) : null,
+          agreementReference,
+          fareharborOctoAuthorized: baseline?.fareharborOctoAuthorized ?? false,
+          evidence: baseline?.evidence || [],
+          notes: r.notes || baseline?.notes || undefined,
+        };
+      });
 
       if (role) {
         participants = participants.filter((p) => p.role === role);
       }
       return participants;
     } catch {
-      return INITIAL_OCTO_PARTICIPANTS;
+      return role
+        ? INITIAL_OCTO_PARTICIPANTS.filter((p) => p.role === role)
+        : INITIAL_OCTO_PARTICIPANTS;
     }
   }
 
   /**
-   * List authorized operators with active/healthy connections who have completed full onboarding
+   * List authorized operators with active/healthy connections and documented authorization.
+   * FareHarbor affiliate-only connections and sandbox fixtures are strictly excluded.
    */
   static async getAuthorizedConnections(): Promise<OctoSupplierConnection[]> {
     const db = getDb();
@@ -275,13 +577,7 @@ export class OctoRegistryService {
         .where(eq(octoSupplierConnections.onboardingStage, "bookable"));
 
       return rows
-        .filter(
-          (r) =>
-            r.healthStatus === "healthy" &&
-            !r.isSandbox &&
-            r.id !== "conn_mock_alaska" &&
-            r.operatorSlug !== "alaska-premier-expeditions",
-        )
+        .filter((r) => isConnectionLiveOctoAuthorized(r as any))
         .map((r) => ({
           id: r.id,
           operatorSlug: r.operatorSlug,
@@ -289,6 +585,8 @@ export class OctoRegistryService {
           endpoint: r.endpoint,
           capabilities: (r.capabilities as any) || ["octo/core"],
           isSandbox: r.isSandbox,
+          connectionStatus: (r.connectionStatus as any) || "bookable",
+          reservationPlatform: (r.reservationPlatform as any) || "direct_octo",
           onboardingStage: r.onboardingStage as any,
           operatorLegalName: r.operatorLegalName || undefined,
           businessAddress: r.businessAddress || undefined,
@@ -299,7 +597,7 @@ export class OctoRegistryService {
           consentedAt: r.consentedAt ? r.consentedAt.toISOString() : undefined,
           paymentModel: r.paymentModel as any,
           settlementTerms: r.settlementTerms || undefined,
-          commissionPercent: Number(r.commissionPercent),
+          commissionPercent: r.commissionPercent != null ? Number(r.commissionPercent) : null,
           healthStatus: r.healthStatus as any,
           lastHealthCheckAt: r.lastHealthCheckAt ? r.lastHealthCheckAt.toISOString() : undefined,
           lastHealthCheckStatus: r.lastHealthCheckStatus || undefined,
@@ -315,5 +613,24 @@ export class OctoRegistryService {
     } catch {
       return [];
     }
+  }
+
+  /**
+   * Returns participants along with dynamically derived live-authorization and signed-agreement counts.
+   */
+  static async getSummary(role?: string) {
+    const [allParticipants, authorizedConnections] = await Promise.all([
+      this.getParticipants(),
+      this.getAuthorizedConnections(),
+    ]);
+    const summary = deriveOctoAuthorizationSummary(allParticipants, authorizedConnections);
+    const participants = role
+      ? allParticipants.filter((p) => p.role === role)
+      : allParticipants;
+    return {
+      ...summary,
+      participants,
+      authorizedConnections,
+    };
   }
 }
