@@ -9,15 +9,22 @@ test("DCC hosted catalog keeps dated source checks, publication holds and readab
   const snapshot = getDccCanonicalHostedCatalogSnapshot({ includeHeld: true });
   assert.equal(snapshot.owner, "dcc");
   assert.equal(validateDccHostedCatalogIntegrity().valid, true);
-  assert.equal(snapshot.hostedSailings.length, 125);
+  assert.equal(snapshot.organizers.length, 77);
+  assert.equal((snapshot.franchises ?? []).length, 118);
+  assert.equal(snapshot.hostedSailings.length, 170);
   assert.equal(
     snapshot.hostedSailings.filter((s) => s.verificationState === "verified" && !s.scheduleHoldReason).length,
-    122,
+    167,
   );
   assert.equal(
     snapshot.hostedSailings.filter((s) => s.verificationState === "schedule_hold" || Boolean(s.scheduleHoldReason)).length,
     3,
   );
+  const validDispositions = new Set(["release_watch", "historical", "excluded_reference"]);
+  assert.equal((snapshot.heldInsufficientEvidenceItems ?? []).length, 70);
+  for (const held of snapshot.heldInsufficientEvidenceItems ?? []) {
+    assert.ok(held.disposition && validDispositions.has(held.disposition), `Missing explicit disposition on ${held.holdId}`);
+  }
   const atlantisAllure = snapshot.hostedSailings.find(
     (s) => s.hostedSailingId === "hosted-sailing:atlantis-events:rccl:allure-of-the-seas:2027-03-07",
   );

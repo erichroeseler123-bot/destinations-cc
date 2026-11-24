@@ -854,12 +854,20 @@ export function formatHostedHoldReasonCodeLabel(code: HostedHoldReasonCode): str
   }
 }
 
+export type HostedMarketMapDisposition =
+  | "published"
+  | "schedule_hold"
+  | "release_watch"
+  | "historical"
+  | "excluded_reference";
+
 export interface CanonicalHeldHostedEvidenceRecord {
   holdId: string;
   organizerSlug: string;
   organizerName: string;
   franchiseId?: string; // hosted-franchise:<franchiseSlug>
   franchiseSlug?: string;
+  disposition?: "release_watch" | "historical" | "excluded_reference";
   reasonCode?: HostedHoldReasonCode;
   candidateTitle: string;
   candidateDatesOrVessel: string;
