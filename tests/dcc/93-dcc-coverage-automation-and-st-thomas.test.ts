@@ -1,4 +1,4 @@
-import test from "node:test";
+import test, { type TestContext } from "node:test";
 import assert from "node:assert/strict";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -28,6 +28,7 @@ import {
 import { buildJanuary24SailingPreview } from "@/lib/dcc/winterPorts/january24SailingPreview";
 import StThomasPortDayPlanner from "@/app/components/dcc/StThomasPortDayPlanner";
 import WinterPortDayPlanner from "@/app/components/dcc/WinterPortDayPlanner";
+import WinterExcursionPlannerClient from "@/app/cruises/winter-excursion-planner/WinterExcursionPlannerClient";
 import {
   ingestApprovedFactsFromReviewDesk,
   ST_THOMAS_WINTER_CANDIDATE_BASELINE,
@@ -38,6 +39,58 @@ import {
 import { PILOT_VERIFIED_TOUR_RECORDS } from "@/lib/dcc/catalog/durableCatalogStore";
 import { getHotelConciergeConfig } from "@/lib/dcc/catalog/hotelConfigs";
 import { getPortAuthorityConfig } from "@/src/data/port-authority-config";
+import { TEST_ONLY_GRAND_CAYMAN_TENDER_PLAN } from "./helpers/test-only-grand-cayman-tender-plan";
+import { getPortClockLedger, type PortClockRecord } from "@/lib/dcc/cruise/portClockLedger";
+import { INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN } from "@/lib/dcc/winterExcursionPlanner";
+
+// Two independent fixture sources cover the ship's published deadline and the operator's exact return.
+function installNassauCheckoutFixture(t: TestContext) {
+  const shipSlug = "test-fixture-ship";
+  const sailingId = "test-fixture-nassau";
+  const callDate = "2027-01-25";
+  const returnPoint = "Prince George Wharf Terminal Gate";
+  const checkedAt = "2026-11-23";
+  const source = { kind: "cruise_line_daily_program" as const, url: "https://cruise-line.example/fixture-program", checkedAt };
+  const call: PortClockRecord = {
+    sailingId, shipSlug, shipName: "Test Fixture Ship", portSlug: "nassau", callDate,
+    arrivalTime: "07:00", departureTime: "17:00", timeBasis: "local_port_time",
+    publishedAllAboardTime: "16:30", publishedAllAboardSource: source,
+    modeledAllAboardTime: null, modelRule: null,
+    returnPoint: { name: returnPoint, dockOrTender: "dock", source },
+    scheduleSource: { ...source, kind: "cruise_line_itinerary" }, status: "verified",
+  };
+  const rows = getPortClockLedger().portCalls;
+  rows.push(call);
+  t.after(() => { rows.splice(rows.indexOf(call), 1); });
+
+  const option = PILOT_VERIFIED_TOUR_RECORDS.find((r) => r.providerProductCode === "254526P1")
+    ?.productOptions?.find((o) => o.optionCode === "TG4");
+  assert.ok(option);
+  const evidence = {
+    serviceDate: callDate, departureTime: "10:00", returnDate: callDate, returnTime: "14:15",
+    timeBasis: "local_port_time" as const, returnPoint, sourceUrl: "https://operator.example/fixture-tg4", checkedAt,
+  };
+  const previous = option.verifiedReturns;
+  option.verifiedReturns = [evidence];
+  t.after(() => {
+    if (previous === undefined) delete option.verifiedReturns;
+    else option.verifiedReturns = previous;
+  });
+  const base = INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN;
+  const nassauDay = base.itineraryDays.find((d) => d.portSlug === "nassau");
+  const savedNassau = base.savedExcursionsByPort.nassau;
+  assert.ok(nassauDay && savedNassau);
+  return {
+    evidence,
+    plan: {
+      ...base, planCode: "TEST-FIXTURE-NASSAU", sailingId, shipSlug, shipName: call.shipName,
+      itineraryDays: [{ ...nassauDay, allAboardTime: call.publishedAllAboardTime, departureTime: call.departureTime }],
+      savedExcursionsByPort: {
+        nassau: { ...savedNassau, allAboardTime: "16:30", departureTime: "17:00" },
+      },
+    },
+  };
+}
 
 test("1. DCC Coverage pass report enforces 8:00 a.m. Mountain daily schedule, all 5 winter ports, weekly Alaska calendar recheck, and separate preview vs. production status", () => {
   resetDccCoverageCheckpointMemoryForTests();
@@ -462,7 +515,7 @@ test("9. SSR components and PortAuthorityConfig render St. Thomas and the 4 expa
   assert.match(nassauHtml, /70706P11/);
 });
 
-test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout strictly from verified port calls, blocks off-itinerary additions, withholds checkout when all-aboard or last-tender is missing, and resolves Jean Lafitte 763318 pickup addresses", async () => {
+test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout strictly from verified port calls, blocks off-itinerary additions, withholds checkout when all-aboard or last-tender is missing, and resolves Jean Lafitte 763318 pickup addresses", async (t) => {
   const {
     evaluateWinterSailingPlan,
     runWinterAttributionReplayAndNolaStatusTrace,
@@ -479,8 +532,20 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
     "san-juan",
     "st-thomas",
   ]);
-  // Nassau 254526P1 ($338) is confirmed bookable; St. Thomas 7452P2 ($238) is saved as Needs confirmation (recommendation withheld)
-  assert.equal(indyDefault.savedPortsSummary.combinedPartyTotalCents, 33800);
+  // The saved products retain their prices. Neither has a verified deadline for this sailing.
+  assert.equal(indyDefault.savedPortsSummary.combinedPartyTotalCents, 0);
+  assert.notEqual(indyDefault.fivePortsBySlug.nassau.allAboardStatus, "confirmed");
+  const plannerHtml = renderToStaticMarkup(React.createElement(WinterExcursionPlannerClient, { initialData: indyDefault }));
+  assert.doesNotMatch(plannerHtml, /Fits All-Aboard|meets (?:the )?recommended 120-minute (?:return )?buffer/i);
+  assert.match(plannerHtml, /verified-sailing-itinerary-schedule/);
+  for (const selection of [{ shipName: "Another ship" }, { sailDate: "2027-02-02" }]) {
+    const mismatch = renderToStaticMarkup(React.createElement(WinterExcursionPlannerClient, {
+      initialData: { ...indyDefault, ...selection },
+    }));
+    assert.match(mismatch, /This plan covers Independence of the Seas departing 2027-01-24/);
+    assert.match(mismatch, /browse port guides/);
+    assert.doesNotMatch(mismatch, /verified-sailing-itinerary-schedule|saved-checkout-cta|Copy DCC Plan Link/);
+  }
   assert.equal(indyDefault.offItineraryBlocked, false);
 
   const sanJuanCall = indyDefault.sailingPortCalls.find(
@@ -519,7 +584,7 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
   });
   assert.equal(indyBlocked.offItineraryBlocked, true);
   assert.equal(indyBlocked.rejectedOffItineraryRequests.length, 2);
-  assert.equal(indyBlocked.savedPortsSummary.combinedPartyTotalCents, 33800);
+  assert.equal(indyBlocked.savedPortsSummary.combinedPartyTotalCents, 0);
   assert.deepEqual(
     indyBlocked.savedPortsSummary.savedSelections.map((s) => s.portSlug),
     ["nassau", "st-thomas"],
@@ -548,15 +613,16 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
   assert.equal(nassauSavedMissing.suitability, "needs_confirmation");
   assert.equal(nassauSavedMissing.trackedViatorCheckoutUrl, null);
 
-  // Missing last-tender on Grand Cayman (WESTERN-2027-01-24) withholds checkout
-  const westernMissingTender = await evaluateWinterSailingPlan({
-    planCode: "WESTERN-2027-01-24",
+  // Missing last-tender on a Grand Cayman tender call withholds checkout. No registered sailing
+  // calls at Grand Cayman, so this uses the test-only fixture plan.
+  const tenderFixtureMissingTender = await evaluateWinterSailingPlan({
+    planDefinition: TEST_ONLY_GRAND_CAYMAN_TENDER_PLAN,
     adults: 2,
     surface: "dcc",
     enableShortlistLiveCheck: false,
     missingLastTenderPorts: ["grand-cayman"],
   });
-  const gcMissing = westernMissingTender.sailingPortCalls.find(
+  const gcMissing = tenderFixtureMissingTender.sailingPortCalls.find(
     (p) => p.portSlug === "grand-cayman",
   );
   assert.ok(gcMissing);
@@ -564,7 +630,7 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
   assert.equal(gcMissing.cruiseFitRecommendationWithheld, true);
   assert.equal(gcMissing.checkoutEligible, false);
   const gcSavedMissing =
-    westernMissingTender.savedPortsSummary.savedSelections.find(
+    tenderFixtureMissingTender.savedPortsSummary.savedSelections.find(
       (s) => s.portSlug === "grand-cayman",
     );
   assert.ok(gcSavedMissing);
@@ -572,7 +638,12 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
   assert.equal(gcSavedMissing.trackedViatorCheckoutUrl, null);
 
   // Eligible Nassau 254526P1 checkout URL carries date, adults, optionCode, departureTime, and placementId
-  const nassauEligible = indyDefault.savedPortsSummary.savedSelections.find(
+  const fixture = installNassauCheckoutFixture(t);
+  const fixtureQuery = { planDefinition: fixture.plan, adults: 2, surface: "dcc" as const, enableShortlistLiveCheck: false };
+  const verifiedNassau = await evaluateWinterSailingPlan(fixtureQuery);
+  assert.equal(verifiedNassau.fivePortsBySlug.nassau.allAboardStatus, "confirmed");
+  assert.equal(verifiedNassau.fivePortsBySlug.nassau.selectedOption?.returnBuffer.bufferMinutes, 135);
+  const nassauEligible = verifiedNassau.savedPortsSummary.savedSelections.find(
     (s) => s.portSlug === "nassau",
   );
   assert.ok(nassauEligible?.trackedViatorCheckoutUrl);
@@ -584,6 +655,27 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
   assert.match(decodedNassauTarget, /optionCode=TG4/);
   assert.match(decodedNassauTarget, /departureTime=10%3A00/);
   assert.match(decodedNassauTarget, /placementId=fp-cp-winter-excursion-planner/);
+
+  fixture.evidence.returnPoint = "A different pier";
+  const differentPier = await evaluateWinterSailingPlan(fixtureQuery);
+  assert.equal(differentPier.fivePortsBySlug.nassau.checkoutEligible, false);
+  assert.equal(differentPier.savedPortsSummary.savedSelections[0]?.trackedViatorCheckoutUrl, null);
+  assert.equal(differentPier.fivePortsBySlug.nassau.selectedOption?.returnBuffer.verdict, "cannot_verify");
+  const differentPierHtml = renderToStaticMarkup(React.createElement(WinterExcursionPlannerClient, { initialData: differentPier }));
+  assert.match(differentPierHtml, /Cannot verify/i);
+  assert.doesNotMatch(differentPierHtml, /Fits All-Aboard|meets (?:the )?recommended 120-minute (?:return )?buffer/i);
+
+  fixture.evidence.returnPoint = "Prince George Wharf Terminal Gate";
+  fixture.evidence.returnTime = "14:31";
+  const shortBuffer = await evaluateWinterSailingPlan(fixtureQuery);
+  assert.equal(shortBuffer.fivePortsBySlug.nassau.selectedOption?.returnBuffer.verdict, "below_recommended_120");
+  assert.equal(shortBuffer.fivePortsBySlug.nassau.checkoutEligible, false);
+
+  fixture.evidence.returnTime = "14:15";
+  fixture.evidence.departureTime = "08:00";
+  const differentDeparture = await evaluateWinterSailingPlan(fixtureQuery);
+  assert.equal(differentDeparture.fivePortsBySlug.nassau.selectedOption?.returnBuffer.verdict, "cannot_verify");
+  assert.equal(differentDeparture.fivePortsBySlug.nassau.checkoutEligible, false);
 
   // Jean Lafitte 763318 pickup address resolution, already-approved first-party placement, & multi-guest isolation
   const replayRes = runWinterAttributionReplayAndNolaStatusTrace();
@@ -634,7 +726,7 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
   );
 });
 
-test("11. Each checkout intent gets its own referral ID (separate IDs for QA), two guests choosing the same offer get separate ledger records, and a QA test replay cannot change either production record", async () => {
+test("11. Each checkout intent gets its own referral ID (separate IDs for QA), two guests choosing the same offer get separate ledger records, and a QA test replay cannot change either production record", async (t) => {
   const { GET: adsClickGet } = await import("../../app/api/v1/ads/click/route");
   const {
     getFunnelMetricsReport,
@@ -650,8 +742,9 @@ test("11. Each checkout intent gets its own referral ID (separate IDs for QA), t
   resetOpaqueAttributionLedgerForTests();
 
   // QA evaluation uses clk_qa_<20hex> referral IDs
+  const fixture = installNassauCheckoutFixture(t);
   const qaIndyPlan = await evaluateWinterSailingPlan({
-    planCode: "INDY-2027-01-24",
+    planDefinition: fixture.plan,
     adults: 2,
     surface: "cruisepromenade",
     enableShortlistLiveCheck: false,
@@ -829,6 +922,40 @@ test("11. Each checkout intent gets its own referral ID (separate IDs for QA), t
   const offItineraryJson = await offItineraryRes.json();
   assert.equal(offItineraryJson.error, "UNAPPROVED_CHECKOUT_DESTINATION");
   assert.equal(offItineraryJson.reason, "OFFER_NOT_ON_SAILING_ITINERARY");
+
+  // WESTERN-2027-01-24 (Symphony from Galveston) no longer calls at Grand Cayman
+  const westernGrandCaymanRes = await adsClickGet(
+    new Request(
+      `https://destinationcommandcenter.com/api/v1/ads/click?clickId=clk_111122223333444455556666&sailing=WESTERN-2027-01-24&offer=10309P3&option=TG1`,
+    ),
+  );
+  assert.equal(westernGrandCaymanRes.status, 403);
+  const westernGrandCaymanJson = await westernGrandCaymanRes.json();
+  assert.equal(westernGrandCaymanJson.reason, "OFFER_NOT_ON_SAILING_ITINERARY");
+  assert.equal(westernGrandCaymanJson.offerPort, "grand-cayman");
+
+  // ...and calls at Cozumel on Jan 29, not Jan 26
+  const westernCozumelOldDateRes = await adsClickGet(
+    new Request(
+      `https://destinationcommandcenter.com/api/v1/ads/click?clickId=clk_111122223333444455556666&sailing=WESTERN-2027-01-24&offer=5553274P1&option=TG2&date=2027-01-26`,
+    ),
+  );
+  assert.equal(westernCozumelOldDateRes.status, 403);
+  const westernCozumelOldDateJson = await westernCozumelOldDateRes.json();
+  assert.equal(westernCozumelOldDateJson.reason, "OFFER_DATE_NOT_ON_SAILING_ITINERARY");
+  assert.deepEqual(westernCozumelOldDateJson.itineraryDates, ["2027-01-29"]);
+
+  const canonicalSailingOffer = new URL("https://destinationcommandcenter.com/api/v1/ads/click");
+  canonicalSailingOffer.searchParams.set("sailing", "sailing:rccl:symphony-of-the-seas:2027-01-24");
+  canonicalSailingOffer.searchParams.set("offer", "5553274P1");
+  canonicalSailingOffer.searchParams.set("option", "TG2");
+  const missingCallDate = await adsClickGet(new Request(canonicalSailingOffer));
+  assert.equal(missingCallDate.status, 403);
+  assert.equal((await missingCallDate.json()).reason, "OFFER_DATE_REQUIRED_FOR_SAILING");
+  canonicalSailingOffer.searchParams.set("date", "2027-01-26");
+  const wrongCallDate = await adsClickGet(new Request(canonicalSailingOffer));
+  assert.equal(wrongCallDate.status, 403);
+  assert.equal((await wrongCallDate.json()).reason, "OFFER_DATE_NOT_ON_SAILING_ITINERARY");
 
   // Resolve WNO live Viator offer 15200P6 directly from approved offer without target param, minting a fresh QA referral ID
   const wnoClickReq = new Request(

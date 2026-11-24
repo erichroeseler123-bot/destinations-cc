@@ -1,34 +1,40 @@
 {
-  "version": "2026-11-23.v1",
-  "generatedAt": "2026-11-23T16:15:00Z",
-  "note": "Migrated from SCHEDULED_CRUISE_PORT_CALLS. No source was recorded for any legacy row; all-aboard values are modeled until a published line source is attached.",
+  "version": "2026-11-24.v4",
+  "generatedAt": "2026-11-24T03:01:16.215Z",
+  "note": "Legacy records tagged legacy_unsourced_value have no recorded schedule source or cutoff rule. The January 24, 2027 Independence and Symphony schedules come from Royal Caribbean's dated itineraries. During port visits, the INDY plan models all-aboard as departure minus 45 minutes and WESTERN uses 30 minutes. The itineraries do not establish published all-aboard deadlines, clock bases, or return points.",
   "portCalls": [
     {
       "sailingId": "INDY-2027-01-24",
       "sailingAliases": [
         "ID07MIA-1982128855",
-        "independence-of-the-seas-20270124"
+        "independence-of-the-seas-20270124",
+        "sailing:rccl:independence-of-the-seas:2027-01-24"
       ],
       "shipName": "Independence of the Seas",
       "shipSlug": "independence-of-the-seas",
       "portSlug": "miami",
       "callDate": "2027-01-24",
-      "arrivalTime": "07:00",
+      "arrivalTime": null,
       "departureTime": "16:00",
       "timeBasis": "unknown",
       "publishedAllAboardTime": null,
       "publishedAllAboardSource": null,
-      "modeledAllAboardTime": "15:00",
-      "modelRule": "legacy_unsourced_value",
+      "modeledAllAboardTime": null,
+      "modelRule": null,
       "returnPoint": null,
-      "scheduleSource": null,
+      "scheduleSource": {
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-eastern-caribbean-from-miami-on-independence-ID07MIA-1982128855?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
+      },
       "status": "unverified"
     },
     {
       "sailingId": "INDY-2027-01-24",
       "sailingAliases": [
         "ID07MIA-1982128855",
-        "independence-of-the-seas-20270124"
+        "independence-of-the-seas-20270124",
+        "sailing:rccl:independence-of-the-seas:2027-01-24"
       ],
       "shipName": "Independence of the Seas",
       "shipSlug": "independence-of-the-seas",
@@ -40,16 +46,47 @@
       "publishedAllAboardTime": null,
       "publishedAllAboardSource": null,
       "modeledAllAboardTime": "15:15",
-      "modelRule": "legacy_unsourced_value",
+      "modelRule": "departure_minus_45",
       "returnPoint": null,
-      "scheduleSource": null,
+      "scheduleSource": {
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-eastern-caribbean-from-miami-on-independence-ID07MIA-1982128855?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
+      },
       "status": "unverified"
     },
     {
       "sailingId": "INDY-2027-01-24",
       "sailingAliases": [
         "ID07MIA-1982128855",
-        "independence-of-the-seas-20270124"
+        "independence-of-the-seas-20270124",
+        "sailing:rccl:independence-of-the-seas:2027-01-24"
+      ],
+      "shipName": "Independence of the Seas",
+      "shipSlug": "independence-of-the-seas",
+      "portSlug": "san-juan",
+      "callDate": "2027-01-27",
+      "arrivalTime": "11:30",
+      "departureTime": "19:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "18:15",
+      "modelRule": "departure_minus_45",
+      "returnPoint": null,
+      "scheduleSource": {
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-eastern-caribbean-from-miami-on-independence-ID07MIA-1982128855?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
+      },
+      "status": "unverified"
+    },
+    {
+      "sailingId": "INDY-2027-01-24",
+      "sailingAliases": [
+        "ID07MIA-1982128855",
+        "independence-of-the-seas-20270124",
+        "sailing:rccl:independence-of-the-seas:2027-01-24"
       ],
       "shipName": "Independence of the Seas",
       "shipSlug": "independence-of-the-seas",
@@ -61,58 +98,75 @@
       "publishedAllAboardTime": null,
       "publishedAllAboardSource": null,
       "modeledAllAboardTime": "17:15",
-      "modelRule": "legacy_unsourced_value",
+      "modelRule": "departure_minus_45",
       "returnPoint": null,
-      "scheduleSource": null,
+      "scheduleSource": {
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-eastern-caribbean-from-miami-on-independence-ID07MIA-1982128855?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
+      },
       "status": "unverified"
     },
     {
-      "sailingId": "WESTERN-2027-01-24",
+      "sailingId": "INDY-2027-01-24",
       "sailingAliases": [
-        "WC07MIA-20270124",
-        "symphony-of-the-seas-20270124"
+        "ID07MIA-1982128855",
+        "independence-of-the-seas-20270124",
+        "sailing:rccl:independence-of-the-seas:2027-01-24"
       ],
-      "shipName": "Symphony of the Seas",
-      "shipSlug": "symphony-of-the-seas",
+      "shipName": "Independence of the Seas",
+      "shipSlug": "independence-of-the-seas",
       "portSlug": "miami",
-      "callDate": "2027-01-24",
-      "arrivalTime": "07:00",
-      "departureTime": "16:30",
+      "callDate": "2027-01-31",
+      "arrivalTime": "06:00",
+      "departureTime": null,
       "timeBasis": "unknown",
       "publishedAllAboardTime": null,
       "publishedAllAboardSource": null,
-      "modeledAllAboardTime": "15:30",
-      "modelRule": "legacy_unsourced_value",
+      "modeledAllAboardTime": null,
+      "modelRule": null,
       "returnPoint": null,
-      "scheduleSource": null,
+      "scheduleSource": {
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-eastern-caribbean-from-miami-on-independence-ID07MIA-1982128855?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
+      },
       "status": "unverified"
     },
     {
       "sailingId": "WESTERN-2027-01-24",
       "sailingAliases": [
-        "WC07MIA-20270124",
-        "symphony-of-the-seas-20270124"
+        "symphony-of-the-seas-20270124",
+        "royal-caribbean-symphony-of-the-seas-2027-01-24",
+        "sailing:rcl:symphony-of-the-seas:2027-01-24",
+        "sailing:rccl:symphony-of-the-seas:2027-01-24"
       ],
       "shipName": "Symphony of the Seas",
       "shipSlug": "symphony-of-the-seas",
-      "portSlug": "cozumel",
-      "callDate": "2027-01-26",
-      "arrivalTime": "07:00",
-      "departureTime": "17:00",
+      "portSlug": "galveston",
+      "callDate": "2027-01-24",
+      "arrivalTime": null,
+      "departureTime": "15:00",
       "timeBasis": "unknown",
       "publishedAllAboardTime": null,
       "publishedAllAboardSource": null,
-      "modeledAllAboardTime": "16:15",
-      "modelRule": "legacy_unsourced_value",
+      "modeledAllAboardTime": null,
+      "modelRule": null,
       "returnPoint": null,
-      "scheduleSource": null,
+      "scheduleSource": {
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
+      },
       "status": "unverified"
     },
     {
       "sailingId": "WESTERN-2027-01-24",
       "sailingAliases": [
-        "WC07MIA-20270124",
-        "symphony-of-the-seas-20270124"
+        "symphony-of-the-seas-20270124",
+        "royal-caribbean-symphony-of-the-seas-2027-01-24",
+        "sailing:rcl:symphony-of-the-seas:2027-01-24",
+        "sailing:rccl:symphony-of-the-seas:2027-01-24"
       ],
       "shipName": "Symphony of the Seas",
       "shipSlug": "symphony-of-the-seas",
@@ -123,31 +177,95 @@
       "timeBasis": "unknown",
       "publishedAllAboardTime": null,
       "publishedAllAboardSource": null,
-      "modeledAllAboardTime": "16:15",
-      "modelRule": "legacy_unsourced_value",
+      "modeledAllAboardTime": "16:30",
+      "modelRule": "departure_minus_30",
       "returnPoint": null,
-      "scheduleSource": null,
+      "scheduleSource": {
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
+      },
       "status": "unverified"
     },
     {
       "sailingId": "WESTERN-2027-01-24",
       "sailingAliases": [
-        "WC07MIA-20270124",
-        "symphony-of-the-seas-20270124"
+        "symphony-of-the-seas-20270124",
+        "royal-caribbean-symphony-of-the-seas-2027-01-24",
+        "sailing:rcl:symphony-of-the-seas:2027-01-24",
+        "sailing:rccl:symphony-of-the-seas:2027-01-24"
       ],
       "shipName": "Symphony of the Seas",
       "shipSlug": "symphony-of-the-seas",
-      "portSlug": "grand-cayman",
+      "portSlug": "costa-maya",
       "callDate": "2027-01-28",
-      "arrivalTime": "07:30",
-      "departureTime": "16:00",
+      "arrivalTime": "08:00",
+      "departureTime": "17:00",
       "timeBasis": "unknown",
       "publishedAllAboardTime": null,
       "publishedAllAboardSource": null,
-      "modeledAllAboardTime": "15:00",
-      "modelRule": "legacy_unsourced_value",
+      "modeledAllAboardTime": "16:30",
+      "modelRule": "departure_minus_30",
       "returnPoint": null,
-      "scheduleSource": null,
+      "scheduleSource": {
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
+      },
+      "status": "unverified"
+    },
+    {
+      "sailingId": "WESTERN-2027-01-24",
+      "sailingAliases": [
+        "symphony-of-the-seas-20270124",
+        "royal-caribbean-symphony-of-the-seas-2027-01-24",
+        "sailing:rcl:symphony-of-the-seas:2027-01-24",
+        "sailing:rccl:symphony-of-the-seas:2027-01-24"
+      ],
+      "shipName": "Symphony of the Seas",
+      "shipSlug": "symphony-of-the-seas",
+      "portSlug": "cozumel",
+      "callDate": "2027-01-29",
+      "arrivalTime": "07:00",
+      "departureTime": "17:00",
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": "16:30",
+      "modelRule": "departure_minus_30",
+      "returnPoint": null,
+      "scheduleSource": {
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
+      },
+      "status": "unverified"
+    },
+    {
+      "sailingId": "WESTERN-2027-01-24",
+      "sailingAliases": [
+        "symphony-of-the-seas-20270124",
+        "royal-caribbean-symphony-of-the-seas-2027-01-24",
+        "sailing:rcl:symphony-of-the-seas:2027-01-24",
+        "sailing:rccl:symphony-of-the-seas:2027-01-24"
+      ],
+      "shipName": "Symphony of the Seas",
+      "shipSlug": "symphony-of-the-seas",
+      "portSlug": "galveston",
+      "callDate": "2027-01-31",
+      "arrivalTime": "07:00",
+      "departureTime": null,
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": null,
+      "modelRule": null,
+      "returnPoint": null,
+      "scheduleSource": {
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
+      },
       "status": "unverified"
     },
     {

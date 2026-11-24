@@ -7,6 +7,7 @@ export type ReturnBufferVerdict = "meets_recommended_120" | "below_recommended_1
 
 export type CannotVerifyReason =
   | "port_call_not_found"
+  | "last_tender_unconfirmed"
   | MissingPortClockEvidence
   | "tour_clock_unconfirmed"
   | "tour_date_unconfirmed"

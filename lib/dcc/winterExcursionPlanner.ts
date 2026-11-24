@@ -17,6 +17,9 @@ import {
 } from "./commerce/opaqueAttributionLedger";
 import { HOTEL_CONCIERGE_CONFIGS } from "./catalog/hotelConfigs";
 import { readDurableLedgerState } from "./storage/durableTransactionalStore";
+import { findPortClockRecord, getPortClockLedger, hasCheckedSource, missingPortClockEvidence, type PortClockRecord, type PortClockSource } from "./cruise/portClockLedger";
+import { buildPhysicalSailingId } from "./cruise/canonicalHostedCruiseContract";
+import { evaluateReturnBuffer, RETURN_BUFFER_VERDICT_LABELS, type ReturnBufferResult } from "./cruise/returnBufferVerdict";
 
 export const WINTER_EXCURSION_PORT_SLUGS = [
   "nassau",
@@ -35,6 +38,7 @@ export const ALL_WINTER_SAILING_PORT_SLUGS = [
   "cozumel",
   "roatan",
   "grand-cayman",
+  "costa-maya",
 ] as const;
 
 export type WinterSailingPortSlug = (typeof ALL_WINTER_SAILING_PORT_SLUGS)[number];
@@ -112,7 +116,7 @@ export const ALL_WINTER_PORT_LOGISTICS_SPECS: Record<
     defaultAllAboardTime: "18:15",
     defaultLastTenderTime: null,
     logisticsSummary:
-      "Docked at Old San Juan Pier 3 (11:30 AM – 7:00 PM; All-Aboard 6:15 PM). Step-off walkable into Old San Juan; 0 matched commercial catalog tours currently configured for this call.",
+      "Royal Caribbean lists San Juan from 11:30 AM to 7:00 PM. The 6:15 PM cutoff is a planning estimate. Confirm the actual deadline and pier on the ship.",
   },
   "st-thomas": {
     portSlug: "st-thomas",
@@ -194,6 +198,29 @@ export const ALL_WINTER_PORT_LOGISTICS_SPECS: Record<
     defaultLastTenderTime: "14:45",
     logisticsSummary:
       "TENDER PORT at George Town Harbour. Requires 45m ship-to-shore tender clearance + 20m North Sound marina shuttle each way before last tender.",
+  },
+  "costa-maya": {
+    portSlug: "costa-maya",
+    portName: "Costa Maya (Mahahual), Mexico",
+    countryOrTerritory: "Mexico",
+    dockOrTender: "dock",
+    isTenderPort: false,
+    defaultClearanceMinutes: 30,
+    terminalOrBerthName: "Puerto Costa Maya pier, Mahahual",
+    dccPortGuidePath: "/ports/costa-maya",
+    dccPortGuideUrl: "https://www.destinationcommandcenter.com/ports/costa-maya",
+    cruisePromenadePortUrl: "https://cruisepromenade.com/ports/costa-maya-mexico",
+    defaultFeaturedTourId: null,
+    defaultFeaturedProductCode: null,
+    defaultArrivalTime: "08:00",
+    defaultDepartureTime: "17:00",
+    defaultAllAboardTime: "16:30",
+    defaultLastTenderTime: null,
+    allAboardSource:
+      "Modeled estimate: scheduled departure (17:00) minus 30 minutes. Royal Caribbean publishes no all-aboard time for this call; confirm in the ship app / Cruise Compass.",
+    allAboardIsConditionalHeuristic: true,
+    logisticsSummary:
+      "Docked at the Puerto Costa Maya pier, Mahahual (8:00 AM – 5:00 PM on the Jan 28, 2027 Symphony of the Seas call). All-aboard 4:30 PM is an estimate (departure − 30 min), not a published time. Ship time vs local Quintana Roo time is unconfirmed. No catalog tours are configured for this port yet.",
   },
 };
 
@@ -288,10 +315,10 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
       dockOrTender: "dock",
       arrivalTime: null,
       departureTime: "16:00",
-      allAboardTime: "15:00",
+      allAboardTime: null,
       savedTourId: null,
       savedOptionCode: null,
-      notes: "Embarkation at PortMiami Terminal A; ship departs 4:00 PM.",
+      notes: "Royal Caribbean lists departure from Miami at 4:00 PM. Check boarding documents for the terminal and check-in window.",
     },
     {
       dayNumber: 2,
@@ -306,7 +333,7 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
       savedTourId: "dcc:tour:viator:254526P1",
       savedOptionCode: "TG4",
       notes:
-        "Planning Preview · Docked at Prince George Wharf (7:00 AM – 4:00 PM on Royal Caribbean public itinerary ID07MIA-1982128855). All-Aboard 3:15 PM (15:15) is a conditional 45-minute pre-departure planner heuristic (RCI general port-of-call policy is >=30m prior to departure, i.e. 3:30 PM, with the binding time posted onboard in the Cruise Compass / gangway sign). Saved excursion: Nassau Swimming Pigs and Private Beach Club Escape (254526P1 · Option TG4 with Cruise Pier Pickup · returns ~2:15 PM; conditional 60m buffer vs. 3:15 PM heuristic / 75m vs. 3:30 PM RCI rule).",
+        "Royal Caribbean lists Nassau from 7:00 AM to 4:00 PM. The 3:15 PM cutoff is a planning estimate, 45 minutes before departure. Confirm the actual deadline in the ship app or Cruise Compass.",
     },
     {
       dayNumber: 3,
@@ -335,7 +362,7 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
       savedTourId: null,
       savedOptionCode: null,
       notes:
-        "Docked at Old San Juan Pier 3 (11:30 AM – 7:00 PM; All-Aboard 6:15 PM). Shown on itinerary; 0 matched commercial catalog tours configured (step-off walkable into Old San Juan).",
+        "Royal Caribbean lists San Juan from 11:30 AM to 7:00 PM. The 6:15 PM cutoff is a planning estimate. Confirm the actual deadline and pier on the ship.",
     },
     {
       dayNumber: 5,
@@ -350,7 +377,7 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
       savedTourId: "dcc:tour:viator:7452P2",
       savedOptionCode: "DEFAULT",
       notes:
-        "Docked at Havensight (WICO) or Crown Bay (8:00 AM – 6:00 PM; All-Aboard 5:15 PM). Saved excursion: Turtle Cove Catamaran Snorkel and Sail at Little Buck Island STT (7452P2 · Meet at Marriott's Frenchman's Cove Dock, 7338 Estate Bakkeroe · 30m check-in + independent travel both ways from actual cruise berth · Needs confirmation until berth transfer timing is confirmed).",
+        "Royal Caribbean lists St. Thomas from 8:00 AM to 6:00 PM. The 5:15 PM cutoff is a planning estimate. Confirm the berth and actual deadline before arranging transfers to the tour.",
     },
     {
       dayNumber: 6,
@@ -392,7 +419,7 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
       allAboardTime: null,
       savedTourId: null,
       savedOptionCode: null,
-      notes: "Debarkation at PortMiami starting 6:30 AM.",
+      notes: "Royal Caribbean lists arrival in Miami at 6:00 AM. Follow onboard debarkation instructions.",
     },
   ],
   savedExcursionsByPort: {
@@ -419,36 +446,41 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
 
 export const WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefinition = {
   planCode: "WESTERN-2027-01-24",
-  sailingId: "WC07MIA-20270124",
+  // Keep the shared sailing ID so existing plan links resolve to this departure.
+  sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-24",
   cruiseLine: "Royal Caribbean International",
   shipName: "Symphony of the Seas",
   shipSlug: "symphony-of-the-seas",
-  itineraryTitle: "7-Night Western Caribbean (Cozumel · Roatán · Grand Cayman)",
+  itineraryTitle: "7-Night Western Caribbean from Galveston (Roatán · Costa Maya · Cozumel)",
   sailDate: "2027-01-24",
   returnDate: "2027-01-31",
   durationNights: 7,
-  embarkationPort: "Miami, Florida",
-  officialCruiseLineItineraryUrl: "https://www.royalcaribbean.com/cruises",
+  embarkationPort: "Galveston, Texas",
+  officialCruiseLineItineraryUrl:
+    "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
   cruisePromenadeShareUrl: "https://cruisepromenade.com/p/WESTERN-2027-01-24",
   dccShareUrl:
     "https://www.destinationcommandcenter.com/cruises/winter-excursion-planner?plan=WESTERN-2027-01-24",
   defaultAdults: 2,
   defaultChildAges: [],
   placementId: "fp-cp-winter-excursion-planner",
+  // Royal Caribbean's dated itinerary gives the port windows. The three port-day
+  // allAboardTime values are estimates calculated as departure minus 30 minutes.
   itineraryDays: [
     {
       dayNumber: 1,
       date: "2027-01-24",
       stopType: "embarkation",
       portSlug: null,
-      portLabel: "Miami, Florida (PortMiami)",
+      portLabel: "Galveston, Texas",
       dockOrTender: "dock",
       arrivalTime: null,
-      departureTime: "16:30",
-      allAboardTime: "15:30",
+      departureTime: "15:00",
+      allAboardTime: null,
       savedTourId: null,
       savedOptionCode: null,
-      notes: "Embarkation at PortMiami.",
+      notes:
+        "Royal Caribbean lists departure from Galveston at 3:00 PM. Check your boarding documents for your terminal and arrival appointment.",
     },
     {
       dayNumber: 2,
@@ -467,49 +499,6 @@ export const WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailin
     {
       dayNumber: 3,
       date: "2027-01-26",
-      stopType: "port",
-      portSlug: "cozumel",
-      portLabel: "Cozumel, Mexico",
-      dockOrTender: "dock",
-      arrivalTime: "07:00",
-      departureTime: "17:00",
-      allAboardTime: "16:15",
-      savedTourId: "dcc:tour:viator:5553274P1",
-      savedOptionCode: "TG2",
-      notes: "Docked at International Pier / Puerta Maya (7:00 AM – 5:00 PM; All-Aboard 4:15 PM).",
-    },
-    {
-      dayNumber: 4,
-      date: "2027-01-27",
-      stopType: "port",
-      portSlug: "roatan",
-      portLabel: "Roatán, Honduras",
-      dockOrTender: "dock",
-      arrivalTime: "08:00",
-      departureTime: "17:00",
-      allAboardTime: "16:15",
-      savedTourId: "dcc:tour:viator:62963P76",
-      savedOptionCode: "DEFAULT",
-      notes: "Docked at Coxen Hole / Mahogany Bay (8:00 AM – 5:00 PM; All-Aboard 4:15 PM).",
-    },
-    {
-      dayNumber: 5,
-      date: "2027-01-28",
-      stopType: "port",
-      portSlug: "grand-cayman",
-      portLabel: "George Town, Grand Cayman",
-      dockOrTender: "tender",
-      arrivalTime: "07:30",
-      departureTime: "16:00",
-      allAboardTime: "15:00",
-      lastTenderTime: "14:45",
-      savedTourId: "dcc:tour:viator:10309P3",
-      savedOptionCode: "TG1",
-      notes: "Tender port at George Town Harbour (7:30 AM – 4:00 PM; Last Tender 2:45 PM).",
-    },
-    {
-      dayNumber: 6,
-      date: "2027-01-29",
       stopType: "sea",
       portSlug: null,
       portLabel: "Cruising (Day at Sea)",
@@ -520,6 +509,51 @@ export const WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailin
       savedTourId: null,
       savedOptionCode: null,
       notes: "At sea.",
+    },
+    {
+      dayNumber: 4,
+      date: "2027-01-27",
+      stopType: "port",
+      portSlug: "roatan",
+      portLabel: "Roatán, Honduras",
+      dockOrTender: "dock",
+      arrivalTime: "08:00",
+      departureTime: "17:00",
+      allAboardTime: "16:30",
+      savedTourId: "dcc:tour:viator:62963P76",
+      savedOptionCode: "DEFAULT",
+      notes:
+        "Royal Caribbean lists Roatán from 8:00 AM to 5:00 PM. Estimated all-aboard is 4:30 PM. Confirm the deadline and meeting point in the ship app or Cruise Compass.",
+    },
+    {
+      dayNumber: 5,
+      date: "2027-01-28",
+      stopType: "port",
+      portSlug: "costa-maya",
+      portLabel: "Costa Maya (Mahahual), Mexico",
+      dockOrTender: "dock",
+      arrivalTime: "08:00",
+      departureTime: "17:00",
+      allAboardTime: "16:30",
+      savedTourId: null,
+      savedOptionCode: null,
+      notes:
+        "Royal Caribbean lists Costa Maya from 8:00 AM to 5:00 PM. Estimated all-aboard is 4:30 PM. Confirm the deadline, clock and meeting point in the ship app or Cruise Compass.",
+    },
+    {
+      dayNumber: 6,
+      date: "2027-01-29",
+      stopType: "port",
+      portSlug: "cozumel",
+      portLabel: "Cozumel, Mexico",
+      dockOrTender: "dock",
+      arrivalTime: "07:00",
+      departureTime: "17:00",
+      allAboardTime: "16:30",
+      savedTourId: "dcc:tour:viator:5553274P1",
+      savedOptionCode: "TG2",
+      notes:
+        "Royal Caribbean lists Cozumel from 7:00 AM to 5:00 PM. Estimated all-aboard is 4:30 PM. Confirm the deadline, clock and meeting point in the ship app or Cruise Compass.",
     },
     {
       dayNumber: 7,
@@ -533,33 +567,24 @@ export const WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailin
       allAboardTime: null,
       savedTourId: null,
       savedOptionCode: null,
-      notes: "At sea.",
+      notes: "At sea returning to Galveston.",
     },
     {
       dayNumber: 8,
       date: "2027-01-31",
       stopType: "debarkation",
       portSlug: null,
-      portLabel: "Miami, Florida (PortMiami)",
+      portLabel: "Galveston, Texas",
       dockOrTender: "dock",
-      arrivalTime: "06:30",
+      arrivalTime: "07:00",
       departureTime: null,
       allAboardTime: null,
       savedTourId: null,
       savedOptionCode: null,
-      notes: "Debarkation at PortMiami.",
+      notes: "Ship arrives in Galveston at 7:00 AM for debarkation.",
     },
   ],
   savedExcursionsByPort: {
-    cozumel: {
-      tourId: "dcc:tour:viator:5553274P1",
-      providerProductCode: "5553274P1",
-      optionCode: "TG2",
-      date: "2027-01-26",
-      arrivalTime: "07:00",
-      departureTime: "17:00",
-      allAboardTime: "16:15",
-    },
     roatan: {
       tourId: "dcc:tour:viator:62963P76",
       providerProductCode: "62963P76",
@@ -567,17 +592,16 @@ export const WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailin
       date: "2027-01-27",
       arrivalTime: "08:00",
       departureTime: "17:00",
-      allAboardTime: "16:15",
+      allAboardTime: "16:30",
     },
-    "grand-cayman": {
-      tourId: "dcc:tour:viator:10309P3",
-      providerProductCode: "10309P3",
-      optionCode: "TG1",
-      date: "2027-01-28",
-      arrivalTime: "07:30",
-      departureTime: "16:00",
-      allAboardTime: "15:00",
-      lastTenderTime: "14:45",
+    cozumel: {
+      tourId: "dcc:tour:viator:5553274P1",
+      providerProductCode: "5553274P1",
+      optionCode: "TG2",
+      date: "2027-01-29",
+      arrivalTime: "07:00",
+      departureTime: "17:00",
+      allAboardTime: "16:30",
     },
   },
 };
@@ -593,10 +617,44 @@ export const SHAREABLE_WINTER_SAILING_PLANS_BY_CODE: Record<
 export function resolveShareableWinterSailingPlan(
   planCode?: string | null,
 ): ShareableWinterSailingDefinition {
-  const normalized = (planCode || "INDY-2027-01-24").trim().toUpperCase();
+  return findRegisteredWinterSailingPlan(planCode) ?? INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN;
+}
+
+export function findRegisteredWinterSailingPlan(id?: string | null): ShareableWinterSailingDefinition | null {
+  const key = id?.trim().toLowerCase();
+  if (!key) return null;
+  const plans = Object.values(SHAREABLE_WINTER_SAILING_PLANS_BY_CODE).filter((plan) => {
+    const canonical = buildPhysicalSailingId(plan.cruiseLine, plan.shipSlug, plan.sailDate);
+    if ([plan.planCode, plan.sailingId, canonical].some((v) => v.toLowerCase() === key)) return true;
+    return getPortClockLedger().portCalls.some((call) =>
+      call.sailingId === plan.planCode && call.sailingAliases?.some((alias) => alias.toLowerCase() === key),
+    );
+  });
+  return plans.length === 1 ? plans[0] : null;
+}
+
+/** Port calls (port slug + date) a plan actually makes, read from its itinerary days. */
+export function shareablePlanPortCalls(
+  plan: ShareableWinterSailingDefinition,
+): Array<{ portSlug: WinterSailingPortSlug; date: string }> {
+  return plan.itineraryDays
+    .filter(
+      (d): d is WinterSailingItineraryDay & { portSlug: WinterSailingPortSlug } =>
+        d.stopType === "port" && d.portSlug !== null,
+    )
+    .map((d) => ({ portSlug: d.portSlug, date: d.date }));
+}
+
+/** The registered shareable plan whose itinerary really calls at this port, or null when none does. */
+export function findApplicableWinterSailingPlanForPort(
+  portSlug: string | null | undefined,
+): ShareableWinterSailingDefinition | null {
+  if (!portSlug) return null;
+  const slug = portSlug.trim().toLowerCase();
   return (
-    SHAREABLE_WINTER_SAILING_PLANS_BY_CODE[normalized] ||
-    INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN
+    Object.values(SHAREABLE_WINTER_SAILING_PLANS_BY_CODE).find((plan) =>
+      shareablePlanPortCalls(plan).some((c) => c.portSlug === slug),
+    ) || null
   );
 }
 
@@ -611,6 +669,38 @@ export interface RejectedOffItineraryTourRequest {
   applicableSailingPlanUrl: string | null;
 }
 
+type WinterReturnBuffer = ReturnBufferResult & { tourReturnSource: { sourceUrl: string; checkedAt: string } | null };
+type WinterTourOption = MatchedTourOption & { returnBuffer: WinterReturnBuffer };
+
+function winterTourReturnBuffer(portCall: PortClockRecord | null, option: MatchedTourOption, tender: boolean): WinterReturnBuffer {
+  const product = option.selectedProductOption;
+  const offer = option.boundOffer;
+  const returns = product?.optionCode === offer.optionCode
+    ? product?.verifiedReturns?.filter((r) =>
+        r.serviceDate === portCall?.callDate && r.serviceDate === offer.date && r.departureTime === offer.departureTime &&
+        r.returnDate === r.serviceDate && r.returnTime >= r.departureTime &&
+        hasCheckedSource({ url: r.sourceUrl, checkedAt: r.checkedAt }),
+      )
+    : undefined;
+  const evidence = returns?.length === 1 ? returns[0] : undefined;
+  const result = evaluateReturnBuffer({
+    portCall,
+    tourReturnDate: evidence?.returnDate,
+    tourReturnTime: evidence?.returnTime,
+    tourReturnPoint: evidence?.returnPoint,
+    tourTimeBasis: evidence?.timeBasis,
+  });
+  const tourReturnSource = evidence ? { sourceUrl: evidence.sourceUrl, checkedAt: evidence.checkedAt } : null;
+  // No independently sourced last-tender time is present on these winter plan records.
+  if (tender || portCall?.returnPoint?.dockOrTender === "tender") {
+    return {
+      ...result, tourReturnSource, verdict: "cannot_verify", label: RETURN_BUFFER_VERDICT_LABELS.cannot_verify,
+      reasons: [...result.reasons, "last_tender_unconfirmed"], bufferMinutes: null,
+    };
+  }
+  return { ...result, tourReturnSource };
+}
+
 export interface WinterPortEvaluatedPlanSlot {
   portSlug: WinterSailingPortSlug;
   portSpec: WinterPortLogisticsSpec;
@@ -622,15 +712,17 @@ export interface WinterPortEvaluatedPlanSlot {
   shipDeparture: string;
   allAboardTime: string | null;
   lastTenderTime: string | null;
-  allAboardStatus: "confirmed" | "missing_needs_confirmation";
-  lastTenderStatus: "confirmed" | "missing_needs_confirmation" | "not_applicable";
+  allAboardStatus: "confirmed" | "published_needs_confirmation" | "estimate" | "missing_needs_confirmation";
+  scheduleSource: PortClockSource | null;
+  allAboardSource: PortClockSource | null;
+  lastTenderStatus: "estimate" | "missing_needs_confirmation" | "not_applicable";
   cruiseFitRecommendationWithheld: boolean;
   checkoutEligible: boolean;
   matchedToursCount: number;
   noMatchedToursReason: string | null;
-  selectedOption: MatchedTourOption | null;
-  needsConfirmationSampleOption: MatchedTourOption | null;
-  allMatchedOptions: MatchedTourOption[];
+  selectedOption: WinterTourOption | null;
+  needsConfirmationSampleOption: WinterTourOption | null;
+  allMatchedOptions: WinterTourOption[];
   matchMetrics: TripMatchResponse["metrics"];
 }
 
@@ -666,8 +758,8 @@ export interface EvaluatedWinterSailingPlanResponse {
     dccPortGuidePath: string;
     dccPortGuideUrl: string;
     cruisePromenadePortUrl: string;
-    applicableSailingPlanCode: string;
-    applicableSailingPlanUrl: string;
+    applicableSailingPlanCode: string | null;
+    applicableSailingPlanUrl: string | null;
   }>;
   offItineraryBlocked: boolean;
   rejectedOffItineraryRequests: RejectedOffItineraryTourRequest[];
@@ -689,6 +781,8 @@ export interface EvaluatedWinterSailingPlanResponse {
       optionTitle: string | null;
       suitability: "recommended" | "needs_confirmation" | "ineligible";
       suitabilityLabel: "Recommended" | "Needs confirmation" | "Ineligible";
+      allAboardStatus: WinterPortEvaluatedPlanSlot["allAboardStatus"];
+      returnBuffer: WinterReturnBuffer;
       cruiseFitRecommendationWithheld: boolean;
       checkoutEligible: boolean;
       verifiedDepartureTime: string | null;
@@ -719,11 +813,12 @@ export interface EvaluatedWinterSailingPlanResponse {
 
 const DEFAULT_FIVE_PORT_DATES_FOR_JAN_24_WEEK: Record<WinterSailingPortSlug, string> = {
   nassau: "2027-01-25",
-  cozumel: "2027-01-26",
+  cozumel: "2027-01-29",
   "san-juan": "2027-01-27",
   roatan: "2027-01-27",
   "st-thomas": "2027-01-28",
   "grand-cayman": "2027-01-29",
+  "costa-maya": "2027-01-28",
 };
 
 function findCatalogTourRecord(tourIdOrProductCode: string) {
@@ -741,6 +836,11 @@ function findCatalogTourRecord(tourIdOrProductCode: string) {
 
 export async function evaluateWinterSailingPlan(params?: {
   planCode?: string | null;
+  /**
+   * Evaluate this definition instead of looking up planCode. Test fixtures only; request
+   * handlers never pass it, so it cannot be set from a URL.
+   */
+  planDefinition?: ShareableWinterSailingDefinition;
   shipName?: string | null;
   sailDate?: string | null;
   adults?: number;
@@ -754,7 +854,7 @@ export async function evaluateWinterSailingPlan(params?: {
   visitorId?: string | null;
   isTest?: boolean;
 }): Promise<EvaluatedWinterSailingPlanResponse> {
-  const plan = resolveShareableWinterSailingPlan(params?.planCode);
+  const plan = params?.planDefinition ?? resolveShareableWinterSailingPlan(params?.planCode);
   const shipName = params?.shipName?.trim() || plan.shipName;
   const sailDate = params?.sailDate?.trim() || plan.sailDate;
   const adults =
@@ -813,11 +913,7 @@ export async function evaluateWinterSailingPlan(params?: {
           reason: `Port "${normalizedPort}" is not on the verified ${plan.shipName} (${plan.planCode}) sailing itinerary (${sailingPortCallSlugs.join(", ")}). Off-itinerary tours cannot be saved or added to this sailing plan.`,
           applicablePortGuideUrl: offPortSpec?.dccPortGuideUrl || null,
           applicableSailingPlanUrl:
-            normalizedPort === "cozumel" ||
-            normalizedPort === "roatan" ||
-            normalizedPort === "grand-cayman"
-              ? WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN.dccShareUrl
-              : null,
+            findApplicableWinterSailingPlanForPort(normalizedPort)?.dccShareUrl ?? null,
         });
         continue;
       }
@@ -839,11 +935,7 @@ export async function evaluateWinterSailingPlan(params?: {
             : `Tour "${trimmedTour}" is not a verified catalog tour for port call "${normalizedPort}" on ${plan.planCode}.`,
           applicablePortGuideUrl: offPortSpec?.dccPortGuideUrl || null,
           applicableSailingPlanUrl:
-            actualTourPortSlug === "cozumel" ||
-            actualTourPortSlug === "roatan" ||
-            actualTourPortSlug === "grand-cayman"
-              ? WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN.dccShareUrl
-              : null,
+            findApplicableWinterSailingPlanForPort(actualTourPortSlug)?.dccShareUrl ?? null,
         });
         continue;
       }
@@ -868,6 +960,12 @@ export async function evaluateWinterSailingPlan(params?: {
   }
 
   const evaluatedByPortSlug = {} as Record<WinterSailingPortSlug, WinterPortEvaluatedPlanSlot>;
+  const WINTER_PORTS_WITHOUT_MATCHER_CATALOG: Partial<Record<WinterSailingPortSlug, string>> = {
+    "san-juan":
+      "No matched catalog tours for this port call window; Old San Juan Pier 3 is step-off walkable into the historic district.",
+    "costa-maya":
+      "No Costa Maya tours are in the DCC catalog yet, so nothing is matched or saved for this port call.",
+  };
 
   for (const portSlug of ALL_WINTER_SAILING_PORT_SLUGS) {
     const spec = ALL_WINTER_PORT_LOGISTICS_SPECS[portSlug];
@@ -888,19 +986,28 @@ export async function evaluateWinterSailingPlan(params?: {
       itineraryDay?.date ||
       savedPreset?.date ||
       DEFAULT_FIVE_PORT_DATES_FOR_JAN_24_WEEK[portSlug];
+    const ledgerCall = itineraryDay && shipName.toLowerCase() === plan.shipName.toLowerCase() && sailDate === plan.sailDate
+      ? findPortClockRecord({ sailingId: plan.sailingId, portSlug, callDate: date })
+      : null;
+    const portCall = ledgerCall?.shipSlug === plan.shipSlug ? ledgerCall : null;
     const shipArrival =
-      itineraryDay?.arrivalTime || savedPreset?.arrivalTime || spec.defaultArrivalTime;
+      portCall?.arrivalTime || itineraryDay?.arrivalTime || savedPreset?.arrivalTime || spec.defaultArrivalTime;
     const shipDeparture =
-      itineraryDay?.departureTime || savedPreset?.departureTime || spec.defaultDepartureTime;
+      portCall?.departureTime || itineraryDay?.departureTime || savedPreset?.departureTime || spec.defaultDepartureTime;
 
     const omitAllAboard = missingAllAboardSet.has(portSlug);
     const omitLastTender = spec.isTenderPort && missingLastTenderSet.has(portSlug);
+    const missingEvidence = portCall ? missingPortClockEvidence(portCall) : null;
+    const publishedDeadline = !omitAllAboard && !omitLastTender && missingEvidence && !missingEvidence.includes("no_published_all_aboard")
+      ? portCall?.publishedAllAboardTime : null;
+    const confirmedDeadline = missingEvidence?.length === 0 ? publishedDeadline : null;
     const allAboardTime =
       omitAllAboard || omitLastTender
         ? undefined
-        : itineraryDay?.allAboardTime ||
+        : publishedDeadline || portCall?.modeledAllAboardTime || itineraryDay?.allAboardTime ||
           savedPreset?.allAboardTime ||
           spec.defaultAllAboardTime;
+    const allAboardStatus = confirmedDeadline ? "confirmed" : publishedDeadline ? "published_needs_confirmation" : allAboardTime ? "estimate" : "missing_needs_confirmation";
     const lastTenderTime = spec.isTenderPort
       ? omitLastTender || omitAllAboard
         ? ""
@@ -911,8 +1018,9 @@ export async function evaluateWinterSailingPlan(params?: {
           null
       : null;
 
-    if (portSlug === "san-juan") {
-      // San Juan has 0 matched commercial catalog tours; show on itinerary with explicit 0 matched tours
+    const noCatalogReason = WINTER_PORTS_WITHOUT_MATCHER_CATALOG[portSlug];
+    if (noCatalogReason) {
+      // San Juan and Costa Maya have 0 matched commercial catalog tours; show on itinerary with explicit 0 matched tours
       evaluatedByPortSlug[portSlug] = {
         portSlug,
         portSpec: spec,
@@ -924,13 +1032,14 @@ export async function evaluateWinterSailingPlan(params?: {
         shipDeparture,
         allAboardTime: allAboardTime || null,
         lastTenderTime: null,
-        allAboardStatus: allAboardTime ? "confirmed" : "missing_needs_confirmation",
+        allAboardStatus,
+        scheduleSource: portCall?.scheduleSource ?? null,
+        allAboardSource: publishedDeadline ? portCall?.publishedAllAboardSource ?? null : null,
         lastTenderStatus: "not_applicable",
-        cruiseFitRecommendationWithheld: !allAboardTime,
+        cruiseFitRecommendationWithheld: true,
         checkoutEligible: false,
         matchedToursCount: 0,
-        noMatchedToursReason:
-          "No matched catalog tours for this port call window; Old San Juan Pier 3 is step-off walkable into the historic district.",
+        noMatchedToursReason: noCatalogReason,
         selectedOption: null,
         needsConfirmationSampleOption: null,
         allMatchedOptions: [],
@@ -964,7 +1073,7 @@ export async function evaluateWinterSailingPlan(params?: {
       pickupMode: "pier_pickup",
       shipArrival,
       shipDeparture,
-      allAboardTime,
+      allAboardTime: confirmedDeadline ?? undefined,
       lastTenderTime: spec.isTenderPort ? (lastTenderTime ?? "") : undefined,
       isTenderPort: spec.isTenderPort,
       tenderClearanceMinutes: spec.defaultClearanceMinutes,
@@ -977,14 +1086,19 @@ export async function evaluateWinterSailingPlan(params?: {
       isTest: params?.isTest ?? true,
     });
 
-    const timingMissing = !allAboardTime || (spec.isTenderPort && !lastTenderTime);
-
-    // Where the ship's all-aboard or last-tender time is missing, or the port is not on the active sailing itinerary,
-    // withhold the cruise-fit booking recommendation on options.
-    const processedOptions: MatchedTourOption[] = matchRes.options.map((opt) => {
-      if (timingMissing || opt.suitability !== "recommended") {
+    // The winter plan has no separately sourced last-tender deadline.
+    const timingMissing = !confirmedDeadline || spec.isTenderPort;
+    const processedOptions: WinterTourOption[] = matchRes.options.map((opt) => {
+      const returnBuffer = winterTourReturnBuffer(omitAllAboard || omitLastTender ? null : portCall, opt, spec.isTenderPort);
+      if (timingMissing || returnBuffer.verdict !== "meets_recommended_120" || opt.suitability !== "recommended") {
         return {
           ...opt,
+          returnBuffer,
+          explanations: [
+            ...opt.explanations.filter((reason) => reason !== opt.cruiseScheduleFit?.reason && !reason.startsWith("Verified cruise schedule fit:")),
+            returnBuffer.label,
+          ],
+          boundOffer: { ...opt.boundOffer, fittingDepartureTimes: [] },
           suitability: opt.suitability === "ineligible" ? "ineligible" : "needs_confirmation",
           cruiseScheduleFit: opt.cruiseScheduleFit
             ? {
@@ -993,8 +1107,10 @@ export async function evaluateWinterSailingPlan(params?: {
                   opt.cruiseScheduleFit.fitStatus === "ineligible"
                     ? "ineligible"
                     : "needs_confirmation",
-                allAboardConfirmed: Boolean(allAboardTime),
-                lastTenderConfirmed: spec.isTenderPort ? Boolean(lastTenderTime) : true,
+                allAboardConfirmed: Boolean(confirmedDeadline),
+                lastTenderConfirmed: !spec.isTenderPort,
+                reason: returnBuffer.label,
+                fittingDepartureTimes: [],
                 cruiseFitRecommendationWithheld: true,
               }
             : undefined,
@@ -1005,7 +1121,11 @@ export async function evaluateWinterSailingPlan(params?: {
           },
         };
       }
-      return opt;
+      return {
+        ...opt,
+        returnBuffer,
+        boundOffer: { ...opt.boundOffer, fittingDepartureTimes: [opt.boundOffer.departureTime!] },
+      };
     });
 
     const selectedOption = onActiveSailingItinerary
@@ -1053,10 +1173,12 @@ export async function evaluateWinterSailingPlan(params?: {
       shipDeparture,
       allAboardTime: allAboardTime || null,
       lastTenderTime: spec.isTenderPort ? lastTenderTime : null,
-      allAboardStatus: allAboardTime ? "confirmed" : "missing_needs_confirmation",
+      allAboardStatus,
+      scheduleSource: portCall?.scheduleSource ?? null,
+      allAboardSource: publishedDeadline ? portCall?.publishedAllAboardSource ?? null : null,
       lastTenderStatus: spec.isTenderPort
         ? lastTenderTime
-          ? "confirmed"
+          ? "estimate"
           : "missing_needs_confirmation"
         : "not_applicable",
       cruiseFitRecommendationWithheld:
@@ -1067,7 +1189,12 @@ export async function evaluateWinterSailingPlan(params?: {
       selectedOption,
       needsConfirmationSampleOption,
       allMatchedOptions: processedOptions.slice(0, 5),
-      matchMetrics: matchRes.metrics,
+      matchMetrics: {
+        ...matchRes.metrics,
+        eligibleCount: processedOptions.filter((o) => o.suitability === "recommended").length,
+        needsConfirmationCount: processedOptions.filter((o) => o.suitability === "needs_confirmation").length,
+        fullySupportedCruiseFitCount: processedOptions.filter((o) => o.suitability === "recommended").length,
+      },
     };
   }
 
@@ -1087,10 +1214,7 @@ export async function evaluateWinterSailingPlan(params?: {
     (slug) => !sailingPortCallSet.has(slug),
   ).map((slug) => {
     const spec = WINTER_PORT_LOGISTICS_SPECS[slug];
-    const applicablePlan =
-      slug === "cozumel" || slug === "roatan" || slug === "grand-cayman"
-        ? WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN
-        : INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN;
+    const applicablePlan = findApplicableWinterSailingPlanForPort(slug);
     return {
       portSlug: slug,
       portName: spec.portName,
@@ -1098,8 +1222,8 @@ export async function evaluateWinterSailingPlan(params?: {
       dccPortGuidePath: spec.dccPortGuidePath,
       dccPortGuideUrl: spec.dccPortGuideUrl,
       cruisePromenadePortUrl: spec.cruisePromenadePortUrl,
-      applicableSailingPlanCode: applicablePlan.planCode,
-      applicableSailingPlanUrl: applicablePlan.dccShareUrl,
+      applicableSailingPlanCode: applicablePlan?.planCode ?? null,
+      applicableSailingPlanUrl: applicablePlan?.dccShareUrl ?? null,
     };
   });
 
@@ -1144,6 +1268,8 @@ export async function evaluateWinterSailingPlan(params?: {
       optionTitle: opt.boundOffer.optionTitle,
       suitability: opt.suitability,
       suitabilityLabel,
+      allAboardStatus: slot.allAboardStatus,
+      returnBuffer: opt.returnBuffer,
       cruiseFitRecommendationWithheld: !isCheckoutEligible,
       checkoutEligible: isCheckoutEligible,
       verifiedDepartureTime:
