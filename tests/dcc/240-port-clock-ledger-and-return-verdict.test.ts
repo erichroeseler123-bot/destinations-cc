@@ -34,10 +34,10 @@ function verifiedCall(over: Partial<PortClockRecord> = {}): PortClockRecord {
 test("shipped ledger passes validation and invents no published deadlines", () => {
   assert.deepEqual(validatePortClockLedger(), []);
   const s = summarizePortClockLedger();
-  assert.equal(s.total, 28);
+  assert.equal(s.total, 29);
   assert.equal(s.publishedAllAboard, 0);
   assert.equal(s.verified, 0);
-  assert.equal(s.modeledOnly + s.noAllAboard, 28);
+  assert.equal(s.modeledOnly + s.noAllAboard, s.total);
 });
 
 test("engine view mirrors the ledger and marks nothing as published", () => {
@@ -143,19 +143,19 @@ test("labels never claim safety or guarantees", () => {
   assert.doesNotMatch(note, /safe|guarantee/i);
 });
 
-const CP_RECORD_URL = "https://cruisepromenade.com/api/verified-sailings/symphony-of-the-seas/2027-01-24";
 const RC_SAILING_URL =
   "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24";
 
-test("WESTERN-2027-01-24 rows equal the verified Symphony of the Seas itinerary from Galveston", () => {
+test("WESTERN-2027-01-24 records the line's full round trip separately from modeled cutoffs", () => {
   const rows = getPortClockLedger().portCalls.filter((r) => r.sailingId === "WESTERN-2027-01-24");
   assert.deepEqual(
     rows.map((r) => [r.portSlug, r.callDate, r.arrivalTime, r.departureTime, r.modeledAllAboardTime]),
     [
-      ["galveston", "2027-01-24", null, "16:00", null],
+      ["galveston", "2027-01-24", null, "15:00", null],
       ["roatan", "2027-01-27", "08:00", "17:00", "16:30"],
       ["costa-maya", "2027-01-28", "08:00", "17:00", "16:30"],
-      ["cozumel", "2027-01-29", "08:00", "18:00", "17:30"],
+      ["cozumel", "2027-01-29", "07:00", "17:00", "16:30"],
+      ["galveston", "2027-01-31", "07:00", null, null],
     ],
   );
   for (const r of rows) {
@@ -165,26 +165,25 @@ test("WESTERN-2027-01-24 rows equal the verified Symphony of the Seas itinerary 
     assert.equal(r.publishedAllAboardTime, null);
     assert.equal(r.publishedAllAboardSource, null);
     assert.equal(r.timeBasis, "unknown");
+    assert.equal(r.returnPoint, null);
     assert.equal(r.status, "unverified");
     assert.ok(!(r.sailingAliases ?? []).includes("WC07MIA-20270124"));
     for (const alias of [
       "symphony-of-the-seas-20270124",
       "royal-caribbean-symphony-of-the-seas-2027-01-24",
       "sailing:rcl:symphony-of-the-seas:2027-01-24",
+      "sailing:rccl:symphony-of-the-seas:2027-01-24",
     ]) {
       assert.ok(r.sailingAliases?.includes(alias), alias);
     }
-    // Sourced via CP's shared record; DCC does not claim to have checked Royal Caribbean itself.
-    assert.equal(r.scheduleSource?.kind, "shared_sailing_record");
-    assert.equal(r.scheduleSource?.url, CP_RECORD_URL);
-    assert.equal(r.scheduleSource?.recordId, "royal-caribbean-symphony-of-the-seas-2027-01-24");
-    assert.equal(r.scheduleSource?.checkedAt, "2026-11-11");
-    assert.equal(r.scheduleSource?.upstreamUrl, RC_SAILING_URL);
-    assert.match(r.scheduleSource?.note ?? "", /DCC did not check Royal Caribbean directly/);
+    assert.equal(r.scheduleSource?.kind, "cruise_line_itinerary");
+    assert.equal(r.scheduleSource?.url, RC_SAILING_URL);
+    assert.equal(r.scheduleSource?.checkedAt, "2026-11-24");
     assert.equal(r.modelRule, r.modeledAllAboardTime ? "departure_minus_30" : null);
   }
   assert.equal(findPortClockRecord({ sailingId: "WC07MIA-20270124", portSlug: "cozumel" }), null);
   assert.equal(findPortClockRecord({ sailingId: "WESTERN-2027-01-24", portSlug: "grand-cayman" }), null);
+  assert.equal(findPortClockRecord({ sailingId: "WESTERN-2027-01-24", portSlug: "galveston" }), null);
   assert.equal(findPortClockRecord({ sailingId: "WESTERN-2027-01-24", portSlug: "cozumel", callDate: "2027-01-26" }), null);
   assert.equal(
     findPortClockRecord({ sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-24", portSlug: "cozumel" })?.callDate,
@@ -217,10 +216,10 @@ test("scope helper separates past and upcoming rows without removing any", () =>
   assert.equal(filterPortCallsByScope(all, "all", asOf).length, all.length);
   assert.equal(upcoming.length + past.length, all.length);
   assert.equal(past.length, 19);
-  assert.equal(upcoming.length, 9);
+  assert.equal(upcoming.length, 10);
   assert.ok(upcoming.every((r) => r.callDate >= asOf));
   assert.ok(past.every((r) => isPastPortCall(r, asOf)));
-  assert.ok(upcoming.filter((r) => r.sailingId === "WESTERN-2027-01-24").length === 4);
+  assert.equal(upcoming.filter((r) => r.sailingId === "WESTERN-2027-01-24").length, 5);
   assert.equal(parsePortClockScope("UPCOMING"), "upcoming");
   assert.equal(parsePortClockScope("bogus"), "all");
   assert.equal(parsePortClockScope(null), "all");

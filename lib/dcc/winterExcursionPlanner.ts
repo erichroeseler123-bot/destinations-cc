@@ -17,6 +17,9 @@ import {
 } from "./commerce/opaqueAttributionLedger";
 import { HOTEL_CONCIERGE_CONFIGS } from "./catalog/hotelConfigs";
 import { readDurableLedgerState } from "./storage/durableTransactionalStore";
+import { findPortClockRecord, getPortClockLedger, hasCheckedSource, missingPortClockEvidence, type PortClockRecord, type PortClockSource } from "./cruise/portClockLedger";
+import { buildPhysicalSailingId } from "./cruise/canonicalHostedCruiseContract";
+import { evaluateReturnBuffer, RETURN_BUFFER_VERDICT_LABELS, type ReturnBufferResult } from "./cruise/returnBufferVerdict";
 
 export const WINTER_EXCURSION_PORT_SLUGS = [
   "nassau",
@@ -443,7 +446,7 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
 
 export const WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefinition = {
   planCode: "WESTERN-2027-01-24",
-  // Shared sailing record id (Cruise Promenade verified sailing, lastVerified 2026-11-11).
+  // Keep the shared sailing ID so existing plan links resolve to this departure.
   sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-24",
   cruiseLine: "Royal Caribbean International",
   shipName: "Symphony of the Seas",
@@ -461,24 +464,23 @@ export const WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailin
   defaultAdults: 2,
   defaultChildAges: [],
   placementId: "fp-cp-winter-excursion-planner",
-  // Times come from Cruise Promenade's shared sailing record royal-caribbean-symphony-of-the-seas-2027-01-24,
-  // which cites Royal Caribbean. Royal Caribbean publishes no all-aboard time for these calls; port-day
-  // allAboardTime values are modeled as departure − 30 min and must be confirmed in the ship app.
+  // Royal Caribbean's dated itinerary gives the port windows. The three port-day
+  // allAboardTime values are estimates calculated as departure minus 30 minutes.
   itineraryDays: [
     {
       dayNumber: 1,
       date: "2027-01-24",
       stopType: "embarkation",
       portSlug: null,
-      portLabel: "Galveston, Texas (Royal Caribbean Cruise Terminal 10, Pier 10)",
+      portLabel: "Galveston, Texas",
       dockOrTender: "dock",
       arrivalTime: null,
-      departureTime: "16:00",
+      departureTime: "15:00",
       allAboardTime: null,
       savedTourId: null,
       savedOptionCode: null,
       notes:
-        "Embarkation at Royal Caribbean Cruise Terminal 10 (Pier 10), Port of Galveston; ship departs 4:00 PM (America/Chicago).",
+        "Royal Caribbean lists departure from Galveston at 3:00 PM. Check your boarding documents for your terminal and arrival appointment.",
     },
     {
       dayNumber: 2,
@@ -521,7 +523,7 @@ export const WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailin
       savedTourId: "dcc:tour:viator:62963P76",
       savedOptionCode: "DEFAULT",
       notes:
-        "Docked at the Port of Roatán pier, Coxen Hole (8:00 AM – 5:00 PM). All-aboard 4:30 PM is an estimate (departure − 30 min), not published by Royal Caribbean — confirm the real time in the ship app / Cruise Compass.",
+        "Royal Caribbean lists Roatán from 8:00 AM to 5:00 PM. Estimated all-aboard is 4:30 PM. Confirm the deadline and meeting point in the ship app or Cruise Compass.",
     },
     {
       dayNumber: 5,
@@ -536,7 +538,7 @@ export const WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailin
       savedTourId: null,
       savedOptionCode: null,
       notes:
-        "Docked at the Puerto Costa Maya pier, Mahahual (8:00 AM – 5:00 PM). All-aboard 4:30 PM is an estimate (departure − 30 min), not published by Royal Caribbean — confirm in the ship app / Cruise Compass. Ship time vs local Quintana Roo time is unconfirmed. No saved tour: no Costa Maya tours are in the catalog yet.",
+        "Royal Caribbean lists Costa Maya from 8:00 AM to 5:00 PM. Estimated all-aboard is 4:30 PM. Confirm the deadline, clock and meeting point in the ship app or Cruise Compass.",
     },
     {
       dayNumber: 6,
@@ -545,13 +547,13 @@ export const WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailin
       portSlug: "cozumel",
       portLabel: "Cozumel, Mexico",
       dockOrTender: "dock",
-      arrivalTime: "08:00",
-      departureTime: "18:00",
-      allAboardTime: "17:30",
+      arrivalTime: "07:00",
+      departureTime: "17:00",
+      allAboardTime: "16:30",
       savedTourId: "dcc:tour:viator:5553274P1",
       savedOptionCode: "TG2",
       notes:
-        "Docked at the International Cruise Terminal (SSA Mexico), Cozumel (8:00 AM – 6:00 PM). All-aboard 5:30 PM is an estimate (departure − 30 min), not published by Royal Caribbean — confirm in the ship app / Cruise Compass. Ship time vs local Quintana Roo time is unconfirmed.",
+        "Royal Caribbean lists Cozumel from 7:00 AM to 5:00 PM. Estimated all-aboard is 4:30 PM. Confirm the deadline, clock and meeting point in the ship app or Cruise Compass.",
     },
     {
       dayNumber: 7,
@@ -572,7 +574,7 @@ export const WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailin
       date: "2027-01-31",
       stopType: "debarkation",
       portSlug: null,
-      portLabel: "Galveston, Texas (Royal Caribbean Cruise Terminal 10, Pier 10)",
+      portLabel: "Galveston, Texas",
       dockOrTender: "dock",
       arrivalTime: "07:00",
       departureTime: null,
@@ -597,9 +599,9 @@ export const WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailin
       providerProductCode: "5553274P1",
       optionCode: "TG2",
       date: "2027-01-29",
-      arrivalTime: "08:00",
-      departureTime: "18:00",
-      allAboardTime: "17:30",
+      arrivalTime: "07:00",
+      departureTime: "17:00",
+      allAboardTime: "16:30",
     },
   },
 };
@@ -615,11 +617,20 @@ export const SHAREABLE_WINTER_SAILING_PLANS_BY_CODE: Record<
 export function resolveShareableWinterSailingPlan(
   planCode?: string | null,
 ): ShareableWinterSailingDefinition {
-  const normalized = (planCode || "INDY-2027-01-24").trim().toUpperCase();
-  return (
-    SHAREABLE_WINTER_SAILING_PLANS_BY_CODE[normalized] ||
-    INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN
-  );
+  return findRegisteredWinterSailingPlan(planCode) ?? INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN;
+}
+
+export function findRegisteredWinterSailingPlan(id?: string | null): ShareableWinterSailingDefinition | null {
+  const key = id?.trim().toLowerCase();
+  if (!key) return null;
+  const plans = Object.values(SHAREABLE_WINTER_SAILING_PLANS_BY_CODE).filter((plan) => {
+    const canonical = buildPhysicalSailingId(plan.cruiseLine, plan.shipSlug, plan.sailDate);
+    if ([plan.planCode, plan.sailingId, canonical].some((v) => v.toLowerCase() === key)) return true;
+    return getPortClockLedger().portCalls.some((call) =>
+      call.sailingId === plan.planCode && call.sailingAliases?.some((alias) => alias.toLowerCase() === key),
+    );
+  });
+  return plans.length === 1 ? plans[0] : null;
 }
 
 /** Port calls (port slug + date) a plan actually makes, read from its itinerary days. */
@@ -658,6 +669,38 @@ export interface RejectedOffItineraryTourRequest {
   applicableSailingPlanUrl: string | null;
 }
 
+type WinterReturnBuffer = ReturnBufferResult & { tourReturnSource: { sourceUrl: string; checkedAt: string } | null };
+type WinterTourOption = MatchedTourOption & { returnBuffer: WinterReturnBuffer };
+
+function winterTourReturnBuffer(portCall: PortClockRecord | null, option: MatchedTourOption, tender: boolean): WinterReturnBuffer {
+  const product = option.selectedProductOption;
+  const offer = option.boundOffer;
+  const returns = product?.optionCode === offer.optionCode
+    ? product?.verifiedReturns?.filter((r) =>
+        r.serviceDate === portCall?.callDate && r.serviceDate === offer.date && r.departureTime === offer.departureTime &&
+        r.returnDate === r.serviceDate && r.returnTime >= r.departureTime &&
+        hasCheckedSource({ url: r.sourceUrl, checkedAt: r.checkedAt }),
+      )
+    : undefined;
+  const evidence = returns?.length === 1 ? returns[0] : undefined;
+  const result = evaluateReturnBuffer({
+    portCall,
+    tourReturnDate: evidence?.returnDate,
+    tourReturnTime: evidence?.returnTime,
+    tourReturnPoint: evidence?.returnPoint,
+    tourTimeBasis: evidence?.timeBasis,
+  });
+  const tourReturnSource = evidence ? { sourceUrl: evidence.sourceUrl, checkedAt: evidence.checkedAt } : null;
+  // No independently sourced last-tender time is present on these winter plan records.
+  if (tender || portCall?.returnPoint?.dockOrTender === "tender") {
+    return {
+      ...result, tourReturnSource, verdict: "cannot_verify", label: RETURN_BUFFER_VERDICT_LABELS.cannot_verify,
+      reasons: [...result.reasons, "last_tender_unconfirmed"], bufferMinutes: null,
+    };
+  }
+  return { ...result, tourReturnSource };
+}
+
 export interface WinterPortEvaluatedPlanSlot {
   portSlug: WinterSailingPortSlug;
   portSpec: WinterPortLogisticsSpec;
@@ -669,15 +712,17 @@ export interface WinterPortEvaluatedPlanSlot {
   shipDeparture: string;
   allAboardTime: string | null;
   lastTenderTime: string | null;
-  allAboardStatus: "confirmed" | "missing_needs_confirmation";
-  lastTenderStatus: "confirmed" | "missing_needs_confirmation" | "not_applicable";
+  allAboardStatus: "confirmed" | "published_needs_confirmation" | "estimate" | "missing_needs_confirmation";
+  scheduleSource: PortClockSource | null;
+  allAboardSource: PortClockSource | null;
+  lastTenderStatus: "estimate" | "missing_needs_confirmation" | "not_applicable";
   cruiseFitRecommendationWithheld: boolean;
   checkoutEligible: boolean;
   matchedToursCount: number;
   noMatchedToursReason: string | null;
-  selectedOption: MatchedTourOption | null;
-  needsConfirmationSampleOption: MatchedTourOption | null;
-  allMatchedOptions: MatchedTourOption[];
+  selectedOption: WinterTourOption | null;
+  needsConfirmationSampleOption: WinterTourOption | null;
+  allMatchedOptions: WinterTourOption[];
   matchMetrics: TripMatchResponse["metrics"];
 }
 
@@ -736,6 +781,8 @@ export interface EvaluatedWinterSailingPlanResponse {
       optionTitle: string | null;
       suitability: "recommended" | "needs_confirmation" | "ineligible";
       suitabilityLabel: "Recommended" | "Needs confirmation" | "Ineligible";
+      allAboardStatus: WinterPortEvaluatedPlanSlot["allAboardStatus"];
+      returnBuffer: WinterReturnBuffer;
       cruiseFitRecommendationWithheld: boolean;
       checkoutEligible: boolean;
       verifiedDepartureTime: string | null;
@@ -939,19 +986,28 @@ export async function evaluateWinterSailingPlan(params?: {
       itineraryDay?.date ||
       savedPreset?.date ||
       DEFAULT_FIVE_PORT_DATES_FOR_JAN_24_WEEK[portSlug];
+    const ledgerCall = itineraryDay && shipName.toLowerCase() === plan.shipName.toLowerCase() && sailDate === plan.sailDate
+      ? findPortClockRecord({ sailingId: plan.sailingId, portSlug, callDate: date })
+      : null;
+    const portCall = ledgerCall?.shipSlug === plan.shipSlug ? ledgerCall : null;
     const shipArrival =
-      itineraryDay?.arrivalTime || savedPreset?.arrivalTime || spec.defaultArrivalTime;
+      portCall?.arrivalTime || itineraryDay?.arrivalTime || savedPreset?.arrivalTime || spec.defaultArrivalTime;
     const shipDeparture =
-      itineraryDay?.departureTime || savedPreset?.departureTime || spec.defaultDepartureTime;
+      portCall?.departureTime || itineraryDay?.departureTime || savedPreset?.departureTime || spec.defaultDepartureTime;
 
     const omitAllAboard = missingAllAboardSet.has(portSlug);
     const omitLastTender = spec.isTenderPort && missingLastTenderSet.has(portSlug);
+    const missingEvidence = portCall ? missingPortClockEvidence(portCall) : null;
+    const publishedDeadline = !omitAllAboard && !omitLastTender && missingEvidence && !missingEvidence.includes("no_published_all_aboard")
+      ? portCall?.publishedAllAboardTime : null;
+    const confirmedDeadline = missingEvidence?.length === 0 ? publishedDeadline : null;
     const allAboardTime =
       omitAllAboard || omitLastTender
         ? undefined
-        : itineraryDay?.allAboardTime ||
+        : publishedDeadline || portCall?.modeledAllAboardTime || itineraryDay?.allAboardTime ||
           savedPreset?.allAboardTime ||
           spec.defaultAllAboardTime;
+    const allAboardStatus = confirmedDeadline ? "confirmed" : publishedDeadline ? "published_needs_confirmation" : allAboardTime ? "estimate" : "missing_needs_confirmation";
     const lastTenderTime = spec.isTenderPort
       ? omitLastTender || omitAllAboard
         ? ""
@@ -976,9 +1032,11 @@ export async function evaluateWinterSailingPlan(params?: {
         shipDeparture,
         allAboardTime: allAboardTime || null,
         lastTenderTime: null,
-        allAboardStatus: allAboardTime ? "confirmed" : "missing_needs_confirmation",
+        allAboardStatus,
+        scheduleSource: portCall?.scheduleSource ?? null,
+        allAboardSource: publishedDeadline ? portCall?.publishedAllAboardSource ?? null : null,
         lastTenderStatus: "not_applicable",
-        cruiseFitRecommendationWithheld: !allAboardTime,
+        cruiseFitRecommendationWithheld: true,
         checkoutEligible: false,
         matchedToursCount: 0,
         noMatchedToursReason: noCatalogReason,
@@ -1015,7 +1073,7 @@ export async function evaluateWinterSailingPlan(params?: {
       pickupMode: "pier_pickup",
       shipArrival,
       shipDeparture,
-      allAboardTime,
+      allAboardTime: confirmedDeadline ?? undefined,
       lastTenderTime: spec.isTenderPort ? (lastTenderTime ?? "") : undefined,
       isTenderPort: spec.isTenderPort,
       tenderClearanceMinutes: spec.defaultClearanceMinutes,
@@ -1028,14 +1086,19 @@ export async function evaluateWinterSailingPlan(params?: {
       isTest: params?.isTest ?? true,
     });
 
-    const timingMissing = !allAboardTime || (spec.isTenderPort && !lastTenderTime);
-
-    // Where the ship's all-aboard or last-tender time is missing, or the port is not on the active sailing itinerary,
-    // withhold the cruise-fit booking recommendation on options.
-    const processedOptions: MatchedTourOption[] = matchRes.options.map((opt) => {
-      if (timingMissing || opt.suitability !== "recommended") {
+    // The winter plan has no separately sourced last-tender deadline.
+    const timingMissing = !confirmedDeadline || spec.isTenderPort;
+    const processedOptions: WinterTourOption[] = matchRes.options.map((opt) => {
+      const returnBuffer = winterTourReturnBuffer(omitAllAboard || omitLastTender ? null : portCall, opt, spec.isTenderPort);
+      if (timingMissing || returnBuffer.verdict !== "meets_recommended_120" || opt.suitability !== "recommended") {
         return {
           ...opt,
+          returnBuffer,
+          explanations: [
+            ...opt.explanations.filter((reason) => reason !== opt.cruiseScheduleFit?.reason && !reason.startsWith("Verified cruise schedule fit:")),
+            returnBuffer.label,
+          ],
+          boundOffer: { ...opt.boundOffer, fittingDepartureTimes: [] },
           suitability: opt.suitability === "ineligible" ? "ineligible" : "needs_confirmation",
           cruiseScheduleFit: opt.cruiseScheduleFit
             ? {
@@ -1044,8 +1107,10 @@ export async function evaluateWinterSailingPlan(params?: {
                   opt.cruiseScheduleFit.fitStatus === "ineligible"
                     ? "ineligible"
                     : "needs_confirmation",
-                allAboardConfirmed: Boolean(allAboardTime),
-                lastTenderConfirmed: spec.isTenderPort ? Boolean(lastTenderTime) : true,
+                allAboardConfirmed: Boolean(confirmedDeadline),
+                lastTenderConfirmed: !spec.isTenderPort,
+                reason: returnBuffer.label,
+                fittingDepartureTimes: [],
                 cruiseFitRecommendationWithheld: true,
               }
             : undefined,
@@ -1056,7 +1121,11 @@ export async function evaluateWinterSailingPlan(params?: {
           },
         };
       }
-      return opt;
+      return {
+        ...opt,
+        returnBuffer,
+        boundOffer: { ...opt.boundOffer, fittingDepartureTimes: [opt.boundOffer.departureTime!] },
+      };
     });
 
     const selectedOption = onActiveSailingItinerary
@@ -1104,10 +1173,12 @@ export async function evaluateWinterSailingPlan(params?: {
       shipDeparture,
       allAboardTime: allAboardTime || null,
       lastTenderTime: spec.isTenderPort ? lastTenderTime : null,
-      allAboardStatus: allAboardTime ? "confirmed" : "missing_needs_confirmation",
+      allAboardStatus,
+      scheduleSource: portCall?.scheduleSource ?? null,
+      allAboardSource: publishedDeadline ? portCall?.publishedAllAboardSource ?? null : null,
       lastTenderStatus: spec.isTenderPort
         ? lastTenderTime
-          ? "confirmed"
+          ? "estimate"
           : "missing_needs_confirmation"
         : "not_applicable",
       cruiseFitRecommendationWithheld:
@@ -1118,7 +1189,12 @@ export async function evaluateWinterSailingPlan(params?: {
       selectedOption,
       needsConfirmationSampleOption,
       allMatchedOptions: processedOptions.slice(0, 5),
-      matchMetrics: matchRes.metrics,
+      matchMetrics: {
+        ...matchRes.metrics,
+        eligibleCount: processedOptions.filter((o) => o.suitability === "recommended").length,
+        needsConfirmationCount: processedOptions.filter((o) => o.suitability === "needs_confirmation").length,
+        fullySupportedCruiseFitCount: processedOptions.filter((o) => o.suitability === "recommended").length,
+      },
     };
   }
 
@@ -1192,6 +1268,8 @@ export async function evaluateWinterSailingPlan(params?: {
       optionTitle: opt.boundOffer.optionTitle,
       suitability: opt.suitability,
       suitabilityLabel,
+      allAboardStatus: slot.allAboardStatus,
+      returnBuffer: opt.returnBuffer,
       cruiseFitRecommendationWithheld: !isCheckoutEligible,
       checkoutEligible: isCheckoutEligible,
       verifiedDepartureTime:

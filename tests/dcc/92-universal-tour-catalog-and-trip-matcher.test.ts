@@ -549,9 +549,10 @@ test("6. Five-Port Winter Excursion Planner (INDY-2027-01-24), Tender/Transfer M
   assert.equal(nassauSaved.totalPartyPriceFormatted, "$338.00");
   assert.equal(nassauSaved.debarkOrTenderClearanceMinutes, 30);
   assert.equal(nassauSaved.transferBeforeMinutes, 15);
-  assert.equal(nassauSaved.suitability, "recommended");
+  assert.equal(nassauSaved.suitability, "needs_confirmation");
   assert.equal(nassauSaved.checkoutProvider, "viator");
-  assert.ok(nassauSaved.trackedViatorCheckoutUrl?.includes("/api/v1/ads/click?"));
+  assert.equal(nassauSaved.trackedViatorCheckoutUrl, null);
+  assert.equal(planRes.fivePortsBySlug.nassau.selectedOption?.cruiseScheduleFit?.allAboardConfirmed, false);
 
   const stThomasSaved = planRes.savedPortsSummary.savedSelections.find(
     (s) => s.portSlug === "st-thomas",
@@ -568,8 +569,7 @@ test("6. Five-Port Winter Excursion Planner (INDY-2027-01-24), Tender/Transfer M
   assert.equal(stThomasSaved.trackedViatorCheckoutUrl, null);
   assert.equal(stThomasSaved.checkoutProvider, "viator");
 
-  assert.equal(planRes.savedPortsSummary.combinedPartyTotalCents, 33800);
-  assert.equal(planRes.savedPortsSummary.combinedPartyTotalFormatted, "$338.00");
+  assert.equal(planRes.savedPortsSummary.combinedPartyTotalCents, 0);
 
   // Grand Cayman tender port enforces 45m tender clearance. No registered sailing calls at
   // Grand Cayman, so this runs against the test-only fixture plan.
@@ -593,7 +593,8 @@ test("6. Five-Port Winter Excursion Planner (INDY-2027-01-24), Tender/Transfer M
     grandCaymanSlot.selectedOption?.cruiseScheduleFit?.debarkClearanceMinutes,
     45,
   );
-  assert.equal(grandCaymanSlot.selectedOption?.suitability, "recommended");
+  assert.equal(grandCaymanSlot.selectedOption?.suitability, "needs_confirmation");
+  assert.equal(grandCaymanSlot.checkoutEligible, false);
 
   // WESTERN-2027-01-24 is Symphony of the Seas from Galveston: Roatán, Costa Maya, Cozumel only.
   const westernPlan = await evaluateWinterSailingPlan({
@@ -611,9 +612,17 @@ test("6. Five-Port Winter Excursion Planner (INDY-2027-01-24), Tender/Transfer M
     [
       ["roatan", "2027-01-27", "08:00", "17:00", "16:30"],
       ["costa-maya", "2027-01-28", "08:00", "17:00", "16:30"],
-      ["cozumel", "2027-01-29", "08:00", "18:00", "17:30"],
+      ["cozumel", "2027-01-29", "07:00", "17:00", "16:30"],
     ],
   );
+  for (const portCall of westernPlan.sailingPortCalls) {
+    assert.notEqual(portCall.allAboardStatus, "confirmed", portCall.portSlug);
+    assert.equal(portCall.checkoutEligible, false, portCall.portSlug);
+    for (const option of portCall.allMatchedOptions) {
+      assert.notEqual(option.suitability, "recommended", option.tourId);
+      assert.notEqual(option.cruiseScheduleFit?.allAboardConfirmed, true, option.tourId);
+    }
+  }
   assert.equal(westernPlan.fivePortsBySlug["grand-cayman"].onActiveSailingItinerary, false);
   assert.ok(!westernPlan.savedPortsSummary.savedPortSlugs.includes("grand-cayman"));
   assert.ok(!westernPlan.savedPortsSummary.savedPortSlugs.includes("costa-maya"));

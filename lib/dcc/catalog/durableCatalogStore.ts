@@ -77,6 +77,17 @@ export type TransferTimeSource =
   | "unknown";
 
 export type TourProductOptionRecord = {
+  /** Operator-sourced return to a specific place for this exact option and departure. */
+  verifiedReturns?: Array<{
+    serviceDate: string;
+    departureTime: string;
+    returnDate: string;
+    returnTime: string;
+    timeBasis: "ship_time" | "local_port_time";
+    returnPoint: string;
+    sourceUrl: string;
+    checkedAt: string;
+  }>;
   optionCode: string;
   title: string;
   description: string | null;

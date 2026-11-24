@@ -1,7 +1,7 @@
 {
-  "version": "2026-11-23.v2",
-  "generatedAt": "2026-11-24T02:00:00Z",
-  "note": "Migrated from SCHEDULED_CRUISE_PORT_CALLS. Legacy rows (modelRule legacy_unsourced_value) have no recorded source; their all-aboard values are modeled until a published line source is attached. v2 replaced the WESTERN-2027-01-24 demo rows with Symphony of the Seas from Galveston, copied from Cruise Promenade's shared sailing record royal-caribbean-symphony-of-the-seas-2027-01-24 (modelRule departure_minus_30; no published all-aboard).",
+  "version": "2026-11-24.v3",
+  "generatedAt": "2026-11-24T02:42:12.539Z",
+  "note": "Legacy records with modelRule legacy_unsourced_value have no recorded schedule source or cutoff rule. Royal Caribbean’s January 24, 2027 Symphony of the Seas itinerary supplies the five WESTERN call dates and schedule times. The port-day cutoff estimates use departure_minus_30. The itinerary does not establish a published all-aboard deadline, clock basis, or return point.",
   "portCalls": [
     {
       "sailingId": "INDY-2027-01-24",
@@ -79,7 +79,7 @@
       "portSlug": "galveston",
       "callDate": "2027-01-24",
       "arrivalTime": null,
-      "departureTime": "16:00",
+      "departureTime": "15:00",
       "timeBasis": "unknown",
       "publishedAllAboardTime": null,
       "publishedAllAboardSource": null,
@@ -87,13 +87,9 @@
       "modelRule": null,
       "returnPoint": null,
       "scheduleSource": {
-        "url": "https://cruisepromenade.com/api/verified-sailings/symphony-of-the-seas/2027-01-24",
-        "kind": "shared_sailing_record",
-        "checkedAt": "2026-11-11",
-        "recordId": "royal-caribbean-symphony-of-the-seas-2027-01-24",
-        "upstreamUrl": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
-        "upstreamKind": "cruise_line_itinerary",
-        "note": "Embarkation, Royal Caribbean Cruise Terminal 10 (Pier 10), Galveston. Departure copied from Cruise Promenade's shared sailing record (lastVerified 2026-11-11), which cites Royal Caribbean as its source; that record links itinerary code SY07GAL-3231805419. DCC did not check Royal Caribbean directly."
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
       },
       "status": "unverified"
     },
@@ -118,13 +114,9 @@
       "modelRule": "departure_minus_30",
       "returnPoint": null,
       "scheduleSource": {
-        "url": "https://cruisepromenade.com/api/verified-sailings/symphony-of-the-seas/2027-01-24",
-        "kind": "shared_sailing_record",
-        "checkedAt": "2026-11-11",
-        "recordId": "royal-caribbean-symphony-of-the-seas-2027-01-24",
-        "upstreamUrl": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
-        "upstreamKind": "cruise_line_itinerary",
-        "note": "Arrival/departure copied from Cruise Promenade's shared sailing record (lastVerified 2026-11-11), which cites Royal Caribbean as its source; that record links itinerary code SY07GAL-3231805419. DCC did not check Royal Caribbean directly. No published all-aboard exists."
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
       },
       "status": "unverified"
     },
@@ -149,13 +141,9 @@
       "modelRule": "departure_minus_30",
       "returnPoint": null,
       "scheduleSource": {
-        "url": "https://cruisepromenade.com/api/verified-sailings/symphony-of-the-seas/2027-01-24",
-        "kind": "shared_sailing_record",
-        "checkedAt": "2026-11-11",
-        "recordId": "royal-caribbean-symphony-of-the-seas-2027-01-24",
-        "upstreamUrl": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
-        "upstreamKind": "cruise_line_itinerary",
-        "note": "Puerto Costa Maya pier, Mahahual. Arrival/departure copied from Cruise Promenade's shared sailing record (lastVerified 2026-11-11), which cites Royal Caribbean as its source; that record links itinerary code SY07GAL-3231805419. DCC did not check Royal Caribbean directly. Ship time vs local Quintana Roo time is unconfirmed. No published all-aboard exists."
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
       },
       "status": "unverified"
     },
@@ -171,22 +159,45 @@
       "shipSlug": "symphony-of-the-seas",
       "portSlug": "cozumel",
       "callDate": "2027-01-29",
-      "arrivalTime": "08:00",
-      "departureTime": "18:00",
+      "arrivalTime": "07:00",
+      "departureTime": "17:00",
       "timeBasis": "unknown",
       "publishedAllAboardTime": null,
       "publishedAllAboardSource": null,
-      "modeledAllAboardTime": "17:30",
+      "modeledAllAboardTime": "16:30",
       "modelRule": "departure_minus_30",
       "returnPoint": null,
       "scheduleSource": {
-        "url": "https://cruisepromenade.com/api/verified-sailings/symphony-of-the-seas/2027-01-24",
-        "kind": "shared_sailing_record",
-        "checkedAt": "2026-11-11",
-        "recordId": "royal-caribbean-symphony-of-the-seas-2027-01-24",
-        "upstreamUrl": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
-        "upstreamKind": "cruise_line_itinerary",
-        "note": "Arrival/departure copied from Cruise Promenade's shared sailing record (lastVerified 2026-11-11), which cites Royal Caribbean as its source; that record links itinerary code SY07GAL-3231805419. DCC did not check Royal Caribbean directly. Ship time vs local Quintana Roo time is unconfirmed. No published all-aboard exists."
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
+      },
+      "status": "unverified"
+    },
+    {
+      "sailingId": "WESTERN-2027-01-24",
+      "sailingAliases": [
+        "symphony-of-the-seas-20270124",
+        "royal-caribbean-symphony-of-the-seas-2027-01-24",
+        "sailing:rcl:symphony-of-the-seas:2027-01-24",
+        "sailing:rccl:symphony-of-the-seas:2027-01-24"
+      ],
+      "shipName": "Symphony of the Seas",
+      "shipSlug": "symphony-of-the-seas",
+      "portSlug": "galveston",
+      "callDate": "2027-01-31",
+      "arrivalTime": "07:00",
+      "departureTime": null,
+      "timeBasis": "unknown",
+      "publishedAllAboardTime": null,
+      "publishedAllAboardSource": null,
+      "modeledAllAboardTime": null,
+      "modelRule": null,
+      "returnPoint": null,
+      "scheduleSource": {
+        "url": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
+        "kind": "cruise_line_itinerary",
+        "checkedAt": "2026-11-24"
       },
       "status": "unverified"
     },

@@ -105,7 +105,7 @@ function isValidDate(value: string): boolean {
   return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
-function hasCheckedSource(source: PortClockSource | null | undefined): boolean {
+export function hasCheckedSource(source: Pick<PortClockSource, "url" | "checkedAt"> | null | undefined): boolean {
   if (!source || !isValidDate(source.checkedAt)) return false;
   try {
     const url = new URL(source.url);
@@ -199,14 +199,13 @@ export function findPortClockRecord(params: {
   callDate?: string;
 }): PortClockRecord | null {
   const id = params.sailingId.trim().toLowerCase();
-  return (
-    getPortClockLedger().portCalls.find(
-      (r) =>
-        r.portSlug === params.portSlug &&
-        (!params.callDate || r.callDate === params.callDate) &&
-        (r.sailingId.toLowerCase() === id || (r.sailingAliases ?? []).some((a) => a.toLowerCase() === id)),
-    ) ?? null
+  const calls = getPortClockLedger().portCalls.filter(
+    (r) =>
+      r.portSlug === params.portSlug &&
+      (!params.callDate || r.callDate === params.callDate) &&
+      (r.sailingId.toLowerCase() === id || (r.sailingAliases ?? []).some((a) => a.toLowerCase() === id)),
   );
+  return calls.length === 1 ? calls[0] : null;
 }
 
 export type PortClockScope = "all" | "upcoming" | "past";

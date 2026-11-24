@@ -18,7 +18,7 @@ import {
 } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 import {
-  resolveShareableWinterSailingPlan,
+  findRegisteredWinterSailingPlan,
   shareablePlanPortCalls,
 } from "@/lib/dcc/winterExcursionPlanner";
 import { getViatorClient } from "@/lib/viator/client";
@@ -240,14 +240,10 @@ export async function GET(request: Request) {
     }
   }
 
-  // Enforce sailing itinerary port (and, when supplied, port-call date) verification if a sailing code is specified
+  // A sailing-linked offer must identify an actual dated port call on that voyage.
   if (sailingParam && catalogRecord) {
-    const normalizedSailing = sailingParam.trim().toUpperCase();
-    if (
-      normalizedSailing === "INDY-2027-01-24" ||
-      normalizedSailing === "WESTERN-2027-01-24"
-    ) {
-      const plan = resolveShareableWinterSailingPlan(normalizedSailing);
+    const plan = findRegisteredWinterSailingPlan(sailingParam);
+    if (plan) {
       const portCalls = shareablePlanPortCalls(plan);
       const allowedPorts = new Set<string>(portCalls.map((c) => c.portSlug));
       const offerPort = (
@@ -255,7 +251,7 @@ export async function GET(request: Request) {
         catalogRecord.destinationSlug ||
         ""
       ).toLowerCase();
-      if (offerPort && !allowedPorts.has(offerPort)) {
+      if (!allowedPorts.has(offerPort)) {
         return NextResponse.json(
           {
             ok: false,
@@ -269,9 +265,13 @@ export async function GET(request: Request) {
         );
       }
       const requestedDate = dateParam?.trim() || "";
+      if (!requestedDate) {
+        return NextResponse.json(
+          { ok: false, error: "UNAPPROVED_CHECKOUT_DESTINATION", reason: "OFFER_DATE_REQUIRED_FOR_SAILING", sailing: plan.planCode },
+          { status: 403 },
+        );
+      }
       if (
-        offerPort &&
-        requestedDate &&
         !portCalls.some((c) => c.portSlug === offerPort && c.date === requestedDate)
       ) {
         return NextResponse.json(
