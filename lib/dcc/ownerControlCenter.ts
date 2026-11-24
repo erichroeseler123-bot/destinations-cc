@@ -231,13 +231,19 @@ export interface DailyBusinessCockpit {
     rezdyStaleClaimedCount: number;
     rezdyCronSchedulesEnabled: boolean | null;
     genuineFailedNotificationsCount: number;
+    deliveryFailureCount: number;
+    notificationConfigurationCount: number;
+    deliveryFailuresHref: string;
+    notificationConfigurationHref: string;
     statusBadge: "All Clear" | "Action Needed";
   };
   inquiriesNeedingReply: {
     question: "4. Which inquiries need a reply?";
     untriagedGenuineCount: number;
     actionableGenuineCount: number;
-    inboxHref: "/admin/inbox?view=genuine";
+    customerRepliesNeededCount: number;
+    nextReply: { name: string | null; source: string } | null;
+    inboxHref: string;
     closedJfdPolicyNote: "Closed JFD items remain archived per owner decision.";
   };
   linksProducingSales: {
@@ -299,11 +305,13 @@ export interface OwnerControlCenterSnapshot {
   dailyBusinessCockpit: DailyBusinessCockpit;
   triageQueue: {
     totalAttentionCount: number;
+    customerRepliesNeededCount: number;
     untriagedInquiriesCount: number;
     genuineActionableInquiriesCount: number;
     failedNotificationDeliveriesCount: number;
     genuineFailedNotificationsCount: number;
-    inboxHref: "/admin/inbox?view=genuine";
+    notificationConfigurationCount: number;
+    inboxHref: string;
     cruisePromenade: CruisePromenadeOwnerSummary;
     rollCallBridge: RollCallBridgeStatus;
     gosnoOps: DirectMorOwnerSummary;
@@ -983,7 +991,7 @@ export async function buildOwnerControlCenterSnapshot(
   ] = await Promise.all([
     options?.inboxSnapshotOverride
       ? Promise.resolve(options.inboxSnapshotOverride)
-      : getOperatorInboxSnapshot({ view: "genuine" }),
+      : getOperatorInboxSnapshot({ view: "customer_replies" }),
     buildUnifiedPortfolioFunnelReport({ windowPreset: "28d" }),
     fetchCruisePromenadeOwnerSummary({ env, fetchImpl: options?.fetchImpl }),
     fetchDirectMorOwnerSummary({
@@ -1046,19 +1054,39 @@ export async function buildOwnerControlCenterSnapshot(
     return failedCount + (staleCron ? 1 : 0);
   })();
 
+  const { customerRepliesNeededCount, deliveryFailureCount, notificationConfigurationCount } = inbox.kpis;
+  const replyInboxHref = "/admin/inbox?view=customer_replies";
+  const deliveryFailuresHref = "/admin/inbox?view=notification_failures";
+  const notificationConfigurationHref = "/admin/inbox?view=notification_configuration";
+  const nextReply = inbox.items[0];
+
   const triageItems: TriageActionItem[] = [
     {
       id: "operator-inbox-triage",
-      priority:
-        inbox.kpis.needsTriageCount > 0 ||
-        inbox.kpis.genuineFailedNotificationsCount > 0
-          ? "high"
-          : "info",
-      title: "Unified Operator Inbox (Genuine Inquiries & Notifications)",
-      countOrBadge: `${inbox.kpis.needsTriageCount} untriaged · ${inbox.kpis.failedNotificationsCount} failed alerts`,
-      detail: `${inbox.kpis.genuineActionableCount} actionable genuine inquiry item(s) across 8 specialist channels (${inbox.kpis.genuineFailedNotificationsCount} genuine failed email/SMS delivery alerts).`,
-      actionHref: "/admin/inbox?view=genuine",
-      actionLabel: "Open Genuine Inbox →",
+      priority: customerRepliesNeededCount > 0 ? "high" : "info",
+      title: "Customer replies",
+      countOrBadge: String(customerRepliesNeededCount),
+      detail: "Customer inquiries awaiting a response.",
+      actionHref: replyInboxHref,
+      actionLabel: "Open reply queue →",
+    },
+    {
+      id: "notification-delivery",
+      priority: deliveryFailureCount > 0 ? "high" : "info",
+      title: "Alert delivery failures",
+      countOrBadge: String(deliveryFailureCount),
+      detail: "Saved records with a failed alert.",
+      actionHref: deliveryFailuresHref,
+      actionLabel: "Review delivery failures →",
+    },
+    {
+      id: "notification-configuration",
+      priority: notificationConfigurationCount > 0 ? "medium" : "info",
+      title: "Alert setup",
+      countOrBadge: String(notificationConfigurationCount),
+      detail: "Saved records where an expected alert was unconfigured.",
+      actionHref: notificationConfigurationHref,
+      actionLabel: "Review alert setup →",
     },
     {
       id: "cruise-promenade-splits",
@@ -1116,8 +1144,9 @@ export async function buildOwnerControlCenterSnapshot(
   });
 
   const totalAttentionCount =
-    inbox.kpis.needsTriageCount +
-    inbox.kpis.genuineFailedNotificationsCount +
+    customerRepliesNeededCount +
+    deliveryFailureCount +
+    notificationConfigurationCount +
     cpSummary.needsAssistanceGuestsCount +
     gosnoOps.provisioningExceptions +
     gosnoOps.needsReviewOrders +
@@ -1225,7 +1254,7 @@ export async function buildOwnerControlCenterSnapshot(
       headlineValue: `${totalOpenQuotes28d.toLocaleString()} open quote requests`,
       gosnoBreakdown: `GoSno quotes: ${gosnoOps.openQuoteRequests28d.toLocaleString()}`,
       parrBreakdown: `PARR quotes: ${parrOps.openQuoteRequests28d.toLocaleString()}`,
-      networkOrAffiliateBreakdown: `Operator inbox untriaged: ${inbox.kpis.needsTriageCount.toLocaleString()}`,
+      networkOrAffiliateBreakdown: `Customer inquiries awaiting a reply: ${customerRepliesNeededCount.toLocaleString()}`,
       antiConflationDisclosure:
         "Unbooked custom/multi-vehicle quote requests (`openQuoteRequests28d`) — Pre-booking pipeline only, not bookings or revenue.",
     },
@@ -1559,7 +1588,7 @@ export async function buildOwnerControlCenterSnapshot(
     gosnoOps.provisioningExceptions +
     parrOps.provisioningExceptions +
     rezdyHealthAlertCount +
-    inbox.kpis.genuineFailedNotificationsCount;
+    deliveryFailureCount;
 
   // 3-Market Direct Operator Pipeline (Juneau, New Orleans, Colorado)
   const nonTestOnboarding = onboardingQueue.filter(
@@ -1703,14 +1732,20 @@ export async function buildOwnerControlCenterSnapshot(
       rezdyUnknownResultCount,
       rezdyStaleClaimedCount,
       rezdyCronSchedulesEnabled,
-      genuineFailedNotificationsCount: inbox.kpis.genuineFailedNotificationsCount,
-      statusBadge: totalAutomationFailures > 0 ? "Action Needed" : "All Clear",
+      genuineFailedNotificationsCount: deliveryFailureCount,
+      deliveryFailureCount,
+      notificationConfigurationCount,
+      deliveryFailuresHref,
+      notificationConfigurationHref,
+      statusBadge: totalAutomationFailures > 0 || notificationConfigurationCount > 0 ? "Action Needed" : "All Clear",
     },
     inquiriesNeedingReply: {
       question: "4. Which inquiries need a reply?",
       untriagedGenuineCount: inbox.kpis.needsTriageCount,
       actionableGenuineCount: inbox.kpis.genuineActionableCount,
-      inboxHref: "/admin/inbox?view=genuine",
+      customerRepliesNeededCount,
+      nextReply: nextReply ? { name: nextReply.contact.name, source: nextReply.sourceSiteLabel } : null,
+      inboxHref: replyInboxHref,
       closedJfdPolicyNote: "Closed JFD items remain archived per owner decision.",
     },
     linksProducingSales: {
@@ -1792,12 +1827,13 @@ export async function buildOwnerControlCenterSnapshot(
     dailyBusinessCockpit,
     triageQueue: {
       totalAttentionCount,
+      customerRepliesNeededCount,
       untriagedInquiriesCount: inbox.kpis.needsTriageCount,
       genuineActionableInquiriesCount: inbox.kpis.genuineActionableCount,
-      failedNotificationDeliveriesCount: inbox.kpis.failedNotificationsCount,
-      genuineFailedNotificationsCount:
-        inbox.kpis.genuineFailedNotificationsCount,
-      inboxHref: "/admin/inbox?view=genuine",
+      failedNotificationDeliveriesCount: deliveryFailureCount,
+      genuineFailedNotificationsCount: deliveryFailureCount,
+      notificationConfigurationCount,
+      inboxHref: replyInboxHref,
       cruisePromenade: cpSummary,
       rollCallBridge,
       gosnoOps,

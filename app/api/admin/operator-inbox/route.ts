@@ -7,6 +7,7 @@ import {
   isValidAdminSession,
 } from "@/lib/adminAccess";
 import {
+  VALID_OPERATOR_TRIAGE_STATUSES,
   getUnifiedOperatorInbox,
   isValidOperatorTriageStatus,
   saveOperatorInboxTriageOverlay,
@@ -199,8 +200,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         ok: false,
-        error:
-          "triageStatus must be one of: new, in_review, contacted, resolved, archived.",
+        error: `triageStatus must be one of: ${VALID_OPERATOR_TRIAGE_STATUSES.join(", ")}.`,
       },
       { status: 400, headers: NO_STORE_HEADERS },
     );
