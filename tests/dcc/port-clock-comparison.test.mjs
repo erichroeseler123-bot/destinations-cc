@@ -3,23 +3,25 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { comparePortClock } from "../../scripts/dcc/compare-port-clock.mjs";
 
-const [ref] = JSON.parse(await readFile(new URL("../../data/cruise/port-clock/reviewed-itineraries.json", import.meta.url), "utf8"));
+const references = JSON.parse(await readFile(new URL("../../data/cruise/port-clock/reviewed-itineraries.json", import.meta.url), "utf8"));
+const ref = references.find((r) => r.sailingId === "WESTERN-2027-01-24");
+const indy = references.find((r) => r.sailingId === "INDY-2027-01-24");
 const asOf = "2026-11-24";
 const stop = ref.days.find((day) => day.portSlug === "cozumel");
 
-function inputs() {
-  const portCalls = ref.days.filter((day) => day.portSlug).map((day) => ({
-    ...day, sailingId: ref.sailingId, shipSlug: ref.shipSlug, callDate: day.date,
-    timeBasis: "unknown", publishedAllAboardTime: null, scheduleSource: ref.source,
+function inputs(reference = ref) {
+  const portCalls = reference.days.filter((day) => day.portSlug).map((day) => ({
+    ...day, sailingId: reference.sailingId, shipSlug: reference.shipSlug, callDate: day.date,
+    timeBasis: "unknown", publishedAllAboardTime: null, scheduleSource: reference.source,
   }));
   const sailing = {
-    shipSlug: ref.shipSlug, sailDate: ref.sailDate, provenance: { sourceUrl: ref.source.url },
-    itineraryDays: ref.days.map((day, i) => ({ ...day, dayNumber: i + 1 })),
+    shipSlug: reference.shipSlug, sailDate: reference.sailDate, provenance: { sourceUrl: reference.source.url },
+    itineraryDays: reference.days.map((day, i) => ({ ...day, dayNumber: i + 1 })),
   };
-  const cpResponses = { [ref.sailingId]: { input: "test", response: { verified: true, sailing } } };
-  const board = { sailing: { ship: "Symphony of the Seas", sailDate: ref.sailDate }, days: ref.days };
-  const demoBoards = { [ref.publicDemoBoard]: board };
-  return { args: { references: [ref], portCalls, cpResponses, demoBoards, asOf }, portCalls, sailing };
+  const cpResponses = { [reference.sailingId]: { input: "test", response: { verified: true, sailing } } };
+  const board = { sailing: { ship: reference.shipSlug.replaceAll("-", " "), sailDate: reference.sailDate }, days: reference.days };
+  const demoBoards = { [reference.publicDemoBoard]: board };
+  return { args: { references: [reference], portCalls, cpResponses, demoBoards, asOf }, portCalls, sailing };
 }
 
 test("identical wrong hours on both sites remain two discrepancies against the line's dated schedule", () => {
@@ -85,4 +87,18 @@ test("a demo board showing a different ship is reported even when the sailing AP
   args.demoBoards[ref.publicDemoBoard].sailing.ship = "Harmony of the Seas";
   const [finding] = comparePortClock(args).findings;
   assert.deepEqual([finding.consumer, finding.field, finding.observed], ["CP public demo", "shipSlug", "harmony-of-the-seas"]);
+});
+
+test("two departures on January 24 use separate references and detect a missing Independence San Juan call", () => {
+  const west = inputs();
+  const east = inputs(indy);
+  const args = { references: [ref, indy], portCalls: [...west.portCalls, ...east.portCalls],
+    cpResponses: { ...west.args.cpResponses, ...east.args.cpResponses },
+    demoBoards: { ...west.args.demoBoards, ...east.args.demoBoards }, asOf };
+  assert.equal(comparePortClock(args).findings.length, 0);
+  const sanJuan = east.portCalls.find((day) => day.callDate === "2027-01-27");
+  assert.deepEqual([sanJuan.portSlug, sanJuan.arrivalTime, sanJuan.departureTime], ["san-juan", "11:30", "19:00"]);
+  const { findings } = comparePortClock({ ...args, portCalls: args.portCalls.filter((day) => day !== sanJuan) });
+  assert.deepEqual(findings.map(f => [f.sailingId, f.date, f.consumer, f.status, f.expected]),
+    [[indy.sailingId, "2027-01-27", "DCC", "missing_coverage", "san-juan"]]);
 });
