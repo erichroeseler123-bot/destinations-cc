@@ -19100,8 +19100,7 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "checkedSourceUrl": "https://www.myvacaya.com/trip/total-eclipse-med-cruise-2027/",
     "checkedAt": "2026-11-23T11:30:17Z",
     "holdReason": "Checked 2026-11-23 on myvacaya.com/trip/total-eclipse-med-cruise-2027/ (charter sold out; waitlist only): held in release-watch pending Oceania Cruises / Oceania Allura onboarding in DCC's canonical cruise-line and vessel registries."
-  }
-,
+  },
   {
     "holdId": "v10-hold-concerts-at-sea-2027-2028",
     "organizerSlug": "concerts-at-sea",
@@ -19112,7 +19111,9 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateDatesOrVessel": "2027-01-23 Regal Princess & 2028-02-27 Sky Princess (RT Fort Lauderdale)",
     "checkedSourceUrl": "https://www.concertsatsea.com/",
     "checkedAt": "2026-11-24T12:00:00Z",
-    "holdReason": "Verified primary-source consumer oldies music group cruises (Harmon Travel booking forms); held in release_watch pending onboarding of Princess vessels Regal Princess and Sky Princess into DCC’s canonical 74-ship specification registry."
+    "holdReason": "Verified primary-source consumer oldies music group cruises (Harmon Travel booking forms); held in release_watch pending onboarding of Princess vessels Regal Princess and Sky Princess into DCC’s canonical 74-ship specification registry.",
+    "franchiseId": "hosted-franchise:concerts-at-sea",
+    "franchiseSlug": "concerts-at-sea"
   },
   {
     "holdId": "v10-excl-cruise-specialists-escorted",
@@ -19124,7 +19125,9 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateDatesOrVessel": "2027–2028 Volendam, Nieuw Statendam, Zuiderdam, Coral Princess, Queen Anne & Silver Dawn",
     "checkedSourceUrl": "https://www.cruisespecialists.com/hosted-cruises.aspx",
     "checkedAt": "2026-11-24T12:00:00Z",
-    "holdReason": "Excluded reference: all 12 2027–2028 voyages on cruisespecialists.com/hosted-cruises.aspx (including HAL’s Solar Eclipse & Pan Am 100th Anniversary Legendary Voyages) are standard public cruise-line voyages where a luxury retail travel agency places a generalist voyage host and cocktail reception rather than operating a themed community program."
+    "holdReason": "Excluded reference: all 12 2027–2028 voyages on cruisespecialists.com/hosted-cruises.aspx (including HAL’s Solar Eclipse & Pan Am 100th Anniversary Legendary Voyages) are standard public cruise-line voyages where a luxury retail travel agency places a generalist voyage host and cocktail reception rather than operating a themed community program.",
+    "franchiseId": "hosted-franchise:cruise-specialists",
+    "franchiseSlug": "cruise-specialists"
   },
   {
     "holdId": "v10-hold-craftours-non-onboarded-and-conflicted",
@@ -19178,7 +19181,9 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateDatesOrVessel": "Jul 11–18, 2027 · Holland America Noordam (RT Seattle)",
     "checkedSourceUrl": "https://imcconcerts.com/event/imcs-gospel-music-celebration-7-day-alaska-cruise-2027/",
     "checkedAt": "2026-11-24T12:00:00Z",
-    "holdReason": "Verified Southern Gospel cruise (from $2,298 pp, fulfilled via Inspiration Travel); held in release_watch pending onboarding of Holland America Noordam into DCC’s canonical 74-vessel registry."
+    "holdReason": "Verified Southern Gospel cruise (from $2,298 pp, fulfilled via Inspiration Travel); held in release_watch pending onboarding of Holland America Noordam into DCC’s canonical 74-vessel registry.",
+    "franchiseId": "hosted-franchise:imc-concerts",
+    "franchiseSlug": "imc-concerts"
   },
   {
     "holdId": "v10-hold-eo-tours-infinity-rivers-and-antarctica-conflict",
@@ -19288,7 +19293,9 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateDatesOrVessel": "2027–2028 Azamara Pursuit/Journey/Onward, AmaMelodia, Emerald Destiny, RV African Dream & AmaLilia",
     "checkedSourceUrl": "https://iamoutbound.com/",
     "checkedAt": "2026-11-24T12:00:00Z",
-    "holdReason": "Verified major consumer LGBTQ+ charter producer with 8 scheduled 2027–2028 charters; held in release_watch pending onboarding of Azamara Pursuit/Journey/Onward, AmaWaterways, and Emerald Destiny into DCC’s canonical 74-ship registry."
+    "holdReason": "Verified major consumer LGBTQ+ charter producer with 8 scheduled 2027–2028 charters; held in release_watch pending onboarding of Azamara Pursuit/Journey/Onward, AmaWaterways, and Emerald Destiny into DCC’s canonical 74-ship registry.",
+    "franchiseId": "hosted-franchise:outbound",
+    "franchiseSlug": "outbound"
   },
   {
     "holdId": "v10-hold-out-adventures-expeditions-2027-2028",
@@ -19300,7 +19307,9 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateDatesOrVessel": "2027–2028 Ultramarine, National Geographic Venture, Croatia Yacht Rhapsody, Mekong, Nile & Galápagos",
     "checkedSourceUrl": "https://outadventures.com/",
     "checkedAt": "2026-11-24T12:00:00Z",
-    "holdReason": "Held in release_watch: multi-day land+expedition packages aboard non-onboarded polar/yacht vessels without static port clock windows."
+    "holdReason": "Held in release_watch: multi-day land+expedition packages aboard non-onboarded polar/yacht vessels without static port clock windows.",
+    "franchiseId": "hosted-franchise:out-adventures",
+    "franchiseSlug": "out-adventures"
   },
   {
     "holdId": "v10-hold-european-and-boutique-lgbtq-watch",
@@ -19312,7 +19321,9 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateDatesOrVessel": "2027–2028 Vasco da Gama, Costa Favolosa/Fascinosa & TBA",
     "checkedSourceUrl": "https://www.redefinitioncruise.com/",
     "checkedAt": "2026-11-24T12:00:00Z",
-    "holdReason": "Held in release_watch: nicko cruises Vasco da Gama and Costa Cruises are not yet in DCC’s canonical line/ship registries; spartacus-cruise.com & bearvoyages.com timed out; Cruise4Bears and RU5H have no verified 2027–2028 departure on an onboarded DCC ship."
+    "holdReason": "Held in release_watch: nicko cruises Vasco da Gama and Costa Cruises are not yet in DCC’s canonical line/ship registries; spartacus-cruise.com & bearvoyages.com timed out; Cruise4Bears and RU5H have no verified 2027–2028 departure on an onboarded DCC ship.",
+    "franchiseId": "hosted-franchise:spartacus-redefinition-cruise4bears-ru5h",
+    "franchiseSlug": "spartacus-redefinition-cruise4bears-ru5h"
   },
   {
     "holdId": "v10-hist-defunct-lgbtq-cruise-brands",
@@ -19324,7 +19335,9 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateDatesOrVessel": "Ceased operations (Al & Chuck 2016; RSVP absorbed into Atlantis, last sailed Feb 2020; odysseypride.com HTTP 404)",
     "checkedSourceUrl": "https://rsvpvacations.com/",
     "checkedAt": "2026-11-24T12:00:00Z",
-    "holdReason": "Historical disposition: defunct or absorbed historical LGBTQ+ cruise brands with zero active 2027–2028 departures; kept permanently out of active public sailing sitemaps."
+    "holdReason": "Historical disposition: defunct or absorbed historical LGBTQ+ cruise brands with zero active 2027–2028 departures; kept permanently out of active public sailing sitemaps.",
+    "franchiseId": "hosted-franchise:historical-lgbtq-brands",
+    "franchiseSlug": "historical-lgbtq-brands"
   },
   {
     "holdId": "v10-excl-b2b-brokers-directories-and-swingers",
@@ -19336,7 +19349,9 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "candidateDatesOrVessel": "Non-consumer B2B brokers, third-party reseller directories, club nights, day boats & couples swinger charters",
     "checkedSourceUrl": "https://gaycruises.org/",
     "checkedAt": "2026-11-24T12:00:00Z",
-    "holdReason": "Excluded reference: pure B2B corporate ship-charter brokers (Landry & Kling, Full Ship Charters), affiliate/OTA directories (GayCruises.org, Happy Gay Travel, MeetMeOnBoard), bespoke FIT agency (Out Of Office), non-cruise club/day-boat entities (Daddy Issues, closed Wet & Wild PV), and heteronormative couples swinger charters (Temptation, Desire) are outside consumer hosted-cruise catalog scope."
+    "holdReason": "Excluded reference: pure B2B corporate ship-charter brokers (Landry & Kling, Full Ship Charters), affiliate/OTA directories (GayCruises.org, Happy Gay Travel, MeetMeOnBoard), bespoke FIT agency (Out Of Office), non-cruise club/day-boat entities (Daddy Issues, closed Wet & Wild PV), and heteronormative couples swinger charters (Temptation, Desire) are outside consumer hosted-cruise catalog scope.",
+    "franchiseId": "hosted-franchise:excluded-b2b-and-directories",
+    "franchiseSlug": "excluded-b2b-and-directories"
   }
 ];
 
