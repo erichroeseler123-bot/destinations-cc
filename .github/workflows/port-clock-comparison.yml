@@ -1,0 +1,43 @@
+name: Compare reviewed port clocks
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'data/cruise/**'
+      - 'lib/dcc/cruise/**'
+      - 'lib/dcc/winterExcursionPlanner.ts'
+      - 'app/api/v1/cruises/**'
+      - 'scripts/dcc/export-hosted-catalog-snapshot.ts'
+      - 'scripts/dcc/compare-port-clock.mjs'
+      - 'tests/dcc/port-clock-comparison.test.mjs'
+      - '.github/workflows/port-clock-comparison.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test the comparison offline
+        run: node --test tests/dcc/port-clock-comparison.test.mjs
+      - name: Compare DCC and current CP with independently reviewed schedules
+        run: node scripts/dcc/compare-port-clock.mjs --cp-live > port-clock-comparison.json
+      - name: Summarize for reviewers
+        shell: bash
+        run: |
+          jq -r '
+            "### Port-clock evidence comparison",
+            "Reviewed sailings: \(.reviewed | length). Discrepancies: \(.counts.discrepancy). Missing coverage: \(.counts.missing_coverage). Claims needing evidence: \(.counts.needs_evidence).",
+            "Ledger sailings outside the reviewed sample: \(.ledgerCallsWithoutReviewedSailing | length). See the JSON artifact for dates, sources and field values."
+          ' port-clock-comparison.json >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: port-clock-comparison
+          path: port-clock-comparison.json
