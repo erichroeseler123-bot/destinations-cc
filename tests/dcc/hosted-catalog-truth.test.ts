@@ -9,10 +9,10 @@ test("DCC hosted catalog keeps dated source checks, publication holds and readab
   const snapshot = getDccCanonicalHostedCatalogSnapshot({ includeHeld: true });
   assert.equal(snapshot.owner, "dcc");
   assert.equal(validateDccHostedCatalogIntegrity().valid, true);
-  assert.equal(snapshot.hostedSailings.length, 125);
+  assert.equal(snapshot.hostedSailings.length, 136);
   assert.equal(
     snapshot.hostedSailings.filter((s) => s.verificationState === "verified" && !s.scheduleHoldReason).length,
-    122,
+    133,
   );
   assert.equal(
     snapshot.hostedSailings.filter((s) => s.verificationState === "schedule_hold" || Boolean(s.scheduleHoldReason)).length,
@@ -39,5 +39,24 @@ test("DCC hosted catalog keeps dated source checks, publication holds and readab
     const sailing = snapshot.hostedSailings.find((s) => s.hostedSailingId === id);
     assert.equal(sailing?.verificationState, "verified", id);
     assert.equal(sailing?.portScheduleVerificationMode, "clocked_port_windows", id);
+  }
+});
+
+test("sober cruises distinguish hosted programming, waitlists, and unconfirmed group dates", () => {
+  const snapshot = getDccCanonicalHostedCatalogSnapshot({ theme: "recovery-and-sober-cruises" });
+  assert.equal(snapshot.organizers.length, 4);
+  assert.equal(snapshot.franchises?.length, 4);
+  assert.equal(snapshot.hostedSailings.length, 11);
+  for (const sailing of snapshot.hostedSailings) {
+    assert.equal(sailing.alcoholPolicyScope, "hosted_group_only", sailing.hostedSailingId);
+    assert.match(sailing.alcoholPolicySourceUrl ?? "", /^https:\/\//, sailing.hostedSailingId);
+    assert.equal(sailing.fullShipCharter === true, false, sailing.hostedSailingId);
+  }
+  assert.deepEqual(
+    snapshot.hostedSailings.filter((s) => s.cabinAvailabilityStatus === "waitlist").map((s) => s.canonicalShipSlug).sort(),
+    ["amadante", "sonesta-sun-goddess"],
+  );
+  for (const date of ["2027-09-12", "2028-03-17", "2027-11-26", "2028-09-15"]) {
+    assert.ok(!snapshot.hostedSailings.some((s) => s.canonicalSailDate === date));
   }
 });

@@ -24,8 +24,10 @@ import {
   FOUNDING_PILOT_SAILINGS,
 } from "./foundingOrganizerPilotCohort";
 
-export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-24T03:00:00Z" as const;
-export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-24.v9-search-and-catalog-gaps" as const;
+import { soberOrganizers, soberFranchises, soberSailings, soberEvidenceHolds } from "./soberCruisePrograms";
+
+export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-24T12:35:00Z" as const;
+export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-24.v10-sober-cruise-programs" as const;
 
 export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrganizerFactRecord> = [
 
@@ -4462,7 +4464,8 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
       "whet-travel"
     ]
   },
-  ...FOUNDING_PILOT_ORGANIZERS
+  ...FOUNDING_PILOT_ORGANIZERS,
+  ...soberOrganizers,
 ];
 
 export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranchiseFactRecord> = [
@@ -7070,7 +7073,8 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "verifiedSourceCheckedAt": "2026-11-23T11:30:17Z",
     "verificationState": "verified"
   },
-  ...FOUNDING_PILOT_FRANCHISES
+  ...FOUNDING_PILOT_FRANCHISES,
+  ...soberFranchises,
 ];
 
 export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailingFactRecord> = [
@@ -13640,6 +13644,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "portScheduleVerificationMode": "clocked_port_windows"
   },
   ...FOUNDING_PILOT_SAILINGS,
+  ...soberSailings,
   {
     "hostedSailingId": "hosted-sailing:stitchin-heaven:rccl:independence-of-the-seas:2027-04-18",
     "reputationSailingEntityId": "rep:hosted-sailing:stitchin-heaven:perfect-day-caribbean-independence-of-the-seas-2027-04-18",
@@ -14138,10 +14143,19 @@ export const DCC_RECENT_CATALOG_CHANGE_EVENTS: ReadonlyArray<CanonicalHostedCata
     "entityId": "hosted-sailing:stitchin-heaven:rccl:independence-of-the-seas:2027-04-18",
     "summary": "Added eight verified 2027 hosted departures (seven Stitchin' Heaven quilting cruises and SinglesCruise.com's Annual Halloween Cruise 2027) and aligned Atlantis Events' Mar 7, 2027 Allure of the Seas charter title to Epic Caribbean Cruise, bringing DCC's canonical catalog to 125 sailings (122 verified published, 3 schedule_hold).",
     "preservesCommunityIdentity": true
+  },
+  {
+    eventId: "dcc-hc-evt-2026-11-24-012",
+    occurredAt: DCC_HOSTED_CATALOG_GENERATED_AT,
+    entityType: "hosted_organizer",
+    entityId: "hosted-organizer:sober-celebrations",
+    summary: "Added four recovery-cruise organizers and eleven dated departures, including two waitlists. Each new departure identifies the scope and source of its sober program. Three other candidate sailings remain in evidence review.",
+    preservesCommunityIdentity: true,
   }
 ];
 
 export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHostedEvidenceRecord> = [
+  ...soberEvidenceHolds,
   {
     "holdId": "dcc-hold-uniworld-out-2027",
     "organizerSlug": "uniworld-out-on-the-rivers",
