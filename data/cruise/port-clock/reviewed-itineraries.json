@@ -1,0 +1,48 @@
+[
+  {
+    "sailingId": "WESTERN-2027-01-24",
+    "publicDemoBoard": "WESTERN-2027-01-24",
+    "shipSlug": "symphony-of-the-seas",
+    "sailDate": "2027-01-24",
+    "source": {
+      "publisher": "Royal Caribbean International",
+      "kind": "cruise_line_itinerary",
+      "url": "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24",
+      "checkedAt": "2026-11-24",
+      "reviewNote": "Reviewed the route and the arrivalTime/departureTime fields in the cruise line's dated itinerary response. The itinerary does not establish the ship/local time basis or a published all-aboard deadline."
+    },
+    "days": [
+      { "date": "2027-01-24", "dayType": "embarkation", "portSlug": "galveston", "departureTime": "15:00" },
+      { "date": "2027-01-25", "dayType": "sea" },
+      { "date": "2027-01-26", "dayType": "sea" },
+      { "date": "2027-01-27", "dayType": "port", "portSlug": "roatan", "arrivalTime": "08:00", "departureTime": "17:00" },
+      { "date": "2027-01-28", "dayType": "port", "portSlug": "costa-maya", "arrivalTime": "08:00", "departureTime": "17:00" },
+      { "date": "2027-01-29", "dayType": "port", "portSlug": "cozumel", "arrivalTime": "07:00", "departureTime": "17:00" },
+      { "date": "2027-01-30", "dayType": "sea" },
+      { "date": "2027-01-31", "dayType": "disembarkation", "portSlug": "galveston", "arrivalTime": "07:00" }
+    ]
+  },
+  {
+    "sailingId": "INDY-2027-01-24",
+    "publicDemoBoard": "INDY-2027-01-24",
+    "shipSlug": "independence-of-the-seas",
+    "sailDate": "2027-01-24",
+    "source": {
+      "publisher": "Royal Caribbean International",
+      "kind": "cruise_line_itinerary",
+      "url": "https://www.royalcaribbean.com/itinerary/7-night-eastern-caribbean-from-miami-on-independence-ID07MIA-1982128855?country=USA&currencyCode=USD&sailDate=2027-01-24",
+      "checkedAt": "2026-11-24",
+      "reviewNote": "Reviewed the route and arrivalTime/departureTime fields in the dated Royal Caribbean itinerary. The itinerary lists scheduled port windows without a ship/local time basis or a published all-aboard deadline."
+    },
+    "days": [
+      { "date": "2027-01-24", "dayType": "embarkation", "portSlug": "miami", "departureTime": "16:00" },
+      { "date": "2027-01-25", "dayType": "port", "portSlug": "nassau", "arrivalTime": "07:00", "departureTime": "16:00" },
+      { "date": "2027-01-26", "dayType": "sea" },
+      { "date": "2027-01-27", "dayType": "port", "portSlug": "san-juan", "arrivalTime": "11:30", "departureTime": "19:00" },
+      { "date": "2027-01-28", "dayType": "port", "portSlug": "st-thomas", "arrivalTime": "08:00", "departureTime": "18:00" },
+      { "date": "2027-01-29", "dayType": "sea" },
+      { "date": "2027-01-30", "dayType": "sea" },
+      { "date": "2027-01-31", "dayType": "disembarkation", "portSlug": "miami", "arrivalTime": "06:00" }
+    ]
+  }
+]
