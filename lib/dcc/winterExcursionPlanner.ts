@@ -116,7 +116,7 @@ export const ALL_WINTER_PORT_LOGISTICS_SPECS: Record<
     defaultAllAboardTime: "18:15",
     defaultLastTenderTime: null,
     logisticsSummary:
-      "Docked at Old San Juan Pier 3 (11:30 AM – 7:00 PM; All-Aboard 6:15 PM). Step-off walkable into Old San Juan; 0 matched commercial catalog tours currently configured for this call.",
+      "Royal Caribbean lists San Juan from 11:30 AM to 7:00 PM. The 6:15 PM cutoff is a planning estimate. Confirm the actual deadline and pier on the ship.",
   },
   "st-thomas": {
     portSlug: "st-thomas",
@@ -315,10 +315,10 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
       dockOrTender: "dock",
       arrivalTime: null,
       departureTime: "16:00",
-      allAboardTime: "15:00",
+      allAboardTime: null,
       savedTourId: null,
       savedOptionCode: null,
-      notes: "Embarkation at PortMiami Terminal A; ship departs 4:00 PM.",
+      notes: "Royal Caribbean lists departure from Miami at 4:00 PM. Check boarding documents for the terminal and check-in window.",
     },
     {
       dayNumber: 2,
@@ -333,7 +333,7 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
       savedTourId: "dcc:tour:viator:254526P1",
       savedOptionCode: "TG4",
       notes:
-        "Planning Preview · Docked at Prince George Wharf (7:00 AM – 4:00 PM on Royal Caribbean public itinerary ID07MIA-1982128855). All-Aboard 3:15 PM (15:15) is a conditional 45-minute pre-departure planner heuristic (RCI general port-of-call policy is >=30m prior to departure, i.e. 3:30 PM, with the binding time posted onboard in the Cruise Compass / gangway sign). Saved excursion: Nassau Swimming Pigs and Private Beach Club Escape (254526P1 · Option TG4 with Cruise Pier Pickup · returns ~2:15 PM; conditional 60m buffer vs. 3:15 PM heuristic / 75m vs. 3:30 PM RCI rule).",
+        "Royal Caribbean lists Nassau from 7:00 AM to 4:00 PM. The 3:15 PM cutoff is a planning estimate, 45 minutes before departure. Confirm the actual deadline in the ship app or Cruise Compass.",
     },
     {
       dayNumber: 3,
@@ -362,7 +362,7 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
       savedTourId: null,
       savedOptionCode: null,
       notes:
-        "Docked at Old San Juan Pier 3 (11:30 AM – 7:00 PM; All-Aboard 6:15 PM). Shown on itinerary; 0 matched commercial catalog tours configured (step-off walkable into Old San Juan).",
+        "Royal Caribbean lists San Juan from 11:30 AM to 7:00 PM. The 6:15 PM cutoff is a planning estimate. Confirm the actual deadline and pier on the ship.",
     },
     {
       dayNumber: 5,
@@ -377,7 +377,7 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
       savedTourId: "dcc:tour:viator:7452P2",
       savedOptionCode: "DEFAULT",
       notes:
-        "Docked at Havensight (WICO) or Crown Bay (8:00 AM – 6:00 PM; All-Aboard 5:15 PM). Saved excursion: Turtle Cove Catamaran Snorkel and Sail at Little Buck Island STT (7452P2 · Meet at Marriott's Frenchman's Cove Dock, 7338 Estate Bakkeroe · 30m check-in + independent travel both ways from actual cruise berth · Needs confirmation until berth transfer timing is confirmed).",
+        "Royal Caribbean lists St. Thomas from 8:00 AM to 6:00 PM. The 5:15 PM cutoff is a planning estimate. Confirm the berth and actual deadline before arranging transfers to the tour.",
     },
     {
       dayNumber: 6,
@@ -419,7 +419,7 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
       allAboardTime: null,
       savedTourId: null,
       savedOptionCode: null,
-      notes: "Debarkation at PortMiami starting 6:30 AM.",
+      notes: "Royal Caribbean lists arrival in Miami at 6:00 AM. Follow onboard debarkation instructions.",
     },
   ],
   savedExcursionsByPort: {

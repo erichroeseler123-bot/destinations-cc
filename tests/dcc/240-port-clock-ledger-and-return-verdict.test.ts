@@ -34,7 +34,7 @@ function verifiedCall(over: Partial<PortClockRecord> = {}): PortClockRecord {
 test("shipped ledger passes validation and invents no published deadlines", () => {
   assert.deepEqual(validatePortClockLedger(), []);
   const s = summarizePortClockLedger();
-  assert.equal(s.total, 29);
+  assert.equal(s.total, 31);
   assert.equal(s.publishedAllAboard, 0);
   assert.equal(s.verified, 0);
   assert.equal(s.modeledOnly + s.noAllAboard, s.total);
@@ -191,7 +191,35 @@ test("WESTERN-2027-01-24 records the line's full round trip separately from mode
   );
 });
 
-test("departure_minus_30 rows must match the rule and unknown rules are rejected", () => {
+test("INDY-2027-01-24 records the five Royal Caribbean calls and distinguishes its 45-minute estimates", () => {
+  const sailingId = "sailing:rccl:independence-of-the-seas:2027-01-24";
+  const rows = getPortClockLedger().portCalls.filter((r) => r.sailingId === "INDY-2027-01-24");
+  assert.deepEqual(
+    rows.map((r) => [r.portSlug, r.callDate, r.arrivalTime, r.departureTime, r.modeledAllAboardTime]),
+    [
+      ["miami", "2027-01-24", null, "16:00", null],
+      ["nassau", "2027-01-25", "07:00", "16:00", "15:15"],
+      ["san-juan", "2027-01-27", "11:30", "19:00", "18:15"],
+      ["st-thomas", "2027-01-28", "08:00", "18:00", "17:15"],
+      ["miami", "2027-01-31", "06:00", null, null],
+    ],
+  );
+  for (const row of rows) {
+    assert.equal(findPortClockRecord({ sailingId, portSlug: row.portSlug, callDate: row.callDate }), row);
+    assert.equal(row.scheduleSource?.kind, "cruise_line_itinerary");
+    assert.equal(row.scheduleSource?.url, "https://www.royalcaribbean.com/itinerary/7-night-eastern-caribbean-from-miami-on-independence-ID07MIA-1982128855?country=USA&currencyCode=USD&sailDate=2027-01-24");
+    assert.equal(row.scheduleSource?.checkedAt, "2026-11-24");
+    assert.equal(row.modelRule, row.modeledAllAboardTime ? "departure_minus_45" : null);
+    assert.equal(row.publishedAllAboardTime, null);
+    assert.equal(row.publishedAllAboardSource, null);
+    assert.equal(row.timeBasis, "unknown");
+    assert.equal(row.returnPoint, null);
+    assert.equal(row.status, "unverified");
+  }
+  assert.equal(findPortClockRecord({ sailingId, portSlug: "miami" }), null);
+});
+
+test("dated estimates must match their named model rule and unknown rules are rejected", () => {
   const modeled = (over: Partial<PortClockRecord>) =>
     verifiedCall({ publishedAllAboardTime: null, publishedAllAboardSource: null, status: "partial", ...over });
   const ledger: PortClockLedger = {
@@ -200,12 +228,15 @@ test("departure_minus_30 rows must match the rule and unknown rules are rejected
       modeled({ callDate: "2027-01-25", modeledAllAboardTime: "15:30", modelRule: "departure_minus_30" }),
       modeled({ callDate: "2027-01-26", modeledAllAboardTime: "15:15", modelRule: "departure_minus_30" }),
       modeled({ callDate: "2027-01-27", modeledAllAboardTime: "15:30", modelRule: "made_up_rule" }),
+      modeled({ callDate: "2027-01-28", modeledAllAboardTime: "15:15", modelRule: "departure_minus_45" }),
+      modeled({ callDate: "2027-01-29", modeledAllAboardTime: "15:30", modelRule: "departure_minus_45" }),
     ],
   };
   const errors = validatePortClockLedger(ledger);
-  assert.equal(errors.length, 2, errors.join("\n"));
-  assert.match(errors.join("\n"), /2027-01-26 modeled all-aboard "15:15" does not equal departure − 30/);
+  assert.equal(errors.length, 3, errors.join("\n"));
+  assert.match(errors.join("\n"), /2027-01-26 modeled all-aboard "15:15" does not equal departure - 30/);
   assert.match(errors.join("\n"), /2027-01-27 unknown model rule "made_up_rule"/);
+  assert.match(errors.join("\n"), /2027-01-29 modeled all-aboard "15:30" does not equal departure - 45/);
 });
 
 test("scope helper separates past and upcoming rows without removing any", () => {
@@ -216,7 +247,7 @@ test("scope helper separates past and upcoming rows without removing any", () =>
   assert.equal(filterPortCallsByScope(all, "all", asOf).length, all.length);
   assert.equal(upcoming.length + past.length, all.length);
   assert.equal(past.length, 19);
-  assert.equal(upcoming.length, 10);
+  assert.equal(upcoming.length, 12);
   assert.ok(upcoming.every((r) => r.callDate >= asOf));
   assert.ok(past.every((r) => isPastPortCall(r, asOf)));
   assert.equal(upcoming.filter((r) => r.sailingId === "WESTERN-2027-01-24").length, 5);

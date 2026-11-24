@@ -80,6 +80,7 @@ export const PORT_CLOCK_MODEL_RULES = {
   legacy_unsourced_value: "Legacy value with no recorded source or rule.",
   /** Scheduled departure minus 30 minutes. An estimate to confirm in the ship app, never a published deadline. */
   departure_minus_30: "Scheduled departure minus 30 minutes.",
+  departure_minus_45: "Scheduled departure minus 45 minutes.",
 } as const;
 export type PortClockModelRule = keyof typeof PORT_CLOCK_MODEL_RULES;
 
@@ -92,9 +93,9 @@ function minutesToHhmm(total: number): string {
 
 /** Applies a named model rule; returns null when the rule cannot be computed from the record. */
 export function applyPortClockModelRule(rule: PortClockModelRule, departureTime: string | null): string | null {
-  if (rule !== "departure_minus_30" || !departureTime || !HHMM.test(departureTime)) return null;
+  if ((rule !== "departure_minus_30" && rule !== "departure_minus_45") || !departureTime || !HHMM.test(departureTime)) return null;
   const [h, m] = departureTime.split(":").map(Number);
-  return minutesToHhmm(h * 60 + m - 30);
+  return minutesToHhmm(h * 60 + m - (rule === "departure_minus_45" ? 45 : 30));
 }
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -181,9 +182,11 @@ export function validatePortClockLedger(ledger: PortClockLedger = getPortClockLe
     if (r.modeledAllAboardTime && !r.modelRule) errors.push(`${id} modeled all-aboard without a model rule`);
     if (r.modelRule && !Object.prototype.hasOwnProperty.call(PORT_CLOCK_MODEL_RULES, r.modelRule))
       errors.push(`${id} unknown model rule "${r.modelRule}"`);
-    if (r.modelRule === "departure_minus_30"
-        && r.modeledAllAboardTime !== applyPortClockModelRule("departure_minus_30", r.departureTime))
-      errors.push(`${id} modeled all-aboard "${r.modeledAllAboardTime}" does not equal departure − 30`);
+    if ((r.modelRule === "departure_minus_30" || r.modelRule === "departure_minus_45")
+        && r.modeledAllAboardTime !== applyPortClockModelRule(r.modelRule, r.departureTime)) {
+      const leadMinutes = r.modelRule === "departure_minus_45" ? 45 : 30;
+      errors.push(`${id} modeled all-aboard "${r.modeledAllAboardTime}" does not equal departure - ${leadMinutes}`);
+    }
     for (const s of [r.scheduleSource, r.publishedAllAboardSource, r.returnPoint?.source]) {
       if (s && !hasCheckedSource(s)) errors.push(`${id} source missing url or check date`);
     }
