@@ -16,6 +16,8 @@ export async function GET(req: NextRequest) {
       version: "1.1",
       directProductionSalesDisabled,
       totalParticipants: summary.participants.length,
+      authorizedOperatorCount: summary.liveAuthorizedOperatorCount,
+      liveAuthorizedOperatorCount: summary.liveAuthorizedOperatorCount,
       liveAuthorizedParticipantCount: summary.liveAuthorizedOperatorCount,
       agreedCommissionsCount: summary.agreedCommissionsCount,
       commercialTermsPolicy: {

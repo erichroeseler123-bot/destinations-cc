@@ -7,6 +7,7 @@ import {
   isConnectionLiveOctoAuthorized,
   isFareHarborAffiliateOnly,
   isParticipantLiveAuthorized,
+  OctoRegistryService,
 } from "./registry";
 import { canonicalPlaceService, DccCanonicalPlace } from "@/lib/dcc/canonicalPlaceService";
 import { eq } from "drizzle-orm";
@@ -128,6 +129,13 @@ export class DccLocationProductService {
                 .from(octoSupplierConnections)
                 .catch(() => [])
             : [];
+        const activeAgreements =
+          rows.length > 0
+            ? await OctoRegistryService.getOperatorAgreements({ activeOnly: true })
+            : [];
+        const agreementByOperatorId = new Map(
+          activeAgreements.map((a) => [a.operatorId.trim(), a])
+        );
         const connectionMap = new Map(connections.map((c) => [c.id, c]));
 
         for (const row of rows) {
@@ -182,13 +190,12 @@ export class DccLocationProductService {
               reservationPlatform: conn?.reservationPlatform,
               fareharborOctoAuthorized: (conn as any)?.fareharborOctoAuthorized ?? false,
             });
+            const connAgreement = conn?.operatorId
+              ? agreementByOperatorId.get(conn.operatorId.trim()) ?? null
+              : null;
             const isAuthorized =
               !fareharborBlocked &&
-              (isConnectionLiveOctoAuthorized(conn as any) ||
-                (conn?.connectionStatus === "authorized" &&
-                  conn?.healthStatus === "healthy" &&
-                  conn?.onboardingStage === "live_authorized" &&
-                  !conn?.isSandbox));
+              isConnectionLiveOctoAuthorized(conn as any, connAgreement);
 
             const commercialStatus: CommercialStatus = isAuthorized ? "bookable" : "directory_only";
             const reason = isAuthorized

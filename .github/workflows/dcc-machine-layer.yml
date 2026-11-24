@@ -45,9 +45,10 @@ jobs:
       - name: TypeScript typecheck
         run: npx tsc --noEmit
 
-      - name: Apply Production Postgres Migration 0008 & Verify octo_bookings_idempotency_key_uidx in PostgreSQL
+      - name: Apply Production Postgres Migrations 0008 & 0012 & Verify octo_bookings_idempotency_key_uidx in PostgreSQL
         run: |
           psql "$DCC_CI_POSTGRES_URL" -v ON_ERROR_STOP=1 -f drizzle/0008_octo_bookings_idempotency_unique_idx.sql
+          psql "$DCC_CI_POSTGRES_URL" -v ON_ERROR_STOP=1 -f drizzle/0012_octo_operator_agreements.sql
           psql "$DCC_CI_POSTGRES_URL" -v ON_ERROR_STOP=1 -c "SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'octo_bookings' AND indexname = 'octo_bookings_idempotency_key_uidx';"
 
       - name: Run Golden Master, Truth & Machine Layer Test Suite (Tests 23, 36, 81, 82, 83, 84, 85, 86, 87)

@@ -379,7 +379,7 @@ export type OctoInventoryStatus = "unknown" | "sandbox_mock_only" | "verified";
 export type OctoApiAccessStatus = "unknown" | "sandbox_mock_only" | "verified";
 export type OctoCommercialTermsStatus = "unknown" | "sandbox_only" | "agreed";
 export type OctoCertificationStatus =
-  | "unverified"
+  | "unknown"
   | "not_applicable"
   | "sandbox_reference_only"
   | "verified";
@@ -395,8 +395,29 @@ export interface OctoParticipantEvidence {
   verificationStatus: "verified" | "unknown" | "unverified";
 }
 
+export interface OctoOperatorAgreement {
+  id: string;
+  operatorId: string;
+  agreementReference: string;
+  status: "draft" | "active" | "revoked" | "expired";
+  agreedCommissionPercent: number | null;
+  paymentModel: OctoBookingPaymentModel;
+  signatoryName: string;
+  signatoryEmail: string;
+  signedAt: string;
+  effectiveAt?: string | null;
+  expiresAt?: string | null;
+  revokedAt?: string | null;
+  documentEvidence?: string | null;
+  notes?: string | null;
+}
+
 export interface OctoParticipant {
   id: string;
+  /**
+   * Stable canonical operator ID shared across octo_participants, octo_supplier_connections, and octo_operator_agreements.
+   */
+  operatorId?: string | null;
   name: string;
   role: OctoRole;
   website: string;
@@ -412,14 +433,16 @@ export interface OctoParticipant {
   partnershipStatus: OctoPartnershipStatus;
   consentStatus: OctoConsentStatus;
   credentialStatus: OctoCredentialStatus;
+  inventoryEvidence?: string | null;
   productsAvailableCount: number | null;
   inventoryStatus: OctoInventoryStatus;
   bookingPaymentModel: OctoBookingPaymentModel;
   outreachStatus: OctoOutreachStatus;
   commercialTermsStatus: OctoCommercialTermsStatus;
   /**
-   * Null unless backed by a non-empty documented agreementReference.
+   * Null unless backed by an active stored operator agreement record.
    */
+  agreementId?: string | null;
   agreedCommissionPercent?: number | null;
   agreementReference?: string | null;
   /**
@@ -461,6 +484,8 @@ export type OctoOnboardingStage =
 
 export interface OctoSupplierConnection {
   id: string;
+  operatorId?: string | null;
+  agreementId?: string | null;
   operatorSlug: string;
   operatorName: string;
   endpoint: string;

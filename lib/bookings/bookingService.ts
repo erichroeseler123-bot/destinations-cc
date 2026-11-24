@@ -22,7 +22,11 @@ import {
 import { DccPaymentService } from "@/lib/payments/paymentService";
 import { decryptCredential } from "@/lib/octo/security";
 import { MockOctoSupplierEngine } from "@/lib/octo/mockServer";
-import { isConnectionLiveOctoAuthorized, isFareHarborAffiliateOnly } from "@/lib/octo/registry";
+import {
+  isConnectionLiveOctoAuthorized,
+  isFareHarborAffiliateOnly,
+  OctoRegistryService,
+} from "@/lib/octo/registry";
 import {
   DccBookingCancelRequest,
   DccBookingConfirmRequest,
@@ -331,6 +335,8 @@ export class DccBookingService {
    */
   static registerPilotSupplierConnection(config: {
     id: string;
+    operatorId?: string | null;
+    agreementId?: string | null;
     operatorSlug: string;
     operatorName: string;
     endpoint: string;
@@ -349,6 +355,8 @@ export class DccBookingService {
   }): OctoProviderAdapter {
     const connection = {
       id: config.id,
+      operatorId: config.operatorId ?? null,
+      agreementId: config.agreementId ?? null,
       operatorSlug: config.operatorSlug,
       operatorName: config.operatorName,
       endpoint: config.endpoint,
@@ -694,10 +702,26 @@ export class DccBookingService {
           `Supplier ${pilotRegistered.connection.operatorName} is in ${pilotRegistered.connection.connectionStatus} state and cannot accept production bookings`
         );
       }
+      let connection = pilotRegistered.connection;
+      if (connection?.isSandbox === false && getDb()) {
+        const storedAgreement = await OctoRegistryService.getActiveAgreementForOperator(
+          connection.operatorId,
+          connection.agreementId
+        );
+        connection = {
+          ...connection,
+          agreementId: storedAgreement?.id ?? null,
+          agreementReference: storedAgreement?.agreementReference ?? null,
+          commissionPercent:
+            storedAgreement?.agreedCommissionPercent != null
+              ? storedAgreement.agreedCommissionPercent
+              : connection.commissionPercent ?? null,
+        };
+      }
       return {
         adapter: pilotRegistered.adapter,
         isMock: false,
-        connection: pilotRegistered.connection,
+        connection,
       };
     }
 
@@ -793,11 +817,25 @@ export class DccBookingService {
     }
 
     const adapter = getProviderAdapterForConnection(conn as any, { apiKey, bearerToken });
+    const storedAgreement =
+      conn.isSandbox === false
+        ? await OctoRegistryService.getActiveAgreementForOperator(conn.operatorId, conn.agreementId)
+        : null;
 
     return {
       adapter,
       isMock: false,
-      connection: conn,
+      connection: {
+        ...conn,
+        agreementId: storedAgreement?.id ?? conn.agreementId ?? null,
+        agreementReference: storedAgreement?.agreementReference ?? null,
+        commissionPercent:
+          storedAgreement?.agreedCommissionPercent != null
+            ? storedAgreement.agreedCommissionPercent
+            : conn.commissionPercent != null
+            ? Number(conn.commissionPercent)
+            : null,
+      },
     };
   }
 

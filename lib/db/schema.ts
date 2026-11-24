@@ -1057,6 +1057,7 @@ export const octoParticipants = pgTable(
   "octo_participants",
   {
     id: text("id").primaryKey(),
+    operatorId: text("operator_id"), // Stable canonical operator ID shared with octo_supplier_connections & octo_operator_agreements
     name: text("name").notNull(),
     role: text("role").notNull(), // supplier, reseller, booking_system, channel_manager, technology_partner
     website: text("website").notNull(),
@@ -1065,9 +1066,10 @@ export const octoParticipants = pgTable(
     destinations: jsonb("destinations").$type<string[]>().notNull().default([]),
     endpoint: text("endpoint"),
     certificationEvidence: text("certification_evidence"),
+    inventoryEvidence: text("inventory_evidence"),
     consentStatus: text("consent_status").notNull().default("not_requested"),
     credentialStatus: text("credential_status").notNull().default("none"),
-    productsAvailableCount: integer("products_available_count").notNull().default(0),
+    productsAvailableCount: integer("products_available_count"),
     bookingPaymentModel: text("booking_payment_model").notNull().default("supplier_hosted"),
     outreachStatus: text("outreach_status").notNull().default("identified"),
     agreedCommissionPercent: numeric("agreed_commission_percent", { precision: 5, scale: 2 }), // Nullable pending commercial contract
@@ -1076,8 +1078,38 @@ export const octoParticipants = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
+    operatorIdIdx: index("octo_participants_operator_id_idx").on(table.operatorId),
     roleIdx: index("octo_participants_role_idx").on(table.role),
     outreachStatusIdx: index("octo_participants_outreach_status_idx").on(table.outreachStatus),
+  })
+);
+
+export const octoOperatorAgreements = pgTable(
+  "octo_operator_agreements",
+  {
+    id: text("id").primaryKey(), // e.g. agr_...
+    operatorId: text("operator_id").notNull(), // Stable canonical operator ID shared across directory & booking connection
+    agreementReference: text("agreement_reference").notNull(),
+    status: text("status").notNull().default("active"), // draft, active, revoked, expired
+    agreedCommissionPercent: numeric("agreed_commission_percent", { precision: 5, scale: 2 }),
+    paymentModel: text("payment_model").notNull().default("supplier_hosted"),
+    signatoryName: text("signatory_name").notNull(),
+    signatoryEmail: text("signatory_email").notNull(),
+    signedAt: timestamp("signed_at", { withTimezone: true }).notNull(),
+    effectiveAt: timestamp("effective_at", { withTimezone: true }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    documentEvidence: text("document_evidence"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    operatorIdIdx: index("octo_operator_agreements_operator_id_idx").on(table.operatorId),
+    agreementReferenceUniqueIdx: uniqueIndex("octo_operator_agreements_ref_uidx").on(
+      table.agreementReference
+    ),
+    statusIdx: index("octo_operator_agreements_status_idx").on(table.status),
   })
 );
 
@@ -1085,6 +1117,8 @@ export const octoSupplierConnections = pgTable(
   "octo_supplier_connections",
   {
     id: text("id").primaryKey(),
+    operatorId: text("operator_id"), // Stable canonical operator ID shared with octo_participants & octo_operator_agreements
+    agreementId: text("agreement_id"), // Stored agreement record ID in octo_operator_agreements
     operatorSlug: text("operator_slug").notNull(),
     operatorName: text("operator_name").notNull(),
     endpoint: text("endpoint").notNull(),
@@ -1128,6 +1162,7 @@ export const octoSupplierConnections = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
+    operatorIdIdx: index("octo_supplier_connections_operator_id_idx").on(table.operatorId),
     operatorSlugIdx: index("octo_supplier_connections_operator_slug_idx").on(table.operatorSlug),
     connectionStatusIdx: index("octo_supplier_connections_connection_status_idx").on(table.connectionStatus),
     healthStatusIdx: index("octo_supplier_connections_health_status_idx").on(table.healthStatus),
@@ -1286,6 +1321,9 @@ export const octoAuditLogs = pgTable(
 
 export type OctoParticipantRow = typeof octoParticipants.$inferSelect;
 export type NewOctoParticipantRow = typeof octoParticipants.$inferInsert;
+
+export type OctoOperatorAgreementRow = typeof octoOperatorAgreements.$inferSelect;
+export type NewOctoOperatorAgreementRow = typeof octoOperatorAgreements.$inferInsert;
 
 export type OctoSupplierConnectionRow = typeof octoSupplierConnections.$inferSelect;
 export type NewOctoSupplierConnectionRow = typeof octoSupplierConnections.$inferInsert;

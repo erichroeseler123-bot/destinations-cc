@@ -39,8 +39,7 @@ export default async function OctoDirectoryPage() {
 
   const suppliers = participants.filter((p) => p.role === "supplier");
   const techPartners = participants.filter((p) => p.role !== "supplier");
-  const liveSuppliersCount = suppliers.filter(isParticipantLiveAuthorized).length;
-  const effectiveLiveCount = Math.max(liveAuthorizedOperatorCount, liveSuppliersCount);
+  const effectiveLiveCount = liveAuthorizedOperatorCount;
 
   return (
     <main className="min-h-screen bg-[#070b10] text-white">
