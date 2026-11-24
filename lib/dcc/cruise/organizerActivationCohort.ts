@@ -150,7 +150,7 @@ const SEED_PRIORITY_10_COHORT: ReadonlyArray<SeedOrganizerActivationEntry> = [
         "Atlantis Events 2027 charter pages & free organizer hub on Cruise Promenade",
       body:
         "Hello Atlantis Events Partnerships & Marketing Team,\n\n" +
-        "We've published verified day-by-day schedule pages on Cruise Promenade for four 2027 Atlantis full-ship charters—Epic Allure Caribbean (Mar 7), Exotic Southern Caribbean on Valiant Lady (Mar 27), Barcelona to Rome on Resilient Lady (Aug 8), and Legendary Greek Isles on Scarlet Lady (Aug 22):\n" +
+        "We've published verified day-by-day schedule pages on Cruise Promenade for four 2027 Atlantis full-ship charters—Epic Caribbean Cruise on Allure of the Seas (Mar 7), Exotic Southern Caribbean on Valiant Lady (Mar 27), Barcelona to Rome on Resilient Lady (Aug 8), and Legendary Greek Isles on Scarlet Lady (Aug 22):\n" +
         "https://cruisepromenade.com/hosted-cruises/atlantis-events\n\n" +
         "Every cabin button routes directly to atlantisevents.com and res.atlantisevents.com ($0 listing fee, $0 lead fee, 0% cabin commission—you keep 100% of your charter bookings). Where Cruise Promenade helps after booking is shore-day coordination: booked guests and friend pods can compare port windows, see which excursions shipmates are doing, chat in RollCall, and save an offline Cruise Pack for ship Wi-Fi.\n\n" +
         "Your team can claim your free Organizer Workspace anytime at:\n" +
