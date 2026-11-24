@@ -52,55 +52,13 @@ export default function SiteFooter() {
             <Link href="/helicopter-waitlist">Sold-Out Concierge</Link>
             <Link href="/guides/uncruise-juneau-helicopter-tours">UnCruise Pre/Post Guide</Link>
             <Link href="/juneau/what-to-do-if-helicopter-tour-canceled">Weather Backups</Link>
+            <a href={LFSE_CANONICAL_LINKS.juneauPort}>Last Frontier Shore Excursions · Juneau port guide ↗</a>
             <Link href="/about">About</Link>
             <Link href="/faq">FAQ</Link>
             <Link href="/contact">Contact</Link>
             <Link href="/privacy-policy">Privacy</Link>
             <Link href="/terms">Terms</Link>
           </nav>
-        </div>
-
-        <div
-          style={{
-            paddingTop: "16px",
-            borderTop: "1px solid rgba(151, 211, 255, 0.14)",
-            display: "grid",
-            gap: "8px",
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              fontSize: "0.75rem",
-              fontWeight: 800,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "#9ed9ff",
-            }}
-          >
-            Canonical Alaska Operator &amp; Port Profiles (Last Frontier Shore Excursions)
-          </p>
-          <div
-            className="site-footer-links"
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "8px 16px",
-              fontSize: "0.8rem",
-            }}
-          >
-            <a href={LFSE_CANONICAL_LINKS.temsco}>TEMSCO Helicopters ↗</a>
-            <a href={LFSE_CANONICAL_LINKS.coastal}>Coastal Helicopters ↗</a>
-            <a href={LFSE_CANONICAL_LINKS.northstar}>NorthStar Trekking ↗</a>
-            <a href={LFSE_CANONICAL_LINKS.wings}>Wings Airways ↗</a>
-            <a href={LFSE_CANONICAL_LINKS.juneauWhaleWatch}>Juneau Tours &amp; Whale Watch ↗</a>
-            <a href={LFSE_CANONICAL_LINKS.taquanAir}>Taquan Air ↗</a>
-            <a href={LFSE_CANONICAL_LINKS.juneauPort}>Juneau Port Guide ↗</a>
-            <a href={LFSE_CANONICAL_LINKS.juneauHelicopterCategory}>Juneau Helicopter Tours ↗</a>
-            <a href={LFSE_CANONICAL_LINKS.juneauWhaleCategory}>Juneau Whale Watching ↗</a>
-            <a href={LFSE_CANONICAL_LINKS.skagwayPort}>Skagway Port Guide ↗</a>
-            <a href={LFSE_CANONICAL_LINKS.ketchikanMistyFjords}>Ketchikan Misty Fjords ↗</a>
-          </div>
         </div>
 
         <div

@@ -2,10 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  buildNetworkSatelliteHref,
-  type NetworkSatelliteId,
-} from "@/lib/dcc/contracts/networkSatellites";
 
 type FooterLink = {
   href: string;
@@ -16,7 +12,6 @@ const ENGINE_LINKS: FooterLink[] = [
   { href: "/tours", label: "Find Tours & Activities" },
   { href: "/cruises/fit", label: "Help Me Choose a Cruise" },
   { href: "/ports", label: "Cruise Ports" },
-  { href: "/go/dcc-to-cruise-promenade", label: "Plan a Cruise with My Group" },
   { href: "/routes/denver-breckenridge", label: "Denver–Breckenridge Ride Guide" },
   { href: "/new-orleans/tours", label: "New Orleans Tours" },
   { href: "/las-vegas/tours", label: "Las Vegas Tours" },
@@ -33,33 +28,6 @@ const SYSTEM_LINKS: FooterLink[] = [
   { href: "/scope.json", label: "Scope Contract" },
   { href: "/agent.json", label: "Agent Manifest" },
   { href: "/llms.txt", label: "LLM Guidance" },
-];
-
-const FOOTER_SATELLITES: Array<{
-  id: NetworkSatelliteId;
-  label: string;
-  action: string;
-}> = [
-  {
-    id: "partyatredrocks",
-    label: "Red Rocks private transportation",
-    action: "open_red_rocks_transport_lane",
-  },
-  {
-    id: "juneauflightdeck",
-    label: "Juneau flightseeing",
-    action: "open_juneau_port_excursion_lane",
-  },
-  {
-    id: "welcometotheswamp",
-    label: "New Orleans tours",
-    action: "open_new_orleans_swamp_lane",
-  },
-  {
-    id: "gosno",
-    label: "Colorado mountain transfers",
-    action: "open_colorado_mountain_transfer_lane",
-  },
 ];
 
 export default function SiteFooter() {
@@ -108,28 +76,6 @@ export default function SiteFooter() {
                 </li>
               ))}
             </ul>
-          </div>
-
-          <div className="dcc-site-footer__column">
-            <h5>{isConsoleView ? ".network" : "Specialists"}</h5>
-            <div className="dcc-site-footer__social-grid">
-              {FOOTER_SATELLITES.map((satellite) => (
-                <a
-                  key={satellite.id}
-                  href={buildNetworkSatelliteHref(satellite.id, {
-                    sourcePage: pathname || "/",
-                    action: satellite.action,
-                    cta: `footer-${satellite.id}`,
-                    routeTarget: "satellite",
-                    revenueStage: "intent",
-                  })}
-                  rel="noopener"
-                  className="dcc-site-footer__social-tag"
-                >
-                  {satellite.label}
-                </a>
-              ))}
-            </div>
           </div>
         </div>
 

@@ -867,7 +867,7 @@ body {
 
 .dcc-site-footer__matrix {
   display: grid;
-  grid-template-columns: 2fr repeat(3, 1fr);
+  grid-template-columns: 2fr repeat(2, 1fr);
   gap: 3rem;
   border-bottom: 1px solid var(--dcc-tech-border, #1e293b);
   padding-bottom: 3rem;
@@ -925,31 +925,6 @@ body {
 }
 
 .dcc-site-footer__column a:hover {
-  color: var(--dcc-tech-text, #f8fafc);
-}
-
-.dcc-site-footer__social-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.dcc-site-footer__social-tag {
-  border: 1px solid var(--dcc-tech-border, #1e293b);
-  border-radius: 4px;
-  background-color: var(--dcc-tech-bg-main, #0a0e14);
-  color: var(--dcc-tech-muted, #64748b);
-  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.5px;
-  padding: 0.4rem 0.75rem;
-  text-align: center;
-  text-decoration: none;
-  transition: var(--dcc-tech-transition, all 0.2s ease);
-}
-
-.dcc-site-footer__social-tag:hover {
-  border-color: var(--dcc-tech-muted, #64748b);
   color: var(--dcc-tech-text, #f8fafc);
 }
 
