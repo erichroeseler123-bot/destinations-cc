@@ -19116,16 +19116,16 @@ export const DCC_HELD_INSUFFICIENT_EVIDENCE_ITEMS: ReadonlyArray<CanonicalHeldHo
     "franchiseSlug": "concerts-at-sea"
   },
   {
-    "holdId": "v10-excl-cruise-specialists-escorted",
+    "holdId": "v10-hold-cruise-specialists-hosted-voyages",
     "organizerSlug": "cruise-specialists",
     "organizerName": "Cruise Specialists",
-    "disposition": "excluded_reference",
-    "reasonCode": "MISSING_SUBSTANTIVE_HOSTED_FACTS",
-    "candidateTitle": "Cruise Specialists Escorted World Cruises & HAL Legendary Voyages (12 Departures Audited)",
-    "candidateDatesOrVessel": "2027–2028 Volendam, Nieuw Statendam, Zuiderdam, Coral Princess, Queen Anne & Silver Dawn",
+    "disposition": "release_watch",
+    "reasonCode": "UNVERIFIED_PORT_CLOCK_WINDOWS",
+    "candidateTitle": "Cruise Specialists Hosted World Cruises, Grand Voyages & HAL Legendary Voyages (12 Dated Hosted Departures Audited)",
+    "candidateDatesOrVessel": "2027–2028 Volendam (4), Zaandam (2), Nieuw Statendam (2027-07-09 28D/42D), Zuiderdam, Noordam, Coral Princess, Queen Anne & Silver Dawn",
     "checkedSourceUrl": "https://www.cruisespecialists.com/hosted-cruises.aspx",
     "checkedAt": "2026-11-24T12:00:00Z",
-    "holdReason": "Excluded reference: all 12 2027–2028 voyages on cruisespecialists.com/hosted-cruises.aspx (including HAL’s Solar Eclipse & Pan Am 100th Anniversary Legendary Voyages) are standard public cruise-line voyages where a luxury retail travel agency places a generalist voyage host and cocktail reception rather than operating a themed community program.",
+    "holdReason": "Held in release_watch after departure-level audit of all 12 publicly marketed hosted voyages on cruisespecialists.com/hosted-cruises.aspx: 11 departures sail on vessels not yet onboarded in DCC’s canonical 74-ship specification registry (Volendam, Zaandam, Zuiderdam, Noordam, Coral Princess, Queen Anne, Silver Dawn), and the July 9, 2027 Nieuw Statendam Solar Eclipse voyage (packageId=180708) collides on physicalSailingId sailing:hal:nieuw-statendam:2027-07-09 between HAL’s 42-night Collectors’ Voyage and 28-night Dover segment while marketing 4 overlapping Dover/Rotterdam 28D/42D variants subject to minimum participation and omitting sea-day rows.",
     "franchiseId": "hosted-franchise:cruise-specialists",
     "franchiseSlug": "cruise-specialists"
   },
