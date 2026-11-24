@@ -477,12 +477,12 @@ export async function renderPortPage(
           />
         </div>
       ) : null}
+      {/* Only ports that a registered winter sailing plan really calls at (Grand Cayman is on neither plan). */}
       {port.slug === "nassau" ||
       port.slug === "st-thomas" ||
       port.slug === "cozumel" ||
       port.slug === "roatan" ||
-      port.slug === "grand-cayman" ||
-      port.slug === "george-town-grand-cayman" ? (
+      port.slug === "costa-maya" ? (
         <section className="max-w-6xl mx-auto px-6 pt-6">
           <div className="rounded-2xl border border-cyan-500/35 bg-slate-900/90 p-5 shadow-lg">
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -504,9 +504,10 @@ export async function renderPortPage(
                     </>
                   ) : (
                     <>
-                      <strong>{port.name}</strong> is available in this port guide and on
-                      applicable Western Caribbean sailings (
-                      <strong>WESTERN-2027-01-24</strong>: Cozumel · Roatán · Grand Cayman).
+                      <strong>{port.name}</strong> is a port call on the{" "}
+                      <strong>Jan 24, 2027 Symphony of the Seas (WESTERN-2027-01-24)</strong>{" "}
+                      Western Caribbean sailing from Galveston (Roatán · Costa Maya · Cozumel).
+                      All-aboard times on this plan are estimates to confirm in the ship app.
                       Off-itinerary ports are never mixed into the Eastern Caribbean{" "}
                       <code>INDY-2027-01-24</code> plan.
                     </>
@@ -524,7 +525,7 @@ export async function renderPortPage(
                 >
                   {port.slug === "nassau" || port.slug === "st-thomas"
                     ? "Open Jan 24 Sailing Plan (INDY-2027-01-24) →"
-                    : "Open Applicable Western Sailing Plan (WESTERN-2027-01-24) →"}
+                    : "Open Jan 24 Western Sailing Plan (WESTERN-2027-01-24) →"}
                 </Link>
                 <a
                   href="https://cruisepromenade.com/p/INDY-2027-01-24"

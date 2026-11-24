@@ -15,6 +15,8 @@ export type PortClockSourceKind =
   | "cruise_line_daily_program"
   | "cruise_line_sailing_notice"
   | "port_authority_schedule"
+  /** Times copied from another system's sailing record; `url` is that record, not the cruise line. */
+  | "shared_sailing_record"
   | "other";
 export type PortClockStatus = "verified" | "partial" | "unverified";
 
@@ -23,6 +25,12 @@ export interface PortClockSource {
   kind: PortClockSourceKind;
   /** ISO date (YYYY-MM-DD) the source was last checked. */
   checkedAt: string;
+  /** Identifier of the shared record when kind is "shared_sailing_record". */
+  recordId?: string;
+  /** The page the shared record cites as its own source; DCC did not check it directly. */
+  upstreamUrl?: string;
+  upstreamKind?: PortClockSourceKind;
+  note?: string;
 }
 
 export interface PortClockReturnPoint {
@@ -63,7 +71,32 @@ export const PUBLISHED_ALL_ABOARD_SOURCE_KINDS: ReadonlySet<PortClockSourceKind>
   "cruise_line_sailing_notice",
 ]);
 
+/**
+ * Every modeled all-aboard estimate names exactly one of these rules.
+ * A modeled value is a planning note, never a published deadline.
+ */
+export const PORT_CLOCK_MODEL_RULES = {
+  /** Value migrated from SCHEDULED_CRUISE_PORT_CALLS; no source or rule was recorded. */
+  legacy_unsourced_value: "Legacy value with no recorded source or rule.",
+  /** Scheduled departure minus 30 minutes. An estimate to confirm in the ship app, never a published deadline. */
+  departure_minus_30: "Scheduled departure minus 30 minutes.",
+} as const;
+export type PortClockModelRule = keyof typeof PORT_CLOCK_MODEL_RULES;
+
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+function minutesToHhmm(total: number): string {
+  const m = ((total % 1440) + 1440) % 1440;
+  return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+}
+
+/** Applies a named model rule; returns null when the rule cannot be computed from the record. */
+export function applyPortClockModelRule(rule: PortClockModelRule, departureTime: string | null): string | null {
+  if (rule !== "departure_minus_30" || !departureTime || !HHMM.test(departureTime)) return null;
+  const [h, m] = departureTime.split(":").map(Number);
+  return minutesToHhmm(h * 60 + m - 30);
+}
+
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 function isValidDate(value: string): boolean {
@@ -146,6 +179,11 @@ export function validatePortClockLedger(ledger: PortClockLedger = getPortClockLe
     if (r.publishedAllAboardSource && !PUBLISHED_ALL_ABOARD_SOURCE_KINDS.has(r.publishedAllAboardSource.kind))
       errors.push(`${id} all-aboard source kind "${r.publishedAllAboardSource.kind}" is not a line-issued document`);
     if (r.modeledAllAboardTime && !r.modelRule) errors.push(`${id} modeled all-aboard without a model rule`);
+    if (r.modelRule && !Object.prototype.hasOwnProperty.call(PORT_CLOCK_MODEL_RULES, r.modelRule))
+      errors.push(`${id} unknown model rule "${r.modelRule}"`);
+    if (r.modelRule === "departure_minus_30"
+        && r.modeledAllAboardTime !== applyPortClockModelRule("departure_minus_30", r.departureTime))
+      errors.push(`${id} modeled all-aboard "${r.modeledAllAboardTime}" does not equal departure − 30`);
     for (const s of [r.scheduleSource, r.publishedAllAboardSource, r.returnPoint?.source]) {
       if (s && !hasCheckedSource(s)) errors.push(`${id} source missing url or check date`);
     }
@@ -169,6 +207,33 @@ export function findPortClockRecord(params: {
         (r.sailingId.toLowerCase() === id || (r.sailingAliases ?? []).some((a) => a.toLowerCase() === id)),
     ) ?? null
   );
+}
+
+export type PortClockScope = "all" | "upcoming" | "past";
+
+/** Today's date (YYYY-MM-DD, UTC) unless a reference date is supplied. */
+function referenceDate(asOf?: string): string {
+  return asOf && isValidDate(asOf) ? asOf : new Date().toISOString().slice(0, 10);
+}
+
+/** A port call is past once its call date is before the reference date. */
+export function isPastPortCall(r: PortClockRecord, asOf?: string): boolean {
+  return r.callDate < referenceDate(asOf);
+}
+
+export function parsePortClockScope(value: string | null | undefined): PortClockScope {
+  const v = value?.trim().toLowerCase();
+  return v === "upcoming" || v === "past" ? v : "all";
+}
+
+/** Read-side filter only; it never removes rows from the ledger itself. */
+export function filterPortCallsByScope(
+  portCalls: PortClockRecord[],
+  scope: PortClockScope,
+  asOf?: string,
+): PortClockRecord[] {
+  if (scope === "all") return portCalls;
+  return portCalls.filter((r) => (scope === "past") === isPastPortCall(r, asOf));
 }
 
 export function summarizePortClockLedger(ledger: PortClockLedger = getPortClockLedger()) {

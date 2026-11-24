@@ -528,7 +528,7 @@ test("103.8: Sailing-fit pagination counts and paginates only tours that actuall
   assert.equal(missing.tours[0].timeFit.fitsSailing, false);
 });
 
-test("103.9: Scheduled departure from matching ship, sailing, and port call replaces fixed 30m gap (60m and 45m gaps) and ambiguous multi-ship dates omit departure-relative margins", async () => {
+test("103.9: Scheduled departure from matching ship, sailing, and port call replaces fixed 30m gap (60m and 45m gaps) and ambiguous multi-ship dates omit departure-relative margins", async (t) => {
   const { queryPortDayExcursionCatalog } = await import(
     "@/lib/dcc/cruisePortExcursionCatalogEngine"
   );
@@ -613,7 +613,17 @@ test("103.9: Scheduled departure from matching ship, sailing, and port call repl
   assert.equal(indyNassau.sailingWindow.allAboardToShipDepartureMinutes, 45);
   assert.equal(indyNassau.sailingWindow.departureTimeSource, "scheduled_port_call");
 
-  // 3. Ambiguous multi-ship date: Miami on 2027-01-24 has both Independence (16:00) and Symphony (16:30)
+  // 3. Ambiguous multi-ship date: Miami on 2027-01-24 has Independence (16:00) plus a
+  // test-only second ship (16:30). The real ledger no longer has a second Miami sailing that
+  // day (Symphony of the Seas 2027-01-24 sails from Galveston), so the fixture exists only
+  // for the duration of this test.
+  const secondShipMiami = {
+    sailingId: "test-fixture-second-ship-miami-2027-01-24", portSlug: "miami", sailingDate: "2027-01-24",
+    shipName: "Test second ship", shipSlug: "test-second-ship",
+    arrivalTime: "", departureTime: "16:30", allAboardTime: "16:00", allAboardPublished: false,
+  };
+  SCHEDULED_CRUISE_PORT_CALLS.push(secondShipMiami);
+  t.after(() => { SCHEDULED_CRUISE_PORT_CALLS.splice(SCHEDULED_CRUISE_PORT_CALLS.indexOf(secondShipMiami), 1); });
   const ambiguousMiami = await queryPortDayExcursionCatalog({
     portSlug: "miami",
     viewMode: "browse_all",

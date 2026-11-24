@@ -38,6 +38,7 @@ import {
 import { PILOT_VERIFIED_TOUR_RECORDS } from "@/lib/dcc/catalog/durableCatalogStore";
 import { getHotelConciergeConfig } from "@/lib/dcc/catalog/hotelConfigs";
 import { getPortAuthorityConfig } from "@/src/data/port-authority-config";
+import { TEST_ONLY_GRAND_CAYMAN_TENDER_PLAN } from "./helpers/test-only-grand-cayman-tender-plan";
 
 test("1. DCC Coverage pass report enforces 8:00 a.m. Mountain daily schedule, all 5 winter ports, weekly Alaska calendar recheck, and separate preview vs. production status", () => {
   resetDccCoverageCheckpointMemoryForTests();
@@ -548,15 +549,16 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
   assert.equal(nassauSavedMissing.suitability, "needs_confirmation");
   assert.equal(nassauSavedMissing.trackedViatorCheckoutUrl, null);
 
-  // Missing last-tender on Grand Cayman (WESTERN-2027-01-24) withholds checkout
-  const westernMissingTender = await evaluateWinterSailingPlan({
-    planCode: "WESTERN-2027-01-24",
+  // Missing last-tender on a Grand Cayman tender call withholds checkout. No registered sailing
+  // calls at Grand Cayman, so this uses the test-only fixture plan.
+  const tenderFixtureMissingTender = await evaluateWinterSailingPlan({
+    planDefinition: TEST_ONLY_GRAND_CAYMAN_TENDER_PLAN,
     adults: 2,
     surface: "dcc",
     enableShortlistLiveCheck: false,
     missingLastTenderPorts: ["grand-cayman"],
   });
-  const gcMissing = westernMissingTender.sailingPortCalls.find(
+  const gcMissing = tenderFixtureMissingTender.sailingPortCalls.find(
     (p) => p.portSlug === "grand-cayman",
   );
   assert.ok(gcMissing);
@@ -564,7 +566,7 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
   assert.equal(gcMissing.cruiseFitRecommendationWithheld, true);
   assert.equal(gcMissing.checkoutEligible, false);
   const gcSavedMissing =
-    westernMissingTender.savedPortsSummary.savedSelections.find(
+    tenderFixtureMissingTender.savedPortsSummary.savedSelections.find(
       (s) => s.portSlug === "grand-cayman",
     );
   assert.ok(gcSavedMissing);
@@ -829,6 +831,28 @@ test("11. Each checkout intent gets its own referral ID (separate IDs for QA), t
   const offItineraryJson = await offItineraryRes.json();
   assert.equal(offItineraryJson.error, "UNAPPROVED_CHECKOUT_DESTINATION");
   assert.equal(offItineraryJson.reason, "OFFER_NOT_ON_SAILING_ITINERARY");
+
+  // WESTERN-2027-01-24 (Symphony from Galveston) no longer calls at Grand Cayman
+  const westernGrandCaymanRes = await adsClickGet(
+    new Request(
+      `https://destinationcommandcenter.com/api/v1/ads/click?clickId=clk_111122223333444455556666&sailing=WESTERN-2027-01-24&offer=10309P3&option=TG1`,
+    ),
+  );
+  assert.equal(westernGrandCaymanRes.status, 403);
+  const westernGrandCaymanJson = await westernGrandCaymanRes.json();
+  assert.equal(westernGrandCaymanJson.reason, "OFFER_NOT_ON_SAILING_ITINERARY");
+  assert.equal(westernGrandCaymanJson.offerPort, "grand-cayman");
+
+  // ...and calls at Cozumel on Jan 29, not Jan 26
+  const westernCozumelOldDateRes = await adsClickGet(
+    new Request(
+      `https://destinationcommandcenter.com/api/v1/ads/click?clickId=clk_111122223333444455556666&sailing=WESTERN-2027-01-24&offer=5553274P1&option=TG2&date=2027-01-26`,
+    ),
+  );
+  assert.equal(westernCozumelOldDateRes.status, 403);
+  const westernCozumelOldDateJson = await westernCozumelOldDateRes.json();
+  assert.equal(westernCozumelOldDateJson.reason, "OFFER_DATE_NOT_ON_SAILING_ITINERARY");
+  assert.deepEqual(westernCozumelOldDateJson.itineraryDates, ["2027-01-29"]);
 
   // Resolve WNO live Viator offer 15200P6 directly from approved offer without target param, minting a fresh QA referral ID
   const wnoClickReq = new Request(

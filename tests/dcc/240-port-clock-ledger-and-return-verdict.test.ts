@@ -5,6 +5,9 @@ import {
   validatePortClockLedger,
   summarizePortClockLedger,
   findPortClockRecord,
+  filterPortCallsByScope,
+  isPastPortCall,
+  parsePortClockScope,
   type PortClockLedger,
   type PortClockRecord,
 } from "../../lib/dcc/cruise/portClockLedger";
@@ -138,4 +141,87 @@ test("labels never claim safety or guarantees", () => {
   for (const label of Object.values(RETURN_BUFFER_VERDICT_LABELS)) assert.doesNotMatch(label, /safe|guarantee/i);
   const note = evaluateReturnBuffer({ portCall: getPortClockLedger().portCalls[0], tourReturnTime: "10:00", tourReturnPoint: "x" }).planningNote ?? "";
   assert.doesNotMatch(note, /safe|guarantee/i);
+});
+
+const CP_RECORD_URL = "https://cruisepromenade.com/api/verified-sailings/symphony-of-the-seas/2027-01-24";
+const RC_SAILING_URL =
+  "https://www.royalcaribbean.com/itinerary/7-night-western-caribbean-from-galveston-on-symphony-SY07GAL-3851841824?country=USA&currencyCode=USD&sailDate=2027-01-24";
+
+test("WESTERN-2027-01-24 rows equal the verified Symphony of the Seas itinerary from Galveston", () => {
+  const rows = getPortClockLedger().portCalls.filter((r) => r.sailingId === "WESTERN-2027-01-24");
+  assert.deepEqual(
+    rows.map((r) => [r.portSlug, r.callDate, r.arrivalTime, r.departureTime, r.modeledAllAboardTime]),
+    [
+      ["galveston", "2027-01-24", null, "16:00", null],
+      ["roatan", "2027-01-27", "08:00", "17:00", "16:30"],
+      ["costa-maya", "2027-01-28", "08:00", "17:00", "16:30"],
+      ["cozumel", "2027-01-29", "08:00", "18:00", "17:30"],
+    ],
+  );
+  for (const r of rows) {
+    assert.equal(r.shipSlug, "symphony-of-the-seas");
+    assert.notEqual(r.portSlug, "grand-cayman");
+    assert.notEqual(r.portSlug, "miami");
+    assert.equal(r.publishedAllAboardTime, null);
+    assert.equal(r.publishedAllAboardSource, null);
+    assert.equal(r.timeBasis, "unknown");
+    assert.equal(r.status, "unverified");
+    assert.ok(!(r.sailingAliases ?? []).includes("WC07MIA-20270124"));
+    for (const alias of [
+      "symphony-of-the-seas-20270124",
+      "royal-caribbean-symphony-of-the-seas-2027-01-24",
+      "sailing:rcl:symphony-of-the-seas:2027-01-24",
+    ]) {
+      assert.ok(r.sailingAliases?.includes(alias), alias);
+    }
+    // Sourced via CP's shared record; DCC does not claim to have checked Royal Caribbean itself.
+    assert.equal(r.scheduleSource?.kind, "shared_sailing_record");
+    assert.equal(r.scheduleSource?.url, CP_RECORD_URL);
+    assert.equal(r.scheduleSource?.recordId, "royal-caribbean-symphony-of-the-seas-2027-01-24");
+    assert.equal(r.scheduleSource?.checkedAt, "2026-11-11");
+    assert.equal(r.scheduleSource?.upstreamUrl, RC_SAILING_URL);
+    assert.match(r.scheduleSource?.note ?? "", /DCC did not check Royal Caribbean directly/);
+    assert.equal(r.modelRule, r.modeledAllAboardTime ? "departure_minus_30" : null);
+  }
+  assert.equal(findPortClockRecord({ sailingId: "WC07MIA-20270124", portSlug: "cozumel" }), null);
+  assert.equal(findPortClockRecord({ sailingId: "WESTERN-2027-01-24", portSlug: "grand-cayman" }), null);
+  assert.equal(findPortClockRecord({ sailingId: "WESTERN-2027-01-24", portSlug: "cozumel", callDate: "2027-01-26" }), null);
+  assert.equal(
+    findPortClockRecord({ sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-24", portSlug: "cozumel" })?.callDate,
+    "2027-01-29",
+  );
+});
+
+test("departure_minus_30 rows must match the rule and unknown rules are rejected", () => {
+  const modeled = (over: Partial<PortClockRecord>) =>
+    verifiedCall({ publishedAllAboardTime: null, publishedAllAboardSource: null, status: "partial", ...over });
+  const ledger: PortClockLedger = {
+    version: "t", generatedAt: "t",
+    portCalls: [
+      modeled({ callDate: "2027-01-25", modeledAllAboardTime: "15:30", modelRule: "departure_minus_30" }),
+      modeled({ callDate: "2027-01-26", modeledAllAboardTime: "15:15", modelRule: "departure_minus_30" }),
+      modeled({ callDate: "2027-01-27", modeledAllAboardTime: "15:30", modelRule: "made_up_rule" }),
+    ],
+  };
+  const errors = validatePortClockLedger(ledger);
+  assert.equal(errors.length, 2, errors.join("\n"));
+  assert.match(errors.join("\n"), /2027-01-26 modeled all-aboard "15:15" does not equal departure − 30/);
+  assert.match(errors.join("\n"), /2027-01-27 unknown model rule "made_up_rule"/);
+});
+
+test("scope helper separates past and upcoming rows without removing any", () => {
+  const all = getPortClockLedger().portCalls;
+  const asOf = "2026-11-24";
+  const upcoming = filterPortCallsByScope(all, "upcoming", asOf);
+  const past = filterPortCallsByScope(all, "past", asOf);
+  assert.equal(filterPortCallsByScope(all, "all", asOf).length, all.length);
+  assert.equal(upcoming.length + past.length, all.length);
+  assert.equal(past.length, 19);
+  assert.equal(upcoming.length, 9);
+  assert.ok(upcoming.every((r) => r.callDate >= asOf));
+  assert.ok(past.every((r) => isPastPortCall(r, asOf)));
+  assert.ok(upcoming.filter((r) => r.sailingId === "WESTERN-2027-01-24").length === 4);
+  assert.equal(parsePortClockScope("UPCOMING"), "upcoming");
+  assert.equal(parsePortClockScope("bogus"), "all");
+  assert.equal(parsePortClockScope(null), "all");
 });

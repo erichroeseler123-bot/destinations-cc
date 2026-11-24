@@ -31,6 +31,7 @@ import {
   evaluateWinterSailingPlan,
   runWinterAttributionReplayAndNolaStatusTrace,
 } from "../../lib/dcc/winterExcursionPlanner";
+import { TEST_ONLY_GRAND_CAYMAN_TENDER_PLAN } from "./helpers/test-only-grand-cayman-tender-plan";
 
 test("1. Durable Shared Tour Catalog covers all 15 EarthOS destinations, completes all 5 Alaska destinations (100% of connected provider catalog), and labels coverage against connected provider totals", async () => {
   const summary = await getDurableCatalogSummaryReport();
@@ -570,15 +571,21 @@ test("6. Five-Port Winter Excursion Planner (INDY-2027-01-24), Tender/Transfer M
   assert.equal(planRes.savedPortsSummary.combinedPartyTotalCents, 33800);
   assert.equal(planRes.savedPortsSummary.combinedPartyTotalFormatted, "$338.00");
 
-  // Verify Grand Cayman tender port enforces 45m tender clearance on WESTERN-2027-01-24
-  const westernPlan = await evaluateWinterSailingPlan({
-    planCode: "WESTERN-2027-01-24",
+  // Grand Cayman tender port enforces 45m tender clearance. No registered sailing calls at
+  // Grand Cayman, so this runs against the test-only fixture plan.
+  const tenderFixturePlan = await evaluateWinterSailingPlan({
+    planDefinition: TEST_ONLY_GRAND_CAYMAN_TENDER_PLAN,
     adults: 2,
     surface: "cruisepromenade",
     enableShortlistLiveCheck: false,
     isTest: true,
   });
-  const grandCaymanSlot = westernPlan.fivePortsBySlug["grand-cayman"];
+  assert.equal(tenderFixturePlan.plan.planCode, "TEST-FIXTURE-GRAND-CAYMAN-TENDER");
+  const grandCaymanSlot = tenderFixturePlan.sailingPortCalls.find(
+    (p) => p.portSlug === "grand-cayman",
+  );
+  assert.ok(grandCaymanSlot);
+  assert.equal(grandCaymanSlot.onActiveSailingItinerary, true);
   assert.equal(grandCaymanSlot.portSpec.isTenderPort, true);
   assert.equal(grandCaymanSlot.portSpec.defaultClearanceMinutes, 45);
   assert.equal(grandCaymanSlot.selectedOption?.providerProductCode, "10309P3");
@@ -587,6 +594,31 @@ test("6. Five-Port Winter Excursion Planner (INDY-2027-01-24), Tender/Transfer M
     45,
   );
   assert.equal(grandCaymanSlot.selectedOption?.suitability, "recommended");
+
+  // WESTERN-2027-01-24 is Symphony of the Seas from Galveston: Roatán, Costa Maya, Cozumel only.
+  const westernPlan = await evaluateWinterSailingPlan({
+    planCode: "WESTERN-2027-01-24",
+    adults: 2,
+    surface: "cruisepromenade",
+    enableShortlistLiveCheck: false,
+    isTest: true,
+  });
+  assert.equal(westernPlan.plan.planCode, "WESTERN-2027-01-24");
+  assert.equal(westernPlan.plan.sailingId, "royal-caribbean-symphony-of-the-seas-2027-01-24");
+  assert.equal(westernPlan.plan.embarkationPort, "Galveston, Texas");
+  assert.deepEqual(
+    westernPlan.sailingPortCalls.map((p) => [p.portSlug, p.date, p.shipArrival, p.shipDeparture, p.allAboardTime]),
+    [
+      ["roatan", "2027-01-27", "08:00", "17:00", "16:30"],
+      ["costa-maya", "2027-01-28", "08:00", "17:00", "16:30"],
+      ["cozumel", "2027-01-29", "08:00", "18:00", "17:30"],
+    ],
+  );
+  assert.equal(westernPlan.fivePortsBySlug["grand-cayman"].onActiveSailingItinerary, false);
+  assert.ok(!westernPlan.savedPortsSummary.savedPortSlugs.includes("grand-cayman"));
+  assert.ok(!westernPlan.savedPortsSummary.savedPortSlugs.includes("costa-maya"));
+  const westernGuide = westernPlan.otherWinterPortGuides.find((g) => g.portSlug === "grand-cayman");
+  assert.equal(westernGuide?.applicableSailingPlanCode, null);
 
   // Verify missing allAboardTime forces "needs_confirmation" ("Needs confirmation")
   const missingAllAboardPlan = await evaluateWinterSailingPlan({

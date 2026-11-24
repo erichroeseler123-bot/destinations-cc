@@ -17,7 +17,10 @@ import {
   verifyApprovedCheckoutHandoffSignature,
 } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
-import { resolveShareableWinterSailingPlan } from "@/lib/dcc/winterExcursionPlanner";
+import {
+  resolveShareableWinterSailingPlan,
+  shareablePlanPortCalls,
+} from "@/lib/dcc/winterExcursionPlanner";
 import { getViatorClient } from "@/lib/viator/client";
 import { getViatorServerConfig } from "@/lib/viator/config";
 
@@ -237,7 +240,7 @@ export async function GET(request: Request) {
     }
   }
 
-  // Enforce sailing itinerary port verification if a sailing code is specified
+  // Enforce sailing itinerary port (and, when supplied, port-call date) verification if a sailing code is specified
   if (sailingParam && catalogRecord) {
     const normalizedSailing = sailingParam.trim().toUpperCase();
     if (
@@ -245,11 +248,8 @@ export async function GET(request: Request) {
       normalizedSailing === "WESTERN-2027-01-24"
     ) {
       const plan = resolveShareableWinterSailingPlan(normalizedSailing);
-      const allowedPorts = new Set(
-        plan.itineraryDays
-          .filter((d) => d.stopType === "port" && d.portSlug)
-          .map((d) => d.portSlug as string),
-      );
+      const portCalls = shareablePlanPortCalls(plan);
+      const allowedPorts = new Set<string>(portCalls.map((c) => c.portSlug));
       const offerPort = (
         catalogRecord.portSlug ||
         catalogRecord.destinationSlug ||
@@ -264,6 +264,26 @@ export async function GET(request: Request) {
             sailing: plan.planCode,
             offer: catalogRecord.providerProductCode,
             offerPort,
+          },
+          { status: 403 },
+        );
+      }
+      const requestedDate = dateParam?.trim() || "";
+      if (
+        offerPort &&
+        requestedDate &&
+        !portCalls.some((c) => c.portSlug === offerPort && c.date === requestedDate)
+      ) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "UNAPPROVED_CHECKOUT_DESTINATION",
+            reason: "OFFER_DATE_NOT_ON_SAILING_ITINERARY",
+            sailing: plan.planCode,
+            offer: catalogRecord.providerProductCode,
+            offerPort,
+            date: requestedDate,
+            itineraryDates: portCalls.filter((c) => c.portSlug === offerPort).map((c) => c.date),
           },
           { status: 403 },
         );

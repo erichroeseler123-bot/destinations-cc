@@ -821,18 +821,27 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
               </h2>
               <p className="mt-1 text-xs text-slate-300">
                 {data.otherWinterPortGuides.map((g) => g.portName).join(", ")} are not port
-                calls on the January 24, 2027 <em>{data.shipName}</em> Eastern Caribbean
+                calls on the January 24, 2027 <em>{data.shipName}</em> {data.plan.itineraryTitle}{" "}
                 sailing and cannot be added to <code className="text-cyan-300">{data.plan.planCode}</code>.
-                Explore them through their dedicated port guides or switch to an applicable
-                Western Caribbean sailing plan:
+                Explore them through their dedicated port guides or switch to the sailing plan that
+                actually calls there:
               </p>
             </div>
-            <Link
-              href="/cruises/winter-excursion-planner?plan=WESTERN-2027-01-24"
-              className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-4 py-2 text-xs font-bold text-cyan-200 hover:bg-cyan-900/60 transition"
-            >
-              Switch to Western Caribbean Sailing (WESTERN-2027-01-24) →
-            </Link>
+            {data.plan.planCode === "WESTERN-2027-01-24" ? (
+              <Link
+                href="/cruises/winter-excursion-planner?plan=INDY-2027-01-24"
+                className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-4 py-2 text-xs font-bold text-cyan-200 hover:bg-cyan-900/60 transition"
+              >
+                Switch to Eastern Caribbean Sailing (INDY-2027-01-24) →
+              </Link>
+            ) : (
+              <Link
+                href="/cruises/winter-excursion-planner?plan=WESTERN-2027-01-24"
+                className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-4 py-2 text-xs font-bold text-cyan-200 hover:bg-cyan-900/60 transition"
+              >
+                Switch to Western Caribbean Sailing from Galveston (WESTERN-2027-01-24) →
+              </Link>
+            )}
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -849,8 +858,14 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-slate-400">
-                    Off-itinerary for {data.plan.planCode}. Available on{" "}
-                    <code>{guide.applicableSailingPlanCode}</code> and standalone port guide.
+                    Off-itinerary for {data.plan.planCode}.{" "}
+                    {guide.applicableSailingPlanCode ? (
+                      <>
+                        Available on <code>{guide.applicableSailingPlanCode}</code> and standalone port guide.
+                      </>
+                    ) : (
+                      <>No current winter sailing plan calls here; use the standalone port guide.</>
+                    )}
                   </p>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
