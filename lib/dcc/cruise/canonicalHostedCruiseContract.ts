@@ -49,7 +49,10 @@ export type CanonicalCruiseLineCode =
   | "gaysail"
   | "azamara"
   | "ponant"
-  | "explora";
+  | "explora"
+  | "viking"
+  | "amawaterways"
+  | "sonesta";
 
 const LINE_CODE_ALIASES: Record<string, CanonicalCruiseLineCode> = {
   rccl: "rccl",
@@ -107,6 +110,11 @@ const LINE_CODE_ALIASES: Record<string, CanonicalCruiseLineCode> = {
   "azamara cruises": "azamara",
   ponant: "ponant",
   explora: "explora",
+  viking: "viking",
+  "viking ocean cruises": "viking",
+  amawaterways: "amawaterways",
+  sonesta: "sonesta",
+  "sonesta nile cruises": "sonesta",
   "explora journeys": "explora",
 };
 
@@ -543,6 +551,7 @@ export const HOSTED_VISUAL_KEYS = [
   "port-krabi-railay-thailand",
   "port-dubrovnik-old-port",
   "port-rhine-gorge-lorelei",
+  "port-rouen-seine-panorama",
   "port-edinburgh-calton-hill",
   "ship-norwegian-gem",
   "ship-norwegian-jade",
@@ -674,7 +683,7 @@ export const HOSTED_CRUISE_THEMES: ReadonlyArray<HostedCruiseThemeDefinition> = 
     shortLabel: "Sober & Recovery",
     heroHeadline: "Sober & Recovery Community Cruises",
     description:
-      "Alcohol-free and recovery-supportive hosted group sailings where fellowship on board carries straight into stress-free days ashore.",
+      "Find recovery meetings, sober travel groups and fellowship at sea. Each departure identifies whether the program covers the hosted group or the entire ship.",
     searchIntentExamples: ["sober cruises 2027", "recovery cruises"],
     visualKey: "port-sitka",
   },
@@ -870,6 +879,7 @@ export interface CanonicalHeldHostedEvidenceRecord {
 
 export type HostedFranchiseRelationshipType =
   | "flagship_one_to_one"
+  | "organizer_program_collection"
   | "producer_owned_franchise"
   | "sub_brand_program"
   | "co_produced_brand"
@@ -879,6 +889,8 @@ export function formatHostedFranchiseRelationshipLabel(
   rel: HostedFranchiseRelationshipType | null | undefined,
 ): string {
   switch (rel) {
+    case "organizer_program_collection":
+      return "Cruise programs listed under this organizer";
     case "flagship_one_to_one":
       return "Flagship recurring cruise series (1:1 separate canonical franchise entity)";
     case "producer_owned_franchise":
@@ -1030,6 +1042,9 @@ export interface CanonicalHostedSailingFactRecord {
   canonicalShipSlug: string;
   canonicalSailDate: string;
   sailingTitle: string;
+  /** The scope of the organizer's alcohol policy for this particular departure. */
+  alcoholPolicyScope?: "hosted_group_only" | "whole_ship_alcohol_free" | "not_disclosed";
+  alcoholPolicySourceUrl?: string;
   shortHeadline: string;
   editionSubtitle: string;
   anticipationHook: string;

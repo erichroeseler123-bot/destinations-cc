@@ -164,6 +164,8 @@ export function computeHostedSailingSourceFingerprint(
     | "canonicalSailDate"
     | "canonicalShipSlug"
     | "cabinAvailabilityStatus"
+    | "alcoholPolicyScope"
+    | "alcoholPolicySourceUrl"
     | "cabinAvailabilityNote"
     | "verifiedStartingPriceUsd"
     | "publishedPriceDisplay"
@@ -179,6 +181,10 @@ export function computeHostedSailingSourceFingerprint(
     canonicalSailDate: sailing.canonicalSailDate,
     canonicalShipSlug: sailing.canonicalShipSlug,
     cabinAvailabilityStatus: sailing.cabinAvailabilityStatus,
+    ...(sailing.alcoholPolicyScope && {
+      alcoholPolicyScope: sailing.alcoholPolicyScope,
+      alcoholPolicySourceUrl: sailing.alcoholPolicySourceUrl ?? "",
+    }),
     cabinAvailabilityNote: sailing.cabinAvailabilityNote ?? "",
     verifiedStartingPriceUsd: sailing.verifiedStartingPriceUsd ?? null,
     publishedPriceDisplay: sailing.publishedPriceDisplay ?? "",

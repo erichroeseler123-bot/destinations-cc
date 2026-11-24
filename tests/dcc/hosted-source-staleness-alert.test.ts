@@ -17,9 +17,9 @@ test("DCC stale-source monitor reports 0 overdue alerts on 2026-11-23 while surf
     includeProbeBlocked: true,
   });
 
-  assert.equal(evalToday.counts.evaluatedSailings, 125);
-  assert.equal(evalToday.counts.evaluatedOrganizers, 64);
-  assert.equal(evalToday.counts.evaluatedReleaseWatchItems, 52);
+  assert.equal(evalToday.counts.evaluatedSailings, 136);
+  assert.equal(evalToday.counts.evaluatedOrganizers, 68);
+  assert.equal(evalToday.counts.evaluatedReleaseWatchItems, 55);
   assert.equal(evalToday.counts.overdueCheckCount, 0);
   assert.equal(evalToday.counts.materialChangedCount, 0);
   assert.equal(
