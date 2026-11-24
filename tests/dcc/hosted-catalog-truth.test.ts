@@ -9,8 +9,20 @@ test("DCC hosted catalog keeps dated source checks, publication holds and readab
   const snapshot = getDccCanonicalHostedCatalogSnapshot({ includeHeld: true });
   assert.equal(snapshot.owner, "dcc");
   assert.equal(validateDccHostedCatalogIntegrity().valid, true);
-  assert.ok(snapshot.hostedSailings.length >= 116);
-  assert.ok(snapshot.hostedSailings.filter((s) => s.verificationState === "verified").length >= 111);
+  assert.equal(snapshot.hostedSailings.length, 125);
+  assert.equal(
+    snapshot.hostedSailings.filter((s) => s.verificationState === "verified" && !s.scheduleHoldReason).length,
+    122,
+  );
+  assert.equal(
+    snapshot.hostedSailings.filter((s) => s.verificationState === "schedule_hold" || Boolean(s.scheduleHoldReason)).length,
+    3,
+  );
+  const atlantisAllure = snapshot.hostedSailings.find(
+    (s) => s.hostedSailingId === "hosted-sailing:atlantis-events:rccl:allure-of-the-seas:2027-03-07",
+  );
+  assert.equal(atlantisAllure?.sailingTitle, "Epic Caribbean Cruise");
+  assert.equal(atlantisAllure?.canonicalShipSlug, "allure-of-the-seas");
   for (const sailing of snapshot.hostedSailings) {
     assert.ok(sailing.primarySourceUrl, sailing.hostedSailingId);
     assert.ok(sailing.organizerSourceCheckedAt <= snapshot.generatedAt, sailing.hostedSailingId);
