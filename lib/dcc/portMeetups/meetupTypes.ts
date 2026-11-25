@@ -64,6 +64,7 @@ export interface PublicPortCongestionSummary {
   shipsSummary: string;
   sourceLabel: string;
   sourceUrl: string;
+  sourceCheckedDate?: string;
 }
 
 export interface PublicOverflowDepartureCandidate {
