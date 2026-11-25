@@ -87,9 +87,9 @@ export const VERIFIED_OPERATOR_MEETUP_PRODUCTS: Record<
     upperBoundDurationMinutes: 210,
     checkInLeadMinutes: 15,
     meetingPointLabel:
-      "Downtown Juneau — Goldbelt Tramway Kiosk (490 S. Franklin St)",
+      "Downtown Juneau — Goldbelt Tramway Kiosk (492 S. Franklin St, Juneau, AK 99801)",
     returnDropoffLabel:
-      "Downtown Juneau — Goldbelt Tramway (490 S. Franklin St)",
+      "Downtown Juneau — Goldbelt Tramway (492 S. Franklin St, Juneau, AK 99801)",
     guaranteeWindowStartMmDd: "05-15",
     guaranteeWindowEndMmDd: "09-15",
     guaranteeAppliesDisclosure:
@@ -114,6 +114,7 @@ export const VERIFIED_PORT_CONGESTION_BY_DATE: Record<
       "Norwegian Bliss (06:30–13:30), Discovery Princess (08:00–21:15), Noordam (12:30–22:30), Norwegian Encore (13:00–22:00)",
     sourceLabel: "CLAA 2027 Juneau Port Schedule",
     sourceUrl: "https://claalaska.com/wp-content/uploads/2026/10/JNU-Juneau-2027.pdf",
+    sourceCheckedDate: "2026-11-25",
   },
 };
 
