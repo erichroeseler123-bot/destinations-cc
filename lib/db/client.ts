@@ -678,7 +678,7 @@ function createInMemoryTestDb(): DccDb {
 }
 
 const sqliteBackedTablesRegex =
-  /\b(octo_bookings|octo_booking_idempotency_conflicts|octo_settlement_ledger|octo_audit_logs|octo_supplier_connections|octo_normalized_products|octo_participants|dcc_order_payments|dcc_payment_allocations|dcc_orders|dcc_order_items|dcc_operator_payables|dcc_disputes_and_refunds|dcc_supplier_bookings|dcc_saga_steps|dcc_saga_audit_events|dcc_square_webhook_events|dcc_traveler_profiles|dcc_auth_tokens)\b/i;
+  /\b(octo_bookings|octo_booking_idempotency_conflicts|octo_settlement_ledger|octo_audit_logs|octo_supplier_connections|octo_normalized_products|octo_participants|octo_operator_agreements|dcc_order_payments|dcc_payment_allocations|dcc_orders|dcc_order_items|dcc_operator_payables|dcc_disputes_and_refunds|dcc_supplier_bookings|dcc_saga_steps|dcc_saga_audit_events|dcc_square_webhook_events|dcc_traveler_profiles|dcc_auth_tokens)\b/i;
 
 const SQLITE_BOOLEAN_COLS = new Set(["is_sandbox", "service_completed", "signature_verified"]);
 const SQLITE_JSON_COLS = new Set([
@@ -795,6 +795,7 @@ function initializeSqliteSchema(db: any): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS "octo_participants" (
       "id" TEXT PRIMARY KEY,
+      "operator_id" TEXT,
       "name" TEXT NOT NULL,
       "role" TEXT NOT NULL,
       "website" TEXT NOT NULL,
@@ -803,9 +804,10 @@ function initializeSqliteSchema(db: any): void {
       "destinations" TEXT NOT NULL DEFAULT '[]',
       "endpoint" TEXT,
       "certification_evidence" TEXT,
+      "inventory_evidence" TEXT,
       "consent_status" TEXT NOT NULL DEFAULT 'not_requested',
       "credential_status" TEXT NOT NULL DEFAULT 'none',
-      "products_available_count" INTEGER NOT NULL DEFAULT 0,
+      "products_available_count" INTEGER,
       "booking_payment_model" TEXT NOT NULL DEFAULT 'supplier_hosted',
       "outreach_status" TEXT NOT NULL DEFAULT 'identified',
       "agreed_commission_percent" TEXT,
@@ -814,8 +816,29 @@ function initializeSqliteSchema(db: any): void {
       "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
     );
 
+    CREATE TABLE IF NOT EXISTS "octo_operator_agreements" (
+      "id" TEXT PRIMARY KEY,
+      "operator_id" TEXT NOT NULL,
+      "agreement_reference" TEXT NOT NULL UNIQUE,
+      "status" TEXT NOT NULL DEFAULT 'active',
+      "agreed_commission_percent" TEXT,
+      "payment_model" TEXT NOT NULL DEFAULT 'supplier_hosted',
+      "signatory_name" TEXT NOT NULL,
+      "signatory_email" TEXT NOT NULL,
+      "signed_at" TEXT NOT NULL,
+      "effective_at" TEXT,
+      "expires_at" TEXT,
+      "revoked_at" TEXT,
+      "document_evidence" TEXT,
+      "notes" TEXT,
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
     CREATE TABLE IF NOT EXISTS "octo_supplier_connections" (
       "id" TEXT PRIMARY KEY,
+      "operator_id" TEXT,
+      "agreement_id" TEXT,
       "operator_slug" TEXT NOT NULL,
       "operator_name" TEXT NOT NULL,
       "endpoint" TEXT NOT NULL,

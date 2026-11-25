@@ -40,12 +40,17 @@ test("OCTO Participant Truth: mock supplier is quarantined to technical_onboardi
   assert.equal(mockAuthorized, undefined, "Mock supplier must NOT appear in getAuthorizedConnections without completing onboarding");
 });
 
-test("OCTO Pilot Checklist: generates complete credential & consent checklist for Ventrata pilot", () => {
+test("OCTO Pilot Checklist: generates complete credential & consent checklist without unverified endpoints or unsigned commission rates", () => {
   const checklist = OctoOnboardingService.generatePilotChecklist("ventrata");
 
-  assert.equal(checklist.candidate, "Ventrata Live Operator Pilot");
+  assert.equal(checklist.candidate, "Ventrata Direct Operator Integration Checklist");
+  assert.equal(checklist.endpointStatus, "unknown (must be supplied by authorized operator)");
+  assert.equal(checklist.bookingSystemCommercialArrangements, "unknown");
   assert.equal(checklist.requiredCredentials.length, 2);
-  assert.equal(checklist.requiredConsent.distributionShare, "5.00% platform commission on completed and honored reservations");
+  assert.equal(checklist.requiredConsent.agreementReference, null);
+  assert.equal(checklist.requiredConsent.agreedCommissionPercent, null);
+  assert.equal(checklist.requiredConsent.commercialTermsStatus, "unknown");
+  assert.equal(checklist.requiredConsent.distributionShare, "unknown (requires signed operator agreementReference)");
   assert.equal(checklist.technicalVerificationStages.length, 7);
   assert.ok(checklist.technicalVerificationStages[3].includes("expirationMinutes: 15"));
 });

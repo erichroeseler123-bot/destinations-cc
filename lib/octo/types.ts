@@ -35,7 +35,8 @@ export type OctoBookingPaymentModel =
   | "supplier_hosted"
   | "supplier_api"
   | "reseller_merchant_of_record"
-  | "split_payment";
+  | "split_payment"
+  | "unknown";
 
 export type OctoOutreachStatus =
   | "identified"
@@ -374,22 +375,81 @@ export interface OctoBookingResult {
   lifecycleStates?: DccBookingLifecycleStates;
 }
 
+export type OctoInventoryStatus = "unknown" | "sandbox_mock_only" | "verified";
+export type OctoApiAccessStatus = "unknown" | "sandbox_mock_only" | "verified";
+export type OctoCommercialTermsStatus = "unknown" | "sandbox_only" | "agreed";
+export type OctoCertificationStatus =
+  | "unknown"
+  | "not_applicable"
+  | "sandbox_reference_only"
+  | "verified";
+export type OctoPartnershipStatus =
+  | "none"
+  | "pilot_candidate_unverified"
+  | "sandbox_mock_only"
+  | "verified";
+
+export interface OctoParticipantEvidence {
+  claim: string;
+  source: string;
+  verificationStatus: "verified" | "unknown" | "unverified";
+}
+
+export interface OctoOperatorAgreement {
+  id: string;
+  operatorId: string;
+  agreementReference: string;
+  status: "draft" | "active" | "revoked" | "expired";
+  agreedCommissionPercent: number | null;
+  paymentModel: OctoBookingPaymentModel;
+  signatoryName: string;
+  signatoryEmail: string;
+  signedAt: string;
+  effectiveAt?: string | null;
+  expiresAt?: string | null;
+  revokedAt?: string | null;
+  documentEvidence?: string | null;
+  notes?: string | null;
+}
+
 export interface OctoParticipant {
   id: string;
+  /**
+   * Stable canonical operator ID shared across octo_participants, octo_supplier_connections, and octo_operator_agreements.
+   */
+  operatorId?: string | null;
   name: string;
   role: OctoRole;
   website: string;
   contactEmail: string;
   contactName?: string;
   destinations: string[];
-  endpoint?: string;
-  certificationEvidence?: string;
+  endpoint?: string | null;
+  apiAccessStatus: OctoApiAccessStatus;
+  nativeProtocol: string;
+  documentationUrl?: string | null;
+  certificationEvidence?: string | null;
+  certificationStatus: OctoCertificationStatus;
+  partnershipStatus: OctoPartnershipStatus;
   consentStatus: OctoConsentStatus;
   credentialStatus: OctoCredentialStatus;
-  productsAvailableCount: number;
+  inventoryEvidence?: string | null;
+  productsAvailableCount: number | null;
+  inventoryStatus: OctoInventoryStatus;
   bookingPaymentModel: OctoBookingPaymentModel;
   outreachStatus: OctoOutreachStatus;
-  agreedCommissionPercent?: number | null; // e.g. 5.0 for 5%, null if undecided
+  commercialTermsStatus: OctoCommercialTermsStatus;
+  /**
+   * Null unless backed by an active stored operator agreement record.
+   */
+  agreementId?: string | null;
+  agreedCommissionPercent?: number | null;
+  agreementReference?: string | null;
+  /**
+   * FareHarbor affiliate, External API v1, or Lightframe usage alone never marks an operator as OCTO-authorized.
+   */
+  fareharborOctoAuthorized?: boolean;
+  evidence: OctoParticipantEvidence[];
   notes?: string;
 }
 
@@ -424,6 +484,8 @@ export type OctoOnboardingStage =
 
 export interface OctoSupplierConnection {
   id: string;
+  operatorId?: string | null;
+  agreementId?: string | null;
   operatorSlug: string;
   operatorName: string;
   endpoint: string;
@@ -440,6 +502,8 @@ export interface OctoSupplierConnection {
   signatoryName?: string;
   signatoryEmail?: string;
   consentAgreementVersion: string;
+  agreementReference?: string | null;
+  fareharborOctoAuthorized?: boolean;
   consentTermsText?: string;
   consentedAt?: string;
   sandboxVerifiedAt?: string;

@@ -226,10 +226,11 @@ test("8. Multiple products from different providers can be associated with one p
   const productsInDenver = denverResults.products;
   assert.ok(productsInDenver.length >= 2, "Denver should have multiple products associated");
 
-  // Check Provider 1: Red Rocks Shuttle & Adventure (FareHarbor)
+  // Check Provider 1: Red Rocks Shuttle & Adventure (FareHarbor external ID — never marks an operator as OCTO-authorized)
   const redRocks = productsInDenver.find((p) => p.product.id === "prod_redrocks_sunset");
   assert.ok(redRocks, "Red Rocks product should serve Denver");
   assert.equal(redRocks.supplier.providerType, "fareharbor");
+  assert.equal(redRocks.supplier.fareharborOctoAuthorized, false);
   assert.equal(redRocks.product.providerExternalIds?.fareharborShortname, "redrocksadventures");
 
   // Check Provider 2: RiNo Craft Beer & Street Art Walk (Bókun)
