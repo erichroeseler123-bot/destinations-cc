@@ -56,6 +56,9 @@ jobs:
       - name: Run Database-Backed OCTO, Booking, Onboarding, Payment & Settlement Test Suites (Tests 63-69, 71, 88, 89, octo-integration)
         run: node --import tsx --import ./tests/dcc/enable-isolated-db.ts --test tests/dcc/63-octo-production-pilot.test.ts tests/dcc/64-octo-core-lifecycle.test.ts tests/dcc/65-location-octo-integration.test.ts tests/dcc/66-canonical-place-octo.test.ts tests/dcc/67-traveler-order-settlement.test.ts tests/dcc/68-dcc-saga-orchestration.test.ts tests/dcc/69-dcc-square-checkout.test.ts tests/dcc/71-square-webhook-durable-persistence.test.ts tests/dcc/88-operator-acquisition-and-viator-verification.test.ts tests/dcc/89-gosno-rezdy-booking-architecture-proof.test.ts tests/dcc/octo-integration.test.ts
 
+      - name: Verify port meetup booking and shared headcounts
+        run: node --import tsx --import ./tests/dcc/enable-isolated-db.ts --test tests/dcc/port-meetup-booking.test.ts
+
       - name: Run 10-Operation Machine Layer v0.3 Benchmarks
         run: npx tsx scripts/dcc/benchmark-machine-layer-v03.ts
 
