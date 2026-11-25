@@ -48,12 +48,19 @@ function formatServiceDateLong(isoDate: string): string {
 function formatCheckedAtLabel(iso: string): string {
   const parsed = new Date(iso);
   if (Number.isNaN(parsed.getTime())) return iso;
-  return parsed.toLocaleTimeString("en-US", {
+  const dateParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Juneau",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(parsed);
+  const time = parsed.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
     timeZone: "America/Juneau",
     timeZoneName: "short",
   });
+  return `${dateParts} ${time}`;
 }
 
 function parsePositiveUsd(raw: string | number | null | undefined): number | null {
