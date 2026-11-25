@@ -58,6 +58,8 @@ export default function HostedCruisesAdminClient({
   const [banner, setBanner] = useState<{
     tone: "success" | "error";
     text: string;
+    claimId?: string;
+    welcomeUrl?: string;
   } | null>(null);
   const [issuedWorkspaceCredential, setIssuedWorkspaceCredential] = useState<{
     organizerSlug: string;
@@ -145,6 +147,9 @@ export default function HostedCruisesAdminClient({
     Record<string, PostClaimMode>
   >({});
   const [claimNotes, setClaimNotes] = useState<Record<string, string>>({});
+  const [confirmedIdentities, setConfirmedIdentities] = useState<
+    Record<string, boolean>
+  >({});
 
   // Organizer profile editor state
   const [orgWebsiteUrl, setOrgWebsiteUrl] = useState(
@@ -246,6 +251,11 @@ export default function HostedCruisesAdminClient({
     payload: Record<string, unknown>,
     successMessage: string,
   ) {
+    const claimId =
+      typeof payload.claimId === "string" ? payload.claimId : undefined;
+    if (payload.ownerAction === "verify_and_approve") {
+      setIssuedWorkspaceCredential(null);
+    }
     setBusyKey(key);
     setBanner(null);
     try {
@@ -263,6 +273,7 @@ export default function HostedCruisesAdminClient({
         setBanner({
           tone: "error",
           text: data.error || "Could not save change.",
+          claimId,
         });
         return;
       }
@@ -279,6 +290,44 @@ export default function HostedCruisesAdminClient({
           ...prev,
           activationCohort: data.activationCohort,
         }));
+      }
+      if (payload.ownerAction === "verify_and_approve") {
+        const requestedClaim = snapshot?.claims.find((c) => c.claimId === claimId);
+        const verifiedClaim = data.snapshot?.claims.find((c) => c.claimId === claimId);
+        const result = data.actionResult;
+        if (
+          !requestedClaim ||
+          verifiedClaim?.status !== "verified" ||
+          verifiedClaim.organizerSlug !== requestedClaim.organizerSlug ||
+          result?.organizerSlug !== requestedClaim.organizerSlug
+        ) {
+          setBanner({
+            tone: "error",
+            claimId,
+            text: "Could not confirm access for this claim. Refresh live status before taking another action.",
+          });
+          return;
+        }
+        const welcomePrefix = `/organizer/hosted/${requestedClaim.organizerSlug}?handoff=`;
+        if (
+          typeof result.handoffPath !== "string" ||
+          !result.handoffPath.startsWith(welcomePrefix) ||
+          result.handoffPath.length === welcomePrefix.length
+        ) {
+          setBanner({
+            tone: "error",
+            claimId,
+            text: `${successMessage} The welcome link was unavailable. Check the Owner Inbox before sending an invitation.`,
+          });
+          return;
+        }
+        setBanner({
+          tone: "success",
+          claimId,
+          text: successMessage,
+          welcomeUrl: `${data.cpBaseUrl}${result.handoffPath}`,
+        });
+        return;
       }
       if (
         data.actionResult &&
@@ -306,11 +355,12 @@ export default function HostedCruisesAdminClient({
           handoffExpiresAt,
         });
       }
-      setBanner({ tone: "success", text: successMessage });
+      setBanner({ tone: "success", text: successMessage, claimId });
     } catch {
       setBanner({
         tone: "error",
         text: "Network error while saving change.",
+        claimId,
       });
     } finally {
       setBusyKey(null);
@@ -326,21 +376,32 @@ export default function HostedCruisesAdminClient({
   const opsFailures = snapshot?.opsFailures ?? [];
   const rcHealth = snapshot?.health.rollCallOps;
 
-  return (
-    <div className="space-y-8">
-      {/* Status Banner */}
-      {banner && (
-        <div
-          data-testid="dcc-hosted-admin-status-banner"
-          className={`rounded-2xl border px-4 py-3 text-sm font-semibold ${
-            banner.tone === "success"
-              ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-100"
-              : "border-rose-400/45 bg-rose-500/15 text-rose-100"
-          }`}
-        >
-          {banner.text}
+  const statusBanner = banner && (
+    <div
+      role={banner.tone === "error" ? "alert" : "status"}
+      data-testid="dcc-hosted-admin-status-banner"
+      className={`rounded-2xl border px-4 py-3 text-sm font-semibold ${
+        banner.tone === "success"
+          ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-100"
+          : "border-rose-400/45 bg-rose-500/15 text-rose-100"
+      }`}
+    >
+      {banner.text}
+      {banner.welcomeUrl && (
+        <div className="mt-2 space-y-1">
+          <p>
+            Send this single-use welcome link privately to the verified contact.
+            Approval does not send an email.
+          </p>
+          <code className="block select-all break-all">{banner.welcomeUrl}</code>
         </div>
       )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-8">
+      {!banner?.claimId && statusBanner}
 
       {issuedWorkspaceCredential && (
         <div
@@ -672,6 +733,7 @@ export default function HostedCruisesAdminClient({
           </div>
         </div>
 
+        {banner?.claimId && statusBanner}
         {pendingClaims.length === 0 ? (
           <div className="rounded-xl border border-white/10 bg-black/35 px-4 py-3 text-xs text-zinc-300">
             No pending organizer claims waiting for review right now.
@@ -682,6 +744,10 @@ export default function HostedCruisesAdminClient({
               const modeDraft =
                 claimModeDrafts[claim.claimId] ?? "open_private_link";
               const noteDraft = claimNotes[claim.claimId] ?? "";
+              const identityConfirmed = confirmedIdentities[claim.claimId] === true;
+              const organizerName =
+                organizers.find((o) => o.organizerSlug === claim.organizerSlug)
+                  ?.organizerName ?? claim.organizerSlug;
               return (
                 <article
                   key={claim.claimId}
@@ -771,25 +837,42 @@ export default function HostedCruisesAdminClient({
                     </label>
                   </div>
 
+                  <label className="flex items-start gap-2 text-sm text-zinc-200">
+                    <input
+                      type="checkbox"
+                      data-testid={`dcc-claim-identity-${claim.claimId}`}
+                      checked={identityConfirmed}
+                      disabled={busyKey !== null}
+                      onChange={(event) => {
+                        const checked = event.currentTarget.checked;
+                        setConfirmedIdentities((prev) => ({
+                          ...prev,
+                          [claim.claimId]: checked,
+                        }));
+                      }}
+                    />
+                    I verified that {claim.claimantName} is authorized to represent {organizerName}.
+                  </label>
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
                       data-testid={`dcc-claim-approve-btn-${claim.claimId}`}
-                      disabled={busyKey !== null}
+                      disabled={busyKey !== null || !identityConfirmed}
                       onClick={() =>
                         runAction(
                           `approve-${claim.claimId}`,
                           {
                             action: "review_claim",
                             claimId: claim.claimId,
-                            decision: "verified",
+                            ownerAction: "verify_and_approve",
+                            ownerConfirmedIdentity: identityConfirmed,
                             initialMembershipMode: modeDraft,
                             reviewDecisionNote: noteDraft || undefined,
                           },
-                          `Approved claim for ${claim.claimantName}. Page is now marked Verified Organizer.`,
+                          `Approved ${claim.claimantName} to manage ${organizerName}.`,
                         )
                       }
-                      className="rounded-xl bg-emerald-400 px-4 py-2 text-xs font-black text-zinc-950 hover:bg-emerald-300"
+                      className="rounded-xl bg-emerald-400 px-4 py-2 text-xs font-black text-zinc-950 hover:bg-emerald-300 disabled:opacity-50"
                     >
                       Approve Claim
                     </button>
