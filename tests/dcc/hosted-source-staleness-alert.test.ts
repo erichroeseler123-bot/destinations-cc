@@ -125,3 +125,99 @@ test("DCC stale-source monitor returns overdue and changed listings to listDccFa
   }).filter((q) => q.isSyntheticTest && q.state === "needs_review");
   assert.equal(remainingNeedsReview.length, 0);
 });
+
+const browserReviewNow = "2026-11-25T16:10:00Z";
+
+function reviewedSailingsSnapshot() {
+  const snapshot = getDccCanonicalHostedCatalogSnapshot({ includeHeld: true });
+  const reviewedIds = new Set(DCC_SOURCE_PROBE_STATUS_LEDGER.map((entry) => entry.entityId));
+  return {
+    ...snapshot,
+    organizers: [],
+    heldInsufficientEvidenceItems: [],
+    hostedSailings: snapshot.hostedSailings.filter((sailing) => reviewedIds.has(sailing.hostedSailingId)),
+  };
+}
+
+test("dated browser evidence clears the five blocked reviews only after the catalog is refreshed", () => {
+  const snapshot = reviewedSailingsSnapshot();
+  const oldSnapshot = {
+    ...snapshot,
+    hostedSailings: snapshot.hostedSailings.map((sailing) => ({
+      ...sailing,
+      organizerSourceCheckedAt: DCC_SOURCE_PROBE_STATUS_LEDGER.find(
+        (entry) => entry.entityId === sailing.hostedSailingId,
+      )!.lastContentVerifiedAt,
+    })),
+  };
+  const pending = syncStaleOrChangedHostedRecordsToVerificationQueue({
+    snapshot: oldSnapshot,
+    now: browserReviewNow,
+    isSyntheticTest: true,
+  });
+  assert.equal(pending.evaluation.counts.probeBlockedCount, snapshot.hostedSailings.length);
+  assert.equal(pending.evaluation.counts.overdueCheckCount, 1);
+
+  for (const entry of DCC_SOURCE_PROBE_STATUS_LEDGER) {
+    const sailing = snapshot.hostedSailings.find((item) => item.hostedSailingId === entry.entityId)!;
+    assert.equal(entry.browserReview?.sourceFingerprint, computeHostedSailingSourceFingerprint(sailing));
+    assert.equal(entry.browserReview?.checkedAt, sailing.organizerSourceCheckedAt);
+    assert.ok(entry.browserReview?.sourceUrls.every((url) => url.startsWith("https://")));
+  }
+  const refreshed = syncStaleOrChangedHostedRecordsToVerificationQueue({
+    snapshot,
+    now: browserReviewNow,
+    isSyntheticTest: true,
+  });
+  assert.equal(refreshed.evaluation.counts.totalAlerts, 0);
+  assert.equal(refreshed.resolvedVerificationIds.length, snapshot.hostedSailings.length);
+  const reviewedQueue = listDccFactVerificationQueue({ includeSyntheticTest: true }).filter(
+    (item) => refreshed.resolvedVerificationIds.includes(item.verificationId),
+  );
+  assert.ok(reviewedQueue.every((item) => item.state === "approved_into_canonical"));
+});
+
+test("a future review, changed fact, or newer blocked probe cannot silently clear a source alert", () => {
+  const snapshot = reviewedSailingsSnapshot();
+  const first = snapshot.hostedSailings[0];
+  const changed = evaluateDccHostedCatalogStaleness({
+    snapshot: {
+      ...snapshot,
+      hostedSailings: [{ ...first, canonicalSailDate: "2027-08-25" }],
+    },
+    now: browserReviewNow,
+  });
+  assert.equal(changed.counts.probeBlockedCount, 1);
+
+  const historical = evaluateDccHostedCatalogStaleness({
+    snapshot,
+    now: "2026-11-25T15:00:00Z",
+  });
+  assert.equal(historical.counts.probeBlockedCount, snapshot.hostedSailings.length);
+
+  const reblocked = evaluateDccHostedCatalogStaleness({
+    snapshot,
+    now: "2026-11-26T12:00:00Z",
+    probeLedger: DCC_SOURCE_PROBE_STATUS_LEDGER.map((entry) => ({
+      ...entry,
+      lastAttemptedAt: "2026-11-26T11:00:00Z",
+    })),
+  });
+  assert.equal(reblocked.counts.probeBlockedCount, snapshot.hostedSailings.length);
+});
+
+test("browser review preserves the 7-day imminent and 14-day ordinary freshness deadlines", () => {
+  const snapshot = reviewedSailingsSnapshot();
+  const imminent = evaluateDccHostedCatalogStaleness({
+    snapshot,
+    now: "2026-12-03T16:10:00Z",
+  });
+  assert.equal(imminent.counts.probeBlockedCount, 0);
+  assert.equal(imminent.counts.overdueCheckCount, 1);
+  assert.equal(imminent.alerts[0].organizerSlug, "ultimate-music-cruises");
+  const expired = evaluateDccHostedCatalogStaleness({
+    snapshot,
+    now: "2026-12-10T16:10:00Z",
+  });
+  assert.equal(expired.counts.overdueCheckCount, snapshot.hostedSailings.length);
+});

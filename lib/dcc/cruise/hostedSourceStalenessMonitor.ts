@@ -27,12 +27,20 @@ export interface SourceProbeLedgerEntry {
   lastContentVerifiedAt: string;
   probeStatus: "http_403_waf" | "connection_closed";
   note: string;
+  browserReview?: {
+    method: "browser_visible_content";
+    checkedAt: string;
+    sourceFingerprint: string;
+    sourceUrls: readonly string[];
+    note: string;
+  };
 }
 
 /**
  * Explicit ledger of organizer/charter domains whose automated HTTP sweep on 2026-11-23
- * encountered a WAF challenge (HTTP 403) or TCP connection reset, so DCC preserves their
- * honest 2026-11-16 content-verified timestamp and routes them into manual browser review.
+ * encountered a WAF challenge (HTTP 403) or TCP connection reset. Preserve that history
+ * alongside dated browser evidence; a successful content review does not mean the
+ * automated probe now works. Normal content freshness deadlines still apply.
  */
 export const DCC_SOURCE_PROBE_STATUS_LEDGER: ReadonlyArray<SourceProbeLedgerEntry> = [
   {
@@ -45,6 +53,16 @@ export const DCC_SOURCE_PROBE_STATUS_LEDGER: ReadonlyArray<SourceProbeLedgerEntr
     lastContentVerifiedAt: "2026-11-16T08:30:00Z",
     probeStatus: "http_403_waf",
     note: "piedpipertravel.com returned HTTP 403 to automated fetch on 2026-11-23; queued for manual browser verification before 14-day freshness window expires.",
+    browserReview: {
+      method: "browser_visible_content",
+      checkedAt: "2026-11-25T16:02:13Z",
+      sourceFingerprint: "hsrc_946e006c2f2b37d9",
+      sourceUrls: [
+        "https://www.piedpipertravel.com/gaygroupcruises/cruise-info.php?id=820",
+        "https://www.piedpipertravel.com/gaygroupcruises/cruise-pricing.php?id=820",
+      ],
+      note: "Visible official detail and pricing pages confirm Brilliant Lady, Aug 24-Sep 2 2027, Seattle round trip, and the dated port-call table. Some cabin categories are sold out; others show fares and the reservation form remains linked. Available means some categories are offered, not every cabin category.",
+    },
   },
   {
     entityType: "hosted_sailing",
@@ -56,6 +74,18 @@ export const DCC_SOURCE_PROBE_STATUS_LEDGER: ReadonlyArray<SourceProbeLedgerEntr
     lastContentVerifiedAt: "2026-11-16T14:00:00Z",
     probeStatus: "http_403_waf",
     note: "70000tons.com returned Cloudflare HTTP 403 challenge on 2026-11-23 (parent umcruises.com verified 200 OK); queued for manual browser verification ahead of Jan 14, 2027 departure.",
+    browserReview: {
+      method: "browser_visible_content",
+      checkedAt: "2026-11-25T16:02:13Z",
+      sourceFingerprint: "hsrc_4bf89e1e78e86469",
+      sourceUrls: [
+        "https://book.70000tons.com/en/events/70000tons-of-metal-2027",
+        "https://70000tons.com/voyage/?lang=en",
+        "https://70000tons.com/ship-facts/?lang=en",
+        "https://70000tons.com/home/",
+      ],
+      note: "Official event booking explicitly shows Jan 14-18 2027 and Miami-Puerto Plata-Miami; the five-day voyage and ship page confirm the route and Freedom of the Seas. A Nov 14 news post says Jan 14-19, conflicting with the banner, Nov 4 post, booking event and five-day itinerary. Retain Jan 14-18 using the event-specific sources and preserve this discrepancy. Booking offers Private Cabin and Single Ticket types with a $100 single supplement; no base fare was asserted and no booking was submitted.",
+    },
   },
   {
     entityType: "hosted_sailing",
@@ -68,6 +98,13 @@ export const DCC_SOURCE_PROBE_STATUS_LEDGER: ReadonlyArray<SourceProbeLedgerEntr
     lastContentVerifiedAt: "2026-11-16T08:30:00Z",
     probeStatus: "connection_closed",
     note: "gaysail.com closed automated TLS socket on 2026-11-23; queued for manual browser verification.",
+    browserReview: {
+      method: "browser_visible_content",
+      checkedAt: "2026-11-25T16:02:13Z",
+      sourceFingerprint: "hsrc_f032663babdf2071",
+      sourceUrls: ["https://gaysail.com/program/gaynudesail-exclusive/44-gaysail-exclusive-thailand-2027"],
+      note: "Visible heading and event detail table confirm Mar 20-27 2027, a 52-foot Lagoon catamaran, clothing-optional Thailand sailing, EUR 1,595-2,295 and 7 spots at review time. Search metadata still says 2026; use the visible event table. Removed unsupported USD conversion. Berth counts are a dated observation, not live inventory; no exact passenger-capacity claim was resolved from the differing body/table figures.",
+    },
   },
   {
     entityType: "hosted_sailing",
@@ -80,6 +117,13 @@ export const DCC_SOURCE_PROBE_STATUS_LEDGER: ReadonlyArray<SourceProbeLedgerEntr
     lastContentVerifiedAt: "2026-11-16T08:30:00Z",
     probeStatus: "connection_closed",
     note: "gaysail.com closed automated TLS socket on 2026-11-23; queued for manual browser verification.",
+    browserReview: {
+      method: "browser_visible_content",
+      checkedAt: "2026-11-25T16:02:13Z",
+      sourceFingerprint: "hsrc_fb9251fb2818dae9",
+      sourceUrls: ["https://gaysail.com/program/gaynudesail-exclusive/45-gaynudesail-exclusive-thailand-2027"],
+      note: "Visible heading and event detail table confirm Mar 27-Apr 3 2027, a 52-foot Lagoon catamaran, nude Thailand sailing from Patong to Phuket Yacht Haven, EUR 1,595-2,295 and 8 spots at review time. Search metadata still says 2026; use the visible event table. Removed unsupported USD conversion. Berth count is a dated observation, not live inventory.",
+    },
   },
   {
     entityType: "hosted_sailing",
@@ -92,6 +136,13 @@ export const DCC_SOURCE_PROBE_STATUS_LEDGER: ReadonlyArray<SourceProbeLedgerEntr
     lastContentVerifiedAt: "2026-11-16T08:30:00Z",
     probeStatus: "connection_closed",
     note: "gaysail.com closed automated TLS socket on 2026-11-23; queued for manual browser verification.",
+    browserReview: {
+      method: "browser_visible_content",
+      checkedAt: "2026-11-25T16:02:13Z",
+      sourceFingerprint: "hsrc_2e932ac3351e052c",
+      sourceUrls: ["https://gaysail.com/program/gaysail-exclusive/51-gaysail-exclusive-split-hvar-dubrovnik-2027"],
+      note: "Visible June 2027 heading and detail table confirm Jun 19-26 2027, 42-foot Lagoon catamaran(s), Trogir/Split to Dubrovnik, EUR 1,695-2,395 and 7 spots at review time. Search metadata advertises July 2026; the visible dated event table controls. Removed unsupported USD conversion. Berth count is a dated observation, not live inventory.",
+    },
   },
 ];
 
@@ -145,6 +196,29 @@ export interface EvaluateHostedCatalogStalenessOptions {
   scheduleHoldMaxAgeDays?: number;
   baselineFingerprints?: Record<string, string>;
   includeProbeBlocked?: boolean;
+  probeLedger?: ReadonlyArray<SourceProbeLedgerEntry>;
+}
+
+function browserReviewResolvesProbe(
+  entry: SourceProbeLedgerEntry,
+  catalogCheckedAt: string,
+  sourceFingerprint: string,
+  nowMs: number,
+): boolean {
+  const review = entry.browserReview;
+  if (!review) return false;
+  const reviewedAt = Date.parse(review.checkedAt);
+  const checkedAt = Date.parse(catalogCheckedAt);
+  return (
+    review.method === "browser_visible_content" &&
+    review.sourceFingerprint === sourceFingerprint &&
+    review.sourceUrls.length > 0 &&
+    review.note.trim().length > 0 &&
+    reviewedAt >= Date.parse(entry.lastAttemptedAt) &&
+    reviewedAt <= nowMs &&
+    checkedAt >= reviewedAt &&
+    checkedAt <= nowMs
+  );
 }
 
 function stableSha256Hex(payload: unknown): string {
@@ -255,7 +329,7 @@ export function evaluateDccHostedCatalogStaleness(
   const baselineFingerprints = options.baselineFingerprints ?? {};
 
   const probeByEntityId = new Map<string, SourceProbeLedgerEntry>();
-  for (const entry of DCC_SOURCE_PROBE_STATUS_LEDGER) {
+  for (const entry of options.probeLedger ?? DCC_SOURCE_PROBE_STATUS_LEDGER) {
     probeByEntityId.set(entry.entityId, entry);
   }
 
@@ -293,7 +367,11 @@ export function evaluateDccHostedCatalogStaleness(
       reasons.push("source_material_changed");
     }
     const probeEntry = probeByEntityId.get(sailing.hostedSailingId);
-    if (includeProbeBlocked && probeEntry) {
+    if (
+      includeProbeBlocked &&
+      probeEntry &&
+      !browserReviewResolvesProbe(probeEntry, checkedAt, fp, nowMs)
+    ) {
       reasons.push("source_probe_blocked");
     }
 
