@@ -1,0 +1,124 @@
+[
+  {
+    "decision": "attach",
+    "fareharborTourId": "dcc:tour:fh:coastalhelicopters:413056",
+    "viatorTourId": "dcc:tour:viator:6251SHOREXICEWALK",
+    "canonicalTourId": "dcc:tour:viator:6251SHOREXICEWALK",
+    "evidenceUrl": "https://coastalhelicopters.com/tours/icefield-excursion/",
+    "checkedAt": "2026-11-23",
+    "travelerTerms": "worse",
+    "fareharbor": {
+      "sourceUrl": "https://coastalhelicopters.com/faq/",
+      "priceText": "From USD 459 per person (standard rate)",
+      "cancellationText": "Full refund at least 7 days in advance.",
+      "fullRefundCutoffHours": 168
+    },
+    "viator": {
+      "sourceUrl": "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK",
+      "priceText": "From USD 470.77 per person",
+      "cancellationText": "Full refund at least 3 days in advance.",
+      "fullRefundCutoffHours": 72
+    }
+  },
+  {
+    "decision": "attach",
+    "fareharborTourId": "dcc:tour:fh:coastalhelicopters:413073",
+    "viatorTourId": "dcc:tour:viator:6251P7",
+    "canonicalTourId": "dcc:tour:viator:6251P7",
+    "evidenceUrl": "https://coastalhelicopters.com/tours/dog-sled-tours/",
+    "checkedAt": "2026-11-23",
+    "travelerTerms": "worse",
+    "fareharbor": {
+      "sourceUrl": "https://coastalhelicopters.com/faq/",
+      "priceText": "From USD 769 per person (standard rate)",
+      "cancellationText": "Full refund at least 7 days in advance.",
+      "fullRefundCutoffHours": 168
+    },
+    "viator": {
+      "sourceUrl": "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursions-Juneau-Helicopter-Tour-and-Dogsledding-Experience/d941-6251P7",
+      "priceText": "From USD 788.72 per person",
+      "cancellationText": "Full refund at least 3 days in advance.",
+      "fullRefundCutoffHours": 72
+    }
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:coastalhelicopters:413093",
+    "decision": "hold"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:coastalhelicopters:503982",
+    "decision": "hold"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:coastalhelicopters:625752",
+    "decision": "hold"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:coastalhelicopters:673459",
+    "decision": "hold"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:northstartrekking:115876",
+    "decision": "hold"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:northstartrekking:115991",
+    "decision": "keep"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:northstartrekking:116029",
+    "decision": "keep"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:northstartrekking:116035",
+    "decision": "keep"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:northstartrekking:116036",
+    "decision": "keep"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:northstartrekking:116037",
+    "decision": "hold"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:northstartrekking:405050",
+    "decision": "keep"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:northstartrekking:645179",
+    "decision": "hold"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:temscoair-juneau:214803",
+    "decision": "keep"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:temscoair-juneau:214807",
+    "decision": "keep"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:temscoair-juneau:214810",
+    "decision": "keep"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:temscoair-juneau:214814",
+    "decision": "hold"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:temscoair-juneau:285755",
+    "decision": "hold"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:jeanlafitteswamptour:763318",
+    "decision": "hold"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:temscoair-skagway:213556",
+    "decision": "keep"
+  },
+  {
+    "fareharborTourId": "dcc:tour:fh:temscoair-skagway:213561",
+    "decision": "keep"
+  }
+]
