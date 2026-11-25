@@ -24,8 +24,8 @@ import {
   FOUNDING_PILOT_SAILINGS,
 } from "./foundingOrganizerPilotCohort";
 
-export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-24T15:00:00Z" as const;
-export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-24.v10-market-map-batch1" as const;
+export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-25T16:02:13Z" as const;
+export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-25.v10.1-browser-source-review" as const;
 
 export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrganizerFactRecord> = [
 
@@ -9541,7 +9541,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "Alaska & Inside Passage"
     ],
     "lifecycleStatus": "upcoming",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-25T16:02:13Z",
     "organizerType": "travel_agency_hosted_brand",
     "experienceClassification": "hosted_group_sailing",
     "vesselType": "Lady-class 18+ ocean ship",
@@ -9552,7 +9552,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
       "all_lgbtq",
       "gay_men"
     ],
-    "primarySourceUrl": "https://www.piedpipertravel.com/",
+    "primarySourceUrl": "https://www.piedpipertravel.com/gaygroupcruises/cruise-info.php?id=820",
     "verificationState": "verified",
     "portScheduleVerificationMode": "clocked_port_windows"
   },
@@ -11349,8 +11349,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "cabinBookingCtaLabel": "Register on GaySail.com ↗",
     "cabinAvailabilityStatus": "available",
     "cabinAvailabilityNote": "Register per berth or cabin on gaysail.com (€1,595 bow single cabin / €2,295 pp shared cabin; 50% deposit).",
-    "verifiedStartingPriceUsd": 1725,
-    "publishedPriceDisplay": "From €1,595 EUR (~$1,725 USD) single bow cabin / €2,295 EUR pp cabin share",
+    "verifiedStartingPriceUsd": null,
+    "publishedPriceDisplay": "From €1,595 EUR single bow cabin / €2,295 EUR pp cabin share",
     "verifiedPriceNote": "€1,595 EUR single bow crew cabin (30% discount) or €2,295 EUR pp shared double/bunk cabin (+80% private double cabin).",
     "inclusionsSummary": "7 nights catamaran berth, gay skipper & gay cook, daily breakfast & lunch, soft drinks, harbor fees, local taxes, fuel, and end cleaning",
     "approximateGroupSizeLabel": "12–14 gay men aboard 52-ft catamaran",
@@ -11376,7 +11376,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://gaysail.com/program/gaynudesail-exclusive/44-gaysail-exclusive-thailand-2027",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-25T16:02:13Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   },
@@ -11413,8 +11413,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "cabinBookingCtaLabel": "Register GayNudeSail Berth ↗",
     "cabinAvailabilityStatus": "available",
     "cabinAvailabilityNote": "Official GayNudeSail sub-brand departure booked directly on gaysail.com (€1,595 bow single / €2,295 pp share).",
-    "verifiedStartingPriceUsd": 1725,
-    "publishedPriceDisplay": "From €1,595 EUR (~$1,725 USD) single bow cabin / €2,295 EUR pp cabin share",
+    "verifiedStartingPriceUsd": null,
+    "publishedPriceDisplay": "From €1,595 EUR single bow cabin / €2,295 EUR pp cabin share",
     "verifiedPriceNote": "€1,595 EUR single bow crew cabin or €2,295 EUR pp shared double/bunk cabin.",
     "inclusionsSummary": "7 nights catamaran berth, nude gay skipper & nude gay cook, daily breakfast & lunch, soft drinks, harbor fees, local taxes, fuel, and end cleaning",
     "approximateGroupSizeLabel": "12–14 gay men (GayNudeSail naturist charter)",
@@ -11440,7 +11440,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://gaysail.com/program/gaynudesail-exclusive/45-gaynudesail-exclusive-thailand-2027",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-25T16:02:13Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   },
@@ -11475,8 +11475,8 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "cabinBookingCtaLabel": "Register on GaySail.com ↗",
     "cabinAvailabilityStatus": "available",
     "cabinAvailabilityNote": "Register directly on gaysail.com (€1,695 bow single cabin / €2,395 pp shared double cabin).",
-    "verifiedStartingPriceUsd": 1830,
-    "publishedPriceDisplay": "From €1,695 EUR (~$1,830 USD) single bow cabin / €2,395 EUR pp cabin share",
+    "verifiedStartingPriceUsd": null,
+    "publishedPriceDisplay": "From €1,695 EUR single bow cabin / €2,395 EUR pp cabin share",
     "verifiedPriceNote": "€1,695 EUR bow single crew cabin or €2,395 EUR pp shared double cabin.",
     "inclusionsSummary": "7 nights catamaran berth, gay skipper & gay cook, daily breakfast & lunch, soft drinks, harbor/mooring fees, local taxes, fuel, and end cleaning",
     "approximateGroupSizeLabel": "8–20 gay men (1–2 catamarans)",
@@ -11502,7 +11502,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://gaysail.com/program/gaysail-exclusive/51-gaysail-exclusive-split-hvar-dubrovnik-2027",
-    "organizerSourceCheckedAt": "2026-11-16T08:30:00Z",
+    "organizerSourceCheckedAt": "2026-11-25T16:02:13Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   },
@@ -14680,13 +14680,13 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "vesselType": "Full-ship charter ocean liner",
     "approximateVesselScale": "Full-ship charter (~3,000 international metal fans + 60 bands & crew)",
     "officialSailingPageUrl": "https://70000tons.com/",
-    "officialReservationFormUrl": "https://book.70000tons.com/",
+    "officialReservationFormUrl": "https://book.70000tons.com/en/events/70000tons-of-metal-2027",
     "cabinSellerLabel": "70000TONS OF METAL / UMCruises International (Ultimate Music Cruises)",
     "cabinBookingCtaLabel": "Book Official 70000TONS OF METAL Cabin ↗",
     "cabinAvailabilityStatus": "available",
     "cabinAvailabilityNote": "Book your 70000TONS OF METAL 2027 (Round XV) stateroom directly through UMCruises International (Ultimate Music Cruises) (70000tons.com) to receive official 70000TONS OF METAL festival credentials aboard Freedom of the Seas.",
     "verifiedStartingPriceUsd": null,
-    "publishedPriceDisplay": "Public Sales opened September 7, 2026 via account-gated book.70000tons.com (Single Ticket cabin-share option carries +$100.00 USD surcharge over per-person shared cabin fare; base multi-occupancy fares historically ~$1,000+ USD pp plus mandatory taxes, port charges & service fees)",
+    "publishedPriceDisplay": "Official booking offers Private Cabin and Single Ticket options; Single Tickets add a $100 USD supplement. Check current cabin fares and mandatory charges with the organizer.",
     "verifiedPriceNote": null,
     "inclusionsSummary": "Full-ship Freedom of the Seas charter accommodations, complimentary onboard dining, and admission to all 70000TONS OF METAL 2027 (Round XV) concerts and festival stages",
     "approximateGroupSizeLabel": "Full-ship charter (~3,000 international metal fans + 60 bands & crew)",
@@ -14712,7 +14712,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://70000tons.com/",
-    "organizerSourceCheckedAt": "2026-11-16T14:00:00Z",
+    "organizerSourceCheckedAt": "2026-11-25T16:02:13Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   },
@@ -18368,6 +18368,14 @@ export const DCC_RECENT_CATALOG_CHANGE_EVENTS: ReadonlyArray<CanonicalHostedCata
     "entityType": "hosted_sailing",
     "entityId": "hosted-sailing:atlantis-events:vv:brilliant-lady:2027-10-30",
     "summary": "Catalog v10 Market-Map Batch 1: onboarded 13 verified consumer organizers, 18 canonical franchises, 45 published 2027–2028 sailings on onboarded ships, and explicit release_watch/historical/excluded_reference market-map dispositions.",
+    "preservesCommunityIdentity": true
+  },
+  {
+    "eventId": "dcc-hc-evt-2026-11-25-browser-source-review",
+    "occurredAt": "2026-11-25T16:02:13Z",
+    "entityType": "hosted_sailing",
+    "entityId": "hosted-sailing:ultimate-music-cruises:rccl:freedom-of-the-seas:2027-01-14",
+    "summary": "Completed visible-browser source review for the five Nov 23 blocked probes: Pied Piper Alaska, three GaySail departures, and 70000TONS OF METAL. Dates and vessel types confirmed; retained the metal cruise's Jan 14-18 dates using official event booking and five-day itinerary despite one conflicting news post. Removed unsourced USD conversions on the three EUR-priced GaySail sailings and the historical metal-cruise fare estimate. Evidence and probe history retained in the source-review ledger.",
     "preservesCommunityIdentity": true
   }
 ];

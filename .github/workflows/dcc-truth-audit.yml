@@ -19,7 +19,9 @@ on:
       - "scripts/dcc/report-claim-freshness.mjs"
       - "tests/dcc/claim-freshness.test.mjs"
       - "tests/dcc/hosted-catalog-truth.test.ts"
+      - "tests/dcc/hosted-source-staleness-alert.test.ts"
       - "lib/dcc/cruise/hostedCatalogRegistry.ts"
+      - "lib/dcc/cruise/hostedSourceStalenessMonitor.ts"
       - "lib/dcc/cruise/foundingOrganizerPilotCohort.ts"
       - "scripts/dcc/export-hosted-catalog-snapshot.ts"
       - "apps/**/data/dcc.claim-snapshot.v1.json"
@@ -43,6 +45,7 @@ jobs:
           tests/dcc/site-truth.test.ts
           tests/dcc/satellite-truth-linkage.test.ts
           tests/dcc/hosted-catalog-truth.test.ts
+          tests/dcc/hosted-source-staleness-alert.test.ts
       - name: Check dated claim sources
         run: |
           node --test tests/dcc/claim-freshness.test.mjs
