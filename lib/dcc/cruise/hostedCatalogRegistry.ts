@@ -24,8 +24,8 @@ import {
   FOUNDING_PILOT_SAILINGS,
 } from "./foundingOrganizerPilotCohort";
 
-export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-25T16:02:13Z" as const;
-export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-25.v10.1-browser-source-review" as const;
+export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-26T18:00:00Z" as const;
+export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-26-vacationeer-fandom" as const;
 
 export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrganizerFactRecord> = [
 
@@ -5474,6 +5474,79 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
       "pied-piper-travel"
     ]
   }
+  {
+    "organizerId": "hosted-organizer:the-vacationeer",
+    "reputationEntityId": "rep:hosted-organizer:the-vacationeer",
+    "organizerSlug": "the-vacationeer",
+    "aliases": [
+      "vacationeer",
+      "vacationeer-travel-agency"
+    ],
+    "knownBrandAliases": [
+      "The Vacationeer",
+      "The Vacationeer Travel Agency"
+    ],
+    "organizerName": "The Vacationeer",
+    "shortName": "The Vacationeer",
+    "categoryLabel": "TV, Gaming & Fandom Group Cruises",
+    "organizerType": "travel_agency_hosted_brand",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "subBrands": [],
+    "primaryTheme": "crafting-and-hobbies",
+    "secondaryThemes": [
+      "weddings-and-celebrations"
+    ],
+    "tagline": "Travel agency–organized fandom and interest cruises with scheduled group activities and optional add-on experiences.",
+    "independentSummary": "The Vacationeer is a travel agency that organizes group cruises around television, gaming, relationships, and other shared interests. Its public group list identifies the sailing, ship, duration, and hosted programming for each departure.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "Fans and interest-based groups who want a shared cruise with organized onboard programming.",
+    "audienceFocusTags": [
+      "fandom groups",
+      "television fans",
+      "gaming groups",
+      "solo travelers"
+    ],
+    "typicalHostedProgramming": "Cast panels, trivia, game shows, live shows, hosted socials, and optional premium add-on experiences, depending on the sailing.",
+    "generalAtmosphereSummary": "Interest-based hosted groups aboard regularly scheduled cruise-line sailings; participation and private-event access may require booking through the organizer.",
+    "typicalCharterModel": "hosted_group_block",
+    "vesselTypeSummary": "Royal Caribbean ocean ships",
+    "approximateScaleSummary": "Hosted groups aboard public commercial sailings; group size varies by departure.",
+    "soloSupportSummary": null,
+    "soloFriendly": null,
+    "familyPolicy": "not_verified",
+    "goodForTags": [
+      "Fandom communities",
+      "Hosted group activities",
+      "Caribbean sailings"
+    ],
+    "heroVisualKey": "ship-independence-of-the-seas-miami",
+    "officialWebsiteUrl": "https://vacationeer.com/our-groups/",
+    "officialDomain": "vacationeer.com",
+    "reservationPortalDomain": "vacationeer.com",
+    "publicContactPageUrl": "https://vacationeer.com/contact/",
+    "officialSocialLinks": {},
+    "cabinSellerIdentity": "The Vacationeer Travel Agency",
+    "officialReservationPathSummary": "Use the event-specific booking or inquiry path linked from The Vacationeer’s official group-cruise page. Some events require booking through the agency for access to private group programming.",
+    "cancellationAndParticipationPolicy": null,
+    "officialPolicyUrl": null,
+    "publicReviewProfileLinks": [],
+    "pinnedSailingSlugs": [
+      "gate-cruise-2027",
+      "funny-how-marriage-works-2027",
+      "no-rolls-barred-2027",
+      "cruiseville-2027"
+    ],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery and planning platform and is not affiliated with or endorsed by The Vacationeer, Royal Caribbean, Stargate, Smallville, or other named brands.",
+    "cabinBookingPolicyNote": "Cabins and hosted-group access are sold by the organizer or its booking partner. Confirm the event-specific booking requirements before reserving.",
+    "primarySourceUrl": "https://vacationeer.com/our-groups/",
+    "verifiedSourceCheckedAt": "2026-11-26T18:00:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": []
+  },
+
 ];
 
 export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranchiseFactRecord> = [
@@ -8591,6 +8664,117 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "verifiedSourceCheckedAt": "2026-11-24T12:00:00Z",
     "verificationState": "verified"
   }
+  {
+    "franchiseId": "hosted-franchise:gate-cruise",
+    "reputationFranchiseEntityId": "rep:hosted-franchise:gate-cruise",
+    "franchiseSlug": "gate-cruise",
+    "aliases": [],
+    "franchiseName": "Gate Cruise",
+    "shortName": "Gate Cruise",
+    "producerOrganizerId": "hosted-organizer:the-vacationeer",
+    "producerOrganizerSlug": "the-vacationeer",
+    "relationshipToProducer": "producer_owned_franchise",
+    "primaryClassification": "hosted_group_sailing",
+    "primaryTheme": "crafting-and-hobbies",
+    "secondaryThemes": [
+      "weddings-and-celebrations"
+    ],
+    "tagline": "Gate Cruise is a hosted interest cruise organized through The Vacationeer.",
+    "independentSummary": "The official event site publishes the Jan 24–31, 2027 Independence of the Seas sailing, route, and onboard programming. Event access is tied to The Vacationeer’s booking rules; verify current cabin availability directly.",
+    "intendedAudience": "Fans and travelers interested in the announced hosted programming, with the option to enjoy the cruise ship and ports on their own schedule.",
+    "programmingAndLineupModel": "The official event site publishes the Jan 24–31, 2027 Independence of the Seas sailing, route, and onboard programming. Event access is tied to The Vacationeer’s booking rules; verify current cabin availability directly.",
+    "atmosphereSummary": "Hosted group activities take place alongside the cruise line’s regular ship programming.",
+    "heroVisualKey": "ship-independence-of-the-seas-miami",
+    "officialWebsiteUrl": "https://gatecruise.com/",
+    "officialDomain": "gatecruise.com",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://gatecruise.com/",
+    "verifiedSourceCheckedAt": "2026-11-26T18:00:00Z",
+    "verificationState": "verified"
+  },
+  {
+    "franchiseId": "hosted-franchise:funny-how-marriage-works",
+    "reputationFranchiseEntityId": "rep:hosted-franchise:funny-how-marriage-works",
+    "franchiseSlug": "funny-how-marriage-works",
+    "aliases": [],
+    "franchiseName": "Funny How Marriage Works",
+    "shortName": "Funny How Marriage Works",
+    "producerOrganizerId": "hosted-organizer:the-vacationeer",
+    "producerOrganizerSlug": "the-vacationeer",
+    "relationshipToProducer": "producer_owned_franchise",
+    "primaryClassification": "hosted_group_sailing",
+    "primaryTheme": "weddings-and-celebrations",
+    "secondaryThemes": [
+      "crafting-and-hobbies"
+    ],
+    "tagline": "Funny How Marriage Works is a hosted interest cruise organized through The Vacationeer.",
+    "independentSummary": "The official group listing identifies Feb 8, 2027, six nights, Allure of the Seas, and its relationship-centered programming. Use the linked organizer booking path for current availability and private-event access.",
+    "intendedAudience": "Fans and travelers interested in the announced hosted programming, with the option to enjoy the cruise ship and ports on their own schedule.",
+    "programmingAndLineupModel": "The official group listing identifies Feb 8, 2027, six nights, Allure of the Seas, and its relationship-centered programming. Use the linked organizer booking path for current availability and private-event access.",
+    "atmosphereSummary": "Hosted group activities take place alongside the cruise line’s regular ship programming.",
+    "heroVisualKey": "ship-allure-of-the-seas-nassau",
+    "officialWebsiteUrl": "https://vacationeer.com/our-groups/",
+    "officialDomain": "vacationeer.com",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://vacationeer.com/our-groups/",
+    "verifiedSourceCheckedAt": "2026-11-26T18:00:00Z",
+    "verificationState": "verified"
+  },
+  {
+    "franchiseId": "hosted-franchise:no-rolls-barred",
+    "reputationFranchiseEntityId": "rep:hosted-franchise:no-rolls-barred",
+    "franchiseSlug": "no-rolls-barred",
+    "aliases": [],
+    "franchiseName": "No Rolls Barred",
+    "shortName": "No Rolls Barred",
+    "producerOrganizerId": "hosted-organizer:the-vacationeer",
+    "producerOrganizerSlug": "the-vacationeer",
+    "relationshipToProducer": "producer_owned_franchise",
+    "primaryClassification": "hosted_group_sailing",
+    "primaryTheme": "crafting-and-hobbies",
+    "secondaryThemes": [],
+    "tagline": "No Rolls Barred is a hosted interest cruise organized through The Vacationeer.",
+    "independentSummary": "The official event site identifies Mar 7–14, 2027, Independence of the Seas, and booking through The Vacationeer. Confirm current cabin availability and private event access with the organizer.",
+    "intendedAudience": "Fans and travelers interested in the announced hosted programming, with the option to enjoy the cruise ship and ports on their own schedule.",
+    "programmingAndLineupModel": "The official event site identifies Mar 7–14, 2027, Independence of the Seas, and booking through The Vacationeer. Confirm current cabin availability and private event access with the organizer.",
+    "atmosphereSummary": "Hosted group activities take place alongside the cruise line’s regular ship programming.",
+    "heroVisualKey": "ship-independence-of-the-seas-miami",
+    "officialWebsiteUrl": "https://nrbcruise.com/",
+    "officialDomain": "nrbcruise.com",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://nrbcruise.com/",
+    "verifiedSourceCheckedAt": "2026-11-26T18:00:00Z",
+    "verificationState": "verified"
+  },
+  {
+    "franchiseId": "hosted-franchise:cruiseville",
+    "reputationFranchiseEntityId": "rep:hosted-franchise:cruiseville",
+    "franchiseSlug": "cruiseville",
+    "aliases": [],
+    "franchiseName": "Cruiseville",
+    "shortName": "Cruiseville",
+    "producerOrganizerId": "hosted-organizer:the-vacationeer",
+    "producerOrganizerSlug": "the-vacationeer",
+    "relationshipToProducer": "producer_owned_franchise",
+    "primaryClassification": "hosted_group_sailing",
+    "primaryTheme": "crafting-and-hobbies",
+    "secondaryThemes": [
+      "weddings-and-celebrations"
+    ],
+    "tagline": "Cruiseville is a hosted interest cruise organized through The Vacationeer.",
+    "independentSummary": "The official event listing confirms Aug 7, 2027, eight nights, Allure of the Seas, and hosted programming. The organizer notes the group event is unaffiliated with Smallville and its rights holders.",
+    "intendedAudience": "Fans and travelers interested in the announced hosted programming, with the option to enjoy the cruise ship and ports on their own schedule.",
+    "programmingAndLineupModel": "The official event listing confirms Aug 7, 2027, eight nights, Allure of the Seas, and hosted programming. The organizer notes the group event is unaffiliated with Smallville and its rights holders.",
+    "atmosphereSummary": "Hosted group activities take place alongside the cruise line’s regular ship programming.",
+    "heroVisualKey": "ship-allure-of-the-seas-nassau",
+    "officialWebsiteUrl": "https://vacationeer.com/our-groups/",
+    "officialDomain": "vacationeer.com",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://vacationeer.com/our-groups/",
+    "verifiedSourceCheckedAt": "2026-11-26T18:00:00Z",
+    "verificationState": "verified"
+  },
+
 ];
 
 export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailingFactRecord> = [
@@ -18262,6 +18446,205 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
   }
+  {
+    "hostedSailingId": "hosted-sailing:the-vacationeer:rccl:independence-of-the-seas:2027-01-24",
+    "reputationSailingEntityId": "rep:hosted-sailing:the-vacationeer:gate-cruise-2027",
+    "organizerSlug": "the-vacationeer",
+    "franchiseId": "hosted-franchise:gate-cruise",
+    "franchiseSlug": "gate-cruise",
+    "sailingSlug": "gate-cruise-2027",
+    "physicalSailingId": "sailing:rccl:independence-of-the-seas:2027-01-24",
+    "canonicalLineCode": "rccl",
+    "canonicalShipSlug": "independence-of-the-seas",
+    "canonicalSailDate": "2027-01-24",
+    "sailingTitle": "Gate Cruise 2027 · Independence of the Seas",
+    "shortHeadline": "Gate Cruise · Independence of the Seas",
+    "editionSubtitle": "7-night Eastern Caribbean group cruise from Miami",
+    "anticipationHook": "A Stargate fan group cruise from Miami with cast panels, trivia, a game show, and optional premium experiences.",
+    "primaryTheme": "crafting-and-hobbies",
+    "secondaryThemes": [
+      "weddings-and-celebrations"
+    ],
+    "visualKey": "ship-independence-of-the-seas-miami",
+    "regionLabel": "Eastern Caribbean",
+    "officialSailingPageUrl": "https://gatecruise.com/",
+    "officialReservationFormUrl": "https://vacationeer.com/our-groups/",
+    "cabinSellerLabel": "The Vacationeer Travel Agency",
+    "cabinBookingCtaLabel": "Check cabin options with the official organizer ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "The official event site publishes the Jan 24–31, 2027 Independence of the Seas sailing, route, and onboard programming. Event access is tied to The Vacationeer’s booking rules; verify current cabin availability directly.",
+    "verifiedStartingPriceUsd": null,
+    "publishedPriceDisplay": null,
+    "verifiedPriceNote": null,
+    "approximateGroupSizeLabel": null,
+    "fullShipCharter": false,
+    "typicalAudience": "Fans and interest-based travelers; confirm age and group policies with the organizer.",
+    "announcedHostedProgramming": "The official event site publishes the Jan 24–31, 2027 Independence of the Seas sailing, route, and onboard programming. Event access is tied to The Vacationeer’s booking rules; verify current cabin availability directly.",
+    "programmingSourceUrl": "https://gatecruise.com/",
+    "soloSupport": null,
+    "soloFriendly": null,
+    "familyPolicy": "not_verified",
+    "communityAtmosphereSummary": "The official event site publishes the Jan 24–31, 2027 Independence of the Seas sailing, route, and onboard programming. Event access is tied to The Vacationeer’s booking rules; verify current cabin availability directly.",
+    "goodForTags": [
+      "Fandom cruise",
+      "Hosted group",
+      "Caribbean"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://gatecruise.com/",
+    "organizerSourceCheckedAt": "2026-11-26T18:00:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:the-vacationeer:rccl:allure-of-the-seas:2027-02-08",
+    "reputationSailingEntityId": "rep:hosted-sailing:the-vacationeer:funny-how-marriage-works-2027",
+    "organizerSlug": "the-vacationeer",
+    "franchiseId": "hosted-franchise:funny-how-marriage-works",
+    "franchiseSlug": "funny-how-marriage-works",
+    "sailingSlug": "funny-how-marriage-works-2027",
+    "physicalSailingId": "sailing:rccl:allure-of-the-seas:2027-02-08",
+    "canonicalLineCode": "rccl",
+    "canonicalShipSlug": "allure-of-the-seas",
+    "canonicalSailDate": "2027-02-08",
+    "sailingTitle": "Funny How Marriage Works 2027 · Allure of the Seas",
+    "shortHeadline": "Funny How Marriage Works · Allure of the Seas",
+    "editionSubtitle": "6-night Western Caribbean group cruise from Miami",
+    "anticipationHook": "A relationship-focused hosted group cruise with Michael Jr. and Ebony, group conversations, games, and socials aboard Allure of the Seas.",
+    "primaryTheme": "weddings-and-celebrations",
+    "secondaryThemes": [
+      "crafting-and-hobbies"
+    ],
+    "visualKey": "ship-allure-of-the-seas-nassau",
+    "regionLabel": "Western Caribbean",
+    "officialSailingPageUrl": "https://vacationeer.com/our-groups/",
+    "officialReservationFormUrl": "https://vacationeer.com/our-groups/",
+    "cabinSellerLabel": "The Vacationeer Travel Agency",
+    "cabinBookingCtaLabel": "Check cabin options with the official organizer ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "The official group listing identifies Feb 8, 2027, six nights, Allure of the Seas, and its relationship-centered programming. Use the linked organizer booking path for current availability and private-event access.",
+    "verifiedStartingPriceUsd": null,
+    "publishedPriceDisplay": null,
+    "verifiedPriceNote": null,
+    "approximateGroupSizeLabel": null,
+    "fullShipCharter": false,
+    "typicalAudience": "Fans and interest-based travelers; confirm age and group policies with the organizer.",
+    "announcedHostedProgramming": "The official group listing identifies Feb 8, 2027, six nights, Allure of the Seas, and its relationship-centered programming. Use the linked organizer booking path for current availability and private-event access.",
+    "programmingSourceUrl": "https://vacationeer.com/our-groups/",
+    "soloSupport": null,
+    "soloFriendly": null,
+    "familyPolicy": "not_verified",
+    "communityAtmosphereSummary": "The official group listing identifies Feb 8, 2027, six nights, Allure of the Seas, and its relationship-centered programming. Use the linked organizer booking path for current availability and private-event access.",
+    "goodForTags": [
+      "Fandom cruise",
+      "Hosted group",
+      "Caribbean"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://vacationeer.com/our-groups/",
+    "organizerSourceCheckedAt": "2026-11-26T18:00:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:the-vacationeer:rccl:independence-of-the-seas:2027-03-07",
+    "reputationSailingEntityId": "rep:hosted-sailing:the-vacationeer:no-rolls-barred-2027",
+    "organizerSlug": "the-vacationeer",
+    "franchiseId": "hosted-franchise:no-rolls-barred",
+    "franchiseSlug": "no-rolls-barred",
+    "sailingSlug": "no-rolls-barred-2027",
+    "physicalSailingId": "sailing:rccl:independence-of-the-seas:2027-03-07",
+    "canonicalLineCode": "rccl",
+    "canonicalShipSlug": "independence-of-the-seas",
+    "canonicalSailDate": "2027-03-07",
+    "sailingTitle": "No Rolls Barred Gaming Cruise 2027 · Independence of the Seas",
+    "shortHeadline": "No Rolls Barred · Independence of the Seas",
+    "editionSubtitle": "7-night Eastern Caribbean group cruise from Miami",
+    "anticipationHook": "A board-game creator community at sea, with hosted game sessions, playtests, live shows, and time to explore the Caribbean.",
+    "primaryTheme": "crafting-and-hobbies",
+    "secondaryThemes": [],
+    "visualKey": "ship-independence-of-the-seas-miami",
+    "regionLabel": "Eastern Caribbean",
+    "officialSailingPageUrl": "https://nrbcruise.com/",
+    "officialReservationFormUrl": "https://vacationeer.com/our-groups/",
+    "cabinSellerLabel": "The Vacationeer Travel Agency",
+    "cabinBookingCtaLabel": "Check cabin options with the official organizer ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "The official event site identifies Mar 7–14, 2027, Independence of the Seas, and booking through The Vacationeer. Confirm current cabin availability and private event access with the organizer.",
+    "verifiedStartingPriceUsd": null,
+    "publishedPriceDisplay": null,
+    "verifiedPriceNote": null,
+    "approximateGroupSizeLabel": null,
+    "fullShipCharter": false,
+    "typicalAudience": "Fans and interest-based travelers; confirm age and group policies with the organizer.",
+    "announcedHostedProgramming": "The official event site identifies Mar 7–14, 2027, Independence of the Seas, and booking through The Vacationeer. Confirm current cabin availability and private event access with the organizer.",
+    "programmingSourceUrl": "https://nrbcruise.com/",
+    "soloSupport": null,
+    "soloFriendly": null,
+    "familyPolicy": "not_verified",
+    "communityAtmosphereSummary": "The official event site identifies Mar 7–14, 2027, Independence of the Seas, and booking through The Vacationeer. Confirm current cabin availability and private event access with the organizer.",
+    "goodForTags": [
+      "Fandom cruise",
+      "Hosted group",
+      "Caribbean"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://nrbcruise.com/",
+    "organizerSourceCheckedAt": "2026-11-26T18:00:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:the-vacationeer:rccl:allure-of-the-seas:2027-08-07",
+    "reputationSailingEntityId": "rep:hosted-sailing:the-vacationeer:cruiseville-2027",
+    "organizerSlug": "the-vacationeer",
+    "franchiseId": "hosted-franchise:cruiseville",
+    "franchiseSlug": "cruiseville",
+    "sailingSlug": "cruiseville-2027",
+    "physicalSailingId": "sailing:rccl:allure-of-the-seas:2027-08-07",
+    "canonicalLineCode": "rccl",
+    "canonicalShipSlug": "allure-of-the-seas",
+    "canonicalSailDate": "2027-08-07",
+    "sailingTitle": "Cruiseville 2027 · Allure of the Seas",
+    "shortHeadline": "Cruiseville · Allure of the Seas",
+    "editionSubtitle": "8-night Southern Caribbean group cruise from Fort Lauderdale",
+    "anticipationHook": "A Smallville-cast group cruise with panels, trivia, a game show, and optional premium cast experiences aboard Allure of the Seas.",
+    "primaryTheme": "crafting-and-hobbies",
+    "secondaryThemes": [
+      "weddings-and-celebrations"
+    ],
+    "visualKey": "ship-allure-of-the-seas-nassau",
+    "regionLabel": "Southern Caribbean",
+    "officialSailingPageUrl": "https://vacationeer.com/our-groups/",
+    "officialReservationFormUrl": "https://vacationeer.com/our-groups/",
+    "cabinSellerLabel": "The Vacationeer Travel Agency",
+    "cabinBookingCtaLabel": "Check cabin options with the official organizer ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "The official event listing confirms Aug 7, 2027, eight nights, Allure of the Seas, and hosted programming. The organizer notes the group event is unaffiliated with Smallville and its rights holders.",
+    "verifiedStartingPriceUsd": null,
+    "publishedPriceDisplay": null,
+    "verifiedPriceNote": null,
+    "approximateGroupSizeLabel": null,
+    "fullShipCharter": false,
+    "typicalAudience": "Fans and interest-based travelers; confirm age and group policies with the organizer.",
+    "announcedHostedProgramming": "The official event listing confirms Aug 7, 2027, eight nights, Allure of the Seas, and hosted programming. The organizer notes the group event is unaffiliated with Smallville and its rights holders.",
+    "programmingSourceUrl": "https://vacationeer.com/our-groups/",
+    "soloSupport": null,
+    "soloFriendly": null,
+    "familyPolicy": "not_verified",
+    "communityAtmosphereSummary": "The official event listing confirms Aug 7, 2027, eight nights, Allure of the Seas, and hosted programming. The organizer notes the group event is unaffiliated with Smallville and its rights holders.",
+    "goodForTags": [
+      "Fandom cruise",
+      "Hosted group",
+      "Caribbean"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://vacationeer.com/our-groups/",
+    "organizerSourceCheckedAt": "2026-11-26T18:00:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+
 ];
 
 export const DCC_RECENT_CATALOG_CHANGE_EVENTS: ReadonlyArray<CanonicalHostedCatalogChangeEvent> = [
