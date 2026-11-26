@@ -89,6 +89,14 @@ export default async function HomePage() {
           <p className="lead hero-home-lead">
             What is worth it tonight? What should you skip? Where should you splurge? Start there.
           </p>
+          <div className="hero-plan-callout">
+            <Link href="/plan" className="button button-primary">
+              Plan a Vegas trip
+            </Link>
+            <span className="hero-support">
+              Match your dates, hotel area, group size, time, and budget to one paid option plus a free alternative.
+            </span>
+          </div>
           <div className="hero-primary-grid">
             <Link href="/tonight" className="hero-primary-card hero-primary-pink"><span>What should I do tonight?</span></Link>
             <Link href="/worth-it" className="hero-primary-card hero-primary-gold"><span>What is actually worth it?</span></Link>
@@ -186,6 +194,7 @@ export default async function HomePage() {
           <div className="eyebrow">Save</div>
           <h2>Things you do not need to overpay for.</h2>
           <div className="footer-links">
+            <Link href="/plan">Plan a Vegas trip</Link>
             <Link href="/free-things">Free Vegas</Link>
             <Link href="/tonight">A fast plan for tonight</Link>
             <Link href="/worth-it">The worth-it filter</Link>

@@ -25,6 +25,7 @@ export function SiteHeader() {
         <div className="brand-spacer" aria-hidden="true" />
       )}
       <nav className="nav-links" aria-label="Primary navigation">
+        <Link href="/plan" className="pill">Plan a Trip</Link>
         <Link href="/tonight" className="pill">Tonight</Link>
         <Link href="/worth-it" className="pill">Worth It</Link>
         <Link href="/shows" className="pill">Shows</Link>
