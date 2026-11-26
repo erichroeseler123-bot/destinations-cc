@@ -5473,7 +5473,7 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
       "waves-of-pride",
       "pied-piper-travel"
     ]
-  }
+  },
   {
     "organizerId": "hosted-organizer:the-vacationeer",
     "reputationEntityId": "rep:hosted-organizer:the-vacationeer",
@@ -8730,7 +8730,7 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "primarySourceUrl": "https://www.kgaytravel.com/",
     "verifiedSourceCheckedAt": "2026-11-24T12:00:00Z",
     "verificationState": "verified"
-  }
+  },
   {
     "franchiseId": "hosted-franchise:gate-cruise",
     "reputationFranchiseEntityId": "rep:hosted-franchise:gate-cruise",
@@ -18569,7 +18569,7 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     "organizerSourceCheckedAt": "2026-11-24T12:00:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
-  }
+  },
   {
     "hostedSailingId": "hosted-sailing:the-vacationeer:rccl:independence-of-the-seas:2027-01-24",
     "reputationSailingEntityId": "rep:hosted-sailing:the-vacationeer:gate-cruise-2027",
