@@ -473,6 +473,69 @@ a {
   line-height: 1.45;
 }
 
+.hero-plan-callout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  max-width: 780px;
+  padding: 12px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(249, 213, 110, 0.28);
+  background: rgba(18, 7, 19, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.plan-setup-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+}
+
+.plan-submit-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.plan-option-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.plan-step-link {
+  display: grid;
+  gap: 3px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.plan-step-link strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.plan-step-link span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.plan-disclosure {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 248, 244, 0.68);
+}
+
 .hero-primary-grid {
   display: grid;
   gap: 14px;
@@ -974,6 +1037,7 @@ a {
   .featured-lane-grid,
   .footer-grid,
   .filters,
+  .plan-setup-grid,
   .help-form,
   .cta-row,
   .split,
