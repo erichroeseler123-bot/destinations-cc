@@ -1309,7 +1309,7 @@ export const DCC_PORTFOLIO_NETWORK_SITES: readonly DccSiteManifestV1[] = [
     canonical_domains: ["gosno.co", "www.gosno.co"],
     aliases: ["gosno-production", "bigsky-gosno", "dcc:site:gosno"],
     consumer_role:
-      "Colorado and Big Sky private airport-to-mountain SUV transportation operator with prefilled proposed-trip review and human-confirmed Square checkout boundary",
+      "Colorado and Big Sky private airport-to-mountain SUV transportation operator with prefilled proposed-trip review and human-confirmed RezdyPay /pay checkout boundary",
     dcc_universe_ids: ["univ:colorado-mountain-transfers:0.3.0"],
     accepted_context_fields: [
       "contextId",
@@ -1366,11 +1366,11 @@ export const DCC_PORTFOLIO_NETWORK_SITES: readonly DccSiteManifestV1[] = [
     },
     commercial_channels: [
       {
-        channel_id: "gosno-direct-square-checkout",
-        provider: "square",
+        channel_id: "gosno-direct-rezdypay-checkout",
+        provider: "rezdy",
         attribution_parameter: "gosno_partner_ref,dcc_handoff_id",
         outcome_reporting: "direct_checkout_boundary",
-        notes: "Approved partner cookie (gosno_partner_ref) records referral attribution only (no login, reporting, or payout privileges); payment and booking occur strictly at traveler-confirmed checkout.",
+        notes: "Approved partner cookie (gosno_partner_ref) records referral attribution only (no login, reporting, or payout privileges); payment and booking occur strictly at traveler-confirmed RezdyPay /pay checkout.",
       },
     ],
     context_support: {

@@ -63,6 +63,38 @@ export interface CruisePromenadeOwnerSummary {
   note: string;
 }
 
+export type GoSnoRezdyPayFailureCategory =
+  | "session_setup_failed"
+  | "payment_failed"
+  | "unmatched_order"
+  | "stuck_payment";
+
+export interface GoSnoRezdyPayFailureRecentEvent {
+  id: string;
+  eventTime: string;
+  category: GoSnoRezdyPayFailureCategory;
+  eventType: string;
+  stage: string;
+  stageLabel: string;
+  safeErrorSummary: string;
+  bookingReference: string | null;
+  orderReference: string | null;
+  resellerReference: string | null;
+  routeSummary: string | null;
+}
+
+export interface GoSnoRezdyPayCheckoutFailuresSummary {
+  sessionSetupFailedCount: number;
+  paymentFailedCount: number;
+  unmatchedOrderCount: number;
+  stuckPaymentCount: number;
+  totalCount: number;
+  recentEvents: GoSnoRezdyPayFailureRecentEvent[];
+}
+
+export const GOSNO_GROSS_BOOKING_ACCOUNTING_NOTE =
+  "Local gross booking value from completed GoSno checkouts (gross, not profit — provider payout/settlement reconciliation and refunds are not verified here; excludes payment processing fees, dispatch costs, refunds, and taxes).";
+
 export interface DirectMorOwnerSummary {
   siteId: "gosno" | "partyatredrocks";
   siteName: string;
@@ -84,6 +116,8 @@ export interface DirectMorOwnerSummary {
   provisioningExceptions: number;
   needsReviewOrders: number;
   rezdyHealth: Record<string, unknown> | null;
+  accountingNote: string | null;
+  rezdyPayCheckoutFailures28d: GoSnoRezdyPayCheckoutFailuresSummary | null;
   note: string;
 }
 
@@ -217,8 +251,10 @@ export interface DailyBusinessCockpit {
       property: "GoSno (gosno.co)";
       targetLoop: "Discovery → planning → checkout → payment → Rezdy → fulfilled ride → revenue reconciled";
       automationSchedulesEnabled: boolean;
-      marcosManualOrderIsolationRule: "Marcos's manual order stays separate and is never counted as an automated Square → Rezdy test.";
+      marcosManualOrderIsolationRule: "Marcos's manual order stays separate and is never counted as an automated RezdyPay → Rezdy checkout test.";
       statusSummary: string;
+      rezdyPayCheckoutFailures28d: GoSnoRezdyPayCheckoutFailuresSummary | null;
+      accountingNote: string;
     };
   };
   automationHealth: {
@@ -230,6 +266,8 @@ export interface DailyBusinessCockpit {
     rezdyUnknownResultCount: number;
     rezdyStaleClaimedCount: number;
     rezdyCronSchedulesEnabled: boolean | null;
+    gosnoRezdyPayFailures28d: GoSnoRezdyPayCheckoutFailuresSummary | null;
+    gosnoRezdyPayFailureCount28d: number;
     genuineFailedNotificationsCount: number;
     deliveryFailureCount: number;
     notificationConfigurationCount: number;
@@ -341,6 +379,7 @@ export interface OwnerControlCenterSnapshot {
       directMorGrossTrack: {
         label: "GoSno + Party at Red Rocks Direct MoR Gross Revenue";
         grossSalesDisclosure: "Gross Merchant Sales — Not Profit; Excludes Operating Costs, Driver Pay, Processor Fees & Refunds";
+        gosnoAccountingNote: string;
         portfolioOwnedGrossSalesUsd: number;
         pendingOwnedSettlementUsd: number;
         gosnoReportedGrossUsd28d: number;
@@ -566,7 +605,136 @@ function emptyDirectMorOwnerSummary(options: {
     provisioningExceptions: 0,
     needsReviewOrders: 0,
     rezdyHealth: null,
+    accountingNote: null,
+    rezdyPayCheckoutFailures28d: null,
     note: options.note,
+  };
+}
+
+const SAFE_REZDY_FAILURE_CATEGORIES = new Set<GoSnoRezdyPayFailureCategory>([
+  "session_setup_failed",
+  "payment_failed",
+  "unmatched_order",
+  "stuck_payment",
+]);
+
+function sanitizeOperationalText(value: unknown, maxLen = 240): string {
+  if (typeof value !== "string") return "";
+  const cleaned = value
+    .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, "[redacted-email]")
+    .replace(/(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/g, "[redacted-phone]")
+    .replace(/\b(?:\d[ -]*?){13,19}\b/g, "[redacted-pan]")
+    .replace(/\bBearer\s+[A-Za-z0-9._~+/=-]+/gi, "Bearer [redacted-token]")
+    .replace(
+      /\b(?:tok|cnon|card|pm|pi|cs|sk|pk|rk|whsec|sq0[a-z]*|rezdypay_tok|dcc_ctx)[_:-][A-Za-z0-9._~+/=-]{4,}\b/gi,
+      "[redacted-token]",
+    )
+    .replace(
+      /\b(?:payment[_-]?token|card[_-]?token|session[_-]?token|client[_-]?secret|api[_-]?key|secret|authorization|cvv|cvc)\s*[:=]\s*[^\s,;)]+/gi,
+      "[redacted-secret]",
+    )
+    .replace(/\b[A-Za-z0-9_-]{40,}\b/g, "[redacted-token]")
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned.length > maxLen ? `${cleaned.slice(0, maxLen - 1)}…` : cleaned;
+}
+
+function sanitizeNullableOperationalRef(value: unknown, maxLen = 96): string | null {
+  if (typeof value !== "string") return null;
+  const cleaned = sanitizeOperationalText(value, maxLen);
+  if (
+    !cleaned ||
+    cleaned === "[redacted-email]" ||
+    cleaned === "[redacted-phone]" ||
+    cleaned === "[redacted-pan]" ||
+    cleaned === "[redacted-token]" ||
+    cleaned === "[redacted-secret]"
+  ) {
+    return null;
+  }
+  return cleaned;
+}
+
+function resolveRezdyFailureCategory(
+  rawCategory: unknown,
+  eventType: string,
+): GoSnoRezdyPayFailureCategory {
+  if (
+    typeof rawCategory === "string" &&
+    SAFE_REZDY_FAILURE_CATEGORIES.has(rawCategory as GoSnoRezdyPayFailureCategory)
+  ) {
+    return rawCategory as GoSnoRezdyPayFailureCategory;
+  }
+  const upper = eventType.toUpperCase();
+  if (upper.includes("SESSION_SETUP")) return "session_setup_failed";
+  if (upper.includes("UNMATCHED_ORDER")) return "unmatched_order";
+  if (upper.includes("STUCK_PAYMENT") || upper.includes("IN_PROGRESS")) {
+    return "stuck_payment";
+  }
+  return "payment_failed";
+}
+
+function parseRezdyPayCheckoutFailures28d(
+  raw: unknown,
+): GoSnoRezdyPayCheckoutFailuresSummary | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return null;
+  }
+  const obj = raw as Record<string, unknown>;
+  const sessionSetupFailedCount = safeNumber(obj.sessionSetupFailedCount);
+  const paymentFailedCount = safeNumber(obj.paymentFailedCount);
+  const unmatchedOrderCount = safeNumber(obj.unmatchedOrderCount);
+  const stuckPaymentCount = safeNumber(obj.stuckPaymentCount);
+  const categorySum =
+    sessionSetupFailedCount +
+    paymentFailedCount +
+    unmatchedOrderCount +
+    stuckPaymentCount;
+  const totalCount =
+    obj.totalCount !== undefined && obj.totalCount !== null
+      ? Math.max(safeNumber(obj.totalCount), categorySum)
+      : categorySum;
+
+  const rawEvents = Array.isArray(obj.recentEvents) ? obj.recentEvents : [];
+  const recentEvents: GoSnoRezdyPayFailureRecentEvent[] = [];
+  for (const item of rawEvents.slice(0, 10)) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+    const ev = item as Record<string, unknown>;
+    const eventType = sanitizeOperationalText(ev.eventType, 80) || "REZDY_CHECKOUT_FAILURE";
+    const category = resolveRezdyFailureCategory(ev.category, eventType);
+    const stage = sanitizeOperationalText(ev.stage, 64) || category;
+    const stageLabel = sanitizeOperationalText(ev.stageLabel, 96) || stage;
+    const safeErrorSummary =
+      sanitizeOperationalText(ev.safeErrorSummary, 220) ||
+      "Checkout failure recorded (inspect GoSno operations queue)";
+    const id =
+      sanitizeNullableOperationalRef(ev.id, 80) ||
+      `evt_${recentEvents.length + 1}`;
+    const eventTime =
+      sanitizeOperationalText(ev.eventTime, 48) || new Date(0).toISOString();
+
+    recentEvents.push({
+      id,
+      eventTime,
+      category,
+      eventType,
+      stage,
+      stageLabel,
+      safeErrorSummary,
+      bookingReference: sanitizeNullableOperationalRef(ev.bookingReference, 64),
+      orderReference: sanitizeNullableOperationalRef(ev.orderReference, 64),
+      resellerReference: sanitizeNullableOperationalRef(ev.resellerReference, 64),
+      routeSummary: sanitizeNullableOperationalRef(ev.routeSummary, 120),
+    });
+  }
+
+  return {
+    sessionSetupFailedCount,
+    paymentFailedCount,
+    unmatchedOrderCount,
+    stuckPaymentCount,
+    totalCount,
+    recentEvents,
   };
 }
 
@@ -750,7 +918,7 @@ async function fetchCruisePromenadeOwnerSummary(options: {
   }
 }
 
-async function fetchDirectMorOwnerSummary(options: {
+export async function fetchDirectMorOwnerSummary(options: {
   siteId: "gosno" | "partyatredrocks";
   siteName: string;
   endpoint: string;
@@ -894,6 +1062,19 @@ async function fetchDirectMorOwnerSummary(options: {
       rezdyHealthRaw && typeof rezdyHealthRaw === "object"
         ? (rezdyHealthRaw as Record<string, unknown>)
         : null;
+    const rawAccountingNote = m.accountingNote ?? body.accountingNote;
+    const accountingNote =
+      typeof rawAccountingNote === "string" && rawAccountingNote.trim()
+        ? sanitizeOperationalText(rawAccountingNote, 360)
+        : null;
+    const rezdyPayCheckoutFailures28d = parseRezdyPayCheckoutFailures28d(
+      m.rezdyPayCheckoutFailures28d ?? body.rezdyPayCheckoutFailures28d ?? null,
+    );
+
+    const baseConnectionNote = `Live ${siteName} MoR summary connected (${paidOrders28d} paid, ${confirmedUnpaidOrders28d} confirmed-unpaid, ${testRecordsExcluded28d} test excluded).`;
+    const note = accountingNote
+      ? `${baseConnectionNote} Accounting note: ${accountingNote}`
+      : baseConnectionNote;
 
     return {
       siteId,
@@ -916,7 +1097,9 @@ async function fetchDirectMorOwnerSummary(options: {
       provisioningExceptions,
       needsReviewOrders,
       rezdyHealth,
-      note: `Live ${siteName} MoR summary connected (${paidOrders28d} paid, ${confirmedUnpaidOrders28d} confirmed-unpaid, ${testRecordsExcluded28d} test excluded).`,
+      accountingNote,
+      rezdyPayCheckoutFailures28d,
+      note,
     };
   } catch {
     return emptyDirectMorOwnerSummary({
@@ -1054,6 +1237,11 @@ export async function buildOwnerControlCenterSnapshot(
     return failedCount + (staleCron ? 1 : 0);
   })();
 
+  const gosnoRezdyPayFailures28d = gosnoOps.rezdyPayCheckoutFailures28d;
+  const gosnoRezdyPayFailureCount28d = gosnoRezdyPayFailures28d?.totalCount ?? 0;
+  const gosnoAccountingNote =
+    gosnoOps.accountingNote ?? GOSNO_GROSS_BOOKING_ACCOUNTING_NOTE;
+
   const { customerRepliesNeededCount, deliveryFailureCount, notificationConfigurationCount } = inbox.kpis;
   const replyInboxHref = "/admin/inbox?view=customer_replies";
   const deliveryFailuresHref = "/admin/inbox?view=notification_failures";
@@ -1108,18 +1296,36 @@ export async function buildOwnerControlCenterSnapshot(
           gosnoOps.needsReviewOrders +
           parrOps.provisioningExceptions +
           parrOps.needsReviewOrders +
-          rezdyHealthAlertCount >
+          rezdyHealthAlertCount +
+          gosnoRezdyPayFailureCount28d >
         0
           ? "high"
           : "info",
       title: "Direct MoR Ops Exceptions & Rezdy Health (GoSno & Party at Red Rocks)",
-      countOrBadge: `GoSno: ${gosnoOps.provisioningExceptions + gosnoOps.needsReviewOrders} (${gosnoOps.status}) · PARR: ${parrOps.provisioningExceptions + parrOps.needsReviewOrders} (${parrOps.status})${gosnoOps.rezdyHealth ? ` · Rezdy: ${String(gosnoOps.rezdyHealth.status ?? "reported")}` : ""}`,
+      countOrBadge: `GoSno: ${gosnoOps.provisioningExceptions + gosnoOps.needsReviewOrders} (${gosnoOps.status})${gosnoRezdyPayFailures28d ? ` · /pay failures: ${gosnoRezdyPayFailureCount28d}` : ""} · PARR: ${parrOps.provisioningExceptions + parrOps.needsReviewOrders} (${parrOps.status})${gosnoOps.rezdyHealth ? ` · Rezdy: ${String(gosnoOps.rezdyHealth.status ?? "reported")}` : ""}`,
       detail: `${gosnoOps.note} ${parrOps.note}${gosnoOps.rezdyHealth ? ` Rezdy health: ${JSON.stringify(gosnoOps.rezdyHealth)}.` : ""}`,
       actionHref: gosnoOps.opsHref,
       actionLabel: "GoSno Queue ↗",
       external: true,
     },
   ];
+
+  if (gosnoRezdyPayFailures28d && gosnoRezdyPayFailureCount28d > 0) {
+    const latestEvt = gosnoRezdyPayFailures28d.recentEvents[0];
+    const latestEvtNote = latestEvt
+      ? ` Latest: [${latestEvt.eventType}] ${latestEvt.stageLabel}${latestEvt.bookingReference || latestEvt.orderReference ? ` (${latestEvt.bookingReference || latestEvt.orderReference})` : ""} — ${latestEvt.safeErrorSummary}`
+      : "";
+    triageItems.push({
+      id: "gosno-rezdypay-checkout-failures",
+      priority: "high",
+      title: "GoSno RezdyPay /pay Checkout & Reconciliation Failures (28d)",
+      countOrBadge: `${gosnoRezdyPayFailureCount28d} /pay failure(s) · setup ${gosnoRezdyPayFailures28d.sessionSetupFailedCount} · pay ${gosnoRezdyPayFailures28d.paymentFailedCount} · unmatched ${gosnoRezdyPayFailures28d.unmatchedOrderCount} · stuck ${gosnoRezdyPayFailures28d.stuckPaymentCount}`,
+      detail: `RezdyPay /pay checkout monitor reported ${gosnoRezdyPayFailureCount28d} failure(s) in 28d (session setup: ${gosnoRezdyPayFailures28d.sessionSetupFailedCount}, payment failed: ${gosnoRezdyPayFailures28d.paymentFailedCount}, unmatched order/webhook: ${gosnoRezdyPayFailures28d.unmatchedOrderCount}, stuck payment/lease: ${gosnoRezdyPayFailures28d.stuckPaymentCount}).${latestEvtNote}`,
+      actionHref: gosnoOps.opsHref,
+      actionLabel: "Inspect GoSno Queue ↗",
+      external: true,
+    });
+  }
 
   if (!rollCallBridge.moderationNotificationsOperational) {
     triageItems.push({
@@ -1152,7 +1358,8 @@ export async function buildOwnerControlCenterSnapshot(
     gosnoOps.needsReviewOrders +
     parrOps.provisioningExceptions +
     parrOps.needsReviewOrders +
-    rezdyHealthAlertCount;
+    rezdyHealthAlertCount +
+    gosnoRezdyPayFailureCount28d;
 
   const totals = funnel.totals;
   const drops = funnel.unmatchedAttributionDrops;
@@ -1285,11 +1492,11 @@ export async function buildOwnerControlCenterSnapshot(
       key: "gross_merchant_sales",
       label: "8. Gross Merchant Sales (Direct MoR)",
       headlineValue: `$${effectiveGrossMerchantSalesUsd28d.toLocaleString()}`,
-      gosnoBreakdown: `GoSno paid gross: $${gosnoOps.paidGrossSalesUsd28d.toLocaleString()}`,
+      gosnoBreakdown: `GoSno local gross booking value: $${gosnoOps.paidGrossSalesUsd28d.toLocaleString()} (gross, not profit; provider payout/settlement & refund reconciliation unverified)`,
       parrBreakdown: `PARR paid gross: $${parrOps.paidGrossSalesUsd28d.toLocaleString()}`,
       networkOrAffiliateBreakdown: `DCC ledger MoR gross: $${totals.ownedGrossSalesUsd.toLocaleString()}`,
       antiConflationDisclosure:
-        "Gross Merchant Sales — Not Profit; Excludes Operating Costs, Driver Pay, Processor Fees & Refunds",
+        "Gross Merchant Sales — Not Profit; Excludes Operating Costs, Driver Pay, Processor Fees & Refunds. GoSno reports local gross booking value from completed checkouts; provider payout/settlement reconciliation and refunds are not verified here.",
     },
     {
       rowNumber: 9,
@@ -1588,6 +1795,7 @@ export async function buildOwnerControlCenterSnapshot(
     gosnoOps.provisioningExceptions +
     parrOps.provisioningExceptions +
     rezdyHealthAlertCount +
+    gosnoRezdyPayFailureCount28d +
     deliveryFailureCount;
 
   // 3-Market Direct Operator Pipeline (Juneau, New Orleans, Colorado)
@@ -1714,13 +1922,21 @@ export async function buildOwnerControlCenterSnapshot(
           "Discovery → planning → checkout → payment → Rezdy → fulfilled ride → revenue reconciled",
         automationSchedulesEnabled: rezdyCronSchedulesEnabled === true,
         marcosManualOrderIsolationRule:
-          "Marcos's manual order stays separate and is never counted as an automated Square → Rezdy test.",
+          "Marcos's manual order stays separate and is never counted as an automated RezdyPay → Rezdy checkout test.",
         statusSummary:
-          gosnoOps.provisioningExceptions > 0
-            ? `${gosnoOps.provisioningExceptions} Rezdy provisioning exception(s) — inspect GoSno queue immediately`
-            : rezdyCronSchedulesEnabled === true
-              ? "Armed (`provision-rezdy` */5 live, 0 exceptions) — watching next real Square payment for 1 exact Rezdy reservation"
-              : `GoSno status: ${gosnoOps.status} (${gosnoOps.paidOrders28d} paid orders in 28d)`,
+          gosnoOps.provisioningExceptions > 0 && gosnoRezdyPayFailureCount28d > 0
+            ? `${gosnoOps.provisioningExceptions} Rezdy provisioning exception(s) & ${gosnoRezdyPayFailureCount28d} RezdyPay /pay checkout failure(s) (setup ${gosnoRezdyPayFailures28d!.sessionSetupFailedCount}, pay ${gosnoRezdyPayFailures28d!.paymentFailedCount}, unmatched ${gosnoRezdyPayFailures28d!.unmatchedOrderCount}, stuck ${gosnoRezdyPayFailures28d!.stuckPaymentCount}) — inspect GoSno queue immediately`
+            : gosnoRezdyPayFailureCount28d > 0
+              ? `${gosnoRezdyPayFailureCount28d} RezdyPay /pay checkout failure(s) in 28d (session setup ${gosnoRezdyPayFailures28d!.sessionSetupFailedCount}, payment ${gosnoRezdyPayFailures28d!.paymentFailedCount}, unmatched order ${gosnoRezdyPayFailures28d!.unmatchedOrderCount}, stuck payment ${gosnoRezdyPayFailures28d!.stuckPaymentCount}) — inspect GoSno RezdyPay /pay checkout → Rezdy order/webhook & reconciliation queue`
+              : gosnoOps.provisioningExceptions > 0
+                ? `${gosnoOps.provisioningExceptions} Rezdy provisioning exception(s) on RezdyPay /pay checkout → Rezdy order/webhook & reconciliation flow — inspect GoSno queue immediately`
+                : rezdyCronSchedulesEnabled === true
+                  ? "Active RezdyPay /pay checkout → Rezdy order/webhook & reconciliation live (`provision-rezdy` */5, 0 exceptions, 0 /pay failures in 28d) — watching next real RezdyPay /pay checkout for 1 exact Rezdy reservation"
+                  : gosnoOps.status === "live"
+                    ? `Active RezdyPay /pay checkout → Rezdy order/webhook & reconciliation live (${gosnoOps.paidOrders28d} paid orders, 0 /pay failures in 28d)`
+                    : `GoSno RezdyPay /pay checkout → Rezdy order/webhook & reconciliation status: ${gosnoOps.status} (${gosnoOps.paidOrders28d} paid orders in 28d)`,
+        rezdyPayCheckoutFailures28d: gosnoRezdyPayFailures28d,
+        accountingNote: gosnoAccountingNote,
       },
     },
     automationHealth: {
@@ -1732,6 +1948,8 @@ export async function buildOwnerControlCenterSnapshot(
       rezdyUnknownResultCount,
       rezdyStaleClaimedCount,
       rezdyCronSchedulesEnabled,
+      gosnoRezdyPayFailures28d,
+      gosnoRezdyPayFailureCount28d,
       genuineFailedNotificationsCount: deliveryFailureCount,
       deliveryFailureCount,
       notificationConfigurationCount,
@@ -1872,6 +2090,7 @@ export async function buildOwnerControlCenterSnapshot(
           label: "GoSno + Party at Red Rocks Direct MoR Gross Revenue",
           grossSalesDisclosure:
             "Gross Merchant Sales — Not Profit; Excludes Operating Costs, Driver Pay, Processor Fees & Refunds",
+          gosnoAccountingNote,
           portfolioOwnedGrossSalesUsd: effectiveGrossMerchantSalesUsd28d,
           pendingOwnedSettlementUsd: totals.pendingOwnedSettlementUsd,
           gosnoReportedGrossUsd28d: gosnoOps.paidGrossSalesUsd28d,

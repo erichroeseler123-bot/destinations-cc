@@ -164,9 +164,15 @@ export default async function OwnerControlCenterPage() {
                   </div>
                 </div>
               </div>
-              <div className="rounded-lg border border-amber-400/25 bg-black/35 px-3 py-2 text-[11px] text-amber-100">
-                <strong>Net Operating Revenue:</strong>{" "}
-                <code>{q1.netOperatingRevenueLabel}</code> · {q1.grossSalesNotProfitDisclosure}.
+              <div className="rounded-lg border border-amber-400/25 bg-black/35 px-3 py-2 text-[11px] text-amber-100 space-y-1">
+                <div>
+                  <strong>Net Operating Revenue:</strong>{" "}
+                  <code>{q1.netOperatingRevenueLabel}</code> · {q1.grossSalesNotProfitDisclosure}.
+                </div>
+                <div className="text-[10px] text-amber-200/90">
+                  <strong>GoSno Accounting Note (Gross, Not Profit):</strong>{" "}
+                  {q2.completeMoneyLoop.accountingNote}
+                </div>
               </div>
             </article>
 
@@ -298,6 +304,20 @@ export default async function OwnerControlCenterPage() {
                         : "disabled"}
                   </code>
                   )
+                </li>
+                <li>
+                  • <strong>GoSno RezdyPay /pay Checkout Monitor (28d):</strong>{" "}
+                  {q3.gosnoRezdyPayFailures28d ? (
+                    <>
+                      <code>{q3.gosnoRezdyPayFailures28d.totalCount}</code> total (setup{" "}
+                      <code>{q3.gosnoRezdyPayFailures28d.sessionSetupFailedCount}</code> · payment{" "}
+                      <code>{q3.gosnoRezdyPayFailures28d.paymentFailedCount}</code> · unmatched{" "}
+                      <code>{q3.gosnoRezdyPayFailures28d.unmatchedOrderCount}</code> · stuck{" "}
+                      <code>{q3.gosnoRezdyPayFailures28d.stuckPaymentCount}</code>)
+                    </>
+                  ) : (
+                    <code>awaiting owner-summary payload ({triageQueue.gosnoOps.status})</code>
+                  )}
                 </li>
                 <li>
                   • <strong>Party at Red Rocks Sync:</strong>{" "}
@@ -925,12 +945,96 @@ export default async function OwnerControlCenterPage() {
 
                   <div
                     data-testid="gosno-rezdy-health-card"
-                    className="rounded-xl border border-white/10 bg-black/35 p-3.5 space-y-1"
+                    className="rounded-xl border border-white/10 bg-black/35 p-3.5 space-y-2.5"
                   >
-                    <div className="font-bold text-cyan-200">
-                      GoSno Rezdy Provisioning &amp; Cron Health
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="font-bold text-cyan-200">
+                        GoSno Direct MoR — RezdyPay /pay Checkout &amp; Rezdy Health
+                      </div>
+                      <span
+                        className={`rounded-full px-2 py-0.5 font-mono text-[10px] font-bold ${
+                          (triageQueue.gosnoOps.rezdyPayCheckoutFailures28d?.totalCount ?? 0) > 0
+                            ? "bg-rose-500/25 text-rose-200"
+                            : "bg-emerald-500/20 text-emerald-200"
+                        }`}
+                      >
+                        {triageQueue.gosnoOps.rezdyPayCheckoutFailures28d
+                          ? `${triageQueue.gosnoOps.rezdyPayCheckoutFailures28d.totalCount} /pay failure(s) (28d)`
+                          : `RezdyPay monitor: ${triageQueue.gosnoOps.status}`}
+                      </span>
                     </div>
-                    <div className="text-zinc-200 font-mono text-[11px] break-words">
+
+                    <div
+                      data-testid="gosno-rezdypay-failures-summary"
+                      className="grid grid-cols-2 gap-2 sm:grid-cols-4 text-[11px]"
+                    >
+                      <div className="rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5">
+                        <div className="text-[10px] text-zinc-400">Session Setup</div>
+                        <div className="font-mono font-bold text-white">
+                          {triageQueue.gosnoOps.rezdyPayCheckoutFailures28d?.sessionSetupFailedCount ?? 0}
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5">
+                        <div className="text-[10px] text-zinc-400">Payment Failed</div>
+                        <div className="font-mono font-bold text-white">
+                          {triageQueue.gosnoOps.rezdyPayCheckoutFailures28d?.paymentFailedCount ?? 0}
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5">
+                        <div className="text-[10px] text-zinc-400">Unmatched Order</div>
+                        <div className="font-mono font-bold text-white">
+                          {triageQueue.gosnoOps.rezdyPayCheckoutFailures28d?.unmatchedOrderCount ?? 0}
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5">
+                        <div className="text-[10px] text-zinc-400">Stuck Payment</div>
+                        <div className="font-mono font-bold text-white">
+                          {triageQueue.gosnoOps.rezdyPayCheckoutFailures28d?.stuckPaymentCount ?? 0}
+                        </div>
+                      </div>
+                    </div>
+
+                    {(triageQueue.gosnoOps.rezdyPayCheckoutFailures28d?.recentEvents.length ?? 0) > 0 ? (
+                      <div
+                        data-testid="gosno-rezdypay-recent-events"
+                        className="rounded-lg border border-rose-400/30 bg-rose-500/10 p-2.5 space-y-1.5 text-[11px]"
+                      >
+                        <div className="font-bold text-rose-200">
+                          Recent Sanitized RezdyPay /pay Failure Events
+                        </div>
+                        <ul className="space-y-1 text-zinc-100">
+                          {triageQueue.gosnoOps.rezdyPayCheckoutFailures28d!.recentEvents.map((ev) => {
+                            const refParts = [
+                              ev.bookingReference ? `booking:${ev.bookingReference}` : null,
+                              ev.orderReference ? `order:${ev.orderReference}` : null,
+                              ev.resellerReference ? `reseller:${ev.resellerReference}` : null,
+                              ev.routeSummary ? ev.routeSummary : null,
+                            ].filter(Boolean);
+                            return (
+                              <li key={ev.id} className="font-mono text-[10px] leading-relaxed break-words">
+                                <span className="text-rose-200 font-semibold">[{ev.stageLabel}]</span>{" "}
+                                <span className="text-zinc-400">{ev.eventTime}</span>
+                                {refParts.length > 0 ? (
+                                  <span className="text-cyan-200"> · {refParts.join(" · ")}</span>
+                                ) : null}{" "}
+                                — <span className="text-zinc-100">{ev.safeErrorSummary}</span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    ) : null}
+
+                    <div
+                      data-testid="gosno-accounting-note"
+                      className="rounded-lg border border-amber-400/25 bg-amber-500/[0.08] px-2.5 py-1.5 text-[11px] text-amber-100"
+                    >
+                      <strong>Gross Booking Value Note (Not Profit):</strong>{" "}
+                      {triageQueue.gosnoOps.accountingNote ?? q2.completeMoneyLoop.accountingNote}
+                    </div>
+
+                    <div className="text-zinc-300 font-mono text-[10px] break-words">
+                      Rezdy cron/sync health:{" "}
                       {triageQueue.gosnoOps.rezdyHealth
                         ? JSON.stringify(triageQueue.gosnoOps.rezdyHealth)
                         : `No Rezdy health payload reported (${triageQueue.gosnoOps.status})`}
