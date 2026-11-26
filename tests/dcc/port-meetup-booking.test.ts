@@ -95,17 +95,24 @@ test('simultaneous different parties retain independent rows',async()=>{
 });
 
 test('public API rejects alert actions, simulations, arbitrary fields and URL tokens',async()=>{
-  for(const key of ['email','partyToken','namespace','simulate','cabinNumber']){
+  for(const key of ['email','partyToken','namespace','simulate','cabinNumber','action']){
     assert.equal((await GET(new Request(`https://destinationcommandcenter.com/api/v1/cruise/port-meetups?${key}=x`))).status,400);
   }
-  for(const extra of [{action:'join_waitlist'},{action:'run_monitor'},{action:'upsert_attendance',email:'x@example.test'},{action:'upsert_attendance',partySize:0},{action:'upsert_attendance',status:'operator_confirmed'}]){
+  for(const extra of [{action:'join_waitlist'},{action:'request_waitlist'},{action:'run_monitor'},{action:'run_monitor_check'},{action:'owner_update_status'},{action:'upsert_attendance',email:'x@example.test'},{action:'upsert_attendance',partySize:0},{action:'upsert_attendance',status:'operator_confirmed'}]){
     const response=await POST(new Request('https://destinationcommandcenter.com/api/v1/cruise/port-meetups',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...lookup,partyToken:token,status:'planning',partySize:2,...extra})}));
     assert.equal(response.status,400);
   }
 });
 
-test('pilot has an explicit rollback switch and unknown sailings never get a forced match',async()=>{
+test('pilot stays disabled by default in production, exposes rollback switch, and avoids unverified policy dates',async()=>{
   assert.equal(isDccPortMeetupPilotEnabled({ENABLE_PORT_MEETUP_PILOT:'false'}),false);
-  assert.equal(isDccPortMeetupPilotEnabled({VERCEL_ENV:'production'}),true);
+  assert.equal(isDccPortMeetupPilotEnabled({VERCEL_ENV:'production'}),false);
+  assert.equal(isDccPortMeetupPilotEnabled({VERCEL_ENV:'production',ENABLE_PORT_MEETUP_PILOT:'true'}),true);
+  assert.equal(isDccPortMeetupPilotEnabled({VERCEL_ENV:'preview'}),true);
   assert.equal(await resolvePortMeetupForShipCall({shipSlug:'unknown',sailDate:'2027-05-15',rezgoInspectionOverride:null}),null);
+
+  const resolved=(await resolvePortMeetupForShipCall({...lookup,partySize:2,rezgoInspectionOverride:feed([option('1',20)])}))!;
+  assert.match(resolved.schedule.meetingPointLabel,/Goldbelt Tramway Plaza \(492 S\. Franklin St/);
+  assert.doesNotMatch(resolved.product.whaleGuaranteeDisclosure,/May 15–September 15/);
+  assert.doesNotMatch(resolved.product.noPortNoPayDisclosure,/24 hours/);
 });
