@@ -24,8 +24,8 @@ import {
   FOUNDING_PILOT_SAILINGS,
 } from "./foundingOrganizerPilotCohort";
 
-export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-26T18:00:00Z" as const;
-export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-26-vacationeer-fandom" as const;
+export const DCC_HOSTED_CATALOG_GENERATED_AT = "2026-11-26T18:30:00Z" as const;
+export const DCC_HOSTED_CATALOG_SNAPSHOT_ID = "dcc-hosted-catalog-2026-11-26-fandom-batch2" as const;
 
 export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrganizerFactRecord> = [
 
@@ -5547,6 +5547,73 @@ export const DCC_CANONICAL_HOSTED_ORGANIZERS: ReadonlyArray<CanonicalHostedOrgan
     "comparableOrganizerSlugs": []
   },
 
+  {
+    "organizerId": "hosted-organizer:soul-on-the-sea",
+    "reputationEntityId": "rep:hosted-organizer:soul-on-the-sea",
+    "organizerSlug": "soul-on-the-sea",
+    "aliases": [
+      "soul-on-the-sea-cruise"
+    ],
+    "knownBrandAliases": [
+      "Soul on the Sea",
+      "Soul On The Sea Cruise"
+    ],
+    "organizerName": "Soul on the Sea",
+    "shortName": "Soul on the Sea",
+    "categoryLabel": "R&B and Hip-Hop Music Cruises",
+    "organizerType": "hosted_group_organizer",
+    "primaryClassification": "hosted_group_sailing",
+    "supportedClassifications": [
+      "hosted_group_sailing"
+    ],
+    "subBrands": [],
+    "primaryTheme": "music-cruises",
+    "secondaryThemes": [],
+    "tagline": "A hosted R&B and hip-hop music cruise with concerts, themed parties, and community activities.",
+    "independentSummary": "Soul on the Sea is an inaugural five-night hosted music cruise on Norwegian Joy, with R&B and hip-hop performances, themed parties, meet-and-greets, Q&As, games, and port calls at Cozumel and Great Stirrup Cay. Cabin reservations are handled through Rose Tours.",
+    "organizerProvidedDescription": null,
+    "designedForAudience": "R&B and hip-hop fans, music travelers, and friends who want a concert-focused cruise.",
+    "audienceFocusTags": [
+      "R&B",
+      "Hip-hop",
+      "Live music",
+      "Music fans"
+    ],
+    "typicalHostedProgramming": "Main-stage concerts, themed parties, meet-and-greets, Q&As, games, and tournaments; individual performers and schedules can change.",
+    "generalAtmosphereSummary": "Concert-led hosted group sailing with free time in port and on the ship.",
+    "typicalCharterModel": "hosted_group_block",
+    "vesselTypeSummary": "Norwegian Joy ocean ship",
+    "approximateScaleSummary": "Hosted music group aboard a regularly scheduled ship; group size not published.",
+    "soloSupportSummary": null,
+    "soloFriendly": null,
+    "familyPolicy": "not_verified",
+    "goodForTags": [
+      "R&B and hip-hop",
+      "Concert cruise",
+      "Caribbean ports"
+    ],
+    "heroVisualKey": "ship-norwegian-breakaway",
+    "officialWebsiteUrl": "https://www.soulontheseacruise.com/",
+    "officialDomain": "soulontheseacruise.com",
+    "reservationPortalDomain": "rosetours.com",
+    "publicContactPageUrl": "https://www.soulontheseacruise.com/contact/",
+    "officialSocialLinks": {},
+    "cabinSellerIdentity": "Rose Tours & Travel",
+    "officialReservationPathSummary": "Cabin packages are sold through the event’s booking partner, Rose Tours & Travel.",
+    "cancellationAndParticipationPolicy": "The operator states that the hosted package has its own non-refundable payment and cancellation terms; review the official terms before booking.",
+    "officialPolicyUrl": "https://www.soulontheseacruise.com/faqs/",
+    "publicReviewProfileLinks": [],
+    "pinnedSailingSlugs": [
+      "soul-on-the-sea-2027"
+    ],
+    "nonAffiliationNotice": "Cruise Promenade is an independent discovery and planning platform and is not affiliated with or endorsed by Soul on the Sea, Rose Tours, Norwegian Cruise Line, or the listed artists.",
+    "cabinBookingPolicyNote": "The cabin seller is Rose Tours & Travel. Confirm package inclusions, cancellation terms, and artist schedule directly with the seller.",
+    "primarySourceUrl": "https://www.soulontheseacruise.com/itinerary/",
+    "verifiedSourceCheckedAt": "2026-11-26T18:00:00Z",
+    "verificationState": "verified",
+    "comparableOrganizerSlugs": []
+  },
+
 ];
 
 export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranchiseFactRecord> = [
@@ -8771,6 +8838,63 @@ export const DCC_CANONICAL_HOSTED_FRANCHISES: ReadonlyArray<CanonicalHostedFranc
     "officialDomain": "vacationeer.com",
     "departureAnnouncementStatus": "active_upcoming_departures",
     "primarySourceUrl": "https://vacationeer.com/our-groups/",
+    "verifiedSourceCheckedAt": "2026-11-26T18:00:00Z",
+    "verificationState": "verified"
+  },
+
+  {
+    "franchiseId": "hosted-franchise:star-trek-the-cruise",
+    "reputationFranchiseEntityId": "rep:hosted-franchise:star-trek-the-cruise",
+    "franchiseSlug": "star-trek-the-cruise",
+    "aliases": [
+      "star-trek-cruise"
+    ],
+    "franchiseName": "Star Trek: The Cruise",
+    "shortName": "Star Trek: The Cruise",
+    "producerOrganizerId": "hosted-organizer:entertainment-cruise-productions",
+    "producerOrganizerSlug": "entertainment-cruise-productions",
+    "relationshipToProducer": "producer_owned_franchise",
+    "primaryClassification": "full_ship_charter",
+    "primaryTheme": "crafting-and-hobbies",
+    "secondaryThemes": [
+      "music-cruises"
+    ],
+    "tagline": "An annual full-ship Star Trek fan charter produced by Entertainment Cruise Productions.",
+    "independentSummary": "Star Trek: The Cruise transforms the full ship into a themed fan experience with cast panels, live shows, trivia, karaoke, themed activities, and interactive events.",
+    "intendedAudience": "Star Trek fans and travelers interested in cast programming and fan events.",
+    "programmingAndLineupModel": "Cast panels, performances, Q&As, trivia, karaoke, themed parties, and interactive events.",
+    "atmosphereSummary": "A full-ship fandom charter with ship-wide themed programming.",
+    "heroVisualKey": "ship-mariner-of-the-seas",
+    "officialWebsiteUrl": "https://startrekthecruise.com/",
+    "officialDomain": "startrekthecruise.com",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://startrekthecruise.com/book-now/",
+    "verifiedSourceCheckedAt": "2026-11-26T18:00:00Z",
+    "verificationState": "verified"
+  },
+  {
+    "franchiseId": "hosted-franchise:soul-on-the-sea",
+    "reputationFranchiseEntityId": "rep:hosted-franchise:soul-on-the-sea",
+    "franchiseSlug": "soul-on-the-sea",
+    "aliases": [],
+    "franchiseName": "Soul on the Sea",
+    "shortName": "Soul on the Sea",
+    "producerOrganizerId": "hosted-organizer:soul-on-the-sea",
+    "producerOrganizerSlug": "soul-on-the-sea",
+    "relationshipToProducer": "flagship_one_to_one",
+    "primaryClassification": "hosted_group_sailing",
+    "primaryTheme": "music-cruises",
+    "secondaryThemes": [],
+    "tagline": "R&B and hip-hop artists, performances, and fan experiences at sea.",
+    "independentSummary": "Soul on the Sea is an inaugural five-night hosted music cruise on Norwegian Joy, with R&B and hip-hop performances, themed parties, meet-and-greets, Q&As, games, and port calls at Cozumel and Great Stirrup Cay. Cabin reservations are handled through Rose Tours.",
+    "intendedAudience": "R&B and hip-hop fans, music travelers, and friends who want a concert-focused cruise.",
+    "programmingAndLineupModel": "Main-stage concerts, themed parties, meet-and-greets, Q&As, games, and tournaments; individual performers and schedules can change.",
+    "atmosphereSummary": "Concert-led hosted group sailing with free time in port and on the ship.",
+    "heroVisualKey": "ship-norwegian-breakaway",
+    "officialWebsiteUrl": "https://www.soulontheseacruise.com/",
+    "officialDomain": "soulontheseacruise.com",
+    "departureAnnouncementStatus": "active_upcoming_departures",
+    "primarySourceUrl": "https://www.soulontheseacruise.com/itinerary/",
     "verifiedSourceCheckedAt": "2026-11-26T18:00:00Z",
     "verificationState": "verified"
   },
@@ -18640,6 +18764,99 @@ export const DCC_CANONICAL_HOSTED_SAILINGS: ReadonlyArray<CanonicalHostedSailing
     ],
     "lifecycleStatus": "upcoming",
     "primarySourceUrl": "https://vacationeer.com/our-groups/",
+    "organizerSourceCheckedAt": "2026-11-26T18:00:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+
+  {
+    "hostedSailingId": "hosted-sailing:entertainment-cruise-productions:rccl:mariner-of-the-seas:2027-02-20",
+    "reputationSailingEntityId": "rep:hosted-sailing:entertainment-cruise-productions:star-trek-the-cruise-x-2027",
+    "organizerSlug": "entertainment-cruise-productions",
+    "franchiseId": "hosted-franchise:star-trek-the-cruise",
+    "franchiseSlug": "star-trek-the-cruise",
+    "sailingSlug": "star-trek-the-cruise-x-2027",
+    "physicalSailingId": "sailing:rccl:mariner-of-the-seas:2027-02-20",
+    "canonicalLineCode": "rccl",
+    "canonicalShipSlug": "mariner-of-the-seas",
+    "canonicalSailDate": "2027-02-20",
+    "sailingTitle": "Star Trek: The Cruise X 2027 · Mariner of the Seas",
+    "shortHeadline": "Star Trek: The Cruise X · Mariner of the Seas",
+    "editionSubtitle": "7-night full-ship Star Trek charter from New Orleans",
+    "anticipationHook": "Official source lists Feb 20–27, 2027 aboard Mariner of the Seas, with stops at Cozumel, George Town, and Montego Bay. The sailing is sold out and the official waitlist is open.",
+    "primaryTheme": "crafting-and-hobbies",
+    "secondaryThemes": [],
+    "visualKey": "ship-mariner-of-the-seas",
+    "regionLabel": "Western Caribbean",
+    "officialSailingPageUrl": "https://startrekthecruise.com/book-now/",
+    "officialReservationFormUrl": "https://startrekthecruise.com/waitlist/",
+    "cabinSellerLabel": "Entertainment Cruise Productions",
+    "cabinBookingCtaLabel": "Join the official waitlist ↗",
+    "cabinAvailabilityStatus": "waitlist",
+    "cabinAvailabilityNote": "Official source lists Feb 20–27, 2027 aboard Mariner of the Seas, with stops at Cozumel, George Town, and Montego Bay. The sailing is sold out and the official waitlist is open.",
+    "verifiedStartingPriceUsd": null,
+    "verifiedPriceNote": null,
+    "approximateGroupSizeLabel": null,
+    "fullShipCharter": true,
+    "typicalAudience": "Star Trek fans and travelers seeking a full-ship themed fan charter.",
+    "announcedHostedProgramming": "Cast panels, live performances, Q&As, trivia, karaoke, themed activities, and interactive events.",
+    "programmingSourceUrl": "https://startrekthecruise.com/book-now/",
+    "soloSupport": null,
+    "soloFriendly": null,
+    "familyPolicy": "not_verified",
+    "communityAtmosphereSummary": "Official source lists Feb 20–27, 2027 aboard Mariner of the Seas, with stops at Cozumel, George Town, and Montego Bay. The sailing is sold out and the official waitlist is open.",
+    "goodForTags": [
+      "Fandom cruise",
+      "Hosted group"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://startrekthecruise.com/book-now/",
+    "organizerSourceCheckedAt": "2026-11-26T18:00:00Z",
+    "verificationState": "verified",
+    "portScheduleVerificationMode": "official_day_by_day_route"
+  },
+  {
+    "hostedSailingId": "hosted-sailing:soul-on-the-sea:ncl:norwegian-joy:2027-04-12",
+    "reputationSailingEntityId": "rep:hosted-sailing:soul-on-the-sea:soul-on-the-sea-2027",
+    "organizerSlug": "soul-on-the-sea",
+    "franchiseId": "hosted-franchise:soul-on-the-sea",
+    "franchiseSlug": "soul-on-the-sea",
+    "sailingSlug": "soul-on-the-sea-2027",
+    "physicalSailingId": "sailing:ncl:norwegian-joy:2027-04-12",
+    "canonicalLineCode": "ncl",
+    "canonicalShipSlug": "norwegian-joy",
+    "canonicalSailDate": "2027-04-12",
+    "sailingTitle": "Soul on the Sea 2027 · Norwegian Joy",
+    "shortHeadline": "Soul on the Sea · Norwegian Joy",
+    "editionSubtitle": "5-night R&B and hip-hop music cruise from Miami",
+    "anticipationHook": "Official itinerary lists Cozumel on Apr 14 and Great Stirrup Cay on Apr 16, with Miami embarkation Apr 12 and return Apr 17. Ticket sales are open through Rose Tours; artist appearances and schedule are subject to change.",
+    "primaryTheme": "music-cruises",
+    "secondaryThemes": [],
+    "visualKey": "ship-norwegian-breakaway",
+    "regionLabel": "Western Caribbean & Bahamas",
+    "officialSailingPageUrl": "https://www.soulontheseacruise.com/itinerary/",
+    "officialReservationFormUrl": "https://www.reservations.rosetours.com/Booking/Trip/List",
+    "cabinSellerLabel": "Rose Tours & Travel",
+    "cabinBookingCtaLabel": "Check official cabin availability ↗",
+    "cabinAvailabilityStatus": "available",
+    "cabinAvailabilityNote": "Official itinerary lists Cozumel on Apr 14 and Great Stirrup Cay on Apr 16, with Miami embarkation Apr 12 and return Apr 17. Ticket sales are open through Rose Tours; artist appearances and schedule are subject to change.",
+    "verifiedStartingPriceUsd": null,
+    "verifiedPriceNote": null,
+    "approximateGroupSizeLabel": null,
+    "fullShipCharter": false,
+    "typicalAudience": "R&B and hip-hop music fans.",
+    "announcedHostedProgramming": "Concerts, themed parties, meet-and-greets, Q&As, games, and tournaments.",
+    "programmingSourceUrl": "https://www.soulontheseacruise.com/itinerary/",
+    "soloSupport": null,
+    "soloFriendly": null,
+    "familyPolicy": "not_verified",
+    "communityAtmosphereSummary": "Official itinerary lists Cozumel on Apr 14 and Great Stirrup Cay on Apr 16, with Miami embarkation Apr 12 and return Apr 17. Ticket sales are open through Rose Tours; artist appearances and schedule are subject to change.",
+    "goodForTags": [
+      "Live music",
+      "Hosted group"
+    ],
+    "lifecycleStatus": "upcoming",
+    "primarySourceUrl": "https://www.soulontheseacruise.com/itinerary/",
     "organizerSourceCheckedAt": "2026-11-26T18:00:00Z",
     "verificationState": "verified",
     "portScheduleVerificationMode": "official_day_by_day_route"
