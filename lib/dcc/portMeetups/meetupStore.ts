@@ -6,7 +6,10 @@ const testParties = new Map<string, Record<string, MeetupAttendanceParty>>();
 export function clearInMemoryPortMeetupStoreForTests() { testParties.clear(); }
 export function isDccPortMeetupPilotEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
   const flag = (env.ENABLE_PORT_MEETUP_PILOT || "").trim().toLowerCase();
-  return flag !== "false" && flag !== "0";
+  if (flag === "false" || flag === "0") return false;
+  if (flag === "true" || flag === "1") return true;
+  if (env.VERCEL_ENV === "production") return false;
+  return true;
 }
 export function resolvePortMeetupNamespace(): string {
   return process.env.VERCEL_ENV === "production" ? "production" : "preview";

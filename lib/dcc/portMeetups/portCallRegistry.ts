@@ -3,9 +3,6 @@ import type { PublicPortCongestionSummary } from "./meetupTypes";
 export interface VerifiedOperatorMeetupProduct {
   operatorId: string;
   operatorName: string;
-  operatorContactName: string;
-  operatorPhone: string;
-  operatorEmail: string;
   portSlug: string;
   productCom: string;
   matchedViatorCode: string;
@@ -19,10 +16,8 @@ export interface VerifiedOperatorMeetupProduct {
   checkInLeadMinutes: number;
   meetingPointLabel: string;
   returnDropoffLabel: string;
-  guaranteeWindowStartMmDd: string;
-  guaranteeWindowEndMmDd: string;
-  guaranteeAppliesDisclosure: string;
-  guaranteeOutsideWindowDisclosure: string;
+  guaranteeApplies: boolean;
+  guaranteeDisclosure: string;
   noPortNoPayDisclosure: string;
   bookingAndCommissionDisclosure: string;
 }
@@ -72,9 +67,6 @@ export const VERIFIED_OPERATOR_MEETUP_PRODUCTS: Record<
   "juneau-tours-whale-watch::31703": {
     operatorId: "juneau-tours-whale-watch",
     operatorName: "Juneau Tours & Whale Watch",
-    operatorContactName: "Serene",
-    operatorPhone: "1-907-621-6502",
-    operatorEmail: "info@juneautours.com",
     portSlug: "juneau",
     productCom: "31703",
     matchedViatorCode: "5857P23",
@@ -87,15 +79,12 @@ export const VERIFIED_OPERATOR_MEETUP_PRODUCTS: Record<
     upperBoundDurationMinutes: 210,
     checkInLeadMinutes: 15,
     meetingPointLabel:
-      "Downtown Juneau — Goldbelt Tramway Kiosk (492 S. Franklin St, Juneau, AK 99801)",
+      "Downtown Juneau — Goldbelt Tramway Plaza (492 S. Franklin St, Juneau, AK 99801; confirm exact voucher pickup instructions with Juneau Tours)",
     returnDropoffLabel:
-      "Downtown Juneau — Goldbelt Tramway (492 S. Franklin St, Juneau, AK 99801)",
-    guaranteeWindowStartMmDd: "05-15",
-    guaranteeWindowEndMmDd: "09-15",
-    guaranteeAppliesDisclosure:
-      "Whale-sighting guarantee applies May 15–September 15; remedy subject to Juneau Tours’ published guarantee policy.",
-    guaranteeOutsideWindowDisclosure:
-      "Outside Juneau Tours’ May 15–September 15 whale-sighting guarantee window; confirm current seasonal terms with Juneau Tours before booking.",
+      "Downtown Juneau — Goldbelt Tramway Plaza (492 S. Franklin St, Juneau, AK 99801)",
+    guaranteeApplies: true,
+    guaranteeDisclosure:
+      "Juneau Tours advertises a whale-sighting guarantee; confirm current 2027 seasonal window, eligibility, and remedy terms directly on Juneau Tours’ published policy before booking.",
     noPortNoPayDisclosure:
       "Juneau Tours publishes a No Port–No Pay refund policy if your ship cannot dock. Review the operator’s current cancellation terms before booking.",
     bookingAndCommissionDisclosure:
@@ -164,25 +153,12 @@ export const VERIFIED_SHIP_PORT_CALLS: readonly VerifiedShipPortCallConfig[] = [
 ];
 
 export function evaluateWhaleGuaranteeWindow(
-  serviceDate: string,
+  _serviceDate: string,
   product: VerifiedOperatorMeetupProduct,
 ): { applies: boolean; disclosure: string } {
-  const match = /^\d{4}-(\d{2}-\d{2})$/.exec(serviceDate.trim());
-  if (!match) {
-    return {
-      applies: false,
-      disclosure: product.guaranteeOutsideWindowDisclosure,
-    };
-  }
-  const mmDd = match[1];
-  const applies =
-    mmDd >= product.guaranteeWindowStartMmDd &&
-    mmDd <= product.guaranteeWindowEndMmDd;
   return {
-    applies,
-    disclosure: applies
-      ? product.guaranteeAppliesDisclosure
-      : product.guaranteeOutsideWindowDisclosure,
+    applies: product.guaranteeApplies,
+    disclosure: product.guaranteeDisclosure,
   };
 }
 
@@ -193,7 +169,6 @@ export function lookupVerifiedPortCall(params: {
   organizerSlug?: string | null;
   sailingSlug?: string | null;
   portSlug?: string | null;
-  includeNonPilot?: boolean;
 }): {
   call: VerifiedShipPortCallConfig;
   hostedSailing: HostedSailingOnPortCall | null;
@@ -209,7 +184,7 @@ export function lookupVerifiedPortCall(params: {
 
   for (const call of VERIFIED_SHIP_PORT_CALLS) {
     if (call.portSlug !== targetPort) continue;
-    if (!call.pilotActive && !params.includeNonPilot) continue;
+    if (!call.pilotActive) continue;
 
     let matchedHosted: HostedSailingOnPortCall | null = null;
     if (orgSlug && sailSlug) {
