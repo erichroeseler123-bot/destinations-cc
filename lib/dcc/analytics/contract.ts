@@ -282,7 +282,7 @@ export const ANALYTICS_SITE_REGISTRY: readonly AnalyticsSiteRegistryEntry[] = [
     pageviewCollectionWired: true,
     residency: "gosno-production (external repo) + bigsky.gosno.co",
     redirectAndSourceNotes:
-      "Priority initial rollout target: GoSnoAnalyticsBridge (<=3KB sendBeacon, tokenized /checkout & /pay paths redacted) + post-response after() Direct MoR outcome emitter on /api/webhooks/rezdy, /api/webhooks/square & /api/cron/reconcile (0-diff on synchronous /pay & /api/availability).",
+      "Priority initial rollout target: GoSnoAnalyticsBridge (<=3KB sendBeacon, tokenized /checkout & /pay paths redacted) + post-response after() Direct MoR outcome emitter on /api/webhooks/rezdy & /api/cron/reconcile for RezdyPay /pay checkouts (0-diff on synchronous /pay & /api/availability).",
     externalSourcesStatus: { ga4: "unavailable", gsc: "unavailable", vercelWebAnalytics: "unavailable" },
     outcomeFeedMode: "direct_mor_summary",
   },
