@@ -39,7 +39,6 @@ export interface CrossSiteFunnelSummary {
   parrToDccPct: number;
   gosnoToDccPct: number;
   dccToSpecialistReturnPct: number;
-  dccToCpPct: number;
   journeyToBookingPct: number;
 }
 
@@ -97,7 +96,6 @@ export async function loadCrossSiteNetworkFunnelSummary(
     parrToDccPct: 0,
     gosnoToDccPct: 0,
     dccToSpecialistReturnPct: 0,
-    dccToCpPct: 0,
     journeyToBookingPct: 0,
   };
 
@@ -195,7 +193,6 @@ export async function loadCrossSiteNetworkFunnelSummary(
       parrToDccPct: pct(n("parr_to_dcc_journeys"), parrJourneys),
       gosnoToDccPct: pct(n("gosno_to_dcc_journeys"), gosnoJourneys),
       dccToSpecialistReturnPct: pct(returnedToBookingJourneys, dccPlanningJourneys),
-      dccToCpPct: pct(dccToCpJourneys, Math.max(n("dcc_pageviews"), dccPlanningJourneys)),
       journeyToBookingPct: pct(verifiedBookingJourneys, totalDistinctJourneys),
     };
   } catch {

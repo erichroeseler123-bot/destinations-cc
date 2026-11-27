@@ -688,15 +688,10 @@ function parseRezdyPayCheckoutFailures28d(
   const paymentFailedCount = safeNumber(obj.paymentFailedCount);
   const unmatchedOrderCount = safeNumber(obj.unmatchedOrderCount);
   const stuckPaymentCount = safeNumber(obj.stuckPaymentCount);
-  const categorySum =
-    sessionSetupFailedCount +
-    paymentFailedCount +
-    unmatchedOrderCount +
-    stuckPaymentCount;
+  // Unmatched order/webhook records need reconciliation, but are not failed /pay checkouts.
+  // Recompute this for both legacy and current GoSno payloads.
   const totalCount =
-    obj.totalCount !== undefined && obj.totalCount !== null
-      ? Math.max(safeNumber(obj.totalCount), categorySum)
-      : categorySum;
+    sessionSetupFailedCount + paymentFailedCount + stuckPaymentCount;
 
   const rawEvents = Array.isArray(obj.recentEvents) ? obj.recentEvents : [];
   const recentEvents: GoSnoRezdyPayFailureRecentEvent[] = [];
@@ -1331,9 +1326,9 @@ export async function buildOwnerControlCenterSnapshot(
     triageItems.push({
       id: "gosno-rezdypay-checkout-failures",
       priority: "high",
-      title: "GoSno RezdyPay /pay Checkout & Reconciliation Failures (28d)",
-      countOrBadge: `${gosnoRezdyPayFailureCount28d} /pay failure(s) · setup ${gosnoRezdyPayFailures28d.sessionSetupFailedCount} · pay ${gosnoRezdyPayFailures28d.paymentFailedCount} · unmatched ${gosnoRezdyPayFailures28d.unmatchedOrderCount} · stuck ${gosnoRezdyPayFailures28d.stuckPaymentCount}`,
-      detail: `RezdyPay /pay checkout monitor reported ${gosnoRezdyPayFailureCount28d} failure(s) in 28d (session setup: ${gosnoRezdyPayFailures28d.sessionSetupFailedCount}, payment failed: ${gosnoRezdyPayFailures28d.paymentFailedCount}, unmatched order/webhook: ${gosnoRezdyPayFailures28d.unmatchedOrderCount}, stuck payment/lease: ${gosnoRezdyPayFailures28d.stuckPaymentCount}).${latestEvtNote}`,
+      title: "GoSno RezdyPay /pay Checkout Failures (28d)",
+      countOrBadge: `${gosnoRezdyPayFailureCount28d} /pay failure(s) · unmatched reconciliation events ${gosnoRezdyPayFailures28d.unmatchedOrderCount}`,
+      detail: `RezdyPay /pay checkout monitor reported ${gosnoRezdyPayFailureCount28d} checkout failure event(s) in 28d (session setup: ${gosnoRezdyPayFailures28d.sessionSetupFailedCount}, payment failed: ${gosnoRezdyPayFailures28d.paymentFailedCount}, stuck payment/lease: ${gosnoRezdyPayFailures28d.stuckPaymentCount}). Separately, ${gosnoRezdyPayFailures28d.unmatchedOrderCount} unmatched order/webhook event records need reconciliation; these are not failed checkouts.${latestEvtNote}`,
       actionHref: gosnoOps.opsHref,
       actionLabel: "Inspect GoSno Queue ↗",
       external: true,
@@ -1938,9 +1933,9 @@ export async function buildOwnerControlCenterSnapshot(
           "Marcos's manual order stays separate and is never counted as an automated RezdyPay → Rezdy checkout test.",
         statusSummary:
           gosnoOps.provisioningExceptions > 0 && gosnoRezdyPayFailureCount28d > 0
-            ? `${gosnoOps.provisioningExceptions} Rezdy provisioning exception(s) & ${gosnoRezdyPayFailureCount28d} RezdyPay /pay checkout failure(s) (setup ${gosnoRezdyPayFailures28d!.sessionSetupFailedCount}, pay ${gosnoRezdyPayFailures28d!.paymentFailedCount}, unmatched ${gosnoRezdyPayFailures28d!.unmatchedOrderCount}, stuck ${gosnoRezdyPayFailures28d!.stuckPaymentCount}) — inspect GoSno queue immediately`
+            ? `${gosnoOps.provisioningExceptions} Rezdy provisioning exception(s) & ${gosnoRezdyPayFailureCount28d} RezdyPay /pay checkout failure event(s) (setup ${gosnoRezdyPayFailures28d!.sessionSetupFailedCount}, pay ${gosnoRezdyPayFailures28d!.paymentFailedCount}, stuck ${gosnoRezdyPayFailures28d!.stuckPaymentCount}); ${gosnoRezdyPayFailures28d!.unmatchedOrderCount} unmatched reconciliation event records — inspect GoSno queue immediately`
             : gosnoRezdyPayFailureCount28d > 0
-              ? `${gosnoRezdyPayFailureCount28d} RezdyPay /pay checkout failure(s) in 28d (session setup ${gosnoRezdyPayFailures28d!.sessionSetupFailedCount}, payment ${gosnoRezdyPayFailures28d!.paymentFailedCount}, unmatched order ${gosnoRezdyPayFailures28d!.unmatchedOrderCount}, stuck payment ${gosnoRezdyPayFailures28d!.stuckPaymentCount}) — inspect GoSno RezdyPay /pay checkout → Rezdy order/webhook & reconciliation queue`
+              ? `${gosnoRezdyPayFailureCount28d} RezdyPay /pay checkout failure event(s) in 28d (session setup ${gosnoRezdyPayFailures28d!.sessionSetupFailedCount}, payment ${gosnoRezdyPayFailures28d!.paymentFailedCount}, stuck payment ${gosnoRezdyPayFailures28d!.stuckPaymentCount}); ${gosnoRezdyPayFailures28d!.unmatchedOrderCount} unmatched reconciliation event records — inspect GoSno RezdyPay /pay checkout → Rezdy order/webhook & reconciliation queue`
               : gosnoOps.provisioningExceptions > 0
                 ? `${gosnoOps.provisioningExceptions} Rezdy provisioning exception(s) on RezdyPay /pay checkout → Rezdy order/webhook & reconciliation flow — inspect GoSno queue immediately`
                 : rezdyCronSchedulesEnabled === true
@@ -1968,7 +1963,7 @@ export async function buildOwnerControlCenterSnapshot(
       notificationConfigurationCount,
       deliveryFailuresHref,
       notificationConfigurationHref,
-      statusBadge: totalAutomationFailures > 0 || notificationConfigurationCount > 0 ? "Action Needed" : "All Clear",
+      statusBadge: totalAutomationFailures > 0 || notificationConfigurationCount > 0 || (gosnoRezdyPayFailures28d?.unmatchedOrderCount ?? 0) > 0 ? "Action Needed" : "All Clear",
     },
     inquiriesNeedingReply: {
       question: "4. Which inquiries need a reply?",

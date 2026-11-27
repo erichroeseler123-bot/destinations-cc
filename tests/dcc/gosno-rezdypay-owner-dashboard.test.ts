@@ -128,9 +128,9 @@ test("fetchDirectMorOwnerSummary & buildOwnerControlCenterSnapshot parse rezdyPa
       rezdyPayCheckoutFailures28d: {
         sessionSetupFailedCount: 1,
         paymentFailedCount: 2,
-        unmatchedOrderCount: 1,
+        unmatchedOrderCount: 150,
         stuckPaymentCount: 1,
-        totalCount: 5,
+        totalCount: 4,
         recentEvents: [
           {
             id: "fail_setup_1",
@@ -223,9 +223,9 @@ test("fetchDirectMorOwnerSummary & buildOwnerControlCenterSnapshot parse rezdyPa
   assert.ok(directGosno.rezdyPayCheckoutFailures28d);
   assert.equal(directGosno.rezdyPayCheckoutFailures28d.sessionSetupFailedCount, 1);
   assert.equal(directGosno.rezdyPayCheckoutFailures28d.paymentFailedCount, 2);
-  assert.equal(directGosno.rezdyPayCheckoutFailures28d.unmatchedOrderCount, 1);
+  assert.equal(directGosno.rezdyPayCheckoutFailures28d.unmatchedOrderCount, 150);
   assert.equal(directGosno.rezdyPayCheckoutFailures28d.stuckPaymentCount, 1);
-  assert.equal(directGosno.rezdyPayCheckoutFailures28d.totalCount, 5);
+  assert.equal(directGosno.rezdyPayCheckoutFailures28d.totalCount, 4);
   assert.equal(directGosno.rezdyPayCheckoutFailures28d.recentEvents.length, 4);
 
   const serializedDirect = JSON.stringify(directGosno);
@@ -267,25 +267,25 @@ test("fetchDirectMorOwnerSummary & buildOwnerControlCenterSnapshot parse rezdyPa
   });
 
   const q2Loop = snapshot.dailyBusinessCockpit.bookingsNeedingAttention.completeMoneyLoop;
-  assert.match(q2Loop.statusSummary, /5 RezdyPay \/pay checkout failure\(s\) in 28d/);
+  assert.match(q2Loop.statusSummary, /4 RezdyPay \/pay checkout failure event\(s\) in 28d/);
   assert.match(q2Loop.statusSummary, /session setup 1/);
   assert.match(q2Loop.statusSummary, /payment 2/);
-  assert.match(q2Loop.statusSummary, /unmatched order 1/);
+  assert.match(q2Loop.statusSummary, /150 unmatched reconciliation event records/);
   assert.match(q2Loop.statusSummary, /stuck payment 1/);
-  assert.equal(q2Loop.rezdyPayCheckoutFailures28d?.totalCount, 5);
+  assert.equal(q2Loop.rezdyPayCheckoutFailures28d?.totalCount, 4);
   assert.equal(q2Loop.accountingNote, upstreamAccountingNote);
 
   const q3 = snapshot.dailyBusinessCockpit.automationHealth;
-  assert.equal(q3.gosnoRezdyPayFailureCount28d, 5);
+  assert.equal(q3.gosnoRezdyPayFailureCount28d, 4);
   assert.equal(q3.statusBadge, "Action Needed");
-  assert.ok(q3.totalAutomationFailures >= 5);
+  assert.ok(q3.totalAutomationFailures >= 4);
 
   const rezdypayTriage = snapshot.triageQueue.items.find(
     (item) => item.id === "gosno-rezdypay-checkout-failures",
   );
   assert.ok(rezdypayTriage, "Expected dedicated gosno-rezdypay-checkout-failures triage alert");
   assert.equal(rezdypayTriage.priority, "high");
-  assert.match(rezdypayTriage.countOrBadge, /5 \/pay failure\(s\)/);
+  assert.match(rezdypayTriage.countOrBadge, /4 \/pay failure\(s\)/);
   assert.match(rezdypayTriage.detail, /REZDY_SESSION_SETUP_FAILED/);
 
   // 3. Gross booking value stays explicitly labeled as gross (not profit) and states provider payout/refund reconciliation is unverified

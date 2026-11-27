@@ -309,11 +309,11 @@ export default async function OwnerControlCenterPage() {
                   • <strong>GoSno RezdyPay /pay Checkout Monitor (28d):</strong>{" "}
                   {q3.gosnoRezdyPayFailures28d ? (
                     <>
-                      <code>{q3.gosnoRezdyPayFailures28d.totalCount}</code> total (setup{" "}
+                      <code>{q3.gosnoRezdyPayFailures28d.totalCount}</code> checkout failure events (setup{" "}
                       <code>{q3.gosnoRezdyPayFailures28d.sessionSetupFailedCount}</code> · payment{" "}
-                      <code>{q3.gosnoRezdyPayFailures28d.paymentFailedCount}</code> · unmatched{" "}
-                      <code>{q3.gosnoRezdyPayFailures28d.unmatchedOrderCount}</code> · stuck{" "}
-                      <code>{q3.gosnoRezdyPayFailures28d.stuckPaymentCount}</code>)
+                      <code>{q3.gosnoRezdyPayFailures28d.paymentFailedCount}</code> · stuck{" "}
+                      <code>{q3.gosnoRezdyPayFailures28d.stuckPaymentCount}</code>) · unmatched reconciliation events{" "}
+                      <code>{q3.gosnoRezdyPayFailures28d.unmatchedOrderCount}</code>
                     </>
                   ) : (
                     <code>awaiting owner-summary payload ({triageQueue.gosnoOps.status})</code>
@@ -538,7 +538,7 @@ export default async function OwnerControlCenterPage() {
                   <div className="font-mono font-bold text-white">
                     {crossSiteFunnel.cpJourneys} / {crossSiteFunnel.cpSailingStartedJourneys} / {crossSiteFunnel.cpBoardsCreatedJourneys}
                   </div>
-                  <div className="text-[10px] text-cyan-300">DCC → CP referrals: {crossSiteFunnel.dccToCpJourneys} journeys ({crossSiteFunnel.dccToCpPct}% of DCC planning/pageview denominator)</div>
+                  <div className="text-[10px] text-cyan-300">DCC → CP redirects: {crossSiteFunnel.dccToCpJourneys} journey keys (not a conversion rate)</div>
                 </div>
               </div>
             </div>
