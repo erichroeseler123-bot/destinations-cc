@@ -538,7 +538,7 @@ export default async function OwnerControlCenterPage() {
                   <div className="font-mono font-bold text-white">
                     {crossSiteFunnel.cpJourneys} / {crossSiteFunnel.cpSailingStartedJourneys} / {crossSiteFunnel.cpBoardsCreatedJourneys}
                   </div>
-                  <div className="text-[10px] text-cyan-300">DCC → CP referrals: {crossSiteFunnel.dccToCpJourneys} journeys ({crossSiteFunnel.dccToCpPct}% of DCC planning/pageview denominator)</div>
+                  <div className="text-[10px] text-cyan-300">DCC → CP redirects: {crossSiteFunnel.dccToCpJourneys} journey keys (not a conversion rate)</div>
                 </div>
               </div>
             </div>
