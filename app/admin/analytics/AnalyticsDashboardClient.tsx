@@ -104,7 +104,7 @@ function collectionRuntimeBadge(
       return (
         <div>
           <span className="inline-flex rounded-md border border-emerald-400/50 bg-emerald-500/20 px-2 py-0.5 text-[11px] font-bold text-emerald-200">
-            Collecting Real Traffic
+            Collecting Pageview Beacons
           </span>
           {lastRealAt && (
             <div className="mt-0.5 text-[10px] text-zinc-400">
@@ -480,29 +480,29 @@ export default function AnalyticsDashboardClient({
         <section className="space-y-4 rounded-2xl border border-white/10 bg-zinc-900/60 p-6">
           <div>
             <h2 className="text-xl font-bold">
-              Layer 1 — Network Acquisition &amp; Observed Browser Traffic
+              Layer 1 — Network Acquisition &amp; Browser-ID Telemetry
             </h2>
             <p className="text-xs text-zinc-400">
-              Visitors without a trip belong here. Click-only outbound requests without pageviews are
-              excluded from visitor counts.
+              Browser IDs are created by first-party pageview beacons; they are not verified people.
+              Click-only outbound requests are excluded. Stateless crawlers can mint fresh IDs.
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-              <div className="text-xs text-zinc-400">Observed Browsers (`rsub_v1`)</div>
+              <div className="text-xs text-zinc-400">Pageview-backed browser IDs</div>
               <div className="mt-1 text-2xl font-black text-white">
                 {renderMetricOrUnavailable(ts?.observedBrowsers)}
               </div>
-              <div className="mt-1 text-xs text-zinc-500">Pageview-backed only</div>
+              <div className="mt-1 text-xs text-zinc-500">Human status unverified · includes undetected crawlers</div>
             </div>
             <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-              <div className="text-xs text-zinc-400">Defined Sessions (30m)</div>
+              <div className="text-xs text-zinc-400">30-minute session IDs</div>
               <div className="mt-1 text-2xl font-black text-white">
                 {renderMetricOrUnavailable(ts?.sessions)}
               </div>
               <div className="mt-1 text-xs text-zinc-500">
-                Returning browsers: {renderMetricOrUnavailable(ts?.returningBrowsers)}
+                Returning IDs: {renderMetricOrUnavailable(ts?.returningBrowsers)}
               </div>
             </div>
             <div className="rounded-xl border border-white/10 bg-black/40 p-4">
@@ -534,6 +534,21 @@ export default function AnalyticsDashboardClient({
             </div>
           </div>
 
+          {ts && (
+            <div data-testid="analytics-browser-depth" className="rounded-xl border border-amber-400/30 bg-amber-500/10 p-4 text-xs">
+              <div className="font-bold text-amber-100">How much of this traffic is only one pageview?</div>
+              <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-zinc-200">
+                <span>One-view browser IDs: <strong>{renderMetricOrUnavailable(ts.singlePageviewBrowserIds)}</strong></span>
+                <span>Multi-view browser IDs: <strong>{renderMetricOrUnavailable(ts.multiPageviewBrowserIds)}</strong></span>
+                <span>One-view CP planner IDs: <strong>{renderMetricOrUnavailable(ts.singlePageviewCpPlannerIds)}</strong></span>
+              </div>
+              <p className="mt-2 text-amber-100/80">
+                These are measured ID patterns, not human or bot counts. A single-view ID can be a person;
+                an automated browser can visit multiple pages. Compare search reach with Search Console.
+              </p>
+            </div>
+          )}
+
           {/* Traffic Classification & Hygiene Separation */}
           {hyg && (
             <div className="rounded-xl border border-white/10 bg-zinc-950/80 p-4 text-xs">
@@ -542,7 +557,7 @@ export default function AnalyticsDashboardClient({
               </div>
               <div className="mt-2 flex flex-wrap gap-4 text-zinc-300">
                 <span>
-                  Observed Browser: <strong className="text-emerald-300">{hyg.observedBrowserEvents}</strong>
+                  Pageview beacon events: <strong className="text-emerald-300">{hyg.observedBrowserEvents}</strong>
                 </span>
                 <span>
                   Known Bots Excluded: <strong className="text-rose-300">{hyg.knownBotEvents}</strong>
@@ -583,13 +598,13 @@ export default function AnalyticsDashboardClient({
               <h3 className="text-sm font-bold text-zinc-200">By Content / Journey Family</h3>
               <div className="mt-2 space-y-1.5 text-xs">
                 {report.byContentFamily.length === 0 ? (
-                  <p className="text-zinc-500">No observed browser pageviews in selected slice.</p>
+                  <p className="text-zinc-500">No pageview beacons in selected slice.</p>
                 ) : (
                   report.byContentFamily.map((row) => (
                     <div key={row.contentFamily} className="flex items-center justify-between">
                       <code className="text-zinc-300">{row.contentFamily}</code>
                       <span className="text-zinc-200">
-                        {row.observedBrowsers} browsers · {row.pageviews} pv · {row.printableOpens}{" "}
+                        {row.observedBrowsers} IDs · {row.pageviews} pv · {row.printableOpens}{" "}
                         prints
                       </span>
                     </div>
@@ -599,7 +614,7 @@ export default function AnalyticsDashboardClient({
             </div>
 
             <div className="rounded-xl border border-white/10 bg-black/30 p-4">
-              <h3 className="text-sm font-bold text-zinc-200">Top Redacted Landing Pages</h3>
+              <h3 className="text-sm font-bold text-zinc-200">Top Redacted Landing Paths (Unverified Beacons)</h3>
               <div className="mt-2 space-y-1.5 text-xs">
                 {report.topLandingPages.length === 0 ? (
                   <p className="text-zinc-500">No landing sessions in selected slice.</p>
@@ -618,7 +633,7 @@ export default function AnalyticsDashboardClient({
 
             <div className="rounded-xl border border-white/10 bg-black/30 p-4">
               <h3 className="text-sm font-bold text-zinc-200">
-                Sources, Campaigns &amp; Cross-Site Handoffs
+                Beacon Sources, Campaigns &amp; Cross-Site Handoffs
               </h3>
               <div className="mt-2 space-y-1.5 text-xs">
                 {report.topSourcesAndCampaigns.map((row) => (
@@ -845,7 +860,7 @@ export default function AnalyticsDashboardClient({
           </h2>
           <p className="text-xs text-zinc-400">
             Sites merely registered in the governance catalog are explicitly separated from sites
-            wired for v2 collection and sites actively receiving real vs. synthetic verification
+            wired for v2 collection and sites receiving pageview beacons vs. synthetic verification
             events. Missing or unwired collection displays as <code>Unavailable</code>, never zero.
           </p>
 
@@ -855,7 +870,7 @@ export default function AnalyticsDashboardClient({
               className="mt-3 grid gap-2 rounded-xl border border-white/10 bg-black/40 p-3 text-xs sm:grid-cols-3 lg:grid-cols-6"
             >
               <div>
-                <div className="text-zinc-400">Collecting Real Traffic</div>
+                <div className="text-zinc-400">Collecting Pageview Beacons</div>
                 <strong className="text-base text-emerald-300">
                   {report.portfolioCollectionSummary.collectingRealTrafficSites.length}
                 </strong>
@@ -900,8 +915,8 @@ export default function AnalyticsDashboardClient({
                   <th className="py-2 pr-3">Property</th>
                   <th className="py-2 pr-3">Wiring Tier</th>
                   <th className="py-2 pr-3">Live Collection State</th>
-                  <th className="py-2 pr-3">Browsers</th>
-                  <th className="py-2 pr-3">Sessions</th>
+                  <th className="py-2 pr-3">Browser IDs</th>
+                  <th className="py-2 pr-3">Session IDs</th>
                   <th className="py-2 pr-3">Pageviews</th>
                   <th className="py-2 pr-3">Guides / Prints</th>
                   <th className="py-2 pr-3">Handoffs (Clicks)</th>

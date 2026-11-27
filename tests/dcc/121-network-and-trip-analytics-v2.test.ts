@@ -679,6 +679,26 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     assert.ok(fullReport.trafficSummary);
     assert.equal(fullReport.trafficSummary.observedBrowsers, 3);
     assert.equal(fullReport.trafficSummary.pageviews, 4); // 1 JFD + 2 LFSE + 1 CP
+    assert.equal(fullReport.trafficSummary.singlePageviewBrowserIds, 2);
+    assert.equal(fullReport.trafficSummary.multiPageviewBrowserIds, 1);
+    assert.equal(fullReport.trafficSummary.singlePageviewCpPlannerIds, 1);
+    assert.match(fullReport.trafficSummary.honestyDisclosures[0] || "", /not verified people/);
+
+    // A partial-hour start must exclude the earlier JFD and LFSE pageviews
+    // from every Layer 1 number, not only from browser/session IDs.
+    const partialWindow = await buildNetworkAndTripAnalyticsReport({
+      environment: "production",
+      windowPreset: "28d",
+      startIso: isoPlusMin(5),
+      endIso: isoPlusMin(3010),
+      bypassCache: true,
+    });
+    assert.equal(partialWindow.trafficSummary?.observedBrowsers, 2);
+    assert.equal(partialWindow.trafficSummary?.sessions, 2);
+    assert.equal(partialWindow.trafficSummary?.pageviews, 2);
+    assert.equal(partialWindow.trafficSummary?.singlePageviewBrowserIds, 2);
+    assert.equal(partialWindow.trafficSummary?.multiPageviewBrowserIds, 0);
+    assert.equal(partialWindow.trafficSummary?.singlePageviewCpPlannerIds, 1);
     assert.equal(fullReport.trafficSummary.crossSiteHandoffClicks, 2);
     assert.equal(fullReport.trafficSummary.crossSiteHandoffArrivals, 2);
     assert.equal(fullReport.trafficSummary.verifiedDccCtxArrivals, 1);
@@ -964,7 +984,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     // Zero human visitors or pageviews in Production from bot, prefetch, QA, or Preview-spoofed events!
     assert.equal(prodReport.trafficSummary?.observedBrowsers, 0);
     assert.equal(prodReport.trafficSummary?.pageviews, 0);
-    assert.ok((prodReport.trafficHygieneAndExclusions?.knownBotEvents || 0) >= 2);
+    // The /go/out request above is stamped at runtime, outside this historical 24h window.\n    // Only the fixture's dated bot event belongs in this exact time slice.\n    assert.equal(prodReport.trafficHygieneAndExclusions?.knownBotEvents, 1);
     assert.equal(prodReport.trafficHygieneAndExclusions?.suspectedAutomationAndPrefetchEvents, 1);
     assert.equal(prodReport.trafficHygieneAndExclusions?.qaOrSyntheticEvents, 1);
 
