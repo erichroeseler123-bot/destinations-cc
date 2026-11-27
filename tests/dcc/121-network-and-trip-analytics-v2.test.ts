@@ -984,7 +984,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     // Zero human visitors or pageviews in Production from bot, prefetch, QA, or Preview-spoofed events!
     assert.equal(prodReport.trafficSummary?.observedBrowsers, 0);
     assert.equal(prodReport.trafficSummary?.pageviews, 0);
-    assert.ok((prodReport.trafficHygieneAndExclusions?.knownBotEvents || 0) >= 2);
+    // The /go/out request above is stamped at runtime, outside this historical 24h window.\n    // Only the fixture's dated bot event belongs in this exact time slice.\n    assert.equal(prodReport.trafficHygieneAndExclusions?.knownBotEvents, 1);
     assert.equal(prodReport.trafficHygieneAndExclusions?.suspectedAutomationAndPrefetchEvents, 1);
     assert.equal(prodReport.trafficHygieneAndExclusions?.qaOrSyntheticEvents, 1);
 
