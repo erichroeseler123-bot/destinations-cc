@@ -542,6 +542,19 @@ export default function AnalyticsDashboardClient({
                 <span>Multi-view browser IDs: <strong>{renderMetricOrUnavailable(ts.multiPageviewBrowserIds)}</strong></span>
                 <span>One-view CP planner IDs: <strong>{renderMetricOrUnavailable(ts.singlePageviewCpPlannerIds)}</strong></span>
               </div>
+              {(report.filters.siteId === "all" || report.filters.siteId === "cruisepromenade") && (
+                <div data-testid="cp-interaction-backed-sessions" className="mt-3 border-t border-amber-300/20 pt-3">
+                  <span className="font-semibold text-white">CP sessions with a deliberate on-page interaction: </span>
+                  <strong>{renderMetricOrUnavailable(ts.cpInteractionBackedSessions)}</strong>
+                  <p className="mt-1 text-amber-100/80">
+                    One per session with a pageview in this window and an explicit click or keyboard action.
+                    Passive readers are not included; automated browsers can still interact. This is not a verified count of people.
+                    {ts.cpInteractionMeasurementStartedAt
+                      ? ` First recorded: ${ts.cpInteractionMeasurementStartedAt}.`
+                      : " Collection begins with the new Cruise Promenade release."}
+                  </p>
+                </div>
+              )}
               <p className="mt-2 text-amber-100/80">
                 These are measured ID patterns, not human or bot counts. A single-view ID can be a person;
                 an automated browser can visit multiple pages. Compare search reach with Search Console.
