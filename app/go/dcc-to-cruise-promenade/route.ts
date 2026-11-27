@@ -1,6 +1,9 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { stripEdgePiiQueryParams } from "@/lib/dcc/shared/edgeContextAndPii";
+import { bridgeLegacyEventToV2Collector } from "@/lib/dcc/analytics/collector";
+import { scheduleServerlessAfterTask } from "@/lib/dcc/analytics/serverlessLifecycle";
+import { appendCorridorEventDurably } from "@/lib/dcc/telemetry/corridorEvents";
 
 const EMAIL_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
 const SAFE_JOURNEY_ID_RE = /^[a-zA-Z0-9_-]{8,64}$/;
@@ -118,6 +121,46 @@ export async function GET(request: Request) {
     target.searchParams.set("qa_test", "1");
   }
   target.searchParams.set("dcc_handoff_id", handoffId);
+
+  // Record the actual outbound click at the redirect boundary. The same-origin
+  // /go route does not register as a cross-site click in the browser bridge.
+  const isTest = qaTestRaw === "1" || qaTestRaw === "true" || request.headers.get("x-qa-test") === "1";
+  const isBot = /bot\b|crawler|spider|headlesschrome|playwright|curl\/|wget\//i.test(request.headers.get("user-agent") || "");
+  const journeyId = SAFE_JOURNEY_ID_RE.test(journeyIdRaw) && !journeyIdRaw.startsWith("dcc_ctx_")
+    ? journeyIdRaw : handoffId;
+  if (!isBot) {
+    bridgeLegacyEventToV2Collector({
+      rawSite: "dcc",
+      rawEventName: "network_handoff",
+      eventId: `dcc_cp_${handoffId}`,
+      journeyId,
+      handoffId,
+      sourcePage: "/go/dcc-to-cruise-promenade",
+      targetPath: "/api/dcc-handoff",
+      isTest,
+      metadata: { originating_site: "dcc", destination_site: "cruisepromenade", port },
+      headers: request.headers,
+    });
+    scheduleServerlessAfterTask(async () => {
+      await appendCorridorEventDurably({
+        corridor_id: "portfolio-network",
+        event_name: "network_handoff",
+        event_id: `dcc_cp_${handoffId}`,
+        handoff_id: handoffId,
+        journey_id: journeyId,
+        is_test: isTest,
+        source_page: "/go/dcc-to-cruise-promenade",
+        target_path: "/api/dcc-handoff",
+        metadata: {
+          originating_site: "dcc",
+          destination_site: "cruisepromenade",
+          journey_id: journeyId,
+          is_test: isTest,
+          ...(port ? { port } : {}),
+        },
+      });
+    });
+  }
 
   const response = NextResponse.redirect(target, 302);
   response.headers.set("x-dcc-handoff-id", handoffId);

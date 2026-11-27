@@ -538,7 +538,7 @@ export default async function OwnerControlCenterPage() {
                   <div className="font-mono font-bold text-white">
                     {crossSiteFunnel.cpJourneys} / {crossSiteFunnel.cpSailingStartedJourneys} / {crossSiteFunnel.cpBoardsCreatedJourneys}
                   </div>
-                  <div className="text-[10px] text-cyan-300">DCC → CP: {crossSiteFunnel.dccToCpPct}%</div>
+                  <div className="text-[10px] text-cyan-300">DCC → CP referrals: {crossSiteFunnel.dccToCpJourneys} journeys ({crossSiteFunnel.dccToCpPct}% of DCC planning/pageview denominator)</div>
                 </div>
               </div>
             </div>
@@ -595,6 +595,12 @@ export default async function OwnerControlCenterPage() {
                     {q6.cruisePromenadeLaunch.passengersTarget} pax
                   </span>
                 </div>
+                <p className="text-[11px] text-cyan-200">
+                  Boards by source: {Object.entries(q6.cruisePromenadeLaunch.boardsBySource).length
+                    ? Object.entries(q6.cruisePromenadeLaunch.boardsBySource)
+                        .map(([source, count]) => `${source}: ${count}`).join(" · ")
+                    : "No attributed boards reported"}
+                </p>
                 <p className="text-xs text-zinc-300">
                   Needs assistance:{" "}
                   <code>{q6.cruisePromenadeLaunch.needsAssistanceGuestsCount}</code> · Split alerts:{" "}

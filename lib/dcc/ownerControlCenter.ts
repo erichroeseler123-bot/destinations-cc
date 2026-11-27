@@ -46,6 +46,7 @@ export interface CruisePromenadeOwnerSummary {
   endpoint: string;
   launchCohortEpochIso: string | null;
   launchCohortBoardsCount: number | null;
+  launchCohortBoardsBySource: Record<string, number>;
   launchCohortGuestsCount: number | null;
   launchCohortNeedsAssistanceCount: number | null;
   launchCohortSplitsCount: number | null;
@@ -297,6 +298,7 @@ export interface DailyBusinessCockpit {
     question: "6. Which operator or organizer needs follow-up?";
     cruisePromenadeLaunch: {
       launchCohortEpochIso: string;
+      boardsBySource: Record<string, number>;
       organizersCount: number;
       organizersTarget: 3;
       passengersCount: number;
@@ -558,6 +560,7 @@ function emptyCruisePromenadeSummary(
     endpoint,
     launchCohortEpochIso: CRUISE_PROMENADE_LAUNCH_EPOCH_ISO,
     launchCohortBoardsCount: null,
+    launchCohortBoardsBySource: {},
     launchCohortGuestsCount: null,
     launchCohortNeedsAssistanceCount: null,
     launchCohortSplitsCount: null,
@@ -825,6 +828,15 @@ async function fetchCruisePromenadeOwnerSummary(options: {
     const launchCohortBoardsCount = launchCohort
       ? safeNumber(launchCohort.boardsCreatedCount)
       : null;
+    const rawBoardsBySource = launchCohort?.boardsBySource;
+    const launchCohortBoardsBySource: Record<string, number> =
+      rawBoardsBySource && typeof rawBoardsBySource === "object" && !Array.isArray(rawBoardsBySource)
+        ? Object.fromEntries(
+            Object.entries(rawBoardsBySource as Record<string, unknown>)
+              .filter(([key, value]) => /^[a-z0-9_-]{1,48}$/i.test(key) && Number.isFinite(Number(value)) && Number(value) >= 0)
+              .map(([key, value]) => [key, safeNumber(value)]),
+          )
+        : {};
     const launchCohortGuestsCount = launchCohort
       ? safeNumber(launchCohort.trackedGuestsCount)
       : null;
@@ -889,6 +901,7 @@ async function fetchCruisePromenadeOwnerSummary(options: {
       endpoint,
       launchCohortEpochIso,
       launchCohortBoardsCount,
+      launchCohortBoardsBySource,
       launchCohortGuestsCount,
       launchCohortNeedsAssistanceCount,
       launchCohortSplitsCount,
@@ -1988,6 +2001,7 @@ export async function buildOwnerControlCenterSnapshot(
       question: "6. Which operator or organizer needs follow-up?",
       cruisePromenadeLaunch: {
         launchCohortEpochIso: cpLaunchEpochIso,
+        boardsBySource: cpSummary.launchCohortBoardsBySource,
         organizersCount: cpOrganizersCount,
         organizersTarget: 3,
         passengersCount: cpPassengersCount,

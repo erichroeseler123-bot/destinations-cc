@@ -67,7 +67,9 @@ export async function POST(request: NextRequest) {
     }
 
     const mapped =
-      EXPLICIT_PAGEVIEW_EVENTS.has(eventName)
+      (eventName === "planner_view" || eventName === "cp_sailing_started" || eventName === "cp_board_created")
+        ? eventName
+        : EXPLICIT_PAGEVIEW_EVENTS.has(eventName)
         ? "page_viewed"
         : eventName === "handoff_received"
           ? "handoff_received"
@@ -106,8 +108,11 @@ export async function POST(request: NextRequest) {
       target_path: sanitizeTelemetryPath(clean(body.targetPath)),
       metadata: {
         surface: "portfolio-network",
-        site,
+        site: resolvedSite.siteId,
+        originating_site: resolvedSite.siteId,
         original_event_name: eventName,
+        journey_id: clean(body.journeyId, 96) || clean(context?.journey_id, 96) || sessionId,
+        is_test: Boolean(body.isTest || outcome?.isTest || request.headers.get("x-qa-test") === "1"),
         context,
         outcome,
       },
