@@ -125,7 +125,7 @@ export async function GET(request: Request) {
   // Record the actual outbound click at the redirect boundary. The same-origin
   // /go route does not register as a cross-site click in the browser bridge.
   const isTest = qaTestRaw === "1" || qaTestRaw === "true" || request.headers.get("x-qa-test") === "1";
-  const isBot = /bot\\b|crawler|spider|headlesschrome|playwright|curl\\/|wget\\//i.test(request.headers.get("user-agent") || "");
+  const isBot = /bot\b|crawler|spider|headlesschrome|playwright|curl\/|wget\//i.test(request.headers.get("user-agent") || "");
   const journeyId = SAFE_JOURNEY_ID_RE.test(journeyIdRaw) && !journeyIdRaw.startsWith("dcc_ctx_")
     ? journeyIdRaw : handoffId;
   if (!isBot) {
