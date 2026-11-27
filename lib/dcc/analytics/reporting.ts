@@ -393,7 +393,7 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
       }>(
         `SELECT site_id, content_family, traffic_class,
                 SUM(CASE WHEN event_type = 'page_viewed' THEN 1 ELSE 0 END) AS pv,
-                SUM(CASE WHEN event_type = 'guide_engaged' THEN 1 ELSE 0 END) AS ge,
+                SUM(CASE WHEN event_type = 'guide_engaged' AND COALESCE(sub_milestone, '') <> 'explicit_interaction' THEN 1 ELSE 0 END) AS ge,
                 SUM(CASE WHEN event_type = 'printable_view_opened' THEN 1 ELSE 0 END) AS pr,
                 SUM(CASE WHEN event_type = 'cross_site_handoff_clicked' THEN 1 ELSE 0 END) AS xsc,
                 SUM(CASE WHEN event_type = 'cross_site_handoff_arrived' THEN 1 ELSE 0 END) AS xsa,
