@@ -22,6 +22,12 @@ export function HelpRequestForm({
       {error ? <p className="form-message error">Add an email or phone number so we can reply.</p> : null}
       <form action="/api/help-request" method="post" className="help-form">
         <input type="hidden" name="sourcePath" value={sourcePath} />
+        <div aria-hidden="true" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clipPath: "inset(50%)" }}>
+          <label>
+            Website
+            <input type="text" name="website" tabIndex={-1} autoComplete="off" />
+          </label>
+        </div>
         <label className="field">
           <span>Name</span>
           <input type="text" name="name" placeholder="Your name" />
