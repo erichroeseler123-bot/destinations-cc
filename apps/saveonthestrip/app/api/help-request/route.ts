@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
 
   // Discard bot submissions before sending an email or creating an inbox item.
   // Keep this narrow: unusual names or short notes alone are not proof of spam.
-  const hasSpamContent = /\b(?:online casino|buy viagra|cialis|crypto airdrop|seo backlinks|buy instagram followers|telegram pump|slot gacor)\b/i.test(
+  const hasSpamContent = /\b(?:buy viagra|cialis|crypto airdrop|seo backlinks|buy instagram followers|telegram pump|slot gacor)\b/i.test(
     `${name} ${notes}`,
   );
   if (website || hasSpamContent) {
