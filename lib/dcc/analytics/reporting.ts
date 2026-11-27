@@ -423,7 +423,7 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
         pageviews: string | number | null;
       }>(
         `SELECT COUNT(DISTINCT e.site_id || ':' || e.reporting_subject_id) AS observed_browsers,
-                COUNT(DISTINCT CASE WHEN a.first_pageview_at < $2::timestamptz THEN e.site_id || ':' || e.reporting_subject_id END) AS returning_browsers,
+                COUNT(DISTINCT CASE WHEN a.first_pageview_at::timestamptz < $2::timestamptz THEN e.site_id || ':' || e.reporting_subject_id END) AS returning_browsers,
                 COUNT(*) AS pageviews
          FROM dcc_analytics_events e
          LEFT JOIN dcc_analytics_subject_activity a ON a.environment = e.environment
@@ -441,7 +441,7 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
         returning_cnt: string | number | null; pageviews_cnt: string | number | null;
       }>(
         `SELECT e.site_id, COUNT(DISTINCT e.reporting_subject_id) AS browsers_cnt,
-                COUNT(DISTINCT CASE WHEN a.first_pageview_at < $2::timestamptz THEN e.reporting_subject_id END) AS returning_cnt,
+                COUNT(DISTINCT CASE WHEN a.first_pageview_at::timestamptz < $2::timestamptz THEN e.reporting_subject_id END) AS returning_cnt,
                 COUNT(*) AS pageviews_cnt
          FROM dcc_analytics_events e
          LEFT JOIN dcc_analytics_subject_activity a ON a.environment = e.environment
