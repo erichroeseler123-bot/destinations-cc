@@ -747,6 +747,51 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     assert.equal(fullReport.financialOutcomesSeparation.verifiedAffiliateCommissionsUsd, 68.4);
   });
 
+  test("121b2. CP interaction sessions require a matching in-window pageview and deduplicate actions", async () => {
+    resetTestSqliteStore();
+    const headers = new Headers({
+      host: "cruisepromenade.com",
+      origin: "https://cruisepromenade.com",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/537.36 Chrome/131.0 Safari/537.36",
+      "accept-language": "en-US,en;q=0.9",
+    });
+    const at = "2026-11-21T10:00:00.000Z";
+    const events = [
+      { logicalEventId: "evt_cp_a_page", eventType: "page_viewed", sessionId: "sess_cp_a_2026", browserSeed: "bseed_cp_a_2026", occurredAt: at },
+      { logicalEventId: "evt_cp_b_page", eventType: "page_viewed", sessionId: "sess_cp_b_2026", browserSeed: "bseed_cp_b_2026", occurredAt: at },
+      { logicalEventId: "evt_cp_b_action_1", eventType: "guide_engaged", subMilestone: "explicit_interaction", sessionId: "sess_cp_b_2026", browserSeed: "bseed_cp_b_2026", occurredAt: at },
+      { logicalEventId: "evt_cp_b_action_2", eventType: "guide_engaged", subMilestone: "explicit_interaction", sessionId: "sess_cp_b_2026", browserSeed: "bseed_cp_b_2026", occurredAt: at },
+      // An action without a pageview must not be mistaken for an observed visit.
+      { logicalEventId: "evt_cp_c_action", eventType: "guide_engaged", subMilestone: "explicit_interaction", sessionId: "sess_cp_c_2026", browserSeed: "bseed_cp_c_2026", occurredAt: at },
+    ].map((event) => ({ ...event, site: "cruisepromenade", path: "/hosted-cruises" }));
+    const result = await collectAnalyticsRawPayload({
+      rawBodyText: JSON.stringify({ deliveryId: "dlv_cp_interaction_test", events }),
+      headers,
+    });
+    assert.equal(result.queuedCount, 5);
+    await runAnalyticsWorker({ nowMs: Date.parse("2026-11-21T10:05:00.000Z") });
+    const report = await buildNetworkAndTripAnalyticsReport({
+      environment: "production",
+      windowPreset: "24h",
+      startIso: "2026-11-21T09:00:00.000Z",
+      endIso: "2026-11-21T10:10:00.000Z",
+      bypassCache: true,
+    });
+    assert.equal(report.trafficSummary?.observedBrowsers, 2);
+    assert.equal(report.trafficSummary?.cpInteractionBackedSessions, 1);
+    assert.equal(report.trafficSummary?.guideEngagements, 0);
+    assert.equal(report.trafficSummary?.cpInteractionMeasurementStartedAt, at);
+    const before = await buildNetworkAndTripAnalyticsReport({
+      environment: "production",
+      windowPreset: "24h",
+      startIso: "2026-11-21T08:00:00.000Z",
+      endIso: "2026-11-21T09:59:59.000Z",
+      bypassCache: true,
+    });
+    assert.equal(before.trafficSummary?.cpInteractionBackedSessions, 0);
+    assert.equal(before.trafficSummary?.cpInteractionMeasurementStartedAt, null);
+  });
+
   test("121c. Retry idempotency vs genuine repeated actions, cold-start closed-window determinism, and late-arriving event rollup healing", async () => {
     resetTestSqliteStore();
 

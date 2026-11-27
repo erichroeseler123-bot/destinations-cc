@@ -185,6 +185,8 @@ export interface NetworkAndTripAnalyticsReport {
     singlePageviewBrowserIds: number;
     multiPageviewBrowserIds: number;
     singlePageviewCpPlannerIds: number;
+    cpInteractionBackedSessions: number;
+    cpInteractionMeasurementStartedAt: string | null;
     pageviews: number;
     guideEngagements: number;
     printableOpens: number;
@@ -391,7 +393,7 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
       }>(
         `SELECT site_id, content_family, traffic_class,
                 SUM(CASE WHEN event_type = 'page_viewed' THEN 1 ELSE 0 END) AS pv,
-                SUM(CASE WHEN event_type = 'guide_engaged' THEN 1 ELSE 0 END) AS ge,
+                SUM(CASE WHEN event_type = 'guide_engaged' AND COALESCE(sub_milestone, '') <> 'explicit_interaction' THEN 1 ELSE 0 END) AS ge,
                 SUM(CASE WHEN event_type = 'printable_view_opened' THEN 1 ELSE 0 END) AS pr,
                 SUM(CASE WHEN event_type = 'cross_site_handoff_clicked' THEN 1 ELSE 0 END) AS xsc,
                 SUM(CASE WHEN event_type = 'cross_site_handoff_arrived' THEN 1 ELSE 0 END) AS xsa,
@@ -461,6 +463,31 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
          FROM dcc_analytics_events e WHERE ${pageviewWhere}`, pageviewParams,
       );
       const distinctSessionRow = distinctSessionRes.rows[0];
+      // A deliberate click or keyboard action plus a pageview in this same window.
+      // This behavioral count does not verify a person or include passive readers.
+      const cpInteractionRes = await exec.query<{
+        sessions_cnt: string | number | null;
+        first_interaction_at: string | null;
+      }>(
+        `SELECT COUNT(DISTINCT engagement.session_key) AS sessions_cnt,
+                MIN(engagement.occurred_at) AS first_interaction_at
+         FROM dcc_analytics_events engagement
+         WHERE engagement.environment = $1
+           AND engagement.occurred_at >= $2::timestamptz
+           AND engagement.occurred_at <= $3::timestamptz
+           AND engagement.site_id = 'cruisepromenade'
+           AND engagement.traffic_class = 'observed_browser'
+           AND engagement.event_type = 'guide_engaged'
+           AND engagement.sub_milestone = 'explicit_interaction'
+           AND engagement.session_key IS NOT NULL
+           AND EXISTS (
+             SELECT 1 FROM dcc_analytics_events e
+             WHERE ${pageviewWhere} AND e.site_id = 'cruisepromenade'
+               AND e.session_key = engagement.session_key
+           )`,
+        pageviewParams,
+      );
+      const cpInteractionRow = cpInteractionRes.rows[0];
       const perSiteSubjectsRes = await exec.query<{
         site_id: string; browsers_cnt: string | number | null;
         returning_cnt: string | number | null; pageviews_cnt: string | number | null;
@@ -1106,6 +1133,8 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
           singlePageviewBrowserIds: Number(subjectDepth?.single_view_ids || 0),
           multiPageviewBrowserIds: Number(subjectDepth?.multi_view_ids || 0),
           singlePageviewCpPlannerIds: Number(subjectDepth?.cp_planner_one_view_ids || 0),
+          cpInteractionBackedSessions: Number(cpInteractionRow?.sessions_cnt || 0),
+          cpInteractionMeasurementStartedAt: cpInteractionRow?.first_interaction_at || null,
           pageviews: totalObservedPageviews,
           guideEngagements: totalGuideEngagements,
           printableOpens: totalPrintableOpens,
@@ -1115,6 +1144,7 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
           sellerHandoffsTotal: totalSellerHandoffs,
           honestyDisclosures: [
             "Pageview-backed browser IDs (`rsub_v1_*`) are first-party pseudonymous IDs, not verified people. Stateless crawlers can generate a new ID per visit; one-view and multi-view counts are behavioral diagnostics, not human counts.",
+            "CP interaction-backed sessions require an explicit click or keyboard action and a pageview in this window. Tracking starts with the new client release; this is a behavioral count, not a verified number of people.",
             "Cross-domain continuity is reported only where supported via redeemed `dcc_ctx_*` tokens or explicit handoff parameters; unrelated cross-domain or cross-device sessions are never merged.",
             "Uninstrumented properties and inaccessible external sources (GA4, GSC, Vercel Web Analytics, contained WTA) display as `unavailable`, never zero.",
           ],
