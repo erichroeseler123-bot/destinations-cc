@@ -182,6 +182,9 @@ export interface NetworkAndTripAnalyticsReport {
     observedBrowsers: number;
     sessions: number;
     returningBrowsers: number;
+    singlePageviewBrowserIds: number;
+    multiPageviewBrowserIds: number;
+    singlePageviewCpPlannerIds: number;
     pageviews: number;
     guideEngagements: number;
     printableOpens: number;
@@ -328,7 +331,7 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
         ? effectiveStartIso
         : new Date(Date.parse(upperBoundIso) - hours * 3600_000).toISOString();
 
-      const exactCacheKey = `${snapshotFallbackKey}|${lowerBoundIso}|${upperBoundIso}|${watermark.lastQueueSeq}`;
+      const exactCacheKey = `browser-id-depth-v1|${snapshotFallbackKey}|${lowerBoundIso}|${upperBoundIso}|${watermark.lastQueueSeq}`;
       if (!options?.bypassCache) {
         const cacheRes = await exec.query<{ payload_json: unknown }>(
           "SELECT payload_json FROM dcc_analytics_report_cache WHERE cache_key = $1",
@@ -359,12 +362,11 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
         }
       }
 
-      const startHourBucket = `${lowerBoundIso.slice(0, 13)}:00:00.000Z`;
-      const endHourBucket = `${upperBoundIso.slice(0, 13)}:00:00.000Z`;
-
-      // 1. Query pre-aggregated hourly rollups (bounded KB transfer!)
-      const rollupParams: unknown[] = [environment, startHourBucket, endHourBucket];
-      let rollupWhere = "environment = $1 AND hour_bucket_iso >= $2 AND hour_bucket_iso <= $3";
+      // Aggregate from exact event timestamps. Whole-hour rollups included
+      // both boundary hours even when the displayed window starts/ends mid-hour.
+      const rollupParams: unknown[] = [environment, lowerBoundIso, upperBoundIso];
+      let rollupWhere =
+        "environment = $1 AND occurred_at >= $2::timestamptz AND occurred_at <= $3::timestamptz";
       if (siteFilter !== "all") {
         rollupParams.push(siteFilter);
         rollupWhere += ` AND site_id = $${rollupParams.length}`;
@@ -388,15 +390,15 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
         uo: string | number | null;
       }>(
         `SELECT site_id, content_family, traffic_class,
-                SUM(pageviews_count) AS pv,
-                SUM(guide_engagements_count) AS ge,
-                SUM(printable_opens_count) AS pr,
-                SUM(cross_site_clicks_count) AS xsc,
-                SUM(cross_site_arrivals_count) AS xsa,
-                SUM(verified_ctx_arrivals_count) AS ctxa,
-                SUM(seller_handoffs_count) AS sh,
-                SUM(unidentified_outbound_count) AS uo
-         FROM dcc_analytics_hourly_rollups
+                SUM(CASE WHEN event_type = 'page_viewed' THEN 1 ELSE 0 END) AS pv,
+                SUM(CASE WHEN event_type = 'guide_engaged' THEN 1 ELSE 0 END) AS ge,
+                SUM(CASE WHEN event_type = 'printable_view_opened' THEN 1 ELSE 0 END) AS pr,
+                SUM(CASE WHEN event_type = 'cross_site_handoff_clicked' THEN 1 ELSE 0 END) AS xsc,
+                SUM(CASE WHEN event_type = 'cross_site_handoff_arrived' THEN 1 ELSE 0 END) AS xsa,
+                SUM(CASE WHEN event_type = 'cross_site_handoff_arrived' AND continuity_tier = 'verified_dcc_ctx' THEN 1 ELSE 0 END) AS ctxa,
+                SUM(CASE WHEN event_type = 'seller_handoff_initiated' THEN 1 ELSE 0 END) AS sh,
+                SUM(CASE WHEN event_type = 'seller_handoff_initiated' AND reporting_subject_id IS NULL THEN 1 ELSE 0 END) AS uo
+         FROM dcc_analytics_events
          WHERE ${rollupWhere}
          GROUP BY site_id, content_family, traffic_class`,
         rollupParams,
@@ -431,6 +433,29 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
          WHERE ${pageviewWhere}`, pageviewParams,
       );
       const distinctSubjectRow = distinctSubjectRes.rows[0];
+      // A one-pageview ID can be a person or a stateless crawler. Expose the
+      // measured distribution without treating either bucket as verified humans.
+      const subjectDepthRes = await exec.query<{
+        single_view_ids: string | number | null;
+        multi_view_ids: string | number | null;
+        cp_planner_one_view_ids: string | number | null;
+      }>(
+        `SELECT
+           COALESCE(SUM(CASE WHEN depth.pageviews = 1 THEN 1 ELSE 0 END), 0) AS single_view_ids,
+           COALESCE(SUM(CASE WHEN depth.pageviews > 1 THEN 1 ELSE 0 END), 0) AS multi_view_ids,
+           COALESCE(SUM(CASE WHEN depth.pageviews = 1 AND depth.cp_planner_views = 1 THEN 1 ELSE 0 END), 0) AS cp_planner_one_view_ids
+         FROM (
+           SELECT e.site_id, e.reporting_subject_id, COUNT(*) AS pageviews,
+                  SUM(CASE WHEN e.site_id = 'cruisepromenade'
+                    AND (e.canonical_path = '/planner' OR e.canonical_path LIKE '/planner/%')
+                    THEN 1 ELSE 0 END) AS cp_planner_views
+           FROM dcc_analytics_events e
+           WHERE ${pageviewWhere} AND e.reporting_subject_id IS NOT NULL
+           GROUP BY e.site_id, e.reporting_subject_id
+         ) depth`,
+        pageviewParams,
+      );
+      const subjectDepth = subjectDepthRes.rows[0];
       const distinctSessionRes = await exec.query<{ sessions_cnt: string | number | null }>(
         `SELECT COUNT(DISTINCT e.site_id || ':' || e.session_key) AS sessions_cnt
          FROM dcc_analytics_events e WHERE ${pageviewWhere}`, pageviewParams,
@@ -1078,6 +1103,9 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
           observedBrowsers: Number(distinctSubjectRow?.observed_browsers || 0),
           sessions: Number(distinctSessionRow?.sessions_cnt || 0),
           returningBrowsers: Number(distinctSubjectRow?.returning_browsers || 0),
+          singlePageviewBrowserIds: Number(subjectDepth?.single_view_ids || 0),
+          multiPageviewBrowserIds: Number(subjectDepth?.multi_view_ids || 0),
+          singlePageviewCpPlannerIds: Number(subjectDepth?.cp_planner_one_view_ids || 0),
           pageviews: totalObservedPageviews,
           guideEngagements: totalGuideEngagements,
           printableOpens: totalPrintableOpens,
@@ -1086,7 +1114,7 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
           verifiedDccCtxArrivals: totalVerifiedCtxArrivals,
           sellerHandoffsTotal: totalSellerHandoffs,
           honestyDisclosures: [
-            "Observed browser subjects (`rsub_v1_*`) are site-scoped first-party pseudonymous IDs requiring >= 1 pageview; click-only requests without pageviews are never counted as visitors.",
+            "Pageview-backed browser IDs (`rsub_v1_*`) are first-party pseudonymous IDs, not verified people. Stateless crawlers can generate a new ID per visit; one-view and multi-view counts are behavioral diagnostics, not human counts.",
             "Cross-domain continuity is reported only where supported via redeemed `dcc_ctx_*` tokens or explicit handoff parameters; unrelated cross-domain or cross-device sessions are never merged.",
             "Uninstrumented properties and inaccessible external sources (GA4, GSC, Vercel Web Analytics, contained WTA) display as `unavailable`, never zero.",
           ],
