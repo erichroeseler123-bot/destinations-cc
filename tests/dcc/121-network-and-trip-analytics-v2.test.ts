@@ -779,6 +779,7 @@ describe("121 — DCC Network Traffic & Trip-Lifecycle Analytics v2", () => {
     });
     assert.equal(report.trafficSummary?.observedBrowsers, 2);
     assert.equal(report.trafficSummary?.cpInteractionBackedSessions, 1);
+    assert.equal(report.trafficSummary?.guideEngagements, 0);
     assert.equal(report.trafficSummary?.cpInteractionMeasurementStartedAt, at);
     const before = await buildNetworkAndTripAnalyticsReport({
       environment: "production",
