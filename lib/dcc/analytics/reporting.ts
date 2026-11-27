@@ -361,8 +361,6 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
 
       const startHourBucket = `${lowerBoundIso.slice(0, 13)}:00:00.000Z`;
       const endHourBucket = `${upperBoundIso.slice(0, 13)}:00:00.000Z`;
-      const startDayBucket = lowerBoundIso.slice(0, 10);
-      const endDayBucket = upperBoundIso.slice(0, 10);
 
       // 1. Query pre-aggregated hourly rollups (bounded KB transfer!)
       const rollupParams: unknown[] = [environment, startHourBucket, endHourBucket];
@@ -405,109 +403,85 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
       );
       const rollupRows = rollupRes.rows;
 
-      // 2. Query exact distinct subjects, returning subjects, and sessions from compact daily rollup tables
-      const dailyParams: unknown[] = [environment, startDayBucket, endDayBucket];
-      let dailyWhere = "environment = $1 AND day_bucket >= $2 AND day_bucket <= $3";
+      // All three acquisition metrics use the same exact event window. Daily
+      // rollups span whole UTC days, which overstated browser/session counts
+      // for a rolling 24-hour window and could exceed its pageview total.
+      const pageviewParams: unknown[] = [environment, lowerBoundIso, upperBoundIso];
+      let pageviewWhere =
+        "e.environment = $1 AND e.occurred_at >= $2::timestamptz AND e.occurred_at <= $3::timestamptz AND e.event_type = 'page_viewed' AND e.traffic_class = 'observed_browser'";
       if (siteFilter !== "all") {
-        dailyParams.push(siteFilter);
-        dailyWhere += ` AND site_id = $${dailyParams.length}`;
+        pageviewParams.push(siteFilter);
+        pageviewWhere += ` AND e.site_id = $${pageviewParams.length}`;
       }
       if (familyFilter !== "all") {
-        dailyParams.push(familyFilter);
-        dailyWhere += ` AND content_family = $${dailyParams.length}`;
+        pageviewParams.push(familyFilter);
+        pageviewWhere += ` AND e.content_family = $${pageviewParams.length}`;
       }
-
       const distinctSubjectRes = await exec.query<{
         observed_browsers: string | number | null;
         returning_browsers: string | number | null;
+        pageviews: string | number | null;
       }>(
-        `SELECT
-           COUNT(DISTINCT site_id || ':' || subject_id) AS observed_browsers,
-           COUNT(DISTINCT CASE WHEN is_returning_subject = 1 THEN site_id || ':' || subject_id END) AS returning_browsers
-         FROM dcc_analytics_daily_subjects
-         WHERE ${dailyWhere}`,
-        dailyParams,
+        `SELECT COUNT(DISTINCT e.site_id || ':' || e.reporting_subject_id) AS observed_browsers,
+                COUNT(DISTINCT CASE WHEN a.first_pageview_at < $2::timestamptz THEN e.site_id || ':' || e.reporting_subject_id END) AS returning_browsers,
+                COUNT(*) AS pageviews
+         FROM dcc_analytics_events e
+         LEFT JOIN dcc_analytics_subject_activity a ON a.environment = e.environment
+           AND a.site_id = e.site_id AND a.subject_id = e.reporting_subject_id
+         WHERE ${pageviewWhere}`, pageviewParams,
       );
       const distinctSubjectRow = distinctSubjectRes.rows[0];
-
       const distinctSessionRes = await exec.query<{ sessions_cnt: string | number | null }>(
-        `SELECT COUNT(DISTINCT site_id || ':' || session_key) AS sessions_cnt
-         FROM dcc_analytics_daily_sessions
-         WHERE ${dailyWhere}`,
-        dailyParams,
+        `SELECT COUNT(DISTINCT e.site_id || ':' || e.session_key) AS sessions_cnt
+         FROM dcc_analytics_events e WHERE ${pageviewWhere}`, pageviewParams,
       );
       const distinctSessionRow = distinctSessionRes.rows[0];
-
       const perSiteSubjectsRes = await exec.query<{
-        site_id: string;
-        browsers_cnt: string | number | null;
-        returning_cnt: string | number | null;
+        site_id: string; browsers_cnt: string | number | null;
+        returning_cnt: string | number | null; pageviews_cnt: string | number | null;
       }>(
-        `SELECT site_id,
-                COUNT(DISTINCT subject_id) AS browsers_cnt,
-                COUNT(DISTINCT CASE WHEN is_returning_subject = 1 THEN subject_id END) AS returning_cnt
-         FROM dcc_analytics_daily_subjects
-         WHERE ${dailyWhere}
-         GROUP BY site_id`,
-        dailyParams,
+        `SELECT e.site_id, COUNT(DISTINCT e.reporting_subject_id) AS browsers_cnt,
+                COUNT(DISTINCT CASE WHEN a.first_pageview_at < $2::timestamptz THEN e.reporting_subject_id END) AS returning_cnt,
+                COUNT(*) AS pageviews_cnt
+         FROM dcc_analytics_events e
+         LEFT JOIN dcc_analytics_subject_activity a ON a.environment = e.environment
+           AND a.site_id = e.site_id AND a.subject_id = e.reporting_subject_id
+         WHERE ${pageviewWhere} GROUP BY e.site_id`, pageviewParams,
       );
       const perSiteSubjects = perSiteSubjectsRes.rows;
-
       const perSiteSessionsRes = await exec.query<{
-        site_id: string;
-        sessions_cnt: string | number | null;
+        site_id: string; sessions_cnt: string | number | null;
       }>(
-        `SELECT site_id, COUNT(DISTINCT session_key) AS sessions_cnt
-         FROM dcc_analytics_daily_sessions
-         WHERE ${dailyWhere}
-         GROUP BY site_id`,
-        dailyParams,
+        `SELECT e.site_id, COUNT(DISTINCT e.session_key) AS sessions_cnt
+         FROM dcc_analytics_events e WHERE ${pageviewWhere} GROUP BY e.site_id`, pageviewParams,
       );
       const perSiteSessions = perSiteSessionsRes.rows;
-
       const perFamilySubjectsRes = await exec.query<{
-        content_family: string;
-        browsers_cnt: string | number | null;
+        content_family: string; browsers_cnt: string | number | null;
+        pageviews_cnt: string | number | null;
       }>(
-        `SELECT content_family, COUNT(DISTINCT site_id || ':' || subject_id) AS browsers_cnt
-         FROM dcc_analytics_daily_subjects
-         WHERE ${dailyWhere}
-         GROUP BY content_family`,
-        dailyParams,
+        `SELECT e.content_family, COUNT(DISTINCT e.site_id || ':' || e.reporting_subject_id) AS browsers_cnt,
+                COUNT(*) AS pageviews_cnt
+         FROM dcc_analytics_events e WHERE ${pageviewWhere} GROUP BY e.content_family`, pageviewParams,
       );
       const perFamilySubjects = perFamilySubjectsRes.rows;
-
       const topLandingRes = await exec.query<{
-        value: string;
-        pageviews: string | number | null;
-        sessions: string | number | null;
+        value: string; pageviews: string | number | null; sessions: string | number | null;
       }>(
-        `SELECT landing_path AS value,
-                SUM(pageview_count) AS pageviews,
-                COUNT(DISTINCT site_id || ':' || session_key) AS sessions
-         FROM dcc_analytics_daily_sessions
-         WHERE ${dailyWhere}
-         GROUP BY landing_path
-         ORDER BY pageviews DESC, value ASC
-         LIMIT 12`,
-        dailyParams,
+        `SELECT e.landing_path AS value, COUNT(*) AS pageviews,
+                COUNT(DISTINCT e.site_id || ':' || e.session_key) AS sessions
+         FROM dcc_analytics_events e WHERE ${pageviewWhere}
+         GROUP BY e.landing_path ORDER BY pageviews DESC, value ASC LIMIT 12`, pageviewParams,
       );
       const topLandingRows = topLandingRes.rows;
-
       const topSourceRes = await exec.query<{
-        value: string;
-        pageviews: string | number | null;
-        sessions: string | number | null;
+        value: string; pageviews: string | number | null; sessions: string | number | null;
       }>(
-        `SELECT COALESCE(utm_source, referrer_domain, 'direct_or_none') AS value,
-                SUM(pageview_count) AS pageviews,
-                COUNT(DISTINCT site_id || ':' || session_key) AS sessions
-         FROM dcc_analytics_daily_sessions
-         WHERE ${dailyWhere}
-         GROUP BY COALESCE(utm_source, referrer_domain, 'direct_or_none')
-         ORDER BY pageviews DESC, value ASC
-         LIMIT 12`,
-        dailyParams,
+        `SELECT COALESCE(e.utm_source, e.referrer_domain, 'direct_or_none') AS value,
+                COUNT(*) AS pageviews, COUNT(DISTINCT e.site_id || ':' || e.session_key) AS sessions
+         FROM dcc_analytics_events e WHERE ${pageviewWhere}
+         GROUP BY COALESCE(e.utm_source, e.referrer_domain, 'direct_or_none')
+         ORDER BY pageviews DESC, value ASC LIMIT 12`, pageviewParams,
       );
       const topSourceRows = topSourceRes.rows;
 
@@ -730,6 +704,18 @@ export async function buildNetworkAndTripAnalyticsReport(options?: {
         } else if (tc === "suspected_automation") {
           sAcc.auto += pv + ge + sh;
         }
+      }
+
+      // Use exact pageview counts beside exact browser/session counts in every
+      // report slice; other interaction totals still come from compact rollups.
+      totalObservedPageviews = Number(distinctSubjectRow?.pageviews || 0);
+      for (const r of perSiteSubjects) {
+        const bucket = perSiteRollup.get(String(r.site_id));
+        if (bucket) bucket.pv = Number(r.pageviews_cnt || 0);
+      }
+      for (const r of perFamilySubjects) {
+        const bucket = perFamilyRollup.get(String(r.content_family));
+        if (bucket) bucket.pv = Number(r.pageviews_cnt || 0);
       }
 
       const siteOutcomesMap = new Map<
