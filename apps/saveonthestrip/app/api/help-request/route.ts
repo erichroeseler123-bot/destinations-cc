@@ -32,6 +32,7 @@ function readValue(formData: FormData, key: string) {
 async function parseHelpRequestInput(request: NextRequest): Promise<{
   isJsonRequest: boolean;
   name: string;
+  website: string;
   email: string;
   phone: string;
   requestType: string;
@@ -49,6 +50,7 @@ async function parseHelpRequestInput(request: NextRequest): Promise<{
     return {
       isJsonRequest: true,
       name: String(body.name || "").trim(),
+      website: typeof body.website === "string" ? body.website.trim() : "",
       email: String(body.email || "").trim(),
       phone: String(body.phone || "").trim(),
       requestType: String(body.requestType || "general_help").trim() || "general_help",
@@ -65,6 +67,7 @@ async function parseHelpRequestInput(request: NextRequest): Promise<{
   return {
     isJsonRequest: false,
     name: readValue(formData, "name"),
+    website: readValue(formData, "website"),
     email: readValue(formData, "email"),
     phone: readValue(formData, "phone"),
     requestType: readValue(formData, "requestType") || "general_help",
@@ -79,6 +82,7 @@ export async function POST(request: NextRequest) {
   const {
     isJsonRequest,
     name,
+    website,
     email,
     phone,
     requestType,
@@ -96,6 +100,17 @@ export async function POST(request: NextRequest) {
       !acceptHeader.includes("text/html"));
   const safeSourcePath = sourcePath.startsWith("/") ? sourcePath : "/contact";
   const redirectUrl = new URL(safeSourcePath, request.url);
+
+  // Discard bot submissions before sending an email or creating an inbox item.
+  // Keep this narrow: unusual names or short notes alone are not proof of spam.
+  const hasSpamContent = /\b(?:buy viagra|cialis|crypto airdrop|seo backlinks|buy instagram followers|telegram pump|slot gacor)\b/i.test(
+    `${name} ${notes}`,
+  );
+  if (website || hasSpamContent) {
+    if (wantsJson) return NextResponse.json({ ok: true }, { status: 202 });
+    redirectUrl.searchParams.set("sent", "1");
+    return NextResponse.redirect(redirectUrl, { status: 303 });
+  }
 
   if (!email && !phone) {
     if (wantsJson) {
