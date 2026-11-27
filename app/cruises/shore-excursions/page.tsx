@@ -210,7 +210,7 @@ export default function CruiseShoreExcursionsPage() {
             <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
               <div className="text-xs uppercase tracking-[0.18em] text-emerald-300">Best next clicks</div>
               <div className="mt-4 grid gap-3">
-                <a href="https://cruisepromenade.com/p/INDY-2027-01-24?src=dcc-authority-cruise" className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-200 hover:bg-emerald-400/20">Cruise Promenade Sailing Planner →</a>
+                <a href="https://cruisepromenade.com/sailings/independence-of-the-seas/2027-01-24?utm_source=destinationcommandcenter.com&utm_medium=referral" className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-200 hover:bg-emerald-400/20">Cruise Promenade Sailing Planner →</a>
                 <Link href="/ports" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Ports directory</Link>
                 <Link href="/cruises/tendering" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Tendering guide</Link>
                 <Link href="/ports/juneau" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Juneau example</Link>
