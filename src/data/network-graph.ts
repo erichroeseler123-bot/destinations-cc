@@ -13,6 +13,7 @@ export const SUITE_SITES = [
   { id: "vibe", name: "Vibe Around Town", url: "https://vibearoundtown.com", role: "marketplace" },
   { id: "gosno", name: "GoSno", url: "https://gosno.co", role: "transportation_commerce" },
   { id: "shuttleya", name: "ShuttleYa", url: "https://shuttleya.com", role: "transportation_commerce" },
+  { id: "partybusya", name: "PartyBusYa", url: "https://partybusya.com", role: "transportation_commerce" },
   { id: "parr", name: "Party at Red Rocks", url: "https://partyatredrocks.com", role: "transportation_commerce" },
   { id: "rrfp", name: "Red Rocks Fast Pass", url: "https://redrocksfastpass.com", role: "transportation_commerce" },
   { id: "airport420", name: "420 Friendly Airport Pickup", url: "https://420friendlyairportpickup.com", role: "transportation_commerce" },

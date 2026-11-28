@@ -20,6 +20,7 @@
     {"intent_id":"dcc:intent:red-rocks-group-transport","primary_owner":"dcc:site:party-at-red-rocks","supporting_sites":["dcc:site:destination-command-center","dcc:site:red-rocks-fast-pass"],"stage":"transaction"},
     {"intent_id":"dcc:intent:red-rocks-fast-action","primary_owner":"dcc:site:red-rocks-fast-pass","supporting_sites":["dcc:site:destination-command-center","dcc:site:party-at-red-rocks"],"stage":"transaction"},
     {"intent_id":"dcc:intent:general-shuttle-corridor-execution","primary_owner":"dcc:site:shuttleya","supporting_sites":["dcc:site:destination-command-center"],"stage":"transaction"},
+    {"intent_id":"dcc:intent:party-bus-group-charter","primary_owner":"dcc:site:partybusya","supporting_sites":["dcc:site:destination-command-center"],"stage":"transaction"},
     {"intent_id":"dcc:intent:denver-420-airport-pickup","primary_owner":"dcc:site:420-friendly-airport-pickup","supporting_sites":["dcc:site:destination-command-center","dcc:site:shuttleya"],"stage":"transaction"},
     {"intent_id":"dcc:intent:french-quarter-arrival-orientation","primary_owner":"dcc:site:french-quarter-orientation","supporting_sites":["dcc:site:welcome-new-orleans-tours","dcc:site:destination-command-center"],"stage":"entry"},
     {"intent_id":"dcc:intent:wisconsin-dells-discovery","primary_owner":"dcc:site:welcome-to-the-dells","supporting_sites":["dcc:site:destination-command-center"],"stage":"entry"}

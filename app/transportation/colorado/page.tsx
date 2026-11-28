@@ -241,6 +241,14 @@ export default async function ColoradoTransportationPage() {
               >
                 Open Party at Red Rocks Concert Shuttles ↗
               </a>
+              <a
+                href="/go/dcc-to-partybusya?destination=Colorado&state=CO&party_size=16&source_page=%2Ftransportation%2Fcolorado"
+                data-testid="dcc-authority-to-partybusya-from-colorado"
+                data-dcc-next-step="partybusya"
+                className="rounded-xl border border-amber-300/35 bg-black/35 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-amber-100 hover:bg-white/10 transition"
+              >
+                14–46 Pax Group Party Buses (PartyBusYa) →
+              </a>
             </div>
           </div>
         </section>

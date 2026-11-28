@@ -136,6 +136,29 @@ export default function TransportationPage() {
 
         <RideOptionsCard venueSlug="red-rocks-amphitheatre" sourcePage="/transportation" />
 
+        <section className="rounded-3xl border border-amber-400/25 bg-amber-500/[0.06] p-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.22em] text-amber-300">
+                Multi-stop celebrations &amp; 14–46 pax charters
+              </p>
+              <h2 className="mt-2 text-2xl font-bold text-white">
+                Private party buses &amp; group bus charters on PartyBusYa
+              </h2>
+            </div>
+            <a
+              href="/go/dcc-to-partybusya?party_size=16&source_page=%2Ftransportation"
+              data-dcc-next-step="partybusya"
+              className="rounded-xl bg-amber-400 px-4 py-3 text-sm font-black text-zinc-950 hover:bg-amber-300"
+            >
+              Compare Party Buses on PartyBusYa →
+            </a>
+          </div>
+          <p className="mt-3 max-w-4xl text-sm leading-7 text-zinc-300">
+            When a group needs hourly multi-stop celebration routing, BYOB cabin rules, or 14–46 passenger party coaches rather than point-to-point corridor shuttles, continue to PartyBusYa. Operators set live pricing, open calendar dates, and day-of driver check-in separately from the frozen catalog.
+          </p>
+        </section>
+
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
           <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Regions</p>
           <div className="mt-4 flex flex-wrap gap-3">

@@ -381,6 +381,36 @@ export const DCC_SITE_TRUTH: readonly DccPortfolioTruthRecord[] = [
       finality: "Brinkberry routes travelers to operator surfaces (such as Party at Red Rocks or FeastlySpread) where reservations are finalized.",
     },
   },
+  {
+    dcc_id: "dcc:site:partybusya",
+    id: "partybusya",
+    name: "PartyBusYa",
+    url: "https://partybusya.com",
+    type: "party_bus_transportation_discovery_and_operator_routing",
+    role: "source-checked party bus and private group bus charter comparison finder with direct operator booking handoffs",
+    authority: [
+      "party_bus_operator_comparison",
+      "group_charter_policy_comparison",
+      "fareharbor_operator_booking_handoff",
+    ],
+    status: { state: "active" },
+    provenance: {
+      kind: "declared_by_site",
+      last_verified: "2026-11-28",
+      note: "Frozen transport-catalog.v1 snapshot stays strictly separate from live day-of driver dispatch and check-in.",
+    },
+    booking: {
+      authority: "operator",
+      takes_payment: false,
+      finality:
+        "PartyBusYa compares verified party bus operators and routes checkout directly to the operator via FareHarbor; operators set live pricing, open calendar availability, and day-of driver check-in.",
+    },
+    public_claims: {
+      operates_vehicles: false,
+      claims_live_prices_or_availability: false,
+      live_driver_checkin_in_catalog: false,
+    },
+  },
 ] as const;
 
 export function getDccSiteTruth(idOrDccId: string) {
