@@ -32,10 +32,10 @@ export default function MightyArgoOverview() {
 
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
             <Link
-              href="/mighty-argo-shuttle"
+              href="/mighty-argo/status"
               className="inline-flex items-center justify-center rounded-xl bg-white text-black px-5 py-3 font-semibold"
             >
-              Argo mine tour shuttle from Denver
+              Arrival &amp; retired shuttle status
             </Link>
             <Link
               href="/mighty-argo/stats"
@@ -94,9 +94,9 @@ export default function MightyArgoOverview() {
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">How this connects to DCC</h2>
           <p className="mt-3 text-zinc-300">
-            DCC stays “authority-first”: a clear guide + logistics. The shuttle
-            page remains a micro-route node that can later link to an execution
-            checkout flow without rewriting the attraction content.
+            DCC stays authority-first: a clear attraction guide and arrival
+            logistics reference. Note that the former Denver-to-Mighty-Argo
+            scheduled shuttle is retired and is not operating.
           </p>
         </div>
 
@@ -105,9 +105,9 @@ export default function MightyArgoOverview() {
           title="Mighty Argo map and arrival anchor"
           lat={39.7422}
           lng={-105.5138}
-          description="Use this as a fast arrival anchor for Idaho Springs and the Mighty Argo area before moving into the shuttle or attraction planning pages."
+          description="Use this as a fast arrival anchor for Idaho Springs and the Mighty Argo area before checking attraction updates and arrival logistics."
           nearbyLinks={[
-            { href: "/mighty-argo-shuttle", label: "Shuttle guide" },
+            { href: "/mighty-argo/status", label: "Transportation status" },
             { href: "/regions/colorado/idaho-springs", label: "Idaho Springs" },
           ]}
         />
