@@ -85,6 +85,27 @@ test("ShuttleYa truth keeps the retired Argo service retired everywhere", () => 
   assert.ok(read("apps/shuttleya/app/page.tsx").includes("SHUTTLEYA_TRUTH"));
   assert.ok(read("apps/shuttleya/app/agent.json/route.ts").includes("SHUTTLEYA_TRUTH"));
   assert.ok(read("apps/shuttleya/app/llms.txt/route.ts").includes("SHUTTLEYA_TRUTH"));
+
+  // Verify /mighty-argo/status, networkSatellites, sites.v1.json, and Whittier port config match retired-Argo & operator-handoff truth
+  const argoStatusPage = read("app/mighty-argo/status/page.tsx");
+  assert.equal(argoStatusPage.includes("shuttleya.com/book/argo-shuttle"), false);
+  assert.ok(argoStatusPage.includes("retired"));
+
+  const satellites = read("lib/dcc/contracts/networkSatellites.ts");
+  assert.equal(satellites.includes("ShuttleYa Argo shuttle reservations"), false);
+  assert.ok(satellites.includes('revenueMode: "operator_handoff"'));
+
+  const sitesJson = JSON.parse(read("data/network/sites.v1.json"));
+  const shuttleyaSite = sitesJson.sites.find((s: { site_id: string }) => s.site_id === "dcc:site:shuttleya");
+  assert.equal(shuttleyaSite.role, "transportation_discovery");
+  assert.equal(shuttleyaSite.monetization_mode === "direct_booking", false);
+
+  const portConfig = read("src/data/port-authority-config.ts");
+  assert.ok(
+    portConfig.includes(
+      "https://shuttleya.com/routes/whittier-to-anchorage?utm_source=dcc&utm_medium=referral&utm_campaign=port_guide&utm_content=ports-whittier",
+    ),
+  );
 });
 
 test("Cruise Promenade truth records 2026-11-13 verification, 120-min return buffer, 57 vs 14,346 sailing tiers, and two-mode RollCall separation", () => {
