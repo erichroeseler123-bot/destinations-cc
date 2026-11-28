@@ -1807,7 +1807,8 @@ export function getDccSiteManifestV1(siteIdOrDomain: string): DccSiteManifestV1 
 export type DccSupplementalSiteId =
   | "welcometothedells"
   | "saveonthestrip"
-  | "frenchquarterorientation";
+  | "frenchquarterorientation"
+  | "partybusya";
 
 export type DccAnySiteManifestId = DccPortfolioSiteId | DccSupplementalSiteId;
 
@@ -2029,6 +2030,74 @@ export const DCC_SUPPLEMENTAL_SITE_MANIFESTS: readonly DccSupplementalSiteManife
       supports_private_trip_context: true,
       supports_public_shared_plans: false,
       cookie_name: "fqo_trip_ctx",
+      cookie_flags: "Secure; HttpOnly; SameSite=Lax",
+      strips_token_from_url: true,
+      url_pii_forbidden: true,
+      forbidden_url_fields: FORBIDDEN_URL_PII_FIELDS,
+    },
+    privacy_and_security: {
+      exposes_secrets: false,
+      exposes_customer_information: false,
+      exposes_private_evidence: false,
+      exposes_commission_terms: false,
+    },
+  },
+  {
+    schema: DCC_SITE_MANIFEST_SCHEMA,
+    version: DCC_SITE_MANIFEST_VERSION,
+    site_id: "partybusya",
+    site_name: "PartyBusYa",
+    canonical_domains: ["partybusya.com", "www.partybusya.com"],
+    aliases: ["party-bus-ya", "dcc:site:partybusya"],
+    consumer_role:
+      "Source-checked party bus and private group bus charter finder routing groups directly to operator FareHarbor checkouts while keeping live day-of driver dispatch separate from the frozen catalog.",
+    dcc_universe_ids: ["group-party-bus-charters"],
+    accepted_context_fields: ["destination", "city", "state", "party_size", "occasion"],
+    emitted_context_fields: ["market", "state", "party_size", "handoff_id"],
+    booking_authority: {
+      primary: "fareharbor",
+      supported_authorities: ["fareharbor", "direct_provider"],
+      takes_direct_payment: false,
+      autonomous_booking_enabled: false,
+      decision_authorization_mode: "shadow_only_no_side_effects",
+      universal_multi_provider_checkout: false,
+      finality_statement:
+        "PartyBusYa compares verified party bus operators and routes checkout directly to the operator via FareHarbor; operators own live rates, availability, payment, and day-of driver check-in.",
+    },
+    natural_relationships: {
+      inbound: [
+        {
+          site_id: "destinationcommandcenter",
+          canonical_domain: "destinationcommandcenter.com",
+          journey_id: "dcc-to-partybusya",
+          relationship_type: "group_party_bus_charter_handoff",
+          context_exchange: "opaque_dcc_ctx",
+        },
+      ],
+      outbound: [
+        {
+          site_id: "destinationcommandcenter",
+          canonical_domain: "destinationcommandcenter.com",
+          journey_id: "partybusya-to-dcc",
+          relationship_type: "destination_transportation_context_handoff",
+          context_exchange: "opaque_dcc_ctx",
+        },
+      ],
+    },
+    commercial_channels: [
+      {
+        channel_id: "partybusya-fhdn-operator-referrals",
+        provider: "fareharbor",
+        attribution_parameter: "asn,asn-ref,ref",
+        outcome_reporting: "click_level_only",
+        notes: "Verbatim FareHarbor Marketplace operator referral links; affiliate payout attribution tracked separately in FareHarbor reporting.",
+      },
+    ],
+    context_support: {
+      mode: "private_trip_context",
+      supports_private_trip_context: true,
+      supports_public_shared_plans: false,
+      cookie_name: "pby_trip_ctx",
       cookie_flags: "Secure; HttpOnly; SameSite=Lax",
       strips_token_from_url: true,
       url_pii_forbidden: true,

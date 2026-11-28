@@ -115,4 +115,9 @@ test("overlap-risk properties are explicitly governed instead of expanded by def
   assert.equal(getPortfolioSiteContract("rrfp")?.strategy, "review");
   assert.equal(getPortfolioSiteContract("vegas")?.strategy, "review");
   assert.equal(getPortfolioSiteContract("shuttleya")?.strategy, "prove");
+  const pby = getPortfolioSiteContract("partybusya");
+  assert.ok(pby);
+  assert.equal(pby.canonicalUrl, "https://partybusya.com");
+  assert.equal(pby.strategy, "specialist");
+  assert.equal(includes(pby.mustNotOwn, "live_driver_checkin_in_frozen_catalog"), true);
 });
