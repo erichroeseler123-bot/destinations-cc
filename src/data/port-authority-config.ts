@@ -752,6 +752,9 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       category("Private transport", "Whittier private transfer"),
     ],
     cruiseSeason: "Alaska season runs mainly May through September.",
+    transferCtaLabel: "Compare Whittier → Anchorage Transfers on ShuttleYa ↗",
+    transferCtaHref:
+      "https://shuttleya.com/routes/whittier-to-anchorage?utm_source=dcc&utm_medium=referral&utm_campaign=port_guide&utm_content=ports-whittier",
     knownFor: [
       "Prince William Sound access",
       "Embarkation and transfer logistics",
@@ -784,6 +787,14 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
     relatedLinks: [
       ...baseLinks("Whittier"),
       { label: "Alaska guide", href: "/alaska" },
+      {
+        label: "Whittier → Anchorage transfer comparison (ShuttleYa)",
+        href: "https://shuttleya.com/routes/whittier-to-anchorage?utm_source=dcc&utm_medium=referral&utm_campaign=port_guide&utm_content=ports-whittier-related",
+      },
+      {
+        label: "Anchorage → Whittier embarkation rides (ShuttleYa)",
+        href: "https://shuttleya.com/routes/anchorage-to-whittier?utm_source=dcc&utm_medium=referral&utm_campaign=port_guide&utm_content=ports-whittier-embarkation",
+      },
     ],
   },
   "icy-strait-point": {

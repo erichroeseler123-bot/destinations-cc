@@ -679,14 +679,14 @@ const ROOT_ROUTE_GOVERNANCE = [
     publishState: "indexable",
     networkRole: "dcc",
     handoffPolicy: "outbound_only",
-    notes: "Argo proof corridor entry route. DCC should hand Argo users into the Shuttleya action surface before booking.",
+    notes: "Retired Mighty Argo shuttle path; permanently redirects to /mighty-argo.",
   },
   {
     path: "/mighty-argo/status",
     publishState: "indexable",
     networkRole: "dcc",
     handoffPolicy: "outbound_only",
-    notes: "Launch-status page for Mighty Argo Cable Car shuttle timing, pickup/return plan, and Shuttleya handoff.",
+    notes: "Status page recording that the former Denver-to-Mighty-Argo scheduled shuttle is retired and linking to ShuttleYa only for general corridor discovery.",
   },
   {
     path: "/how-to-get-to-argo-cable-car-from-denver",
@@ -746,7 +746,7 @@ const ROOT_ROUTE_GOVERNANCE = [
     publishState: "indexable",
     networkRole: "dcc",
     handoffPolicy: "bidirectional",
-    notes: "Dedicated Denver-to-Argo Shuttleya booking and logistics engine.",
+    notes: "DCC ShuttleYa discovery hub (route-first comparison & operator handoff; retired Denver-to-Argo shuttle not operating; no direct checkout).",
   },
   // Cruise Promenade Matrix Pages
   {

@@ -462,6 +462,51 @@ export async function renderPortPage(
         </div>
       </Suspense>
       <PortAuthorityTemplate port={port} config={config} />
+      {port.slug === "whittier" || port.slug === "seward" ? (
+        <section className="max-w-6xl mx-auto px-6 pt-6">
+          <div className="rounded-2xl border border-emerald-500/35 bg-slate-900/90 p-5 shadow-lg">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="max-w-3xl">
+                <div className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+                  Verified Ground Transfers · ShuttleYa Corridor Comparison
+                </div>
+                <h2 className="mt-1 text-lg font-bold text-white">
+                  {port.slug === "whittier"
+                    ? "Compare verified Whittier ↔ Anchorage cruise shuttles and private transfers"
+                    : "Compare verified Seward → Anchorage cruise shuttles and private transfers"}
+                </h2>
+                <p className="mt-1 text-xs sm:text-sm text-slate-300">
+                  {port.slug === "whittier"
+                    ? "Compare per-seat scheduled cruise motorcoaches against 24/7 private SUVs, Sprinters, and coaches—with terminal dock notes (West Camp Rd vs. Glacier Creek), Anton Anderson Tunnel timing, luggage rules, and direct operator booking handoffs."
+                    : "Compare scheduled Seward Highway express cruise shuttles against 24/7 private door-to-door transfers to Ted Stevens Anchorage Airport (ANC) and Anchorage hotels, then book directly with the operating carrier."}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <a
+                  href={
+                    port.slug === "whittier"
+                      ? "https://shuttleya.com/routes/whittier-to-anchorage?utm_source=dcc&utm_medium=referral&utm_campaign=port_guide&utm_content=ports-whittier"
+                      : "https://shuttleya.com/routes/seward-to-anchorage?utm_source=dcc&utm_medium=referral&utm_campaign=port_guide&utm_content=ports-seward"
+                  }
+                  className="rounded-xl bg-emerald-500 px-4 py-2.5 text-xs font-bold text-slate-950 hover:bg-emerald-400 transition"
+                >
+                  {port.slug === "whittier"
+                    ? "Compare Whittier → Anchorage Rides on ShuttleYa ↗"
+                    : "Compare Seward → Anchorage Rides on ShuttleYa ↗"}
+                </a>
+                {port.slug === "whittier" ? (
+                  <a
+                    href="https://shuttleya.com/routes/anchorage-to-whittier?utm_source=dcc&utm_medium=referral&utm_campaign=port_guide&utm_content=ports-whittier-embarkation"
+                    className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-4 py-2.5 text-xs font-bold text-cyan-200 hover:bg-cyan-900/60 transition"
+                  >
+                    Anchorage → Whittier Embarkation ↗
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
       {excursionProfile ? (
         <div className="max-w-6xl mx-auto px-6 pt-6">
           <PortDayExcursionCatalogSection

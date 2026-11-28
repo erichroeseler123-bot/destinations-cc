@@ -15,7 +15,7 @@ export const PRE_SITE_GUIDES_SHUTTLEYA: PreSiteGuide[] = [
       { label: "Self-drive", body: "Maximum independence, but you own I-70 traffic, parking, and the drive home." },
     ],
     questions: ["Do you need a guaranteed return plan?", "How many people are traveling?", "Do you want to stay on a fixed schedule?", "Would you otherwise rent or use a car?"],
-    nextStep: { label: "See the direct shuttle option", body: "ShuttleYa is the specialist service once a fixed Denver-to-Idaho-Springs round trip fits the day.", href: "https://shuttleya.com" },
+    nextStep: { label: "Compare verified corridor operators on ShuttleYa", body: "ShuttleYa compares verified transportation corridors and routes you to the operating carrier (note: the former Denver-to-Mighty-Argo scheduled shuttle is retired).", href: "https://shuttleya.com/?utm_source=dcc&utm_medium=referral&utm_campaign=pre_site_guide" },
   },
   {
     slug: "is-mighty-argo-worth-a-half-day-from-denver",
@@ -31,7 +31,7 @@ export const PRE_SITE_GUIDES_SHUTTLEYA: PreSiteGuide[] = [
       { label: "Make it the anchor", body: "Works best when the outing is a centerpiece rather than one more stop in an overloaded itinerary." },
     ],
     questions: ["How many usable hours do you have?", "Would the group regret missing a mountain outing?", "What Denver plan would it replace?", "Do you want the day mostly structured or flexible?"],
-    nextStep: { label: "Solve the ride only after the trip earns the time", body: "If the outing is worth the half-day, ShuttleYa is the direct-service next step for the fixed round trip.", href: "https://shuttleya.com" },
+    nextStep: { label: "Compare ground-transportation paths on ShuttleYa", body: "Once the outing earns the half-day, use ShuttleYa to compare active Colorado operators; the former Denver-to-Mighty-Argo scheduled shuttle is retired.", href: "https://shuttleya.com/?utm_source=dcc&utm_medium=referral&utm_campaign=pre_site_guide" },
   },
   {
     slug: "drive-vs-shuttle-denver-to-idaho-springs",
@@ -47,7 +47,7 @@ export const PRE_SITE_GUIDES_SHUTTLEYA: PreSiteGuide[] = [
       { label: "Private ride", body: "Combines door-to-door control with less driving responsibility, usually at higher cost." },
     ],
     questions: ["Do you already have a vehicle?", "How important is schedule freedom?", "Would anyone rather not drive I-70?", "What is the total cost per person for the group?"],
-    nextStep: { label: "Compare against the fixed shuttle", body: "ShuttleYa is the direct-service benchmark when the group prefers a scheduled round trip.", href: "https://shuttleya.com" },
+    nextStep: { label: "Compare shuttle vs. private transfer operators", body: "ShuttleYa helps compare per-seat shuttles and private transfers by route before booking directly with the operating company.", href: "https://shuttleya.com/?utm_source=dcc&utm_medium=referral&utm_campaign=pre_site_guide" },
   },
   {
     slug: "how-much-time-for-idaho-springs-day-trip-from-denver",
@@ -63,7 +63,7 @@ export const PRE_SITE_GUIDES_SHUTTLEYA: PreSiteGuide[] = [
       { label: "Flexible self-drive", body: "Lets you extend or shorten the stop, but you own the timing decisions." },
     ],
     questions: ["What fixed commitment follows the trip?", "Where are you starting in Denver?", "How much time do you want in Idaho Springs itself?", "How much delay could the rest of the day absorb?"],
-    nextStep: { label: "Use the fixed schedule if it fits", body: "ShuttleYa is the next step when its published round-trip schedule fits the protected block you want.", href: "https://shuttleya.com" },
+    nextStep: { label: "Compare active Colorado transportation options", body: "Use ShuttleYa to find verified operators serving active Colorado corridors and confirm schedule buffers directly with the carrier.", href: "https://shuttleya.com/?utm_source=dcc&utm_medium=referral&utm_campaign=pre_site_guide" },
   },
   {
     slug: "what-if-i70-closes-on-denver-day-trip",
@@ -79,6 +79,6 @@ export const PRE_SITE_GUIDES_SHUTTLEYA: PreSiteGuide[] = [
       { label: "Skip the mountain day", body: "Sometimes the best choice when road risk threatens a more important later commitment." },
     ],
     questions: ["What happens if the road closes before departure?", "What happens if the return is delayed?", "Is there a hard evening deadline?", "What do the current service terms say?"],
-    nextStep: { label: "Check the service's current terms", body: "If a fixed shuttle still makes sense, ShuttleYa should be the authoritative source for its current schedule and disruption policy.", href: "https://shuttleya.com" },
+    nextStep: { label: "Check operator policies via ShuttleYa", body: "Compare verified operators on ShuttleYa, then confirm live road-closure, cancellation, and refund terms directly with the carrier providing the ride.", href: "https://shuttleya.com/?utm_source=dcc&utm_medium=referral&utm_campaign=pre_site_guide" },
   },
 ];

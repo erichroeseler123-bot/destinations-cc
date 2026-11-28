@@ -61,9 +61,18 @@ export const NETWORK_SATELLITES: Record<NetworkSatelliteId, NetworkSatellite> = 
     decisionCompressed: "Private SUV or private van based on group size and pickup plan.", fulfillment: "Party at Red Rocks private transportation.", revenueMode: "owned_checkout",
   },
   shuttleya: {
-    id: "shuttleya", name: "ShuttleYa", origin: "https://shuttleya.com", path: "/", corridor: "argo-day-transport",
-    travelerProblem: "Day-trip travelers need the specific Denver-to-Argo Cable Car shuttle product.",
-    decisionCompressed: "Whether the scheduled Argo round trip fits the day plan.", fulfillment: "ShuttleYa Argo shuttle reservations.", revenueMode: "owned_checkout",
+    id: "shuttleya",
+    name: "ShuttleYa",
+    origin: "https://shuttleya.com",
+    path: "/",
+    corridor: "point-to-point-shuttle-corridors",
+    travelerProblem:
+      "Travelers need side-by-side comparison of verified per-seat shuttles and private transfers across cruise-port, airport, mountain, and venue corridors without assuming ShuttleYa operates vehicles.",
+    decisionCompressed:
+      "Origin-to-destination corridor, per-seat vs. private vehicle format, luggage/timing rules, and verified operator handoff.",
+    fulfillment:
+      "Operator-controlled booking handoffs (the former Denver-to-Mighty-Argo scheduled shuttle is retired and not operating).",
+    revenueMode: "operator_handoff",
   },
   welcometoneworleanstours: {
     id: "welcometoneworleanstours", name: "Welcome to New Orleans Tours", origin: "https://www.welcometoneworleanstours.com", path: "/", corridor: "new-orleans-tour-decision",
